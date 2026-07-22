@@ -82,7 +82,7 @@ async function doRegister() {
     try {
         var cred = await auth.createUserWithEmailAndPassword(email, pass);
         await cred.user.updateProfile({ displayName: name });
-        await db.collection('users').doc(cred.user.uid).set({ name:name, email:email, role:'engineer', createdAt:firebase.firestore.FieldValue.serverTimestamp() });
+        await createUserDoc(cred.user, 'engineer', '');
     } catch(e) {
         var msg = e.message;
         if (e.code === 'auth/email-already-in-use') msg = currentLang === 'ar' ? 'هذا البريد مسجل بالفعل' : 'This email is already registered';
@@ -97,10 +97,7 @@ async function doGoogleLogin() {
     try {
         var provider = new firebase.auth.GoogleAuthProvider();
         var result = await auth.signInWithPopup(provider);
-        await db.collection('users').doc(result.user.uid).set({
-            name:result.user.displayName, email:result.user.email, role:'engineer',
-            createdAt:firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge:true });
+        await createUserDoc(result.user, 'engineer', '');
     } catch(e) {
         var msg = e.message;
         if (e.code === 'auth/popup-closed-by-user') msg = currentLang === 'ar' ? 'تم إلغاء الدخول' : 'Sign-in cancelled';
@@ -122,6 +119,7 @@ async function doGuestLogin() {
 
 function doSignOut() {
     document.querySelectorAll('.user-dropdown').forEach(function(d){d.classList.remove('show');});
+    logLogout();
     auth.signOut();
 }
 
@@ -163,9 +161,14 @@ auth.onAuthStateChanged(function(user) {
     currentUser = user;
     if (user) {
         updateUserUI(user);
-        showScreen('domains');
-        loadDomains();
+        fetchUserRole(user).then(function() {
+            logLogin();
+            showScreen('domains');
+            loadDomains();
+        });
     } else {
+        currentUserRole = 'viewer';
+        currentUserData = null;
         showScreen('auth');
     }
 });

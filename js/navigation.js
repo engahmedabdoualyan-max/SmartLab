@@ -198,6 +198,10 @@ async function selectDomain(domain) {
 
 function openTest(test){
     currentTest=test;
+    if(!canRunTest(test.type)){
+        showToast('Permission denied: your role ('+currentUserRole+') cannot run this test','error');
+        return;
+    }
     if(test.type==='cbr'){openCBR(test);return;}
     if(test.type==='atterberg'){openAtterberg(test);return;}
     if(test.type==='sieve'){openSieve(test);return;}

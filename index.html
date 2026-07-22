@@ -596,6 +596,393 @@
     </div>
 </div>
 
+<!-- ============ SCREEN: PERMEABILITY ============ -->
+<div id="screen-permeability" class="screen">
+    <header class="app-header" role="navigation" aria-label="Page header">
+        <div class="header-right"><div class="header-logo">SL</div><span class="header-title">Permeability Test</span></div>
+        <div class="header-left">
+            <button onclick="goBackToDashboard()" class="btn-back">→ <span data-i18n="dashboard">Dashboard</span></button>
+            <div class="header-user-btn" role="button" tabindex="0" aria-label="User menu" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
+                <div class="user-icon" id="perm-user-icon">U</div><span class="dd-arrow" aria-hidden="true">▼</span>
+                <div class="user-dropdown" id="perm-user-dropdown"><div class="dd-header"><div class="dd-name" id="perm-dd-name">User</div><div class="dd-email" id="perm-dd-email">—</div></div><button class="dd-item" onclick="showScreen('domains')"><span class="dd-icon">🏠</span> Change Domain</button><button class="dd-item danger" onclick="doSignOut()"><span class="dd-icon">🚪</span> Sign Out</button></div>
+            </div>
+        </div>
+    </header>
+    <div class="test-layout" role="main">
+        <div class="slide-up">
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon blue" aria-hidden="true">📝</div><h3>Permeability Parameters</h3></div>
+                <div class="panel-body">
+                    <div class="form-group"><label>Sample ID</label><input type="text" id="perm-sample-id" placeholder="PERM-001"></div>
+                    <div class="form-group"><label>Test Method</label><select id="perm-method"><option value="constant">Constant Head</option><option value="falling">Falling Head</option></select></div>
+                    <div class="form-group"><label>Soil Type</label><select id="perm-soil-type"><option value="Sand">Sand</option><option value="Gravel">Gravel</option><option value="Silt">Silt</option><option value="Clay">Clay</option></select></div>
+                    <div class="form-group"><label>Standard</label><select id="perm-standard"><option value="ASTM">ASTM D2434</option><option value="BS">BS 1377 Part 5</option></select></div>
+                </div>
+            </div>
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon green" aria-hidden="true">🔌</div><h3>Connection</h3></div>
+                <div class="panel-body">
+                    <div class="form-group"><label>Connection Type</label><select id="perm-conn" onchange="onPermConnChange()"><option value="">-- Select --</option><option value="manual">✏️ Manual Entry</option><option value="demo">🧪 Demo Mode</option></select></div>
+                </div>
+            </div>
+            <div style="display:flex;gap:12px;margin-bottom:20px;">
+                <button onclick="startPermTest()" id="perm-btn-start" class="btn-primary" style="flex:1;">▶ Start Test</button>
+                <button onclick="stopPermTest()" id="perm-btn-stop" class="btn-secondary" style="flex:1;display:none;">⏹ Stop</button>
+            </div>
+        </div>
+        <div class="slide-up" style="animation-delay:0.15s;">
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon orange" aria-hidden="true">📡</div><h3>Live Data</h3></div>
+                <div class="panel-body">
+                    <div id="perm-demo-banner" class="demo-banner" role="status" style="display:none;">⚠️ Demo mode — simulated data</div>
+                    <div class="data-readings" aria-live="polite">
+                        <div class="reading-card"><div class="reading-label">Flow Rate Q</div><div class="reading-value" id="perm-val-Q">--</div><div class="reading-unit">cm³/s</div></div>
+                        <div class="reading-card"><div class="reading-label">Head h</div><div class="reading-value" id="perm-val-head">--</div><div class="reading-unit">cm</div></div>
+                        <div class="reading-card"><div class="reading-label">Length L</div><div class="reading-value" id="perm-val-length">--</div><div class="reading-unit">cm</div></div>
+                        <div class="reading-card"><div class="reading-label">K (×10⁻²)</div><div class="reading-value" id="perm-val-K">--</div><div class="reading-unit">cm/s</div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel" id="perm-results-panel" style="display:none;margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">📊</div><h3>Results</h3></div>
+                <div class="panel-body"><div id="perm-results-body"></div><div style="margin-top:16px;"><button onclick="generatePermPDF()" class="btn-primary">📄 Download PDF</button></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ SCREEN: SPECIFIC GRAVITY ============ -->
+<div id="screen-specific_gravity" class="screen">
+    <header class="app-header" role="navigation" aria-label="Page header">
+        <div class="header-right"><div class="header-logo">SL</div><span class="header-title">Specific Gravity Test</span></div>
+        <div class="header-left">
+            <button onclick="goBackToDashboard()" class="btn-back">→ <span data-i18n="dashboard">Dashboard</span></button>
+            <div class="header-user-btn" role="button" tabindex="0" aria-label="User menu" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
+                <div class="user-icon" id="sg-user-icon">U</div><span class="dd-arrow" aria-hidden="true">▼</span>
+                <div class="user-dropdown" id="sg-user-dropdown"><div class="dd-header"><div class="dd-name" id="sg-dd-name">User</div><div class="dd-email" id="sg-dd-email">—</div></div><button class="dd-item" onclick="showScreen('domains')"><span class="dd-icon">🏠</span> Change Domain</button><button class="dd-item danger" onclick="doSignOut()"><span class="dd-icon">🚪</span> Sign Out</button></div>
+            </div>
+        </div>
+    </header>
+    <div class="test-layout" role="main">
+        <div class="slide-up">
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon blue" aria-hidden="true">📝</div><h3>Specific Gravity Parameters</h3></div>
+                <div class="panel-body">
+                    <div class="form-group"><label>Sample ID</label><input type="text" id="sg-sample-id" placeholder="SG-001"></div>
+                    <div class="form-group"><label>Soil Type</label><select id="sg-soil-type"><option value="Sand">Sand</option><option value="Gravel">Gravel</option><option value="Silt">Silt</option><option value="Clay">Clay</option></select></div>
+                    <div class="form-group"><label>ρw (g/cm³)</label><input type="number" id="sg-rhow" step="any" value="1.0"></div>
+                    <div class="form-group"><label>Standard</label><select id="sg-standard"><option value="ASTM">ASTM D854</option><option value="BS">BS 1377 Part 2</option></select></div>
+                </div>
+            </div>
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon green" aria-hidden="true">🔌</div><h3>Connection</h3></div>
+                <div class="panel-body">
+                    <div class="form-group"><label>Connection Type</label><select id="sg-conn" onchange="onSGConnChange()"><option value="">-- Select --</option><option value="manual">✏️ Manual Entry</option><option value="demo">🧪 Demo Mode</option></select></div>
+                </div>
+            </div>
+            <div style="display:flex;gap:12px;margin-bottom:20px;">
+                <button onclick="startSGTest()" id="sg-btn-start" class="btn-primary" style="flex:1;">▶ Start Test</button>
+                <button onclick="stopSGTest()" id="sg-btn-stop" class="btn-secondary" style="flex:1;display:none;">⏹ Stop</button>
+            </div>
+        </div>
+        <div class="slide-up" style="animation-delay:0.15s;">
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon orange" aria-hidden="true">📡</div><h3>Live Data</h3></div>
+                <div class="panel-body">
+                    <div id="sg-demo-banner" class="demo-banner" role="status" style="display:none;">⚠️ Demo mode — simulated data</div>
+                    <div class="data-readings" aria-live="polite">
+                        <div class="reading-card"><div class="reading-label">Ws (g)</div><div class="reading-value" id="sg-val-Ws">--</div><div class="reading-unit">g</div></div>
+                        <div class="reading-card"><div class="reading-label">W1 (g)</div><div class="reading-value" id="sg-val-W1">--</div><div class="reading-unit">g</div></div>
+                        <div class="reading-card"><div class="reading-label">W2 (g)</div><div class="reading-value" id="sg-val-W2">--</div><div class="reading-unit">g</div></div>
+                        <div class="reading-card"><div class="reading-label">Gs</div><div class="reading-value" id="sg-val-Gs">--</div><div class="reading-unit"></div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel" id="sg-results-panel" style="display:none;margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">📊</div><h3>Results</h3></div>
+                <div class="panel-body"><div id="sg-results-body"></div><div style="margin-top:16px;"><button onclick="generateSGPDF()" class="btn-primary">📄 Download PDF</button></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ SCREEN: FLEXURAL STRENGTH ============ -->
+<div id="screen-flexural" class="screen">
+    <header class="app-header" role="navigation" aria-label="Page header">
+        <div class="header-right"><div class="header-logo">SL</div><span class="header-title">Flexural Strength Test</span></div>
+        <div class="header-left">
+            <button onclick="goBackToDashboard()" class="btn-back">→ <span data-i18n="dashboard">Dashboard</span></button>
+            <div class="header-user-btn" role="button" tabindex="0" aria-label="User menu" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
+                <div class="user-icon" id="flex-user-icon">U</div><span class="dd-arrow" aria-hidden="true">▼</span>
+                <div class="user-dropdown" id="flex-user-dropdown"><div class="dd-header"><div class="dd-name" id="flex-dd-name">User</div><div class="dd-email" id="flex-dd-email">—</div></div><button class="dd-item" onclick="showScreen('domains')"><span class="dd-icon">🏠</span> Change Domain</button><button class="dd-item danger" onclick="doSignOut()"><span class="dd-icon">🚪</span> Sign Out</button></div>
+            </div>
+        </div>
+    </header>
+    <div class="test-layout" role="main">
+        <div class="slide-up">
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon blue" aria-hidden="true">📝</div><h3>Flexural Parameters</h3></div>
+                <div class="panel-body">
+                    <div class="form-group"><label>Sample ID</label><input type="text" id="flex-sample-id" placeholder="FL-001"></div>
+                    <div class="form-group"><label>Beam Width b (mm)</label><input type="number" id="flex-width" step="any" value="150"></div>
+                    <div class="form-group"><label>Beam Depth d (mm)</label><input type="number" id="flex-depth" step="any" value="150"></div>
+                    <div class="form-group"><label>Span L (mm)</label><input type="number" id="flex-span" step="any" value="450"></div>
+                    <div class="form-group"><label>Loading Type</label><select id="flex-loading"><option value="center">Center-Point</option><option value="third">Third-Point</option></select></div>
+                    <div class="form-group"><label>Concrete Grade</label><select id="flex-grade"><option value="C20">C20</option><option value="C25">C25</option><option value="C30" selected>C30</option><option value="C35">C35</option><option value="C40">C40</option></select></div>
+                    <div class="form-group"><label>Standard</label><select id="flex-standard"><option value="ASTM">ASTM C78 / C293</option><option value="BS">BS EN 12390-5</option></select></div>
+                </div>
+            </div>
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon green" aria-hidden="true">🔌</div><h3>Connection</h3></div>
+                <div class="panel-body">
+                    <div class="form-group"><label>Connection Type</label><select id="flex-conn" onchange="onFlexConnChange()"><option value="">-- Select --</option><option value="manual">✏️ Manual Entry</option><option value="demo">🧪 Demo Mode</option></select></div>
+                </div>
+            </div>
+            <div style="display:flex;gap:12px;margin-bottom:20px;">
+                <button onclick="startFlexTest()" id="flex-btn-start" class="btn-primary" style="flex:1;">▶ Start Test</button>
+                <button onclick="stopFlexTest()" id="flex-btn-stop" class="btn-secondary" style="flex:1;display:none;">⏹ Stop</button>
+            </div>
+        </div>
+        <div class="slide-up" style="animation-delay:0.15s;">
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon orange" aria-hidden="true">📡</div><h3>Live Data</h3></div>
+                <div class="panel-body">
+                    <div id="flex-demo-banner" class="demo-banner" role="status" style="display:none;">⚠️ Demo mode — simulated data</div>
+                    <div class="data-readings" aria-live="polite">
+                        <div class="reading-card"><div class="reading-label">Force P</div><div class="reading-value" id="flex-val-force">--</div><div class="reading-unit">N</div></div>
+                        <div class="reading-card"><div class="reading-label">Stress R</div><div class="reading-value" id="flex-val-stress">--</div><div class="reading-unit">MPa</div></div>
+                        <div class="reading-card"><div class="reading-label">Displacement</div><div class="reading-value" id="flex-val-disp">--</div><div class="reading-unit">mm</div></div>
+                        <div class="reading-card"><div class="reading-label">Peak Force</div><div class="reading-value" id="flex-val-peak">--</div><div class="reading-unit">N</div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel" id="flex-results-panel" style="display:none;margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">📊</div><h3>Results</h3></div>
+                <div class="panel-body"><div id="flex-results-body"></div><div style="margin-top:16px;"><button onclick="generateFlexPDF()" class="btn-primary">📄 Download PDF</button></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ SCREEN: SPLIT TENSILE ============ -->
+<div id="screen-split_tensile" class="screen">
+    <header class="app-header" role="navigation" aria-label="Page header">
+        <div class="header-right"><div class="header-logo">SL</div><span class="header-title">Split Tensile Strength</span></div>
+        <div class="header-left">
+            <button onclick="goBackToDashboard()" class="btn-back">→ <span data-i18n="dashboard">Dashboard</span></button>
+            <div class="header-user-btn" role="button" tabindex="0" aria-label="User menu" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
+                <div class="user-icon" id="split-user-icon">U</div><span class="dd-arrow" aria-hidden="true">▼</span>
+                <div class="user-dropdown" id="split-user-dropdown"><div class="dd-header"><div class="dd-name" id="split-dd-name">User</div><div class="dd-email" id="split-dd-email">—</div></div><button class="dd-item" onclick="showScreen('domains')"><span class="dd-icon">🏠</span> Change Domain</button><button class="dd-item danger" onclick="doSignOut()"><span class="dd-icon">🚪</span> Sign Out</button></div>
+            </div>
+        </div>
+    </header>
+    <div class="test-layout" role="main">
+        <div class="slide-up">
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon blue" aria-hidden="true">📝</div><h3>Split Tensile Parameters</h3></div>
+                <div class="panel-body">
+                    <div class="form-group"><label>Sample ID</label><input type="text" id="split-sample-id" placeholder="ST-001"></div>
+                    <div class="form-group"><label>Cylinder Diameter D (mm)</label><input type="number" id="split-diameter" step="any" value="150"></div>
+                    <div class="form-group"><label>Cylinder Length L (mm)</label><input type="number" id="split-length" step="any" value="300"></div>
+                    <div class="form-group"><label>Concrete Grade</label><select id="split-grade"><option value="C20">C20</option><option value="C25">C25</option><option value="C30" selected>C30</option><option value="C35">C35</option><option value="C40">C40</option></select></div>
+                    <div class="form-group"><label>Standard</label><select id="split-standard"><option value="ASTM">ASTM C496</option><option value="BS">BS EN 12390-6</option></select></div>
+                </div>
+            </div>
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon green" aria-hidden="true">🔌</div><h3>Connection</h3></div>
+                <div class="panel-body">
+                    <div class="form-group"><label>Connection Type</label><select id="split-conn" onchange="onSplitConnChange()"><option value="">-- Select --</option><option value="manual">✏️ Manual Entry</option><option value="demo">🧪 Demo Mode</option></select></div>
+                </div>
+            </div>
+            <div style="display:flex;gap:12px;margin-bottom:20px;">
+                <button onclick="startSplitTest()" id="split-btn-start" class="btn-primary" style="flex:1;">▶ Start Test</button>
+                <button onclick="stopSplitTest()" id="split-btn-stop" class="btn-secondary" style="flex:1;display:none;">⏹ Stop</button>
+            </div>
+        </div>
+        <div class="slide-up" style="animation-delay:0.15s;">
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon orange" aria-hidden="true">📡</div><h3>Live Data</h3></div>
+                <div class="panel-body">
+                    <div id="split-demo-banner" class="demo-banner" role="status" style="display:none;">⚠️ Demo mode — simulated data</div>
+                    <div class="data-readings" aria-live="polite">
+                        <div class="reading-card"><div class="reading-label">Force P</div><div class="reading-value" id="split-val-force">--</div><div class="reading-unit">kN</div></div>
+                        <div class="reading-card"><div class="reading-label">Tensile T</div><div class="reading-value" id="split-val-tensile">--</div><div class="reading-unit">MPa</div></div>
+                        <div class="reading-card"><div class="reading-label">Displacement</div><div class="reading-value" id="split-val-disp">--</div><div class="reading-unit">mm</div></div>
+                        <div class="reading-card"><div class="reading-label">Peak Force</div><div class="reading-value" id="split-val-peak">--</div><div class="reading-unit">kN</div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel" id="split-results-panel" style="display:none;margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">📊</div><h3>Results</h3></div>
+                <div class="panel-body"><div id="split-results-body"></div><div style="margin-top:16px;"><button onclick="generateSplitPDF()" class="btn-primary">📄 Download PDF</button></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ SCREEN: WATER ABSORPTION ============ -->
+<div id="screen-water_absorption" class="screen">
+    <header class="app-header" role="navigation" aria-label="Page header">
+        <div class="header-right"><div class="header-logo">SL</div><span class="header-title">Water Absorption Test</span></div>
+        <div class="header-left">
+            <button onclick="goBackToDashboard()" class="btn-back">→ <span data-i18n="dashboard">Dashboard</span></button>
+            <div class="header-user-btn" role="button" tabindex="0" aria-label="User menu" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
+                <div class="user-icon" id="wa-user-icon">U</div><span class="dd-arrow" aria-hidden="true">▼</span>
+                <div class="user-dropdown" id="wa-user-dropdown"><div class="dd-header"><div class="dd-name" id="wa-dd-name">User</div><div class="dd-email" id="wa-dd-email">—</div></div><button class="dd-item" onclick="showScreen('domains')"><span class="dd-icon">🏠</span> Change Domain</button><button class="dd-item danger" onclick="doSignOut()"><span class="dd-icon">🚪</span> Sign Out</button></div>
+            </div>
+        </div>
+    </header>
+    <div class="test-layout" role="main">
+        <div class="slide-up">
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon blue" aria-hidden="true">📝</div><h3>Water Absorption Parameters</h3></div>
+                <div class="panel-body">
+                    <div class="form-group"><label>Sample ID</label><input type="text" id="wa-sample-id" placeholder="WA-001"></div>
+                    <div class="form-group"><label>Material</label><select id="wa-material"><option value="Concrete Aggregate">Concrete Aggregate</option><option value="Natural Stone">Natural Stone</option><option value="Brick">Brick</option><option value="Concrete Cube">Concrete Cube</option></select></div>
+                    <div class="form-group"><label>Standard</label><select id="wa-standard"><option value="ASTM">ASTM C127 / C642</option><option value="BS">BS EN 13755</option></select></div>
+                </div>
+            </div>
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon green" aria-hidden="true">🔌</div><h3>Connection</h3></div>
+                <div class="panel-body">
+                    <div class="form-group"><label>Connection Type</label><select id="wa-conn" onchange="onWAConnChange()"><option value="">-- Select --</option><option value="manual">✏️ Manual Entry</option><option value="demo">🧪 Demo Mode</option></select></div>
+                </div>
+            </div>
+            <div style="display:flex;gap:12px;margin-bottom:20px;">
+                <button onclick="startWATest()" id="wa-btn-start" class="btn-primary" style="flex:1;">▶ Start Test</button>
+                <button onclick="stopWATest()" id="wa-btn-stop" class="btn-secondary" style="flex:1;display:none;">⏹ Stop</button>
+            </div>
+        </div>
+        <div class="slide-up" style="animation-delay:0.15s;">
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon orange" aria-hidden="true">📡</div><h3>Live Data</h3></div>
+                <div class="panel-body">
+                    <div id="wa-demo-banner" class="demo-banner" role="status" style="display:none;">⚠️ Demo mode — simulated data</div>
+                    <div class="data-readings" aria-live="polite">
+                        <div class="reading-card"><div class="reading-label">Oven-Dry OD</div><div class="reading-value" id="wa-val-OD">--</div><div class="reading-unit">g</div></div>
+                        <div class="reading-card"><div class="reading-label">SSD Weight</div><div class="reading-value" id="wa-val-SSD">--</div><div class="reading-unit">g</div></div>
+                        <div class="reading-card"><div class="reading-label">Absorption</div><div class="reading-value" id="wa-val-abs">--</div><div class="reading-unit">%</div></div>
+                        <div class="reading-card"><div class="reading-label">Status</div><div class="reading-value" id="wa-val-status">--</div><div class="reading-unit"></div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel" id="wa-results-panel" style="display:none;margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">📊</div><h3>Results</h3></div>
+                <div class="panel-body"><div id="wa-results-body"></div><div style="margin-top:16px;"><button onclick="generateWAPDF()" class="btn-primary">📄 Download PDF</button></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ SCREEN: SOFTENING POINT ============ -->
+<div id="screen-softening_point" class="screen">
+    <header class="app-header" role="navigation" aria-label="Page header">
+        <div class="header-right"><div class="header-logo">SL</div><span class="header-title">Softening Point — Ring & Ball</span></div>
+        <div class="header-left">
+            <button onclick="goBackToDashboard()" class="btn-back">→ <span data-i18n="dashboard">Dashboard</span></button>
+            <div class="header-user-btn" role="button" tabindex="0" aria-label="User menu" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
+                <div class="user-icon" id="sp-user-icon">U</div><span class="dd-arrow" aria-hidden="true">▼</span>
+                <div class="user-dropdown" id="sp-user-dropdown"><div class="dd-header"><div class="dd-name" id="sp-dd-name">User</div><div class="dd-email" id="sp-dd-email">—</div></div><button class="dd-item" onclick="showScreen('domains')"><span class="dd-icon">🏠</span> Change Domain</button><button class="dd-item danger" onclick="doSignOut()"><span class="dd-icon">🚪</span> Sign Out</button></div>
+            </div>
+        </div>
+    </header>
+    <div class="test-layout" role="main">
+        <div class="slide-up">
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon blue" aria-hidden="true">📝</div><h3>Softening Point Parameters</h3></div>
+                <div class="panel-body">
+                    <div class="form-group"><label>Sample ID</label><input type="text" id="sp-sample-id" placeholder="SP-001"></div>
+                    <div class="form-group"><label>Bitumen Grade</label><select id="sp-grade"><option value="40/50">40/50</option><option value="60/70" selected>60/70</option><option value="80/100">80/100</option></select></div>
+                    <div class="form-group"><label>Standard</label><select id="sp-standard"><option value="ASTM">ASTM D36</option><option value="AASHTO">AASHTO T53</option><option value="BS">BS EN 1426</option></select></div>
+                </div>
+            </div>
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon green" aria-hidden="true">🔌</div><h3>Connection</h3></div>
+                <div class="panel-body">
+                    <div class="form-group"><label>Connection Type</label><select id="sp-conn" onchange="onSPConnChange()"><option value="">-- Select --</option><option value="manual">✏️ Manual Entry</option><option value="demo">🧪 Demo Mode</option></select></div>
+                </div>
+            </div>
+            <div style="display:flex;gap:12px;margin-bottom:20px;">
+                <button onclick="startSPTest()" id="sp-btn-start" class="btn-primary" style="flex:1;">▶ Start Test</button>
+                <button onclick="stopSPTest()" id="sp-btn-stop" class="btn-secondary" style="flex:1;display:none;">⏹ Stop</button>
+            </div>
+        </div>
+        <div class="slide-up" style="animation-delay:0.15s;">
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon orange" aria-hidden="true">📡</div><h3>Live Data</h3></div>
+                <div class="panel-body">
+                    <div id="sp-demo-banner" class="demo-banner" role="status" style="display:none;">⚠️ Demo mode — simulated data</div>
+                    <div class="data-readings" aria-live="polite">
+                        <div class="reading-card"><div class="reading-label">Temperature</div><div class="reading-value" id="sp-val-temp">--</div><div class="reading-unit">°C</div></div>
+                        <div class="reading-card"><div class="reading-label">Heating Rate</div><div class="reading-value" id="sp-val-rate">--</div><div class="reading-unit">°C/min</div></div>
+                        <div class="reading-card"><div class="reading-label">Time</div><div class="reading-value" id="sp-val-time">--</div><div class="reading-unit">sec</div></div>
+                        <div class="reading-card"><div class="reading-label">Status</div><div class="reading-value" id="sp-val-status">--</div><div class="reading-unit"></div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel" id="sp-results-panel" style="display:none;margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">📊</div><h3>Results</h3></div>
+                <div class="panel-body"><div id="sp-results-body"></div><div style="margin-top:16px;"><button onclick="generateSPPDF()" class="btn-primary">📄 Download PDF</button></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ SCREEN: VISCOSITY ============ -->
+<div id="screen-viscosity" class="screen">
+    <header class="app-header" role="navigation" aria-label="Page header">
+        <div class="header-right"><div class="header-logo">SL</div><span class="header-title">Viscosity — Saybolt Furol</span></div>
+        <div class="header-left">
+            <button onclick="goBackToDashboard()" class="btn-back">→ <span data-i18n="dashboard">Dashboard</span></button>
+            <div class="header-user-btn" role="button" tabindex="0" aria-label="User menu" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
+                <div class="user-icon" id="visc-user-icon">U</div><span class="dd-arrow" aria-hidden="true">▼</span>
+                <div class="user-dropdown" id="visc-user-dropdown"><div class="dd-header"><div class="dd-name" id="visc-dd-name">User</div><div class="dd-email" id="visc-dd-email">—</div></div><button class="dd-item" onclick="showScreen('domains')"><span class="dd-icon">🏠</span> Change Domain</button><button class="dd-item danger" onclick="doSignOut()"><span class="dd-icon">🚪</span> Sign Out</button></div>
+            </div>
+        </div>
+    </header>
+    <div class="test-layout" role="main">
+        <div class="slide-up">
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon blue" aria-hidden="true">📝</div><h3>Viscosity Parameters</h3></div>
+                <div class="panel-body">
+                    <div class="form-group"><label>Sample ID</label><input type="text" id="visc-sample-id" placeholder="VIS-001"></div>
+                    <div class="form-group"><label>Bitumen Grade</label><select id="visc-grade"><option value="40/50">40/50</option><option value="60/70" selected>60/70</option><option value="80/100">80/100</option></select></div>
+                    <div class="form-group"><label>Test Temperature (°C)</label><input type="number" id="visc-temp" value="135" step="1"></div>
+                    <div class="form-group"><label>Standard</label><select id="visc-standard"><option value="ASTM">ASTM D249 / D2161</option><option value="AASHTO">AASHTO T201</option></select></div>
+                </div>
+            </div>
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon green" aria-hidden="true">🔌</div><h3>Connection</h3></div>
+                <div class="panel-body">
+                    <div class="form-group"><label>Connection Type</label><select id="visc-conn" onchange="onViscConnChange()"><option value="">-- Select --</option><option value="manual">✏️ Manual Entry</option><option value="demo">🧪 Demo Mode</option></select></div>
+                </div>
+            </div>
+            <div style="display:flex;gap:12px;margin-bottom:20px;">
+                <button onclick="startViscTest()" id="visc-btn-start" class="btn-primary" style="flex:1;">▶ Start Test</button>
+                <button onclick="stopViscTest()" id="visc-btn-stop" class="btn-secondary" style="flex:1;display:none;">⏹ Stop</button>
+            </div>
+        </div>
+        <div class="slide-up" style="animation-delay:0.15s;">
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon orange" aria-hidden="true">📡</div><h3>Live Data</h3></div>
+                <div class="panel-body">
+                    <div id="visc-demo-banner" class="demo-banner" role="status" style="display:none;">⚠️ Demo mode — simulated data</div>
+                    <div class="data-readings" aria-live="polite">
+                        <div class="reading-card"><div class="reading-label">Flow Time</div><div class="reading-value" id="visc-val-time">--</div><div class="reading-unit">sec</div></div>
+                        <div class="reading-card"><div class="reading-label">Temperature</div><div class="reading-value" id="visc-val-temp">--</div><div class="reading-unit">°C</div></div>
+                        <div class="reading-card"><div class="reading-label">Viscosity</div><div class="reading-value" id="visc-val-visc">--</div><div class="reading-unit">sec</div></div>
+                        <div class="reading-card"><div class="reading-label">Status</div><div class="reading-value" id="visc-val-status">--</div><div class="reading-unit"></div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel" id="visc-results-panel" style="display:none;margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">📊</div><h3>Results</h3></div>
+                <div class="panel-body"><div id="visc-results-body"></div><div style="margin-top:16px;"><button onclick="generateViscPDF()" class="btn-primary">📄 Download PDF</button></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- ============ FAB MENU ============ -->
 <div class="fab-container" id="fab-container" aria-label="Quick actions">
     <div class="fab-menu" id="fab-menu" role="menu">
@@ -1761,6 +2148,7 @@
 
 <script src="js/i18n.js"></script>
 <script src="js/firebase-config.js"></script>
+<script src="js/api.js"></script>
 <script src="js/app.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/navigation.js"></script>
@@ -1782,6 +2170,5 @@
 <script src="js/qr.js"></script>
 <script src="js/analytics.js"></script>
 <script src="js/ml.js"></script>
-<script src="js/fab.js"></script>
-</body>
-</html>
+    <script src="js/api.js"></script>
+</body></html>

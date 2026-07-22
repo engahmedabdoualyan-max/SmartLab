@@ -24,6 +24,7 @@ function startMarshallTest(){
     document.getElementById('mar-btn-start').style.display='none';
     document.getElementById('mar-btn-stop').style.display='flex';
     document.getElementById('mar-results-panel').style.display='none';
+    logTestStarted('marshall',currentTest?currentTest.id:'');
     drawMarChart();
     if(conn==='demo'){
         document.getElementById('mar-demo-banner').style.display='flex';
@@ -43,7 +44,7 @@ function startMarshallTest(){
         },150);
     }
 }
-function stopMarshallTest(){marIsTesting=false;document.getElementById('mar-btn-start').style.display='flex';document.getElementById('mar-btn-stop').style.display='none';if(marData.length>0)showMarResults();}
+function stopMarshallTest(){marIsTesting=false;document.getElementById('mar-btn-start').style.display='flex';document.getElementById('mar-btn-stop').style.display='none';logTestStopped('marshall',currentTest?currentTest.id:'',{dataCount:marData.length});if(marData.length>0)showMarResults();}
 function processMarReading(flow,load,disp,stab){
     if(!marIsTesting)return;
     marData.push({flow:flow,load:load,disp:disp,stab:stab,time:new Date().toLocaleTimeString()});

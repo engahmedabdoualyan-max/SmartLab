@@ -53,6 +53,7 @@ async function startCBRTest(){
     document.getElementById('cbr-results-panel').style.display='none';
     document.getElementById('cbr-btn-pdf').style.display='none';
     document.getElementById('cbr-log-body').innerHTML='';
+    logTestStarted('cbr',currentTest?currentTest.id:'');
     drawCBRChart();
     if(conn==='demo'){
         document.getElementById('cbr-demo-banner').style.display='flex';
@@ -77,6 +78,7 @@ function stopCBRTest(){
     document.getElementById('cbr-btn-stop').style.display='none';
     document.getElementById('cbr-live-indicator').style.display='none';
     document.getElementById('cbr-btn-manual').style.display='none';
+    logTestStopped('cbr',currentTest?currentTest.id:'',{readingCount:cbrReadings.length});
     if(!isDemoMode&&cbrConnType!=='manual'){sendSerialCommand('STOP');stopSerial();}
     if(cbrReadings.length>0)calculateCBRResults();
 }

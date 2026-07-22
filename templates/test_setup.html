@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartLAP - {{ test.name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-right">
+            <div class="header-logo">SL</div>
+            <span class="header-title">{{ test.name }}</span>
+        </div>
+        <div class="header-left">
+            <a href="{{ url_for('dashboard', domain_id=test.domain_id) }}" class="btn-back">→ لوحة التحكم</a>
+        </div>
+    </header>
+
+    <div class="test-layout">
+        <!-- RIGHT PANEL: Inputs & Hardware -->
+        <div class="slide-up">
+            <div class="panel" style="margin-bottom: 24px;">
+                <div class="panel-header">
+                    <div class="panel-header-icon blue">📝</div>
+                    <h3>مدخلات المهندس القياسية</h3>
+                </div>
+                <div class="panel-body">
+                    <div id="dynamicInputs"></div>
+                </div>
+            </div>
+
+            <div class="panel" style="margin-bottom: 24px;">
+                <div class="panel-header">
+                    <div class="panel-header-icon green">🔌</div>
+                    <h3>بروتوكول الربط المادي</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="form-group">
+                        <label>منفذ الاتصال (COM Port)</label>
+                        <select id="comPort">
+                            <option value="">-- جاري البحث عن المنافذ --</option>
+                        </select>
+                    </div>
+                    <div class="serial-status" id="serialStatus">
+                        <div class="status-dot disconnected" id="statusDot"></div>
+                        <span id="statusText">غير متصل</span>
+                    </div>
+                    <button onclick="refreshPorts()" class="btn-secondary" style="margin-top: 12px;">🔄 تحديث المنافذ</button>
+                </div>
+            </div>
+
+            <button onclick="startTest()" id="btnStart" class="btn-primary">
+                ⚡ بدء الاختبار اللحظي
+            </button>
+        </div>
+
+        <!-- LEFT PANEL: Live Data & Results -->
+        <div class="slide-up" style="animation-delay: 0.15s;">
+            <div class="panel" style="margin-bottom: 24px;">
+                <div class="panel-header">
+                    <div class="panel-header-icon orange">📡</div>
+                    <h3>البيانات الحية من المستشعرات</h3>
+                    <div class="live-indicator" id="liveIndicator" style="display: none;">
+                        <div class="live-dot"></div>
+                        LIVE
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="data-readings">
+                        <div class="reading-card">
+                            <div class="reading-label">نسبة الرطوبة</div>
+                            <div class="reading-value" id="moistureValue">--</div>
+                            <div class="reading-unit">%</div>
+                        </div>
+                        <div class="reading-card">
+                            <div class="reading-label">قوة الاصطدام</div>
+                            <div class="reading-value" id="forceValue">--</div>
+                            <div class="reading-unit">N</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel" id="resultsPanel" style="display: none;">
+                <div class="panel-header">
+                    <div class="panel-header-icon purple">📊</div>
+                    <h3>نتائج الاختبار</h3>
+                </div>
+                <div class="panel-body">
+                    <div id="resultsContainer"></div>
+                    <div class="chart-container" id="chartContainer" style="display: none;">
+                        <div class="reading-label">نسبة النجاح</div>
+                        <div class="chart-bar">
+                            <div class="chart-fill" id="chartFill" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px; display: flex; gap: 12px;">
+                        <button onclick="printReport()" id="btnPrint" class="btn-primary" style="display: none;">
+                            🖨️ طباعة التقرير
+                        </button>
+                        <button onclick="downloadPDF()" id="btnPDF" class="btn-secondary" style="display: none;">
+                            📄 تحميل PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel" style="margin-top: 24px;">
+                <div class="panel-header">
+                    <div class="panel-header-icon blue">📋</div>
+                    <h3>سجل الاختبارات السابقة</h3>
+                </div>
+                <div class="panel-body" style="padding: 0;">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>التاريخ</th>
+                                <th>الحالة</th>
+                                <th>النتيجة</th>
+                                <th>إجراء</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyBody">
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 24px;">
+                                    لا توجد اختبارات سابقة
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <div class="footer-top">
+            <div class="footer-brand">
+                <h3>Fimto Soft</h3>
+                <p class="tagline">Integrated Tech Solutions</p>
+                <p class="description">نقدم حلولًا برمجية شاملة تشمل أنظمة ERP تفاعلية متقدمة، صيانة وتطوير محطات الخرسانة الجاهزة، تصميم وتطوير المواقع الإلكترونية، التسويق الرقمي المتميز، إنشاء وتطوير أنظمة الأمن والمراقبة، تأسيس وتطوير شبكات البنية التحتية، إنشاء وتطوير تطبيقات الذكاء الاصطناعي، وتأسيس وتطوير أنظمة المنازل الذكية.</p>
+            </div>
+            <div class="footer-section">
+                <h4>روابط سريعة</h4>
+                <ul>
+                    <li><a href="#">الرئيسية</a></li>
+                    <li><a href="#">الخدمات</a></li>
+                    <li><a href="#">المدونة</a></li>
+                    <li><a href="#">تواصل معنا</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>تواصل معنا</h4>
+                <ul>
+                    <li><a href="mailto:info@fimtosoft.com">✉ info@fimtosoft.com</a></li>
+                    <li><a href="tel:01001006627">📱 مصر: 01001006627</a></li>
+                    <li><a href="tel:0500439617">📱 السعودية: 0500439617</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Fimto Soft - All Rights Reserved</p>
+            <div class="footer-locations">
+                <span>🇪🇬 القاهرة، مصر</span>
+                <span>🇸🇦 الرياض، السعودية</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const TEST_ID = {{ test.id }};
+        let TEST_CONFIG = {{ test.config_schema | safe }} || {};
+
+        let currentSessionId = null;
+
+        function initInputs() {
+            const container = document.getElementById('dynamicInputs');
+            const inputs = TEST_CONFIG.inputs || [];
+            if (inputs.length === 0) {
+                container.innerHTML = '<p style="color:var(--text-muted);font-size:13px;">لا توجد مدخلات مطلوبة لهذا الاختبار</p>';
+                return;
+            }
+            inputs.forEach(function(input) {
+                const group = document.createElement('div');
+                group.className = 'form-group';
+                group.innerHTML = '<label>' + input.label + '</label>' +
+                    '<input type="' + (input.type || 'number') + '" id="input_' + input.name + '" placeholder="أدخل ' + input.label + '" step="any">';
+                container.appendChild(group);
+            });
+        }
+
+        async function refreshPorts() {
+            const select = document.getElementById('comPort');
+            select.innerHTML = '<option value="">جاري البحث...</option>';
+            document.getElementById('statusDot').className = 'status-dot scanning';
+            document.getElementById('statusText').textContent = 'جاري البحث عن المنافذ...';
+
+            try {
+                const response = await fetch('/api/com-ports');
+                const ports = await response.json();
+                select.innerHTML = '<option value="">-- اختر منفذ الاتصال --</option>';
+                ports.forEach(function(port) {
+                    const opt = document.createElement('option');
+                    opt.value = port.device;
+                    opt.textContent = port.device + ' - ' + port.description;
+                    select.appendChild(opt);
+                });
+                if (ports.length > 0) {
+                    document.getElementById('statusDot').className = 'status-dot connected';
+                    document.getElementById('statusText').textContent = 'تم العثور على ' + ports.length + ' منفذ';
+                } else {
+                    document.getElementById('statusDot').className = 'status-dot disconnected';
+                    document.getElementById('statusText').textContent = 'لم يتم العثور على منافذ — يمكن المحاكاة';
+                }
+            } catch (e) {
+                select.innerHTML = '<option value="">خطأ في البحث — جرّب المحاكاة</option>';
+                document.getElementById('statusDot').className = 'status-dot disconnected';
+                document.getElementById('statusText').textContent = 'خطأ في الاتصال بالخادم';
+            }
+        }
+
+        function getEngineerInputs() {
+            const inputs = {};
+            const configInputs = TEST_CONFIG.inputs || [];
+            configInputs.forEach(function(input) {
+                const el = document.getElementById('input_' + input.name);
+                if (el) inputs[input.name] = el.value;
+            });
+            return inputs;
+        }
+
+        async function startTest() {
+            const btn = document.getElementById('btnStart');
+            const inputs = getEngineerInputs();
+            const comPort = document.getElementById('comPort').value;
+
+            btn.disabled = true;
+            btn.innerHTML = '⏳ جاري الاختبار...';
+            document.getElementById('liveIndicator').style.display = 'flex';
+
+            try {
+                const response = await fetch('/api/test/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        test_id: TEST_ID,
+                        engineer_inputs: inputs,
+                        com_port: comPort
+                    })
+                });
+                const result = await response.json();
+                const sensorData = result.sensor_data || {};
+
+                document.getElementById('moistureValue').textContent = sensorData.moisture_percentage !== undefined ? sensorData.moisture_percentage : '--';
+                document.getElementById('forceValue').textContent = sensorData.impact_force !== undefined ? sensorData.impact_force : '--';
+
+                if (result.session_id) {
+                    currentSessionId = result.session_id;
+                    displayResults(result.results);
+                    loadHistory();
+                }
+            } catch (e) {
+                alert('حدث خطأ أثناء الاختبار: ' + e.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '⚡ بدء الاختبار اللحظي';
+                setTimeout(function() {
+                    document.getElementById('liveIndicator').style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        function displayResults(results) {
+            var panel = document.getElementById('resultsPanel');
+            var container = document.getElementById('resultsContainer');
+            panel.style.display = 'block';
+
+            var html = '';
+            if (results.status) {
+                var isPass = results.status === 'ناجح';
+                html += '<div class="result-status ' + (isPass ? 'pass' : 'fail') + '">' +
+                    (isPass ? '✅' : '❌') + ' ' + results.status + '</div>';
+            }
+
+            var labels = {
+                'moisture_percentage': 'نسبة الرطوبة %',
+                'moisture_weight': 'وزن الرطوبة (كغ)',
+                'dry_density': 'الكثافة الجافة (كغ/م³)',
+                'impact_force': 'قوة الاصطدام (N)',
+                'max_dry_density': 'أقصى كثافة جافة (كغ/م³)',
+                'optimum_moisture': 'نسبة الرطوبة المثلى %',
+                'calculated_moisture': 'الرطوبة المحسوبة %',
+                'sensor_moisture': 'الرطوبة من المستشعر %',
+                'difference': 'الفرق',
+                'error': 'خطأ'
+            };
+
+            Object.keys(results).forEach(function(key) {
+                if (key === 'raw_data' || key === 'status') return;
+                var label = labels[key] || key;
+                var cssClass = key === 'error' ? ' danger' : '';
+                html += '<div class="result-row">' +
+                    '<span class="result-label">' + label + '</span>' +
+                    '<span class="result-value' + cssClass + '">' + results[key] + '</span>' +
+                    '</div>';
+            });
+            container.innerHTML = html;
+
+            if (results.dry_density && results.dry_density > 0) {
+                var percentage = Math.min((results.dry_density / 2.5) * 100, 100);
+                document.getElementById('chartContainer').style.display = 'block';
+                setTimeout(function() {
+                    document.getElementById('chartFill').style.width = percentage + '%';
+                }, 100);
+            }
+
+            document.getElementById('btnPrint').style.display = 'flex';
+            document.getElementById('btnPDF').style.display = 'flex';
+        }
+
+        async function loadHistory() {
+            try {
+                const response = await fetch('/api/sessions/' + TEST_ID);
+                const sessions = await response.json();
+                const tbody = document.getElementById('historyBody');
+                if (sessions.length === 0) return;
+
+                var html = '';
+                sessions.forEach(function(s) {
+                    var status = (s.results && s.results.status) || 'غير محدد';
+                    var dryDensity = (s.results && s.results.dry_density) || '--';
+                    var statusClass = status === 'ناجح' ? 'result-pass' : (status === 'فاشل' ? 'result-fail' : (status === 'يتطلب مراجعة' ? 'result-fail' : ''));
+                    html += '<tr>' +
+                        '<td>' + s.created_at + '</td>' +
+                        '<td class="' + statusClass + '">' + status + '</td>' +
+                        '<td>' + dryDensity + ' كغ/م³</td>' +
+                        '<td><button class="btn-sm" onclick="viewReport(' + s.id + ')">📄 تقرير</button></td>' +
+                        '</tr>';
+                });
+                tbody.innerHTML = html;
+            } catch (e) {
+                console.log('Could not load history');
+            }
+        }
+
+        function viewReport(sessionId) {
+            window.open('/api/report/' + sessionId, '_blank');
+        }
+
+        function printReport() {
+            if (currentSessionId) {
+                window.open('/api/report/' + currentSessionId, '_blank');
+            }
+        }
+
+        function downloadPDF() {
+            if (currentSessionId) {
+                var link = document.createElement('a');
+                link.href = '/api/report/' + currentSessionId;
+                link.download = 'report_' + currentSessionId + '.pdf';
+                link.click();
+            }
+        }
+
+        initInputs();
+        refreshPorts();
+        loadHistory();
+    </script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartLAP - {{ domain.name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-right">
+            <div class="header-logo">SL</div>
+            <span class="header-title">SmartLAP</span>
+            <span class="header-badge">{{ domain.name }}</span>
+        </div>
+        <div class="header-left">
+            <a href="{{ url_for('login') }}" class="btn-back">🏠 تغيير القسم</a>
+        </div>
+    </header>
+
+    <main class="dashboard-content fade-in">
+        <div class="domain-header">
+            <h2>{{ domain.name }}</h2>
+            <p>{{ domain.description }} — {{ tests | length }} اختبار متاح</p>
+        </div>
+
+        <div class="tests-grid">
+            {% for test in tests %}
+            <a href="{{ url_for('test_page', test_id=test.id) }}" class="test-card slide-up" style="animation-delay: {{ loop.index0 * 0.1 }}s">
+                <div class="test-card-icon">
+                    {% if 'دمك' in test.name %}⚡{% elif 'انضباط' in test.name %}📐{% elif 'انساب' in test.name %}🌡️{% else %}🔬{% endif %}
+                </div>
+                <h3>{{ test.name }}</h3>
+                <p>اختبار هندسي تفاعلي مع ربط مباشر بالأجهزة وقراءة البيانات الفورية</p>
+                <div class="card-footer">
+                    <span class="card-tag">اختبار رقم {{ test.id }}</span>
+                    <div class="card-arrow">←</div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+
+        <div style="margin-top: 32px; padding: 24px; background: white; border-radius: 16px; border: 1px solid var(--border);">
+            <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px;">إضافة قسم جديد</h3>
+            <div style="display: flex; gap: 12px;">
+                <input type="text" id="newDomainName" placeholder="اسم القسم الجديد" style="flex: 1; padding: 10px 16px; border: 1px solid var(--border); border-radius: 10px; font-family: 'Cairo', sans-serif; font-size: 14px;">
+                <input type="text" id="newDomainDesc" placeholder="الوصف (اختياري)" style="flex: 1; padding: 10px 16px; border: 1px solid var(--border); border-radius: 10px; font-family: 'Cairo', sans-serif; font-size: 14px;">
+                <button onclick="addNewDomain()" class="btn-primary" style="width: auto; padding: 10px 24px;">إضافة</button>
+            </div>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">بمجرد إضافة القسم، يمكنك إضافة اختبارات جديدة من قاعدة البيانات مباشرة</p>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-top">
+            <div class="footer-brand">
+                <h3>Fimto Soft</h3>
+                <p class="tagline">Integrated Tech Solutions</p>
+                <p class="description">نقدم حلولًا برمجية شاملة تشمل أنظمة ERP تفاعلية متقدمة، صيانة وتطوير محطات الخرسانة الجاهزة، تصميم وتطوير المواقع الإلكترونية، التسويق الرقمي المتميز، إنشاء وتطوير أنظمة الأمن والمراقبة، تأسيس وتطوير شبكات البنية التحتية، إنشاء وتطوير تطبيقات الذكاء الاصطناعي، وتأسيس وتطوير أنظمة المنازل الذكية.</p>
+            </div>
+            <div class="footer-section">
+                <h4>روابط سريعة</h4>
+                <ul>
+                    <li><a href="#">الرئيسية</a></li>
+                    <li><a href="#">الخدمات</a></li>
+                    <li><a href="#">المدونة</a></li>
+                    <li><a href="#">تواصل معنا</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>تواصل معنا</h4>
+                <ul>
+                    <li><a href="mailto:info@fimtosoft.com">✉ info@fimtosoft.com</a></li>
+                    <li><a href="tel:01001006627">📱 مصر: 01001006627</a></li>
+                    <li><a href="tel:0500439617">📱 السعودية: 0500439617</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Fimto Soft - All Rights Reserved</p>
+            <div class="footer-locations">
+                <span>🇪🇬 القاهرة، مصر</span>
+                <span>🇸🇦 الرياض، السعودية</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        window.addNewDomain = async function() {
+            const name = document.getElementById('newDomainName').value.trim();
+            const desc = document.getElementById('newDomainDesc').value.trim();
+            if (!name) { alert('الرجاء إدخال اسم القسم'); return; }
+            
+            try {
+                const response = await fetch('/api/domain/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, description: desc })
+                });
+                const result = await response.json();
+                if (result.error) {
+                    alert(result.error);
+                    return;
+                }
+                if (result.id) {
+                    window.location.reload();
+                }
+            } catch(e) { alert('حدث خطأ: ' + e.message); }
+        };
+    </script>
+</body>
+</html>

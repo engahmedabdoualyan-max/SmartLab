@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://smartlab.fimtosoft.com/sitemap.xml

@@ -1346,8 +1346,10 @@ async function doGuestLogin() {
     hideAuthError();
     try { await auth.signInAnonymously(); } catch(e) {
         var msg;
-        if (e.code === 'auth/operation-not-allowed') {
-            msg = currentLang === 'ar' ? 'الدخول كزائر غير مفعّل. يرجى تفعيل Anonymous في Firebase Console' : 'Guest login not enabled. Enable Anonymous auth in Firebase Console';
+        if (e.code === 'auth/admin-restricted-operation' || e.code === 'auth/operation-not-allowed') {
+            msg = currentLang === 'ar'
+                ? '⚠️ الدخول كزائر غير مفعّل. يرجى تفعيل Anonymous في Firebase Console:\n\n1. افتح Firebase Console\n2. Authentication → Sign-in method\n3. فعّل "Anonymous"\n\nأو استخدم البريد الإلكتروني للدخول'
+                : '⚠️ Guest login is not enabled. Enable it in Firebase Console:\n\n1. Open Firebase Console\n2. Authentication → Sign-in method\n3. Enable "Anonymous"\n\nOr use email sign-in instead';
         } else { msg = e.message; }
         showAuthError(msg);
     }

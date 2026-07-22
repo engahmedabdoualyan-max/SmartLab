@@ -124,6 +124,37 @@
         .fab-modal-body .contact-card .cc-info p{font-size:12px;color:var(--text-muted);}
         .fab-modal-body .contact-card a{color:var(--accent);text-decoration:none;font-weight:600;}
         @media(max-width:600px){.fab-container{bottom:16px;right:16px;}body[data-dir="rtl"] .fab-container{left:16px;}.fab-btn{width:48px;height:48px;font-size:20px;border-radius:14px;}.fab-main{width:54px;height:54px;border-radius:16px;}.fab-item-label{font-size:11px;padding:6px 12px;}.fab-modal{max-height:90vh;border-radius:16px;}}
+
+        /* ===== STATISTICS DASHBOARD ===== */
+        .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px;}
+        .stat-card{background:white;border:1px solid var(--border);border-radius:var(--radius);padding:20px;position:relative;overflow:hidden;transition:all 0.3s;}
+        .stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);}
+        .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+        .stat-card.blue::before{background:linear-gradient(90deg,var(--accent),#60a5fa);}
+        .stat-card.green::before{background:linear-gradient(90deg,var(--success),#34d399);}
+        .stat-card.purple::before{background:linear-gradient(90deg,#8b5cf6,#a78bfa);}
+        .stat-card.orange::before{background:linear-gradient(90deg,var(--warning),#fbbf24);}
+        .stat-card .stat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:10px;}
+        .stat-card.blue .stat-icon{background:rgba(59,130,246,0.1);}
+        .stat-card.green .stat-icon{background:rgba(16,185,129,0.1);}
+        .stat-card.purple .stat-icon{background:rgba(139,92,246,0.1);}
+        .stat-card.orange .stat-icon{background:rgba(245,158,11,0.1);}
+        .stat-card .stat-value{font-size:28px;font-weight:900;color:var(--text);line-height:1.2;}
+        .stat-card .stat-label{font-size:12px;color:var(--text-muted);margin-top:4px;}
+        .stat-card .stat-trend{font-size:10px;margin-top:6px;font-weight:600;}
+        .stat-card .stat-trend.up{color:var(--success);}
+        .stat-card .stat-trend.down{color:var(--danger);}
+        .stat-card .stat-trend.neutral{color:var(--text-muted);}
+        .stats-table{width:100%;border-collapse:collapse;}
+        .stats-table th{padding:10px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);background:var(--surface-alt);border-bottom:2px solid var(--border);text-align:left;}
+        .stats-table td{padding:10px 14px;font-size:12px;border-bottom:1px solid var(--border);color:var(--text);}
+        .stats-table tr:last-child td{border-bottom:none;}
+        .stats-table .domain-bar{height:6px;border-radius:3px;background:var(--border);overflow:hidden;min-width:80px;}
+        .stats-table .domain-bar-fill{height:100%;border-radius:3px;transition:width 0.5s ease;}
+        .stats-empty{text-align:center;padding:32px 16px;color:var(--text-muted);font-size:13px;}
+        .stats-empty-icon{font-size:32px;margin-bottom:8px;opacity:0.5;}
+        @media(max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr);}}
+        @media(max-width:500px){.stats-grid{grid-template-columns:1fr;}}
     </style>
 </head>
 <body>
@@ -251,6 +282,56 @@
             <h3 style="font-size:18px;font-weight:700;margin-bottom:16px;" data-i18n="ai_team">AI Engineering Team</h3>
             <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px;" data-i18n="ai_team_desc">Your intelligent assistants for hardware, lab testing, programming, project management, and research.</p>
             <div class="ai-team-grid" id="ai-team-grid"></div>
+        </div>
+        <div style="margin-top:40px;">
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header" style="background:linear-gradient(135deg,rgba(139,92,246,0.05),rgba(139,92,246,0.02));">
+                    <div class="panel-header-icon purple" aria-hidden="true">📊</div>
+                    <h3>Lab Statistics Dashboard</h3>
+                </div>
+                <div class="panel-body" id="stats-panel-body">
+                    <div class="stats-grid">
+                        <div class="stat-card blue">
+                            <div class="stat-icon">🧪</div>
+                            <div class="stat-value" id="stat-total-tests">--</div>
+                            <div class="stat-label">Total Tests Conducted</div>
+                            <div class="stat-trend neutral" id="stat-total-trend"></div>
+                        </div>
+                        <div class="stat-card green">
+                            <div class="stat-icon">✅</div>
+                            <div class="stat-value" id="stat-pass-rate">--%</div>
+                            <div class="stat-label">Pass Rate</div>
+                            <div class="stat-trend neutral" id="stat-pass-trend"></div>
+                        </div>
+                        <div class="stat-card purple">
+                            <div class="stat-icon">📁</div>
+                            <div class="stat-value" id="stat-active-domains">--</div>
+                            <div class="stat-label">Active Domains</div>
+                            <div class="stat-trend neutral" id="stat-domain-trend"></div>
+                        </div>
+                        <div class="stat-card orange">
+                            <div class="stat-icon">🕐</div>
+                            <div class="stat-value" id="stat-recent-sessions">--</div>
+                            <div class="stat-label">Recent Sessions (7d)</div>
+                            <div class="stat-trend neutral" id="stat-recent-trend"></div>
+                        </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                        <div>
+                            <h4 style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px;">🧪 Tests Per Domain</h4>
+                            <div id="stats-domain-breakdown">
+                                <div class="stats-empty"><div class="stats-empty-icon">📊</div>Loading domain breakdown...</div>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px;">🕐 Recent Activity</h4>
+                            <div id="stats-recent-activity" style="max-height:220px;overflow-y:auto;">
+                                <div class="stats-empty"><div class="stats-empty-icon">🕐</div>Loading recent sessions...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         <div style="margin-top:40px;">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
@@ -927,7 +1008,7 @@
             </div>
             <div class="panel" id="se-results-panel" style="display:none;margin-bottom:20px;">
                 <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">📊</div><h3 data-i18n="results">Results</h3></div>
-                <div class="panel-body"><div id="se-results-body"></div></div>
+                <div class="panel-body"><div id="se-results-body"></div><div style="margin-top:16px;display:flex;gap:12px;"><button onclick="generateSEPDF()" class="btn-primary">📄 Download PDF</button></div></div>
             </div>
         </div>
     </div>
@@ -993,7 +1074,7 @@
             </div>
             <div class="panel" id="slump-results-panel" style="display:none;margin-bottom:20px;">
                 <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">📊</div><h3 data-i18n="results">Results</h3></div>
-                <div class="panel-body"><div id="slump-results-body"></div></div>
+                <div class="panel-body"><div id="slump-results-body"></div><div style="margin-top:16px;display:flex;gap:12px;"><button onclick="generateSlumpPDF()" class="btn-primary">📄 Download PDF</button></div></div>
             </div>
         </div>
     </div>
@@ -1071,7 +1152,7 @@
             </div>
             <div class="panel" id="mat-results-panel" style="display:none;margin-bottom:20px;">
                 <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">📊</div><h3 data-i18n="results">Results</h3></div>
-                <div class="panel-body"><div id="mat-results-body"></div></div>
+                <div class="panel-body"><div id="mat-results-body"></div><div style="margin-top:16px;display:flex;gap:12px;"><button onclick="generateMatPDF()" class="btn-primary">📄 Download PDF</button></div></div>
             </div>
         </div>
     </div>
@@ -1138,7 +1219,7 @@
             </div>
             <div class="panel" id="mar-results-panel" style="display:none;margin-bottom:20px;">
                 <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">📊</div><h3 data-i18n="results">Results</h3></div>
-                <div class="panel-body"><div id="mar-results-body"></div></div>
+                <div class="panel-body"><div id="mar-results-body"></div><div style="margin-top:16px;display:flex;gap:12px;"><button onclick="generateMarPDF()" class="btn-primary">📄 Download PDF</button></div></div>
             </div>
         </div>
     </div>
@@ -1199,7 +1280,7 @@
             </div>
             <div class="panel" id="bit-results-panel" style="display:none;margin-bottom:20px;">
                 <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">📊</div><h3 data-i18n="results">Results</h3></div>
-                <div class="panel-body"><div id="bit-results-body"></div></div>
+                <div class="panel-body"><div id="bit-results-body"></div><div style="margin-top:16px;display:flex;gap:12px;"><button onclick="generateBitPDF()" class="btn-primary">📄 Download PDF</button></div></div>
             </div>
         </div>
     </div>
@@ -1262,7 +1343,7 @@
             </div>
             <div class="panel" id="pen-results-panel" style="display:none;margin-bottom:20px;">
                 <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">📊</div><h3 data-i18n="results">Results</h3></div>
-                <div class="panel-body"><div id="pen-results-body"></div></div>
+                <div class="panel-body"><div id="pen-results-body"></div><div style="margin-top:16px;display:flex;gap:12px;"><button onclick="generatePenPDF()" class="btn-primary">📄 Download PDF</button></div></div>
             </div>
         </div>
     </div>
@@ -1340,7 +1421,7 @@
             </div>
             <div class="panel" id="atterberg-results-panel" style="display:none;margin-bottom:20px;">
                 <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">📊</div><h3>Results</h3></div>
-                <div class="panel-body"><div id="atterberg-results-body"></div></div>
+                <div class="panel-body"><div id="atterberg-results-body"></div><div style="margin-top:16px;display:flex;gap:12px;"><button onclick="generateAtterbergPDF()" class="btn-primary">📄 Download PDF</button></div></div>
             </div>
         </div>
     </div>
@@ -1419,7 +1500,7 @@
             </div>
             <div class="panel" id="sieve-results-panel" style="display:none;margin-bottom:20px;">
                 <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">📊</div><h3>Results</h3></div>
-                <div class="panel-body"><div id="sieve-results-body"></div></div>
+                <div class="panel-body"><div id="sieve-results-body"></div><div style="margin-top:16px;display:flex;gap:12px;"><button onclick="generateSievePDF()" class="btn-primary">📄 Download PDF</button></div></div>
             </div>
         </div>
     </div>
@@ -1578,7 +1659,7 @@
             </div>
             <div class="panel" id="duct-results-panel" style="display:none;margin-bottom:20px;">
                 <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">📊</div><h3>Results</h3></div>
-                <div class="panel-body"><div id="duct-results-body"></div></div>
+                <div class="panel-body"><div id="duct-results-body"></div><div style="margin-top:16px;display:flex;gap:12px;"><button onclick="generateDuctPDF()" class="btn-primary">📄 Download PDF</button></div></div>
             </div>
         </div>
     </div>
@@ -1653,7 +1734,7 @@
             </div>
             <div class="panel" id="air-results-panel" style="display:none;margin-bottom:20px;">
                 <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">📊</div><h3>Results</h3></div>
-                <div class="panel-body"><div id="air-results-body"></div></div>
+                <div class="panel-body"><div id="air-results-body"></div><div style="margin-top:16px;display:flex;gap:12px;"><button onclick="generateAirPDF()" class="btn-primary">📄 Download PDF</button></div></div>
             </div>
         </div>
     </div>
@@ -1991,6 +2072,103 @@ function loadAITeam() {
     });
 }
 
+// ================================================================
+// STATISTICS DASHBOARD
+// ================================================================
+function loadStats() {
+    var totalEl = document.getElementById('stat-total-tests');
+    var passEl = document.getElementById('stat-pass-rate');
+    var domainsEl = document.getElementById('stat-active-domains');
+    var recentEl = document.getElementById('stat-recent-sessions');
+    var breakdownEl = document.getElementById('stats-domain-breakdown');
+    var activityEl = document.getElementById('stats-recent-activity');
+
+    db.collection('sessions').get().then(function(snap) {
+        var total = 0, passes = 0, domainCounts = {}, recentSessions = [];
+        var domainNames = { compaction:'Compaction', cbr:'CBR', slump:'Slump', maturity:'Maturity', marshall:'Marshall', bitumen:'Bitumen', penetration:'Penetration', straightedge:'Straightedge', sieve:'Sieve Analysis', compressive:'Compressive', ductility:'Ductility', air:'Air Content', atterberg:'Atterberg Limits' };
+        var colorPalette = ['#3b82f6','#10b981','#f59e0b','#8b5cf6','#ef4444','#06b6d4','#ec4899','#14b8a6','#f97316'];
+
+        snap.forEach(function(doc) {
+            var d = doc.data();
+            total++;
+            var result = (d.result || d.status || '').toUpperCase();
+            if (result === 'PASS') passes++;
+            var dom = d.domain || d.testType || d.test || 'Unknown';
+            domainCounts[dom] = (domainCounts[dom] || 0) + 1;
+            var ts = d.createdAt || d.timestamp || d.date;
+            if (ts) {
+                var dateObj = ts.toDate ? ts.toDate() : new Date(ts);
+                recentSessions.push({ domain: dom, date: dateObj, result: result || 'N/A', id: doc.id });
+            }
+        });
+
+        totalEl.textContent = total;
+        passEl.textContent = total > 0 ? Math.round((passes / total) * 100) + '%' : '0%';
+        var domainKeys = Object.keys(domainCounts);
+        domainsEl.textContent = domainKeys.length;
+
+        var now = new Date();
+        var weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        var recentCount = recentSessions.filter(function(s) { return s.date >= weekAgo; }).length;
+        recentEl.textContent = recentCount;
+
+        var passTrend = document.getElementById('stat-pass-trend');
+        if (total > 0) {
+            var pct = Math.round((passes / total) * 100);
+            if (pct >= 80) { passTrend.textContent = '↑ Good performance'; passTrend.className = 'stat-trend up'; }
+            else if (pct >= 50) { passTrend.textContent = '→ Average'; passTrend.className = 'stat-trend neutral'; }
+            else { passTrend.textContent = '↓ Below target'; passTrend.className = 'stat-trend down'; }
+        }
+        var totalTrend = document.getElementById('stat-total-trend');
+        totalTrend.textContent = 'Across ' + domainKeys.length + ' domains';
+        totalTrend.className = 'stat-trend neutral';
+        var recentTrend = document.getElementById('stat-recent-trend');
+        recentTrend.textContent = 'Last 7 days';
+        recentTrend.className = 'stat-trend neutral';
+
+        if (domainKeys.length === 0) {
+            breakdownEl.innerHTML = '<div class="stats-empty"><div class="stats-empty-icon">📊</div>No test data yet</div>';
+        } else {
+            var maxCount = Math.max.apply(null, Object.values(domainCounts));
+            var html = '<table class="stats-table"><thead><tr><th>Domain</th><th>Tests</th><th>Distribution</th></tr></thead><tbody>';
+            domainKeys.sort(function(a,b){ return domainCounts[b]-domainCounts[a]; });
+            domainKeys.forEach(function(dom, i) {
+                var pct = total > 0 ? Math.round((domainCounts[dom] / total) * 100) : 0;
+                var barWidth = maxCount > 0 ? Math.round((domainCounts[dom] / maxCount) * 100) : 0;
+                var color = colorPalette[i % colorPalette.length];
+                var label = domainNames[dom] || dom;
+                html += '<tr><td><strong>' + label + '</strong></td><td>' + domainCounts[dom] + ' <span style="color:var(--text-muted);font-size:10px;">(' + pct + '%)</span></td>';
+                html += '<td><div class="domain-bar"><div class="domain-bar-fill" style="width:' + barWidth + '%;background:' + color + ';"></div></div></td></tr>';
+            });
+            html += '</tbody></table>';
+            breakdownEl.innerHTML = html;
+        }
+
+        recentSessions.sort(function(a,b){ return b.date - a.date; });
+        var last5 = recentSessions.slice(0, 5);
+        if (last5.length === 0) {
+            activityEl.innerHTML = '<div class="stats-empty"><div class="stats-empty-icon">🕐</div>No recent activity</div>';
+        } else {
+            var ahtml = '<table class="stats-table"><thead><tr><th>Date</th><th>Domain</th><th>Result</th></tr></thead><tbody>';
+            last5.forEach(function(s) {
+                var label = domainNames[s.domain] || s.domain;
+                var dateStr = s.date.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+                var resultColor = s.result === 'PASS' ? 'var(--success)' : s.result === 'FAIL' ? 'var(--danger)' : 'var(--text-muted)';
+                ahtml += '<tr><td>' + dateStr + '</td><td>' + label + '</td><td style="color:' + resultColor + ';font-weight:700;">' + s.result + '</td></tr>';
+            });
+            ahtml += '</tbody></table>';
+            activityEl.innerHTML = ahtml;
+        }
+    }).catch(function(e) {
+        totalEl.textContent = '0';
+        passEl.textContent = '0%';
+        domainsEl.textContent = '0';
+        recentEl.textContent = '0';
+        breakdownEl.innerHTML = '<div class="stats-empty"><div class="stats-empty-icon">📊</div>Unable to load data</div>';
+        activityEl.innerHTML = '<div class="stats-empty"><div class="stats-empty-icon">🕐</div>Unable to load data</div>';
+    });
+}
+
 function openChat(agent) {
     currentAgent = agent;
     var title = agent['title_' + currentLang] || agent.title;
@@ -2081,6 +2259,7 @@ async function loadDomains() {
             c.appendChild(card);
         });
         loadAITeam();
+        loadStats();
     } catch(e) { c.innerHTML='<p style="color:#ef4444;">Error: '+e.message+'</p>'; }
 }
 
@@ -3614,6 +3793,407 @@ function generateCompPDF(){
     doc.text('Status: '+(compState.peakStress>=25?'PASS':'FAIL'),20,80);
     doc.setFontSize(8);doc.text('SmartLAP v1.0.0 — Fimto Soft',20,280);
     doc.save('Compressive_Strength_Report.pdf');}catch(e){alert('PDF error: '+e.message);}
+}
+
+// ================================================================
+// PDF — Slump Test
+// ================================================================
+function generateSlumpPDF(){
+    try{
+        var jsPDF=window.jspdf.jsPDF;
+        var doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
+        doc.setFontSize(20);doc.setFont(undefined,'bold');
+        doc.text('SmartLAP - Slump Test Report',105,18,{align:'center'});
+        doc.setFontSize(11);doc.setFont(undefined,'normal');
+        doc.text('Fimto Soft - Integrated Tech Solutions',105,26,{align:'center'});
+        doc.line(15,30,195,30);
+        var y=38;
+        doc.setFont(undefined,'bold');doc.text('Test Information',195,y,{align:'right'});y+=7;
+        doc.setFont(undefined,'normal');
+        doc.text('Date: '+new Date().toLocaleString(),195,y,{align:'right'});y+=5;
+        doc.text('Domain: '+(currentDomain?currentDomain.name:''),195,y,{align:'right'});y+=5;
+        doc.text('Standard: '+(document.getElementById('agency-select-slump').value||'ASTM')+' C143',195,y,{align:'right'});y+=8;
+        doc.line(15,y,195,y);y+=6;
+        doc.setFont(undefined,'bold');doc.text('Parameters',195,y,{align:'right'});y+=7;
+        doc.setFont(undefined,'normal');
+        doc.text('Cone Height: '+document.getElementById('slump_inp_height').value+' mm',195,y,{align:'right'});y+=5;
+        doc.text('Target Slump: '+document.getElementById('slump_inp_target').value+' mm',195,y,{align:'right'});y+=5;
+        doc.text('Tolerance: +/- '+document.getElementById('slump_inp_tolerance').value+' mm',195,y,{align:'right'});y+=8;
+        doc.line(15,y,195,y);y+=6;
+        doc.setFont(undefined,'bold');doc.text('Results',195,y,{align:'right'});y+=7;
+        doc.setFont(undefined,'normal');
+        doc.text('Slump Value: '+document.getElementById('slump-val-slump').textContent+' mm',195,y,{align:'right'});y+=5;
+        doc.text('Deviation: '+document.getElementById('slump-val-dev').textContent+' mm',195,y,{align:'right'});y+=5;
+        doc.text('Status: '+document.getElementById('slump-val-status').textContent,195,y,{align:'right'});y+=10;
+        doc.setFontSize(7);doc.setTextColor(150);
+        doc.text('SmartLAP v1.0.0 — Fimto Soft',105,285,{align:'center'});
+        doc.save('Slump_Test_Report.pdf');
+    }catch(e){alert('PDF error: '+e.message);}
+}
+
+// ================================================================
+// PDF — Maturity Test
+// ================================================================
+function generateMatPDF(){
+    if(matReadings.length===0)return;
+    try{
+        var jsPDF=window.jspdf.jsPDF;
+        var doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
+        doc.setFontSize(20);doc.setFont(undefined,'bold');
+        doc.text('SmartLAP - Maturity Test Report',105,18,{align:'center'});
+        doc.setFontSize(11);doc.setFont(undefined,'normal');
+        doc.text('Fimto Soft - Integrated Tech Solutions',105,26,{align:'center'});
+        doc.line(15,30,195,30);
+        var y=38;
+        doc.setFont(undefined,'bold');doc.text('Test Information',195,y,{align:'right'});y+=7;
+        doc.setFont(undefined,'normal');
+        doc.text('Date: '+new Date().toLocaleString(),195,y,{align:'right'});y+=5;
+        doc.text('Domain: '+(currentDomain?currentDomain.name:''),195,y,{align:'right'});y+=5;
+        doc.text('Mix ID: '+document.getElementById('mat_inp_mixid').value,195,y,{align:'right'});y+=5;
+        doc.text('Cement: '+document.getElementById('mat_inp_cement').value+' | W/C: '+document.getElementById('mat_inp_wcr').value,195,y,{align:'right'});y+=8;
+        doc.line(15,y,195,y);y+=6;
+        doc.setFont(undefined,'bold');doc.text('Readings Log',195,y,{align:'right'});y+=6;
+        var hdrs=['#','Time(h)','Temp(C)','Maturity','Strength(MPa)'];var cx=[195,170,150,130,110];
+        doc.setFontSize(8);for(var h=0;h<hdrs.length;h++)doc.text(hdrs[h],cx[h],y,{align:'right'});
+        y+=1;doc.line(15,y,195,y);y+=4;
+        doc.setFont(undefined,'normal');
+        for(var i=0;i<matReadings.length;i++){
+            var r=matReadings[i];
+            doc.text(String(r.index),cx[0],y,{align:'right'});
+            doc.text(String(r.hours),cx[1],y,{align:'right'});
+            doc.text(String(r.temp),cx[2],y,{align:'right'});
+            doc.text(String(r.maturity),cx[3],y,{align:'right'});
+            doc.text(String(r.strength),cx[4],y,{align:'right'});
+            y+=4;if(y>270){doc.addPage();y=20;}
+        }
+        y+=4;doc.line(15,y,195,y);y+=6;
+        doc.setFontSize(11);doc.setFont(undefined,'bold');doc.text('Final Results',195,y,{align:'right'});y+=6;
+        doc.setFont(undefined,'normal');
+        var last=matReadings[matReadings.length-1];
+        doc.text('Final Strength: '+last.strength+' MPa',195,y,{align:'right'});y+=5;
+        doc.text('Max Maturity: '+last.maturity+' C*h',195,y,{align:'right'});y+=5;
+        doc.text('Target: '+document.getElementById('mat_inp_target').value+' MPa',195,y,{align:'right'});y+=5;
+        doc.text('Elapsed: '+last.hours+' hours',195,y,{align:'right'});
+        doc.setFontSize(7);doc.setTextColor(150);
+        doc.text('SmartLAP v1.0.0 — Fimto Soft',105,285,{align:'center'});
+        doc.save('Maturity_Test_Report.pdf');
+    }catch(e){alert('PDF error: '+e.message);}
+}
+
+// ================================================================
+// PDF — Marshall Test
+// ================================================================
+function generateMarPDF(){
+    if(marData.length===0)return;
+    try{
+        var jsPDF=window.jspdf.jsPDF;
+        var doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
+        doc.setFontSize(20);doc.setFont(undefined,'bold');
+        doc.text('SmartLAP - Marshall Test Report',105,18,{align:'center'});
+        doc.setFontSize(11);doc.setFont(undefined,'normal');
+        doc.text('Fimto Soft - Integrated Tech Solutions',105,26,{align:'center'});
+        doc.line(15,30,195,30);
+        var y=38;
+        doc.setFont(undefined,'bold');doc.text('Test Information',195,y,{align:'right'});y+=7;
+        doc.setFont(undefined,'normal');
+        doc.text('Date: '+new Date().toLocaleString(),195,y,{align:'right'});y+=5;
+        doc.text('Domain: '+(currentDomain?currentDomain.name:''),195,y,{align:'right'});y+=5;
+        doc.text('Specimen #'+document.getElementById('mar_inp_specimen').value,195,y,{align:'right'});y+=5;
+        doc.text('Dia: '+document.getElementById('mar_inp_diameter').value+' mm | Ht: '+document.getElementById('mar_inp_height').value+' mm',195,y,{align:'right'});y+=5;
+        doc.text('Rate: '+document.getElementById('mar_inp_rate').value+' mm/min',195,y,{align:'right'});y+=8;
+        doc.line(15,y,195,y);y+=6;
+        doc.setFont(undefined,'bold');doc.text('Results',195,y,{align:'right'});y+=6;
+        doc.setFont(undefined,'normal');
+        var maxLoad=Math.max.apply(null,marData.map(function(r){return r.load;}));
+        var flowAtMax=marData[marData.length-1].flow;
+        var stab=Math.round(maxLoad*0.92);
+        doc.text('Stability: '+stab+' N',195,y,{align:'right'});y+=5;
+        doc.text('Flow: '+flowAtMax+' x 0.25mm',195,y,{align:'right'});y+=5;
+        doc.text('Max Load: '+maxLoad.toFixed(0)+' N',195,y,{align:'right'});
+        doc.setFontSize(7);doc.setTextColor(150);
+        doc.text('SmartLAP v1.0.0 — Fimto Soft',105,285,{align:'center'});
+        doc.save('Marshall_Test_Report.pdf');
+    }catch(e){alert('PDF error: '+e.message);}
+}
+
+// ================================================================
+// PDF — Bitumen Test
+// ================================================================
+function generateBitPDF(){
+    try{
+        var jsPDF=window.jspdf.jsPDF;
+        var doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
+        doc.setFontSize(20);doc.setFont(undefined,'bold');
+        doc.text('SmartLAP - Bitumen Test Report',105,18,{align:'center'});
+        doc.setFontSize(11);doc.setFont(undefined,'normal');
+        doc.text('Fimto Soft - Integrated Tech Solutions',105,26,{align:'center'});
+        doc.line(15,30,195,30);
+        var y=38;
+        doc.setFont(undefined,'bold');doc.text('Test Information',195,y,{align:'right'});y+=7;
+        doc.setFont(undefined,'normal');
+        doc.text('Date: '+new Date().toLocaleString(),195,y,{align:'right'});y+=5;
+        doc.text('Domain: '+(currentDomain?currentDomain.name:''),195,y,{align:'right'});y+=5;
+        doc.text('Sample ID: '+document.getElementById('bit_inp_sampleid').value,195,y,{align:'right'});y+=5;
+        doc.text('Grade: '+document.getElementById('bit_inp_grade').value,195,y,{align:'right'});y+=5;
+        doc.text('Solvent Ratio: '+document.getElementById('bit_inp_solvent').value+'%',195,y,{align:'right'});y+=8;
+        doc.line(15,y,195,y);y+=6;
+        doc.setFont(undefined,'bold');doc.text('Results',195,y,{align:'right'});y+=6;
+        doc.setFont(undefined,'normal');
+        doc.text('Light Intensity: '+document.getElementById('bit-val-light').textContent+' lux',195,y,{align:'right'});y+=5;
+        doc.text('Transmission: '+document.getElementById('bit-val-trans').textContent+'%',195,y,{align:'right'});y+=5;
+        doc.text('Purity Index: '+document.getElementById('bit-val-purity').textContent+'/100',195,y,{align:'right'});y+=5;
+        doc.text('Status: '+document.getElementById('bit-val-status').textContent,195,y,{align:'right'});
+        doc.setFontSize(7);doc.setTextColor(150);
+        doc.text('SmartLAP v1.0.0 — Fimto Soft',105,285,{align:'center'});
+        doc.save('Bitumen_Test_Report.pdf');
+    }catch(e){alert('PDF error: '+e.message);}
+}
+
+// ================================================================
+// PDF — Penetration Test
+// ================================================================
+function generatePenPDF(){
+    try{
+        var jsPDF=window.jspdf.jsPDF;
+        var doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
+        doc.setFontSize(20);doc.setFont(undefined,'bold');
+        doc.text('SmartLAP - Penetration Test Report',105,18,{align:'center'});
+        doc.setFontSize(11);doc.setFont(undefined,'normal');
+        doc.text('Fimto Soft - Integrated Tech Solutions',105,26,{align:'center'});
+        doc.line(15,30,195,30);
+        var y=38;
+        doc.setFont(undefined,'bold');doc.text('Test Information',195,y,{align:'right'});y+=7;
+        doc.setFont(undefined,'normal');
+        doc.text('Date: '+new Date().toLocaleString(),195,y,{align:'right'});y+=5;
+        doc.text('Domain: '+(currentDomain?currentDomain.name:''),195,y,{align:'right'});y+=5;
+        doc.text('Sample ID: '+document.getElementById('pen_inp_sampleid').value,195,y,{align:'right'});y+=5;
+        doc.text('Grade: '+document.getElementById('pen_inp_grade').value,195,y,{align:'right'});y+=5;
+        doc.text('Temperature: '+document.getElementById('pen_inp_temp').value+' C',195,y,{align:'right'});y+=5;
+        doc.text('Needle Load: '+document.getElementById('pen_inp_load').value+' g',195,y,{align:'right'});y+=8;
+        doc.line(15,y,195,y);y+=6;
+        doc.setFont(undefined,'bold');doc.text('Results',195,y,{align:'right'});y+=6;
+        doc.setFont(undefined,'normal');
+        doc.text('Penetration: '+document.getElementById('pen-val-pen').textContent+' x 0.1mm',195,y,{align:'right'});y+=5;
+        doc.text('Status: '+document.getElementById('pen-val-status').textContent,195,y,{align:'right'});
+        doc.setFontSize(7);doc.setTextColor(150);
+        doc.text('SmartLAP v1.0.0 — Fimto Soft',105,285,{align:'center'});
+        doc.save('Penetration_Test_Report.pdf');
+    }catch(e){alert('PDF error: '+e.message);}
+}
+
+// ================================================================
+// PDF — Atterberg Limits
+// ================================================================
+function generateAtterbergPDF(){
+    try{
+        var jsPDF=window.jspdf.jsPDF;
+        var doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
+        doc.setFontSize(20);doc.setFont(undefined,'bold');
+        doc.text('SmartLAP - Atterberg Limits Report',105,18,{align:'center'});
+        doc.setFontSize(11);doc.setFont(undefined,'normal');
+        doc.text('Fimto Soft - Integrated Tech Solutions',105,26,{align:'center'});
+        doc.line(15,30,195,30);
+        var y=38;
+        doc.setFont(undefined,'bold');doc.text('Test Information',195,y,{align:'right'});y+=7;
+        doc.setFont(undefined,'normal');
+        doc.text('Date: '+new Date().toLocaleString(),195,y,{align:'right'});y+=5;
+        doc.text('Domain: '+(currentDomain?currentDomain.name:''),195,y,{align:'right'});y+=5;
+        doc.text('Sample ID: '+document.getElementById('atterberg-sample-id').value,195,y,{align:'right'});y+=5;
+        doc.text('Soil Type: '+document.getElementById('atterberg-soil-type').value,195,y,{align:'right'});y+=8;
+        doc.line(15,y,195,y);y+=6;
+        doc.setFont(undefined,'bold');doc.text('Readings Log',195,y,{align:'right'});y+=6;
+        var hdrs=['#','Blows','Moisture%','Mode'];var cx=[195,170,150,130];
+        doc.setFontSize(8);for(var h=0;h<hdrs.length;h++)doc.text(hdrs[h],cx[h],y,{align:'right'});
+        y+=1;doc.line(15,y,195,y);y+=4;
+        doc.setFont(undefined,'normal');
+        for(var i=0;i<atterbergState.readings.length;i++){
+            var r=atterbergState.readings[i];
+            doc.text(String(i+1),cx[0],y,{align:'right'});
+            doc.text(String(r.blows),cx[1],y,{align:'right'});
+            doc.text(String(r.moisture.toFixed(1)),cx[2],y,{align:'right'});
+            doc.text(r.mode,cx[3],y,{align:'right'});
+            y+=4;if(y>270){doc.addPage();y=20;}
+        }
+        y+=4;doc.line(15,y,195,y);y+=6;
+        doc.setFontSize(11);doc.setFont(undefined,'bold');doc.text('Final Results',195,y,{align:'right'});y+=6;
+        doc.setFont(undefined,'normal');
+        doc.text('Liquid Limit (LL): '+atterbergState.ll.toFixed(1)+'%',195,y,{align:'right'});y+=5;
+        doc.text('Plastic Limit (PL): '+atterbergState.pl.toFixed(1)+'%',195,y,{align:'right'});y+=5;
+        doc.text('Plasticity Index (PI): '+atterbergState.pi.toFixed(1),195,y,{align:'right'});
+        doc.setFontSize(7);doc.setTextColor(150);
+        doc.text('SmartLAP v1.0.0 — Fimto Soft',105,285,{align:'center'});
+        doc.save('Atterberg_Limits_Report.pdf');
+    }catch(e){alert('PDF error: '+e.message);}
+}
+
+// ================================================================
+// PDF — Sieve Analysis
+// ================================================================
+function generateSievePDF(){
+    try{
+        var jsPDF=window.jspdf.jsPDF;
+        var doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
+        doc.setFontSize(20);doc.setFont(undefined,'bold');
+        doc.text('SmartLAP - Sieve Analysis Report',105,18,{align:'center'});
+        doc.setFontSize(11);doc.setFont(undefined,'normal');
+        doc.text('Fimto Soft - Integrated Tech Solutions',105,26,{align:'center'});
+        doc.line(15,30,195,30);
+        var y=38;
+        doc.setFont(undefined,'bold');doc.text('Test Information',195,y,{align:'right'});y+=7;
+        doc.setFont(undefined,'normal');
+        doc.text('Date: '+new Date().toLocaleString(),195,y,{align:'right'});y+=5;
+        doc.text('Domain: '+(currentDomain?currentDomain.name:''),195,y,{align:'right'});y+=5;
+        doc.text('Sample ID: '+document.getElementById('sieve-sample-id').value,195,y,{align:'right'});y+=5;
+        doc.text('Total Mass: '+document.getElementById('sieve-total-mass').value+' g',195,y,{align:'right'});y+=5;
+        doc.text('Standard: '+document.getElementById('sieve-standard').value,195,y,{align:'right'});y+=8;
+        doc.line(15,y,195,y);y+=6;
+        doc.setFont(undefined,'bold');doc.text('Sieve Data',195,y,{align:'right'});y+=6;
+        var hdrs=['Sieve(mm)','Mass(g)','%Retained','%Passing'];var cx=[195,170,150,130];
+        doc.setFontSize(8);for(var h=0;h<hdrs.length;h++)doc.text(hdrs[h],cx[h],y,{align:'right'});
+        y+=1;doc.line(15,y,195,y);y+=4;
+        doc.setFont(undefined,'normal');
+        var inputs=document.querySelectorAll('.sieve-mass');
+        var retCells=document.querySelectorAll('.sieve-pct-ret');
+        var passCells=document.querySelectorAll('.sieve-pct-pass');
+        var sizes=['75.0','37.5','19.0','9.5','4.75','2.36','1.18','0.600','0.300','0.150','0.075'];
+        for(var i=0;i<inputs.length&&i<sizes.length;i++){
+            doc.text(sizes[i],cx[0],y,{align:'right'});
+            doc.text(inputs[i].value,cx[1],y,{align:'right'});
+            doc.text(retCells[i]?retCells[i].textContent:'0',cx[2],y,{align:'right'});
+            doc.text(passCells[i]?passCells[i].textContent:'100',cx[3],y,{align:'right'});
+            y+=4;if(y>270){doc.addPage();y=20;}
+        }
+        y+=4;doc.line(15,y,195,y);y+=6;
+        doc.setFontSize(11);doc.setFont(undefined,'bold');doc.text('Classification',195,y,{align:'right'});y+=6;
+        doc.setFont(undefined,'normal');
+        var resultsBody=document.getElementById('sieve-results-body');
+        if(resultsBody){
+            var rows=resultsBody.querySelectorAll('.result-row');
+            for(var j=0;j<rows.length;j++){
+                var label=rows[j].querySelector('.result-label');
+                var value=rows[j].querySelector('.result-value');
+                if(label&&value){doc.text(label.textContent+': '+value.textContent,195,y,{align:'right'});y+=5;}
+            }
+        }
+        doc.setFontSize(7);doc.setTextColor(150);
+        doc.text('SmartLAP v1.0.0 — Fimto Soft',105,285,{align:'center'});
+        doc.save('Sieve_Analysis_Report.pdf');
+    }catch(e){alert('PDF error: '+e.message);}
+}
+
+// ================================================================
+// PDF — Ductility Test
+// ================================================================
+function generateDuctPDF(){
+    try{
+        var jsPDF=window.jspdf.jsPDF;
+        var doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
+        doc.setFontSize(20);doc.setFont(undefined,'bold');
+        doc.text('SmartLAP - Ductility Test Report',105,18,{align:'center'});
+        doc.setFontSize(11);doc.setFont(undefined,'normal');
+        doc.text('Fimto Soft - Integrated Tech Solutions',105,26,{align:'center'});
+        doc.line(15,30,195,30);
+        var y=38;
+        doc.setFont(undefined,'bold');doc.text('Test Information',195,y,{align:'right'});y+=7;
+        doc.setFont(undefined,'normal');
+        doc.text('Date: '+new Date().toLocaleString(),195,y,{align:'right'});y+=5;
+        doc.text('Domain: '+(currentDomain?currentDomain.name:''),195,y,{align:'right'});y+=5;
+        doc.text('Sample ID: '+document.getElementById('duct-sample-id').value,195,y,{align:'right'});y+=5;
+        doc.text('Grade: '+document.getElementById('duct-grade').value,195,y,{align:'right'});y+=5;
+        doc.text('Temperature: '+document.getElementById('duct-temp').value+' C',195,y,{align:'right'});y+=5;
+        doc.text('Standard: '+document.getElementById('duct-standard').value,195,y,{align:'right'});y+=8;
+        doc.line(15,y,195,y);y+=6;
+        doc.setFont(undefined,'bold');doc.text('Results',195,y,{align:'right'});y+=6;
+        doc.setFont(undefined,'normal');
+        var ext=ductState.breakPoint||ductState.maxExtension;
+        var pass=ext>=50;
+        doc.text('Ductility: '+ext.toFixed(1)+' cm',195,y,{align:'right'});y+=5;
+        doc.text('Status: '+(pass?'PASS':'FAIL'),195,y,{align:'right'});
+        doc.setFontSize(7);doc.setTextColor(150);
+        doc.text('SmartLAP v1.0.0 — Fimto Soft',105,285,{align:'center'});
+        doc.save('Ductility_Test_Report.pdf');
+    }catch(e){alert('PDF error: '+e.message);}
+}
+
+// ================================================================
+// PDF — Air Content Test
+// ================================================================
+function generateAirPDF(){
+    try{
+        var jsPDF=window.jspdf.jsPDF;
+        var doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
+        doc.setFontSize(20);doc.setFont(undefined,'bold');
+        doc.text('SmartLAP - Air Content Test Report',105,18,{align:'center'});
+        doc.setFontSize(11);doc.setFont(undefined,'normal');
+        doc.text('Fimto Soft - Integrated Tech Solutions',105,26,{align:'center'});
+        doc.line(15,30,195,30);
+        var y=38;
+        doc.setFont(undefined,'bold');doc.text('Test Information',195,y,{align:'right'});y+=7;
+        doc.setFont(undefined,'normal');
+        doc.text('Date: '+new Date().toLocaleString(),195,y,{align:'right'});y+=5;
+        doc.text('Domain: '+(currentDomain?currentDomain.name:''),195,y,{align:'right'});y+=5;
+        doc.text('Sample ID: '+document.getElementById('air-sample-id').value,195,y,{align:'right'});y+=5;
+        doc.text('Method: '+document.getElementById('air-method').value,195,y,{align:'right'});y+=5;
+        doc.text('Target: '+document.getElementById('air-target').value+'%',195,y,{align:'right'});y+=5;
+        doc.text('Concrete Temp: '+document.getElementById('air-conc-temp').value+' C',195,y,{align:'right'});y+=5;
+        doc.text('Standard: '+document.getElementById('air-standard').value,195,y,{align:'right'});y+=8;
+        doc.line(15,y,195,y);y+=6;
+        doc.setFont(undefined,'bold');doc.text('Results',195,y,{align:'right'});y+=6;
+        doc.setFont(undefined,'normal');
+        doc.text('Air Content: '+document.getElementById('air-val-air').textContent+'%',195,y,{align:'right'});y+=5;
+        doc.text('Pressure: '+document.getElementById('air-val-pressure').textContent+' psi',195,y,{align:'right'});y+=5;
+        doc.text('Unit Weight: '+document.getElementById('air-val-uw').textContent+' kg/m3',195,y,{align:'right'});y+=5;
+        doc.text('Status: '+document.getElementById('air-val-status').textContent,195,y,{align:'right'});
+        doc.setFontSize(7);doc.setTextColor(150);
+        doc.text('SmartLAP v1.0.0 — Fimto Soft',105,285,{align:'center'});
+        doc.save('Air_Content_Report.pdf');
+    }catch(e){alert('PDF error: '+e.message);}
+}
+
+// ================================================================
+// PDF — Straightedge Test
+// ================================================================
+function generateSEPDF(){
+    if(seReadings.length===0)return;
+    try{
+        var jsPDF=window.jspdf.jsPDF;
+        var doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
+        doc.setFontSize(20);doc.setFont(undefined,'bold');
+        doc.text('SmartLAP - Straightedge Test Report',105,18,{align:'center'});
+        doc.setFontSize(11);doc.setFont(undefined,'normal');
+        doc.text('Fimto Soft - Integrated Tech Solutions',105,26,{align:'center'});
+        doc.line(15,30,195,30);
+        var y=38;
+        doc.setFont(undefined,'bold');doc.text('Test Information',195,y,{align:'right'});y+=7;
+        doc.setFont(undefined,'normal');
+        doc.text('Date: '+new Date().toLocaleString(),195,y,{align:'right'});y+=5;
+        doc.text('Domain: '+(currentDomain?currentDomain.name:''),195,y,{align:'right'});y+=5;
+        doc.text('Length: '+document.getElementById('se_inp_length').value+' m',195,y,{align:'right'});y+=5;
+        doc.text('Tolerance: '+document.getElementById('se_inp_tolerance').value+' mm',195,y,{align:'right'});y+=5;
+        doc.text('Interval: '+document.getElementById('se_inp_interval').value+' m',195,y,{align:'right'});y+=8;
+        doc.line(15,y,195,y);y+=6;
+        doc.setFont(undefined,'bold');doc.text('Readings Log',195,y,{align:'right'});y+=6;
+        var hdrs=['#','Position(m)','Irreg(mm)','Inclination'];var cx=[195,170,150,130];
+        doc.setFontSize(8);for(var h=0;h<hdrs.length;h++)doc.text(hdrs[h],cx[h],y,{align:'right'});
+        y+=1;doc.line(15,y,195,y);y+=4;
+        doc.setFont(undefined,'normal');
+        for(var i=0;i<seReadings.length;i++){
+            var r=seReadings[i];
+            doc.text(String(r.index),cx[0],y,{align:'right'});
+            doc.text(String(r.position),cx[1],y,{align:'right'});
+            doc.text(String(r.irregularity),cx[2],y,{align:'right'});
+            doc.text(String(r.inclination),cx[3],y,{align:'right'});
+            y+=4;if(y>270){doc.addPage();y=20;}
+        }
+        y+=4;doc.line(15,y,195,y);y+=6;
+        doc.setFontSize(11);doc.setFont(undefined,'bold');doc.text('Final Results',195,y,{align:'right'});y+=6;
+        doc.setFont(undefined,'normal');
+        doc.text('Status: '+document.getElementById('se-val-status').textContent,195,y,{align:'right'});y+=5;
+        doc.text('Max Deviation: '+document.getElementById('se-val-maxdev').textContent+' mm',195,y,{align:'right'});
+        doc.setFontSize(7);doc.setTextColor(150);
+        doc.text('SmartLAP v1.0.0 — Fimto Soft',105,285,{align:'center'});
+        doc.save('Straightedge_Test_Report.pdf');
+    }catch(e){alert('PDF error: '+e.message);}
 }
 
 // ================================================================

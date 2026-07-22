@@ -18,6 +18,11 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e293b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <style>
         .auth-tabs{display:flex;gap:0;margin-bottom:20px;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.1);}
         .auth-tab{flex:1;padding:10px;border:none;background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.5);font-family:'Cairo',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;}
@@ -67,6 +72,17 @@
         .serial-console{background:#0f172a;color:#10b981;border-radius:10px;padding:12px;font-family:'Courier New',monospace;font-size:10px;max-height:100px;overflow-y:auto;direction:ltr;text-align:left;}
         .serial-line{margin-bottom:1px;}.serial-line .ts{color:#64748b;}.serial-line .rx{color:#3b82f6;}.serial-line .tx{color:#f59e0b;}
 
+        /* ===== TOAST NOTIFICATION ===== */
+        .toast-container{position:fixed;top:24px;right:24px;z-index:99999;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
+        body[data-dir="rtl"] .toast-container{right:auto;left:24px;}
+        .toast{pointer-events:auto;padding:12px 20px;border-radius:10px;font-family:'Cairo',sans-serif;font-size:13px;font-weight:600;color:white;box-shadow:0 6px 24px rgba(0,0,0,0.25);display:flex;align-items:center;gap:8px;animation:toastIn 0.3s ease,toastOut 0.3s ease forwards;max-width:380px;}
+        .toast.error{background:linear-gradient(135deg,#ef4444,#dc2626);}
+        .toast.success{background:linear-gradient(135deg,#10b981,#059669);}
+        .toast.info{background:linear-gradient(135deg,#3b82f6,#2563eb);}
+        .toast.warning{background:linear-gradient(135deg,#f59e0b,#d97706);}
+        @keyframes toastIn{from{opacity:0;transform:translateX(40px);}to{opacity:1;transform:translateX(0);}}
+        @keyframes toastOut{from{opacity:1;transform:translateX(0);}to{opacity:0;transform:translateX(40px);}}
+
         /* ===== FAB MENU ===== */
         .fab-container{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;align-items:flex-end;gap:10px;}
         body[data-dir="rtl"] .fab-container{right:auto;left:24px;align-items:flex-start;}
@@ -111,6 +127,7 @@
     </style>
 </head>
 <body>
+<a href="#screen-domains" class="skip-link" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:99999;padding:8px 16px;background:var(--accent);color:white;border-radius:0 0 8px 0;font-weight:700;">Skip to main content</a>
 
 <!-- ============ SCREEN: AUTH ============ -->
 <div id="screen-auth" class="screen active">
@@ -118,14 +135,14 @@
         <div class="login-split">
             <div class="login-brand">
                 <div class="login-brand-content">
-                    <div class="login-logo-lg">SL</div>
+                    <div class="login-logo-lg" aria-hidden="true">SL</div>
                     <h1>SmartLAP</h1>
                     <p class="login-tagline" data-i18n="auth_subtitle">Dynamic Lab Automation System</p>
                     <div class="login-features">
-                        <div class="login-feature"><span class="lf-icon">⚡</span><span data-i18n="feat_realtime">Real-time sensor monitoring</span></div>
-                        <div class="login-feature"><span class="lf-icon">📊</span><span data-i18n="feat_reports">PDF reports & analytics</span></div>
-                        <div class="login-feature"><span class="lf-icon">🤖</span><span data-i18n="feat_ai">AI-powered engineering assistant</span></div>
-                        <div class="login-feature"><span class="lf-icon">🌍</span><span data-i18n="feat_7lang">7 languages support</span></div>
+                        <div class="login-feature"><span class="lf-icon" aria-hidden="true">⚡</span><span data-i18n="feat_realtime">Real-time sensor monitoring</span></div>
+                        <div class="login-feature"><span class="lf-icon" aria-hidden="true">📊</span><span data-i18n="feat_reports">PDF reports & analytics</span></div>
+                        <div class="login-feature"><span class="lf-icon" aria-hidden="true">🤖</span><span data-i18n="feat_ai">AI-powered engineering assistant</span></div>
+                        <div class="login-feature"><span class="lf-icon" aria-hidden="true">🌍</span><span data-i18n="feat_7lang">7 languages support</span></div>
                     </div>
                 </div>
                 <div class="login-brand-footer">
@@ -135,16 +152,16 @@
             </div>
             <div class="login-form-side">
                 <div class="login-card fade-in">
-                    <div class="login-logo">SL</div>
+                    <div class="login-logo" aria-hidden="true">SL</div>
                     <h2 data-i18n="welcome_back">Welcome Back</h2>
                     <p class="subtitle" data-i18n="auth_subtitle2">Sign in to access your lab</p>
                     <div class="auth-tabs">
                         <button class="auth-tab active" onclick="switchAuthTab('login')" data-i18n="tab_login">Login</button>
                         <button class="auth-tab" onclick="switchAuthTab('register')" data-i18n="tab_register">Register</button>
                     </div>
-                    <div class="auth-error" id="auth-error"></div>
+                    <div class="auth-error" id="auth-error" role="alert"></div>
                     <!-- Login Form -->
-                    <div id="auth-form-login" class="auth-form">
+                    <div id="auth-form-login" class="auth-form" aria-label="Login form">
                         <div class="form-field">
                             <label data-i18n="ph_email">Email</label>
                             <input type="email" id="auth-email" placeholder="engineer@company.com" data-i18n-ph="ph_email">
@@ -153,14 +170,14 @@
                             <label data-i18n="ph_password">Password</label>
                             <div class="input-wrapper">
                                 <input type="password" id="auth-password" placeholder="••••••••" data-i18n-ph="ph_password">
-                                <button type="button" class="pw-toggle" onclick="togglePw('auth-password',this)">👁</button>
+                                <button type="button" class="pw-toggle" onclick="togglePw('auth-password',this)" aria-label="Toggle password visibility">👁</button>
                             </div>
                         </div>
                         <div class="forgot-link"><a onclick="doForgotPassword()" data-i18n="forgot_pw">Forgot password?</a></div>
                         <button class="btn-submit" onclick="doLogin()" id="btn-login" data-i18n="btn_login">Login</button>
                     </div>
                     <!-- Register Form -->
-                    <div id="auth-form-register" class="auth-form" style="display:none;">
+                    <div id="auth-form-register" class="auth-form" style="display:none;" aria-label="Registration form">
                         <div class="form-field">
                             <label data-i18n="ph_name">Full Name</label>
                             <input type="text" id="reg-name" placeholder="Ahmed Ali" data-i18n-ph="ph_name">
@@ -173,7 +190,7 @@
                             <label data-i18n="ph_password6">Password</label>
                             <div class="input-wrapper">
                                 <input type="password" id="reg-password" placeholder="Min 6 characters" data-i18n-ph="ph_password6">
-                                <button type="button" class="pw-toggle" onclick="togglePw('reg-password',this)">👁</button>
+                                <button type="button" class="pw-toggle" onclick="togglePw('reg-password',this)" aria-label="Toggle password visibility">👁</button>
                             </div>
                         </div>
                         <button class="btn-submit" onclick="doRegister()" id="btn-register" data-i18n="btn_register">Create Account</button>
@@ -194,13 +211,13 @@
 
 <!-- ============ SCREEN: DOMAIN SELECT ============ -->
 <div id="screen-domains" class="screen">
-    <header class="app-header">
+    <header class="app-header" role="navigation" aria-label="Domain selection header">
         <div class="header-right">
-            <div class="header-logo">SL</div>
+            <div class="header-logo" aria-hidden="true">SL</div>
             <span class="header-title">SmartLAP</span>
         </div>
         <div class="header-left">
-            <select class="lang-select" id="lang-select" onchange="setLang(this.value)">
+            <select class="lang-select" id="lang-select" onchange="setLang(this.value)" aria-label="Language">
                 <option value="en">🇬🇧 English</option>
                 <option value="ar">🇪🇬 العربية</option>
                 <option value="zh">🇨🇳 中文</option>
@@ -209,10 +226,10 @@
                 <option value="ja">🇯🇵 日本語</option>
                 <option value="ru">🇷🇺 Русский</option>
             </select>
-            <div class="header-user-btn" id="user-badge" onclick="toggleUserDropdown(event)">
+            <div class="header-user-btn" id="user-badge" role="button" tabindex="0" aria-label="User menu" onclick="toggleUserDropdown(event)">
                 <div class="user-icon" id="user-icon-el">U</div>
                 <span class="user-name-text" id="user-name-display">User</span>
-                <span class="dd-arrow">▼</span>
+                <span class="dd-arrow" aria-hidden="true">▼</span>
                 <div class="user-dropdown" id="user-dropdown">
                     <div class="dd-header">
                         <div class="dd-name" id="dd-user-name">User</div>
@@ -239,7 +256,7 @@
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
                 <div class="panel" style="overflow:hidden;">
                     <div class="panel-header" style="background:linear-gradient(135deg,rgba(59,130,246,0.05),rgba(59,130,246,0.02));">
-                        <div class="panel-header-icon blue">📋</div>
+                        <div class="panel-header-icon blue" aria-hidden="true">📋</div>
                         <h3>QR Specimen Tracking</h3>
                     </div>
                     <div class="panel-body">
@@ -262,7 +279,7 @@
                 </div>
                 <div class="panel" style="overflow:hidden;">
                     <div class="panel-header" style="background:linear-gradient(135deg,rgba(16,185,129,0.05),rgba(16,185,129,0.02));">
-                        <div class="panel-header-icon green">📅</div>
+                        <div class="panel-header-icon green" aria-hidden="true">📅</div>
                         <h3>Break Schedule Generator</h3>
                     </div>
                     <div class="panel-body">
@@ -289,9 +306,9 @@
 
 <!-- ============ SCREEN: AI CHAT ============ -->
 <div id="screen-chat" class="screen">
-    <header class="app-header">
+    <header class="app-header" role="navigation" aria-label="AI chat header">
         <div class="header-right">
-            <div class="header-logo" id="chat-avatar" style="font-size:20px;">🤖</div>
+            <div class="header-logo" id="chat-avatar" style="font-size:20px;" aria-hidden="true">🤖</div>
             <div>
                 <span class="header-title" id="chat-agent-name">Agent</span>
                 <div style="font-size:10px;color:var(--text-muted);" id="chat-agent-role"></div>
@@ -299,9 +316,9 @@
         </div>
         <div class="header-left">
             <button onclick="showScreen('domains')" class="btn-back">← <span data-i18n="back">Back</span></button>
-            <div class="header-user-btn" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
+            <div class="header-user-btn" role="button" tabindex="0" aria-label="User menu" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
                 <div class="user-icon" id="chat-user-icon">U</div>
-                <span class="dd-arrow">▼</span>
+                <span class="dd-arrow" aria-hidden="true">▼</span>
                 <div class="user-dropdown" id="chat-user-dropdown">
                     <div class="dd-header">
                         <div class="dd-name" id="chat-dd-name">User</div>
@@ -313,11 +330,11 @@
         </div>
     </header>
     <div style="max-width:800px;margin:20px auto;padding:0 16px;">
-        <div class="chat-panel">
-            <div class="chat-messages" id="chat-messages"></div>
-            <div class="chat-input-area">
+        <div class="chat-panel" role="region" aria-label="AI chat">
+            <div class="chat-messages" id="chat-messages" aria-live="polite" aria-label="Chat messages"></div>
+            <div class="chat-input-area" role="form" aria-label="Chat message input">
                 <input type="text" id="chat-input" placeholder="Type your message..." data-i18n-ph="ph_message" onkeydown="if(event.key==='Enter')sendChat()">
-                <button onclick="sendChat()">→</button>
+                <button onclick="sendChat()" aria-label="Send message">→</button>
             </div>
         </div>
     </div>
@@ -325,21 +342,21 @@
 
 <!-- ============ SCREEN: DASHBOARD ============ -->
 <div id="screen-dashboard" class="screen">
-    <header class="app-header">
+    <header class="app-header" role="navigation" aria-label="Dashboard header">
         <div class="header-right">
-            <div class="header-logo">SL</div>
+            <div class="header-logo" aria-hidden="true">SL</div>
             <span class="header-title">SmartLAP</span>
             <span class="header-badge" id="dash-domain-name"></span>
         </div>
         <div class="header-left">
-            <select class="lang-select" id="lang-select2" onchange="setLang(this.value)">
+            <select class="lang-select" id="lang-select2" onchange="setLang(this.value)" aria-label="Language">
                 <option value="en">🇬🇧 EN</option><option value="ar">🇪🇬 AR</option><option value="zh">🇨🇳 ZH</option>
                 <option value="de">🇩🇪 DE</option><option value="fr">🇫🇷 FR</option><option value="ja">🇯🇵 JA</option><option value="ru">🇷🇺 RU</option>
             </select>
             <button onclick="showScreen('domains')" class="btn-back" data-i18n="change_domain">Change Domain</button>
-            <div class="header-user-btn" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
+            <div class="header-user-btn" role="button" tabindex="0" aria-label="User menu" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
                 <div class="user-icon" id="dash-user-icon">U</div>
-                <span class="dd-arrow">▼</span>
+                <span class="dd-arrow" aria-hidden="true">▼</span>
                 <div class="user-dropdown" id="dash-user-dropdown">
                     <div class="dd-header">
                         <div class="dd-name" id="dash-dd-name">User</div>
@@ -359,16 +376,16 @@
 
 <!-- ============ SCREEN: TEST (COMPACTION) ============ -->
 <div id="screen-test" class="screen">
-    <header class="app-header">
+    <header class="app-header" role="navigation" aria-label="Compaction test header">
         <div class="header-right">
-            <div class="header-logo">SL</div>
+            <div class="header-logo" aria-hidden="true">SL</div>
             <span class="header-title" id="test-page-title"></span>
         </div>
         <div class="header-left">
             <button onclick="goBackToDashboard()" class="btn-back">→ <span data-i18n="dashboard">Dashboard</span></button>
-            <div class="header-user-btn" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
+            <div class="header-user-btn" role="button" tabindex="0" aria-label="User menu" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
                 <div class="user-icon" id="test-user-icon">U</div>
-                <span class="dd-arrow">▼</span>
+                <span class="dd-arrow" aria-hidden="true">▼</span>
                 <div class="user-dropdown" id="test-user-dropdown">
                     <div class="dd-header">
                         <div class="dd-name" id="test-dd-name">User</div>
@@ -380,10 +397,10 @@
             </div>
         </div>
     </header>
-    <div class="test-layout">
+    <div class="test-layout" role="main">
         <div class="slide-up">
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon blue">📝</div><h3 data-i18n="engineer_inputs">Engineer Inputs</h3></div>
+                <div class="panel-header"><div class="panel-header-icon blue" aria-hidden="true">📝</div><h3 data-i18n="engineer_inputs">Engineer Inputs</h3></div>
                 <div class="panel-body">
                     <div class="form-group"><label data-i18n="hammer_weight">Hammer Weight (kg)</label><input type="number" id="inp_hammer_weight" step="any" value="2.5"></div>
                     <div class="form-group"><label data-i18n="mold_volume">Mold Volume (m³)</label><input type="number" id="inp_mold_volume" step="any" value="0.001"></div>
@@ -394,7 +411,7 @@
                 </div>
             </div>
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon green">🔌</div><h3 data-i18n="hardware">Hardware Connection</h3></div>
+                <div class="panel-header"><div class="panel-header-icon green" aria-hidden="true">🔌</div><h3 data-i18n="hardware">Hardware Connection</h3></div>
                 <div class="panel-body">
                     <div class="form-group"><label data-i18n="connection">Connection</label>
                         <select id="com-port-select" onchange="onConnTypeChange()">
@@ -448,14 +465,14 @@
         </div>
         <div class="slide-up" style="animation-delay:0.15s;">
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon orange">📡</div><h3 data-i18n="live_data">Live Data</h3><div class="live-indicator" id="live-indicator" style="display:none;"><div class="live-dot"></div> LIVE</div></div>
+                <div class="panel-header"><div class="panel-header-icon orange" aria-hidden="true">📡</div><h3 data-i18n="live_data">Live Data</h3><div class="live-indicator" aria-live="polite" id="live-indicator" style="display:none;"><div class="live-dot"></div> LIVE</div></div>
                 <div class="panel-body">
-                    <div id="demo-banner" class="demo-banner" style="display:none;">⚠️ <span data-i18n="demo_warning">Demo mode — simulated data</span></div>
+                    <div id="demo-banner" class="demo-banner" role="status" style="display:none;">⚠️ <span data-i18n="demo_warning">Demo mode — simulated data</span></div>
                     <div class="progress-ring">
-                        <div style="text-align:center;"><div class="gauge-container"><svg viewBox="0 0 100 100"><circle class="gauge-bg" cx="50" cy="50" r="42"/><circle class="gauge-fill" id="gauge-fill" cx="50" cy="50" r="42" stroke-dasharray="264" stroke-dashoffset="264"/></svg><div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;"><div class="ring-text" id="strike-counter">0</div><div class="ring-label" data-i18n="strikes">Strikes</div></div></div></div>
-                        <div><div style="margin-bottom:10px;"><div class="reading-label" data-i18n="target">Target</div><div style="font-size:18px;font-weight:700;" id="target-display">25</div></div><div><div class="reading-label" data-i18n="ratio">Ratio</div><div style="font-size:18px;font-weight:700;color:var(--accent);" id="ratio-display">--%</div></div></div>
+                        <div style="text-align:center;"><div class="gauge-container"><svg viewBox="0 0 100 100"><circle class="gauge-bg" cx="50" cy="50" r="42"/><circle class="gauge-fill" id="gauge-fill" cx="50" cy="50" r="42" stroke-dasharray="264" stroke-dashoffset="264"/></svg><div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;"><div class="ring-text" id="strike-counter" aria-live="polite" aria-atomic="true">0</div><div class="ring-label" data-i18n="strikes">Strikes</div></div></div></div>
+                        <div><div style="margin-bottom:10px;"><div class="reading-label" data-i18n="target">Target</div><div style="font-size:18px;font-weight:700;" id="target-display">25</div></div><div><div class="reading-label" data-i18n="ratio">Ratio</div><div style="font-size:18px;font-weight:700;color:var(--accent);" id="ratio-display" aria-live="polite" aria-atomic="true">--%</div></div></div>
                     </div>
-                    <div class="data-readings">
+                    <div class="data-readings" aria-live="polite">
                         <div class="reading-card"><div class="reading-label" data-i18n="moisture">Moisture</div><div class="reading-value" id="val-moisture">--</div><div class="reading-unit">%</div></div>
                         <div class="reading-card"><div class="reading-label" data-i18n="force">Force</div><div class="reading-value" id="val-force">--</div><div class="reading-unit">N</div></div>
                         <div class="reading-card"><div class="reading-label" data-i18n="avg_force">Avg Force</div><div class="reading-value" id="val-avg-force">--</div><div class="reading-unit">N</div></div>
@@ -464,21 +481,21 @@
                 </div>
             </div>
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon blue">📋</div><h3 data-i18n="strike_log">Strike Log</h3></div>
+                <div class="panel-header"><div class="panel-header-icon blue" aria-hidden="true">📋</div><h3 data-i18n="strike_log">Strike Log</h3></div>
                 <div class="panel-body strike-log" style="padding:0;">
                     <table><thead><tr><th>#</th><th data-i18n="th_moisture">Moisture%</th><th data-i18n="th_force">Force N</th><th data-i18n="th_density">Density</th><th data-i18n="th_time">Time</th></tr></thead><tbody id="strike-log-body"><tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px;" data-i18n="start_hint">Start test to see data</td></tr></tbody></table>
                 </div>
             </div>
             <div class="panel" id="results-panel" style="display:none;margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon purple">📊</div><h3 data-i18n="results">Results</h3></div>
+                <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">📊</div><h3 data-i18n="results">Results</h3></div>
                 <div class="panel-body"><div id="results-body"></div><div class="chart-container" id="chart-box" style="display:none;"><div class="reading-label" data-i18n="achievement">Achievement Ratio</div><div class="chart-bar"><div class="chart-fill" id="chart-fill" style="width:0%"></div></div></div><div style="margin-top:16px;display:flex;gap:12px;"><button onclick="generatePDF()" id="btn-pdf" class="btn-primary" style="display:none;">📄 <span data-i18n="download_pdf">Download PDF</span></button></div></div>
             </div>
             <div class="panel">
-                <div class="panel-header"><div class="panel-header-icon blue">📂</div><h3 data-i18n="history">History</h3></div>
+                <div class="panel-header"><div class="panel-header-icon blue" aria-hidden="true">📂</div><h3 data-i18n="history">History</h3></div>
                 <div class="panel-body" style="padding:0;"><table class="history-table"><thead><tr><th data-i18n="th_date">Date</th><th data-i18n="th_status">Status</th><th data-i18n="th_density2">Density</th></tr></thead><tbody id="history-body"><tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:24px;" data-i18n="no_history">No previous tests</td></tr></tbody></table></div>
             </div>
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon" style="background:rgba(239,68,68,0.1);">🚨</div><h3>AI Anomaly Detection</h3></div>
+                <div class="panel-header"><div class="panel-header-icon" aria-hidden="true" style="background:rgba(239,68,68,0.1);">🚨</div><h3>AI Anomaly Detection</h3></div>
                 <div class="panel-body">
                     <div id="anomaly-log" style="display:none;">
                         <table class="strike-log"><thead><tr><th>Time</th><th>Type</th><th>Message</th><th>Value</th><th>Mean</th><th>±StdDev</th></tr></thead><tbody id="anomaly-log-body"></tbody></table>
@@ -491,23 +508,23 @@
 </div>
 
 <!-- ============ FAB MENU ============ -->
-<div class="fab-container" id="fab-container">
-    <div class="fab-menu" id="fab-menu">
-        <div class="fab-item"><span class="fab-item-label" onclick="openFabModal('modal-refs')" data-i18n="fab_refs">📚 Test References</span></div>
-        <div class="fab-item"><span class="fab-item-label" onclick="openFabModal('modal-howto')" data-i18n="fab_howto">❓ How to Use</span></div>
-        <div class="fab-item"><span class="fab-item-label" onclick="openFabModal('modal-features')" data-i18n="fab_features">🛠️ Supported Hardware</span></div>
-        <div class="fab-item"><span class="fab-item-label" onclick="openFabModal('modal-qr')">📱 QR Specimen Tracking</span></div>
-        <div class="fab-item"><span class="fab-item-label" onclick="openFabModal('modal-calibration')">🔧 Equipment Calibration</span></div>
-        <div class="fab-item"><span class="fab-item-label" onclick="openFabModal('modal-schedule')">📅 Break Schedule</span></div>
-        <div class="fab-item"><span class="fab-item-label" onclick="openFabModal('modal-contact')" data-i18n="fab_contact">📞 Contact Support</span></div>
+<div class="fab-container" id="fab-container" aria-label="Quick actions">
+    <div class="fab-menu" id="fab-menu" role="menu">
+        <div class="fab-item"><span class="fab-item-label" role="menuitem" tabindex="0" onclick="openFabModal('modal-refs')" data-i18n="fab_refs">📚 Test References</span></div>
+        <div class="fab-item"><span class="fab-item-label" role="menuitem" tabindex="0" onclick="openFabModal('modal-howto')" data-i18n="fab_howto">❓ How to Use</span></div>
+        <div class="fab-item"><span class="fab-item-label" role="menuitem" tabindex="0" onclick="openFabModal('modal-features')" data-i18n="fab_features">🛠️ Supported Hardware</span></div>
+        <div class="fab-item"><span class="fab-item-label" role="menuitem" tabindex="0" onclick="openFabModal('modal-qr')">📱 QR Specimen Tracking</span></div>
+        <div class="fab-item"><span class="fab-item-label" role="menuitem" tabindex="0" onclick="openFabModal('modal-calibration')">🔧 Equipment Calibration</span></div>
+        <div class="fab-item"><span class="fab-item-label" role="menuitem" tabindex="0" onclick="openFabModal('modal-schedule')">📅 Break Schedule</span></div>
+        <div class="fab-item"><span class="fab-item-label" role="menuitem" tabindex="0" onclick="openFabModal('modal-contact')" data-i18n="fab_contact">📞 Contact Support</span></div>
     </div>
-    <button class="fab-btn fab-main" id="fab-toggle" onclick="toggleFab()">✦</button>
+    <button class="fab-btn fab-main" id="fab-toggle" onclick="toggleFab()" aria-label="Open quick actions menu" aria-expanded="false">✦</button>
 </div>
 
 <!-- MODAL: Test References -->
-<div class="fab-modal-overlay" id="modal-refs" onclick="closeFabOverlay(event)">
+<div class="fab-modal-overlay" id="modal-refs" onclick="closeFabOverlay(event)" role="dialog" aria-labelledby="modal-refs-title">
     <div class="fab-modal">
-        <div class="fab-modal-header"><h3>📚 <span data-i18n="modal_refs_title">Test Standards & References</span></h3><button class="fab-modal-close" onclick="closeFabModal('modal-refs')">✕</button></div>
+        <div class="fab-modal-header"><h3 id="modal-refs-title">📚 <span data-i18n="modal_refs_title">Test Standards & References</span></h3><button class="fab-modal-close" onclick="closeFabModal('modal-refs')" aria-label="Close">✕</button></div>
         <div class="fab-modal-body">
             <h4 data-i18n="refs_soil">🛣️ Roads & Soil</h4>
             <p><strong>Compaction (Proctor):</strong></p>
@@ -537,9 +554,9 @@
 </div>
 
 <!-- MODAL: How to Use -->
-<div class="fab-modal-overlay" id="modal-howto" onclick="closeFabOverlay(event)">
+<div class="fab-modal-overlay" id="modal-howto" onclick="closeFabOverlay(event)" role="dialog" aria-labelledby="modal-howto-title">
     <div class="fab-modal">
-        <div class="fab-modal-header"><h3>❓ <span data-i18n="modal_howto_title">How to Use SmartLAP</span></h3><button class="fab-modal-close" onclick="closeFabModal('modal-howto')">✕</button></div>
+        <div class="fab-modal-header"><h3 id="modal-howto-title">❓ <span data-i18n="modal_howto_title">How to Use SmartLAP</span></h3><button class="fab-modal-close" onclick="closeFabModal('modal-howto')" aria-label="Close">✕</button></div>
         <div class="fab-modal-body">
             <h4 data-i18n="howto_step1">Step 1 — Choose Connection</h4>
             <p data-i18n="howto_step1_desc">Select the connection type from the <strong>Hardware Connection</strong> panel:</p>
@@ -561,9 +578,9 @@
 </div>
 
 <!-- MODAL: Features / Supported Hardware -->
-<div class="fab-modal-overlay" id="modal-features" onclick="closeFabOverlay(event)">
+<div class="fab-modal-overlay" id="modal-features" onclick="closeFabOverlay(event)" role="dialog" aria-labelledby="modal-features-title">
     <div class="fab-modal">
-        <div class="fab-modal-header"><h3>🛠️ <span data-i18n="modal_features_title">Supported Hardware & Features</span></h3><button class="fab-modal-close" onclick="closeFabModal('modal-features')">✕</button></div>
+        <div class="fab-modal-header"><h3 id="modal-features-title">🛠️ <span data-i18n="modal_features_title">Supported Hardware & Features</span></h3><button class="fab-modal-close" onclick="closeFabModal('modal-features')" aria-label="Close">✕</button></div>
         <div class="fab-modal-body">
             <h4 data-i18n="feat_sensors">Supported Sensors</h4>
             <div class="hw-card">
@@ -605,9 +622,9 @@
 </div>
 
 <!-- MODAL: Contact Support -->
-<div class="fab-modal-overlay" id="modal-contact" onclick="closeFabOverlay(event)">
+<div class="fab-modal-overlay" id="modal-contact" onclick="closeFabOverlay(event)" role="dialog" aria-labelledby="modal-contact-title">
     <div class="fab-modal">
-        <div class="fab-modal-header"><h3>📞 <span data-i18n="modal_contact_title">Technical Support & Contact</span></h3><button class="fab-modal-close" onclick="closeFabModal('modal-contact')">✕</button></div>
+        <div class="fab-modal-header"><h3 id="modal-contact-title">📞 <span data-i18n="modal_contact_title">Technical Support & Contact</span></h3><button class="fab-modal-close" onclick="closeFabModal('modal-contact')" aria-label="Close">✕</button></div>
         <div class="fab-modal-body">
             <p data-i18n="contact_intro">Need help calibrating sensors, connecting hardware, or reporting an issue? Reach out to the Fimto Soft engineering team:</p>
             <div class="contact-card">
@@ -635,9 +652,9 @@
 </div>
 
 <!-- MODAL: QR Specimen Tracking -->
-<div class="fab-modal-overlay" id="modal-qr" onclick="closeFabOverlay(event)">
+<div class="fab-modal-overlay" id="modal-qr" onclick="closeFabOverlay(event)" role="dialog" aria-labelledby="modal-qr-title">
     <div class="fab-modal">
-        <div class="fab-modal-header"><h3>📱 QR Specimen Tracking</h3><button class="fab-modal-close" onclick="closeFabModal('modal-qr')">✕</button></div>
+        <div class="fab-modal-header"><h3 id="modal-qr-title">📱 QR Specimen Tracking</h3><button class="fab-modal-close" onclick="closeFabModal('modal-qr')" aria-label="Close">✕</button></div>
         <div class="fab-modal-body">
             <p style="margin-bottom:12px;color:var(--text-secondary);">Track specimens from casting to testing with QR codes — full chain of custody.</p>
             <h4 style="margin:16px 0 8px;color:var(--text-primary);">📋 Workflow</h4>
@@ -663,9 +680,9 @@
 </div>
 
 <!-- MODAL: Equipment Calibration Manager -->
-<div class="fab-modal-overlay" id="modal-calibration" onclick="closeFabOverlay(event)">
+<div class="fab-modal-overlay" id="modal-calibration" onclick="closeFabOverlay(event)" role="dialog" aria-labelledby="modal-calibration-title">
     <div class="fab-modal">
-        <div class="fab-modal-header"><h3>🔧 Equipment Calibration Manager</h3><button class="fab-modal-close" onclick="closeFabModal('modal-calibration')">✕</button></div>
+        <div class="fab-modal-header"><h3 id="modal-calibration-title">🔧 Equipment Calibration Manager</h3><button class="fab-modal-close" onclick="closeFabModal('modal-calibration')" aria-label="Close">✕</button></div>
         <div class="fab-modal-body">
             <p style="margin-bottom:12px;color:var(--text-secondary);">Track calibration status for all lab equipment. Never test with expired calibration again.</p>
             <h4 style="margin:16px 0 8px;color:var(--text-primary);">📊 Equipment Status Dashboard</h4>
@@ -702,9 +719,9 @@
 </div>
 
 <!-- MODAL: Break Schedule Generator -->
-<div class="fab-modal-overlay" id="modal-schedule" onclick="closeFabOverlay(event)">
+<div class="fab-modal-overlay" id="modal-schedule" onclick="closeFabOverlay(event)" role="dialog" aria-labelledby="modal-schedule-title">
     <div class="fab-modal">
-        <div class="fab-modal-header"><h3>📅 Break Schedule Generator</h3><button class="fab-modal-close" onclick="closeFabModal('modal-schedule')">✕</button></div>
+        <div class="fab-modal-header"><h3 id="modal-schedule-title">📅 Break Schedule Generator</h3><button class="fab-modal-close" onclick="closeFabModal('modal-schedule')" aria-label="Close">✕</button></div>
         <div class="fab-modal-body">
             <p style="margin-bottom:12px;color:var(--text-secondary);">Auto-generate daily break lists from casting dates. Never miss a 7-day or 28-day break.</p>
             <h4 style="margin:16px 0 8px;color:var(--text-primary);">📋 Standard Break Ages (ASTM C31)</h4>
@@ -733,16 +750,16 @@
 
 <!-- ============ SCREEN: TEST (CBR) ============ -->
 <div id="screen-cbr" class="screen">
-    <header class="app-header">
+    <header class="app-header" role="navigation" aria-label="Page header">
         <div class="header-right">
             <div class="header-logo">SL</div>
             <span class="header-title" id="cbr-page-title">CBR Test</span>
         </div>
         <div class="header-left">
             <button onclick="goBackToDashboard()" class="btn-back">→ <span data-i18n="dashboard">Dashboard</span></button>
-            <div class="header-user-btn" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
+            <div class="header-user-btn" role="button" tabindex="0" aria-label="User menu" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
                 <div class="user-icon" id="cbr-user-icon">U</div>
-                <span class="dd-arrow">▼</span>
+                <span class="dd-arrow" aria-hidden="true">▼</span>
                 <div class="user-dropdown" id="cbr-user-dropdown">
                     <div class="dd-header"><div class="dd-name" id="cbr-dd-name">User</div><div class="dd-email" id="cbr-dd-email">—</div></div>
                     <button class="dd-item" onclick="showScreen('domains')"><span class="dd-icon">🏠</span> <span data-i18n="change_domain">Change Domain</span></button>
@@ -751,10 +768,10 @@
             </div>
         </div>
     </header>
-    <div class="test-layout">
+    <div class="test-layout" role="main">
         <div class="slide-up">
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon blue">📝</div><h3 data-i18n="cbr_params">CBR Parameters</h3></div>
+                <div class="panel-header"><div class="panel-header-icon blue" aria-hidden="true">📝</div><h3 data-i18n="cbr_params">CBR Parameters</h3></div>
                 <div class="panel-body">
                     <div class="form-group"><label data-i18n="cbr_sample_diameter">Sample Diameter (mm)</label><input type="number" id="cbr_inp_diameter" step="any" value="152"></div>
                     <div class="form-group"><label data-i18n="cbr_piston_area">Piston Area (mm²)</label><input type="number" id="cbr_inp_piston_area" step="any" value="1963.5"></div>
@@ -765,7 +782,7 @@
                 </div>
             </div>
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon green">🔌</div><h3 data-i18n="hardware">Hardware Connection</h3></div>
+                <div class="panel-header"><div class="panel-header-icon green" aria-hidden="true">🔌</div><h3 data-i18n="hardware">Hardware Connection</h3></div>
                 <div class="panel-body">
                     <div class="form-group"><label data-i18n="connection">Connection</label>
                         <select id="cbr-com-port-select" onchange="onCBRConnTypeChange()">
@@ -805,10 +822,10 @@
         </div>
         <div class="slide-up" style="animation-delay:0.15s;">
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon orange">📡</div><h3 data-i18n="live_data">Live Data</h3><div class="live-indicator" id="cbr-live-indicator" style="display:none;"><div class="live-dot"></div> LIVE</div></div>
+                <div class="panel-header"><div class="panel-header-icon orange" aria-hidden="true">📡</div><h3 data-i18n="live_data">Live Data</h3><div class="live-indicator" aria-live="polite" id="cbr-live-indicator" style="display:none;"><div class="live-dot"></div> LIVE</div></div>
                 <div class="panel-body">
-                    <div id="cbr-demo-banner" class="demo-banner" style="display:none;">⚠️ <span data-i18n="demo_warning">Demo mode — simulated data</span></div>
-                    <div class="data-readings">
+                    <div id="cbr-demo-banner" class="demo-banner" role="status" style="display:none;">⚠️ <span data-i18n="demo_warning">Demo mode — simulated data</span></div>
+                    <div class="data-readings" aria-live="polite">
                         <div class="reading-card"><div class="reading-label" data-i18n="cbr_penetration">Penetration</div><div class="reading-value" id="cbr-val-pen">--</div><div class="reading-unit">mm</div></div>
                         <div class="reading-card"><div class="reading-label" data-i18n="cbr_load">Load</div><div class="reading-value" id="cbr-val-load">--</div><div class="reading-unit">N</div></div>
                         <div class="reading-card"><div class="reading-label" data-i18n="cbr_pressure">Pressure</div><div class="reading-value" id="cbr-val-pressure">--</div><div class="reading-unit">kPa</div></div>
@@ -821,17 +838,17 @@
                 </div>
             </div>
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon blue">📋</div><h3 data-i18n="cbr_readings_log">Readings Log</h3></div>
+                <div class="panel-header"><div class="panel-header-icon blue" aria-hidden="true">📋</div><h3 data-i18n="cbr_readings_log">Readings Log</h3></div>
                 <div class="panel-body strike-log" style="padding:0;">
                     <table><thead><tr><th>#</th><th data-i18n="cbr_penetration">Penetration mm</th><th data-i18n="cbr_load">Load N</th><th data-i18n="cbr_pressure">Pressure kPa</th><th data-i18n="th_time">Time</th></tr></thead><tbody id="cbr-log-body"><tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px;" data-i18n="start_hint">Start test to see data</td></tr></tbody></table>
                 </div>
             </div>
             <div class="panel" id="cbr-results-panel" style="display:none;margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon purple">📊</div><h3 data-i18n="results">Results</h3></div>
+                <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">📊</div><h3 data-i18n="results">Results</h3></div>
                 <div class="panel-body"><div id="cbr-results-body"></div><div style="margin-top:16px;display:flex;gap:12px;"><button onclick="generateCBRPDF()" id="cbr-btn-pdf" class="btn-primary" style="display:none;">📄 <span data-i18n="download_pdf">Download PDF</span></button></div></div>
             </div>
             <div class="panel">
-                <div class="panel-header"><div class="panel-header-icon blue">📂</div><h3 data-i18n="history">History</h3></div>
+                <div class="panel-header"><div class="panel-header-icon blue" aria-hidden="true">📂</div><h3 data-i18n="history">History</h3></div>
                 <div class="panel-body" style="padding:0;"><table class="history-table"><thead><tr><th data-i18n="th_date">Date</th><th data-i18n="th_status">Status</th><th data-i18n="cbr_ratio">CBR %</th></tr></thead><tbody id="cbr-history-body"><tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:24px;" data-i18n="no_history">No previous tests</td></tr></tbody></table></div>
             </div>
         </div>
@@ -840,13 +857,13 @@
 
 <!-- ============ SCREEN: TEST (STRAIGHTEDGE) ============ -->
 <div id="screen-straightedge" class="screen">
-    <header class="app-header">
+    <header class="app-header" role="navigation" aria-label="Page header">
         <div class="header-right">
             <div class="header-logo">SL</div>
             <span class="header-title" id="se-page-title">Straightedge Test</span>
         </div>
         <div class="header-left">
-                <div class="header-user-btn" onclick="toggleUserDropdown(event)">
+                <div class="header-user-btn" role="button" tabindex="0" aria-label="User menu" onclick="toggleUserDropdown(event)">
                     <div class="user-icon" id="se-user-icon">U</div>
                     <div class="user-dropdown">
                         <div class="dd-header"><div class="dd-name" id="se-dd-name">User</div><div class="dd-email" id="se-dd-email">—</div></div>
@@ -857,10 +874,10 @@
                 <button onclick="goBackToDashboard()" class="btn-back">→ <span data-i18n="dashboard">Dashboard</span></button>
             </div>
     </header>
-    <div class="test-layout">
+    <div class="test-layout" role="main">
         <div class="slide-up">
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon blue">📝</div><h3 data-i18n="se_params">Straightedge Parameters</h3></div>
+                <div class="panel-header"><div class="panel-header-icon blue" aria-hidden="true">📝</div><h3 data-i18n="se_params">Straightedge Parameters</h3></div>
                 <div class="panel-body">
                     <div class="form-group"><label data-i18n="se_length">Straightedge Length (m)</label><input type="number" id="se_inp_length" step="any" value="3.0"></div>
                     <div class="form-group"><label data-i18n="se_tolerance">Tolerance (mm)</label><input type="number" id="se_inp_tolerance" step="any" value="12"></div>
@@ -868,7 +885,7 @@
                 </div>
             </div>
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon green">🔌</div><h3 data-i18n="hardware">Hardware Connection</h3></div>
+                <div class="panel-header"><div class="panel-header-icon green" aria-hidden="true">🔌</div><h3 data-i18n="hardware">Hardware Connection</h3></div>
                 <div class="panel-body">
                     <div class="form-group"><label data-i18n="connection">Connection</label>
                         <select id="se-com-port-select" onchange="onSEConnTypeChange()">
@@ -887,10 +904,10 @@
         </div>
         <div class="slide-up" style="animation-delay:0.15s;">
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon orange">📡</div><h3 data-i18n="live_data">Live Data</h3><div class="live-indicator" id="se-live-indicator" style="display:none;"><div class="live-dot"></div> LIVE</div></div>
+                <div class="panel-header"><div class="panel-header-icon orange" aria-hidden="true">📡</div><h3 data-i18n="live_data">Live Data</h3><div class="live-indicator" aria-live="polite" id="se-live-indicator" style="display:none;"><div class="live-dot"></div> LIVE</div></div>
                 <div class="panel-body">
-                    <div id="se-demo-banner" class="demo-banner" style="display:none;">⚠️ <span data-i18n="demo_warning">Demo mode</span></div>
-                    <div class="data-readings">
+                    <div id="se-demo-banner" class="demo-banner" role="status" style="display:none;">⚠️ <span data-i18n="demo_warning">Demo mode</span></div>
+                    <div class="data-readings" aria-live="polite">
                         <div class="reading-card"><div class="reading-label" data-i18n="se_distance">Distance</div><div class="reading-value" id="se-val-dist">--</div><div class="reading-unit">m</div></div>
                         <div class="reading-card"><div class="reading-label" data-i18n="se_irregularity">Irregularity</div><div class="reading-value" id="se-val-irreg">--</div><div class="reading-unit">mm</div></div>
                         <div class="reading-card"><div class="reading-label" data-i18n="se_max_dev">Max Deviation</div><div class="reading-value" id="se-val-maxdev">--</div><div class="reading-unit">mm</div></div>
@@ -903,13 +920,13 @@
                 </div>
             </div>
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon blue">📋</div><h3 data-i18n="se_readings_log">Readings Log</h3></div>
+                <div class="panel-header"><div class="panel-header-icon blue" aria-hidden="true">📋</div><h3 data-i18n="se_readings_log">Readings Log</h3></div>
                 <div class="panel-body strike-log" style="padding:0;">
                     <table><thead><tr><th>#</th><th data-i18n="se_position">Position m</th><th data-i18n="se_irregularity">Irregularity mm</th><th data-i18n="se_inclination">Inclination °</th><th data-i18n="th_time">Time</th></tr></thead><tbody id="se-log-body"><tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px;" data-i18n="start_hint">Start test to see data</td></tr></tbody></table>
                 </div>
             </div>
             <div class="panel" id="se-results-panel" style="display:none;margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon purple">📊</div><h3 data-i18n="results">Results</h3></div>
+                <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">📊</div><h3 data-i18n="results">Results</h3></div>
                 <div class="panel-body"><div id="se-results-body"></div></div>
             </div>
         </div>
@@ -918,10 +935,10 @@
 
 <!-- ============ SCREEN: TEST (DIGITAL SLUMP) ============ -->
 <div id="screen-slump" class="screen">
-    <header class="app-header">
+    <header class="app-header" role="navigation" aria-label="Page header">
         <div class="header-right"><div class="header-logo">SL</div><span class="header-title" id="slump-page-title">Digital Slump Test</span></div>
         <div class="header-left">
-                <div class="header-user-btn" onclick="toggleUserDropdown(event)">
+                <div class="header-user-btn" role="button" tabindex="0" aria-label="User menu" onclick="toggleUserDropdown(event)">
                     <div class="user-icon" id="slump-user-icon">U</div>
                     <div class="user-dropdown">
                         <div class="dd-header"><div class="dd-name" id="slump-dd-name">User</div><div class="dd-email" id="slump-dd-email">—</div></div>
@@ -932,10 +949,10 @@
                 <button onclick="goBackToDashboard()" class="btn-back">→ <span data-i18n="dashboard">Dashboard</span></button>
             </div>
     </header>
-    <div class="test-layout">
+    <div class="test-layout" role="main">
         <div class="slide-up">
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon blue">📝</div><h3 data-i18n="slump_params">Slump Parameters</h3></div>
+                <div class="panel-header"><div class="panel-header-icon blue" aria-hidden="true">📝</div><h3 data-i18n="slump_params">Slump Parameters</h3></div>
                 <div class="panel-body">
                     <div class="form-group"><label data-i18n="slump_cone_height">Cone Height (mm)</label><input type="number" id="slump_inp_height" step="any" value="305"></div>
                     <div class="form-group"><label data-i18n="slump_tolerance">Tolerance (mm)</label><input type="number" id="slump_inp_tolerance" step="any" value="25"></div>
@@ -944,7 +961,7 @@
                 </div>
             </div>
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon green">🔌</div><h3 data-i18n="hardware">Hardware Connection</h3></div>
+                <div class="panel-header"><div class="panel-header-icon green" aria-hidden="true">🔌</div><h3 data-i18n="hardware">Hardware Connection</h3></div>
                 <div class="panel-body">
                     <div class="form-group"><label data-i18n="connection">Connection</label>
                         <select id="slump-com-port-select" onchange="onSlumpConnTypeChange()">
@@ -963,10 +980,10 @@
         </div>
         <div class="slide-up" style="animation-delay:0.15s;">
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon orange">📡</div><h3 data-i18n="live_data">Live Data</h3></div>
+                <div class="panel-header"><div class="panel-header-icon orange" aria-hidden="true">📡</div><h3 data-i18n="live_data">Live Data</h3></div>
                 <div class="panel-body">
-                    <div id="slump-demo-banner" class="demo-banner" style="display:none;">⚠️ <span data-i18n="demo_warning">Demo mode</span></div>
-                    <div class="data-readings">
+                    <div id="slump-demo-banner" class="demo-banner" role="status" style="display:none;">⚠️ <span data-i18n="demo_warning">Demo mode</span></div>
+                    <div class="data-readings" aria-live="polite">
                         <div class="reading-card"><div class="reading-label" data-i18n="slump_distance">Sensor Distance</div><div class="reading-value" id="slump-val-dist">--</div><div class="reading-unit">mm</div></div>
                         <div class="reading-card"><div class="reading-label" data-i18n="slump_value">Slump Value</div><div class="reading-value" id="slump-val-slump" style="color:var(--accent);">--</div><div class="reading-unit">mm</div></div>
                         <div class="reading-card"><div class="reading-label" data-i18n="slump_deviation">Deviation</div><div class="reading-value" id="slump-val-dev">--</div><div class="reading-unit">mm</div></div>
@@ -975,7 +992,7 @@
                 </div>
             </div>
             <div class="panel" id="slump-results-panel" style="display:none;margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon purple">📊</div><h3 data-i18n="results">Results</h3></div>
+                <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">📊</div><h3 data-i18n="results">Results</h3></div>
                 <div class="panel-body"><div id="slump-results-body"></div></div>
             </div>
         </div>
@@ -984,10 +1001,10 @@
 
 <!-- ============ SCREEN: TEST (MATURITY) ============ -->
 <div id="screen-maturity" class="screen">
-    <header class="app-header">
+    <header class="app-header" role="navigation" aria-label="Page header">
         <div class="header-right"><div class="header-logo">SL</div><span class="header-title" id="mat-page-title">Concrete Maturity</span></div>
         <div class="header-left">
-                <div class="header-user-btn" onclick="toggleUserDropdown(event)">
+                <div class="header-user-btn" role="button" tabindex="0" aria-label="User menu" onclick="toggleUserDropdown(event)">
                     <div class="user-icon" id="mat-user-icon">U</div>
                     <div class="user-dropdown">
                         <div class="dd-header"><div class="dd-name" id="mat-dd-name">User</div><div class="dd-email" id="mat-dd-email">—</div></div>
@@ -998,10 +1015,10 @@
                 <button onclick="goBackToDashboard()" class="btn-back">→ <span data-i18n="dashboard">Dashboard</span></button>
             </div>
     </header>
-    <div class="test-layout">
+    <div class="test-layout" role="main">
         <div class="slide-up">
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon blue">📝</div><h3 data-i18n="mat_params">Maturity Parameters</h3></div>
+                <div class="panel-header"><div class="panel-header-icon blue" aria-hidden="true">📝</div><h3 data-i18n="mat_params">Maturity Parameters</h3></div>
                 <div class="panel-body">
                     <div class="form-group"><label data-i18n="mat_mix_id">Mix ID</label><input type="text" id="mat_inp_mixid" value="MIX-001"></div>
                     <div class="form-group"><label data-i18n="mat_cement_type">Cement Type</label><select id="mat_inp_cement"><option value="opc">OPC (Type I)</option><option value="src">SRC (Type II)</option><option value="ppc">PPC</option></select></div>
@@ -1012,7 +1029,7 @@
                 </div>
             </div>
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon green">🔌</div><h3 data-i18n="hardware">Hardware Connection</h3></div>
+                <div class="panel-header"><div class="panel-header-icon green" aria-hidden="true">🔌</div><h3 data-i18n="hardware">Hardware Connection</h3></div>
                 <div class="panel-body">
                     <div class="form-group"><label data-i18n="connection">Connection</label>
                         <select id="mat-com-port-select" onchange="onMatConnTypeChange()">
@@ -1031,10 +1048,10 @@
         </div>
         <div class="slide-up" style="animation-delay:0.15s;">
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon orange">📡</div><h3 data-i18n="live_data">Live Data</h3></div>
+                <div class="panel-header"><div class="panel-header-icon orange" aria-hidden="true">📡</div><h3 data-i18n="live_data">Live Data</h3></div>
                 <div class="panel-body">
-                    <div id="mat-demo-banner" class="demo-banner" style="display:none;">⚠️ <span data-i18n="demo_warning">Demo mode</span></div>
-                    <div class="data-readings">
+                    <div id="mat-demo-banner" class="demo-banner" role="status" style="display:none;">⚠️ <span data-i18n="demo_warning">Demo mode</span></div>
+                    <div class="data-readings" aria-live="polite">
                         <div class="reading-card"><div class="reading-label" data-i18n="mat_temperature">Temperature</div><div class="reading-value" id="mat-val-temp">--</div><div class="reading-unit">°C</div></div>
                         <div class="reading-card"><div class="reading-label" data-i18n="mat_maturity">Maturity Index</div><div class="reading-value" id="mat-val-maturity" style="color:var(--accent);">--</div><div class="reading-unit">°C·h</div></div>
                         <div class="reading-card"><div class="reading-label" data-i18n="mat_strength">Est. Strength</div><div class="reading-value" id="mat-val-strength">--</div><div class="reading-unit">MPa</div></div>
@@ -1047,13 +1064,13 @@
                 </div>
             </div>
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon blue">📋</div><h3 data-i18n="mat_readings_log">Readings Log</h3></div>
+                <div class="panel-header"><div class="panel-header-icon blue" aria-hidden="true">📋</div><h3 data-i18n="mat_readings_log">Readings Log</h3></div>
                 <div class="panel-body strike-log" style="padding:0;">
                     <table><thead><tr><th>#</th><th data-i18n="mat_time_h">Time (h)</th><th data-i18n="mat_temperature">Temp °C</th><th data-i18n="mat_maturity">Maturity</th><th data-i18n="mat_strength">Strength MPa</th></tr></thead><tbody id="mat-log-body"><tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px;" data-i18n="start_hint">Start test to see data</td></tr></tbody></table>
                 </div>
             </div>
             <div class="panel" id="mat-results-panel" style="display:none;margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon purple">📊</div><h3 data-i18n="results">Results</h3></div>
+                <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">📊</div><h3 data-i18n="results">Results</h3></div>
                 <div class="panel-body"><div id="mat-results-body"></div></div>
             </div>
         </div>
@@ -1062,10 +1079,10 @@
 
 <!-- ============ SCREEN: TEST (MARSHALL) ============ -->
 <div id="screen-marshall" class="screen">
-    <header class="app-header">
+    <header class="app-header" role="navigation" aria-label="Page header">
         <div class="header-right"><div class="header-logo">SL</div><span class="header-title" id="marshall-page-title">Digital Marshall Test</span></div>
         <div class="header-left">
-                <div class="header-user-btn" onclick="toggleUserDropdown(event)">
+                <div class="header-user-btn" role="button" tabindex="0" aria-label="User menu" onclick="toggleUserDropdown(event)">
                     <div class="user-icon" id="mar-user-icon">U</div>
                     <div class="user-dropdown">
                         <div class="dd-header"><div class="dd-name" id="mar-dd-name">User</div><div class="dd-email" id="mar-dd-email">—</div></div>
@@ -1076,10 +1093,10 @@
                 <button onclick="goBackToDashboard()" class="btn-back">→ <span data-i18n="dashboard">Dashboard</span></button>
             </div>
     </header>
-    <div class="test-layout">
+    <div class="test-layout" role="main">
         <div class="slide-up">
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon blue">📝</div><h3 data-i18n="mar_params">Marshall Parameters</h3></div>
+                <div class="panel-header"><div class="panel-header-icon blue" aria-hidden="true">📝</div><h3 data-i18n="mar_params">Marshall Parameters</h3></div>
                 <div class="panel-body">
                     <div class="form-group"><label data-i18n="mar_specimen">Specimen #</label><input type="number" id="mar_inp_specimen" value="1"></div>
                     <div class="form-group"><label data-i18n="mar_diameter">Diameter (mm)</label><input type="number" id="mar_inp_diameter" step="any" value="101.6"></div>
@@ -1089,7 +1106,7 @@
                 </div>
             </div>
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon green">🔌</div><h3 data-i18n="hardware">Hardware Connection</h3></div>
+                <div class="panel-header"><div class="panel-header-icon green" aria-hidden="true">🔌</div><h3 data-i18n="hardware">Hardware Connection</h3></div>
                 <div class="panel-body">
                     <div class="form-group"><label data-i18n="connection">Connection</label>
                         <select id="mar-com-port-select" onchange="onMarConnTypeChange()"><option value="">-- Select Connection --</option><option value="browser-serial">🔌 USB / Serial</option><option value="lan">🌐 LAN / Network</option><option value="bluetooth">📡 Bluetooth</option><option value="manual">✏️ Manual Mode</option><option value="demo">🧪 Demo Mode</option></select>
@@ -1104,10 +1121,10 @@
         </div>
         <div class="slide-up" style="animation-delay:0.15s;">
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon orange">📡</div><h3 data-i18n="live_data">Live Data</h3></div>
+                <div class="panel-header"><div class="panel-header-icon orange" aria-hidden="true">📡</div><h3 data-i18n="live_data">Live Data</h3></div>
                 <div class="panel-body">
-                    <div id="mar-demo-banner" class="demo-banner" style="display:none;">⚠️ <span data-i18n="demo_warning">Demo mode</span></div>
-                    <div class="data-readings">
+                    <div id="mar-demo-banner" class="demo-banner" role="status" style="display:none;">⚠️ <span data-i18n="demo_warning">Demo mode</span></div>
+                    <div class="data-readings" aria-live="polite">
                         <div class="reading-card"><div class="reading-label" data-i18n="mar_flow">Flow</div><div class="reading-value" id="mar-val-flow">--</div><div class="reading-unit">0.25mm</div></div>
                         <div class="reading-card"><div class="reading-label" data-i18n="mar_stability">Stability</div><div class="reading-value" id="mar-val-stab" style="color:var(--accent);">--</div><div class="reading-unit">N</div></div>
                         <div class="reading-card"><div class="reading-label" data-i18n="mar_max_load">Max Load</div><div class="reading-value" id="mar-val-maxload">--</div><div class="reading-unit">N</div></div>
@@ -1120,7 +1137,7 @@
                 </div>
             </div>
             <div class="panel" id="mar-results-panel" style="display:none;margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon purple">📊</div><h3 data-i18n="results">Results</h3></div>
+                <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">📊</div><h3 data-i18n="results">Results</h3></div>
                 <div class="panel-body"><div id="mar-results-body"></div></div>
             </div>
         </div>
@@ -1129,10 +1146,10 @@
 
 <!-- ============ SCREEN: TEST (BITUMEN) ============ -->
 <div id="screen-bitumen" class="screen">
-    <header class="app-header">
+    <header class="app-header" role="navigation" aria-label="Page header">
         <div class="header-right"><div class="header-logo">SL</div><span class="header-title" id="bit-page-title">Bitumen Photo-Tester</span></div>
         <div class="header-left">
-                <div class="header-user-btn" onclick="toggleUserDropdown(event)">
+                <div class="header-user-btn" role="button" tabindex="0" aria-label="User menu" onclick="toggleUserDropdown(event)">
                     <div class="user-icon" id="bit-user-icon">U</div>
                     <div class="user-dropdown">
                         <div class="dd-header"><div class="dd-name" id="bit-dd-name">User</div><div class="dd-email" id="bit-dd-email">—</div></div>
@@ -1143,10 +1160,10 @@
                 <button onclick="goBackToDashboard()" class="btn-back">→ <span data-i18n="dashboard">Dashboard</span></button>
             </div>
     </header>
-    <div class="test-layout">
+    <div class="test-layout" role="main">
         <div class="slide-up">
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon blue">📝</div><h3 data-i18n="bit_params">Bitumen Test Parameters</h3></div>
+                <div class="panel-header"><div class="panel-header-icon blue" aria-hidden="true">📝</div><h3 data-i18n="bit_params">Bitumen Test Parameters</h3></div>
                 <div class="panel-body">
                     <div class="form-group"><label data-i18n="bit_sample_id">Sample ID</label><input type="text" id="bit_inp_sampleid" value="BIT-001"></div>
                     <div class="form-group"><label data-i18n="bit_type">Bitumen Grade</label><select id="bit_inp_grade"><option value="40-50">40/50</option><option value="60-70">60/70</option><option value="80-100">80/100</option></select></div>
@@ -1154,7 +1171,7 @@
                 </div>
             </div>
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon green">🔌</div><h3 data-i18n="hardware">Hardware Connection</h3></div>
+                <div class="panel-header"><div class="panel-header-icon green" aria-hidden="true">🔌</div><h3 data-i18n="hardware">Hardware Connection</h3></div>
                 <div class="panel-body">
                     <div class="form-group"><label data-i18n="connection">Connection</label>
                         <select id="bit-com-port-select" onchange="onBitConnTypeChange()"><option value="">-- Select Connection --</option><option value="browser-serial">🔌 USB / Serial</option><option value="lan">🌐 LAN / Network</option><option value="bluetooth">📡 Bluetooth</option><option value="manual">✏️ Manual Mode</option><option value="demo">🧪 Demo Mode</option></select>
@@ -1169,10 +1186,10 @@
         </div>
         <div class="slide-up" style="animation-delay:0.15s;">
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon orange">📡</div><h3 data-i18n="live_data">Live Data</h3></div>
+                <div class="panel-header"><div class="panel-header-icon orange" aria-hidden="true">📡</div><h3 data-i18n="live_data">Live Data</h3></div>
                 <div class="panel-body">
-                    <div id="bit-demo-banner" class="demo-banner" style="display:none;">⚠️ <span data-i18n="demo_warning">Demo mode</span></div>
-                    <div class="data-readings">
+                    <div id="bit-demo-banner" class="demo-banner" role="status" style="display:none;">⚠️ <span data-i18n="demo_warning">Demo mode</span></div>
+                    <div class="data-readings" aria-live="polite">
                         <div class="reading-card"><div class="reading-label" data-i18n="bit_light">Light Intensity</div><div class="reading-value" id="bit-val-light">--</div><div class="reading-unit">lux</div></div>
                         <div class="reading-card"><div class="reading-label" data-i18n="bit_transmission">Transmission %</div><div class="reading-value" id="bit-val-trans" style="color:var(--accent);">--</div><div class="reading-unit">%</div></div>
                         <div class="reading-card"><div class="reading-label" data-i18n="bit_purity">Purity Index</div><div class="reading-value" id="bit-val-purity">--</div><div class="reading-unit">/ 100</div></div>
@@ -1181,7 +1198,7 @@
                 </div>
             </div>
             <div class="panel" id="bit-results-panel" style="display:none;margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon purple">📊</div><h3 data-i18n="results">Results</h3></div>
+                <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">📊</div><h3 data-i18n="results">Results</h3></div>
                 <div class="panel-body"><div id="bit-results-body"></div></div>
             </div>
         </div>
@@ -1190,10 +1207,10 @@
 
 <!-- ============ SCREEN: TEST (PENETRATION) ============ -->
 <div id="screen-penetration" class="screen">
-    <header class="app-header">
+    <header class="app-header" role="navigation" aria-label="Page header">
         <div class="header-right"><div class="header-logo">SL</div><span class="header-title" id="pen-page-title">Bitumen Penetration Test</span></div>
         <div class="header-left">
-                <div class="header-user-btn" onclick="toggleUserDropdown(event)">
+                <div class="header-user-btn" role="button" tabindex="0" aria-label="User menu" onclick="toggleUserDropdown(event)">
                     <div class="user-icon" id="pen-user-icon">U</div>
                     <div class="user-dropdown">
                         <div class="dd-header"><div class="dd-name" id="pen-dd-name">User</div><div class="dd-email" id="pen-dd-email">—</div></div>
@@ -1204,10 +1221,10 @@
                 <button onclick="goBackToDashboard()" class="btn-back">→ <span data-i18n="dashboard">Dashboard</span></button>
             </div>
     </header>
-    <div class="test-layout">
+    <div class="test-layout" role="main">
         <div class="slide-up">
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon blue">📝</div><h3>Penetration Parameters</h3></div>
+                <div class="panel-header"><div class="panel-header-icon blue" aria-hidden="true">📝</div><h3>Penetration Parameters</h3></div>
                 <div class="panel-body">
                     <div class="form-group"><label>Sample ID</label><input type="text" id="pen_inp_sampleid" value="PEN-001"></div>
                     <div class="form-group"><label>Bitumen Grade</label><select id="pen_inp_grade"><option value="30-40">30/40</option><option value="40-50" selected>40/50</option><option value="60-70">60/70</option><option value="80-100">80/100</option></select></div>
@@ -1217,7 +1234,7 @@
                 </div>
             </div>
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon green">🔌</div><h3 data-i18n="hardware">Hardware Connection</h3></div>
+                <div class="panel-header"><div class="panel-header-icon green" aria-hidden="true">🔌</div><h3 data-i18n="hardware">Hardware Connection</h3></div>
                 <div class="panel-body">
                     <div class="form-group"><label data-i18n="connection">Connection</label>
                         <select id="pen-com-port-select" onchange="onPenConnTypeChange()"><option value="">-- Select Connection --</option><option value="browser-serial">🔌 USB / Serial</option><option value="lan">🌐 LAN / Network</option><option value="bluetooth">📡 Bluetooth</option><option value="manual">✏️ Manual Mode</option><option value="demo">🧪 Demo Mode</option></select>
@@ -1232,10 +1249,10 @@
         </div>
         <div class="slide-up" style="animation-delay:0.15s;">
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon orange">📡</div><h3 data-i18n="live_data">Live Data</h3></div>
+                <div class="panel-header"><div class="panel-header-icon orange" aria-hidden="true">📡</div><h3 data-i18n="live_data">Live Data</h3></div>
                 <div class="panel-body">
-                    <div id="pen-demo-banner" class="demo-banner" style="display:none;">⚠️ <span data-i18n="demo_warning">Demo mode</span></div>
-                    <div class="data-readings">
+                    <div id="pen-demo-banner" class="demo-banner" role="status" style="display:none;">⚠️ <span data-i18n="demo_warning">Demo mode</span></div>
+                    <div class="data-readings" aria-live="polite">
                         <div class="reading-card"><div class="reading-label">Penetration</div><div class="reading-value" id="pen-val-pen">--</div><div class="reading-unit">0.1mm</div></div>
                         <div class="reading-card"><div class="reading-label">Temperature</div><div class="reading-value" id="pen-val-temp" style="color:var(--accent);">--</div><div class="reading-unit">°C</div></div>
                         <div class="reading-card"><div class="reading-label">Needle Load</div><div class="reading-value" id="pen-val-load">--</div><div class="reading-unit">g</div></div>
@@ -1244,7 +1261,7 @@
                 </div>
             </div>
             <div class="panel" id="pen-results-panel" style="display:none;margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon purple">📊</div><h3 data-i18n="results">Results</h3></div>
+                <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">📊</div><h3 data-i18n="results">Results</h3></div>
                 <div class="panel-body"><div id="pen-results-body"></div></div>
             </div>
         </div>
@@ -1253,16 +1270,16 @@
 
 <!-- ============ SCREEN: ATTERBERG LIMITS ============ -->
 <div id="screen-atterberg" class="screen">
-    <header class="app-header">
+    <header class="app-header" role="navigation" aria-label="Page header">
         <div class="header-right">
             <div class="header-logo">SL</div>
             <span class="header-title">Atterberg Limits</span>
         </div>
         <div class="header-left">
             <button onclick="goBackToDashboard()" class="btn-back">→ <span data-i18n="dashboard">Dashboard</span></button>
-            <div class="header-user-btn" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
+            <div class="header-user-btn" role="button" tabindex="0" aria-label="User menu" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
                 <div class="user-icon" id="atterberg-user-icon">U</div>
-                <span class="dd-arrow">▼</span>
+                <span class="dd-arrow" aria-hidden="true">▼</span>
                 <div class="user-dropdown" id="atterberg-user-dropdown">
                     <div class="dd-header"><div class="dd-name" id="atterberg-dd-name">User</div><div class="dd-email" id="atterberg-dd-email">—</div></div>
                     <button class="dd-item" onclick="showScreen('domains')"><span class="dd-icon">🏠</span> Change Domain</button>
@@ -1271,10 +1288,10 @@
             </div>
         </div>
     </header>
-    <div class="test-layout">
+    <div class="test-layout" role="main">
         <div class="slide-up">
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon blue">📝</div><h3>Test Parameters</h3></div>
+                <div class="panel-header"><div class="panel-header-icon blue" aria-hidden="true">📝</div><h3>Test Parameters</h3></div>
                 <div class="panel-body">
                     <div class="form-group"><label>Sample ID</label><input type="text" id="atterberg-sample-id" placeholder="AT-001"></div>
                     <div class="form-group"><label>Soil Type</label>
@@ -1286,7 +1303,7 @@
                 </div>
             </div>
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon green">🔌</div><h3>Connection</h3></div>
+                <div class="panel-header"><div class="panel-header-icon green" aria-hidden="true">🔌</div><h3>Connection</h3></div>
                 <div class="panel-body">
                     <div class="form-group"><label>Connection Type</label>
                         <select id="atterberg-conn" onchange="onAtterbergConnChange()">
@@ -1304,10 +1321,10 @@
         </div>
         <div class="slide-up" style="animation-delay:0.15s;">
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon orange">📡</div><h3>Live Data</h3></div>
+                <div class="panel-header"><div class="panel-header-icon orange" aria-hidden="true">📡</div><h3>Live Data</h3></div>
                 <div class="panel-body">
-                    <div id="atterberg-demo-banner" class="demo-banner" style="display:none;">⚠️ Demo mode — simulated data</div>
-                    <div class="data-readings">
+                    <div id="atterberg-demo-banner" class="demo-banner" role="status" style="display:none;">⚠️ Demo mode — simulated data</div>
+                    <div class="data-readings" aria-live="polite">
                         <div class="reading-card"><div class="reading-label">Blows (LL)</div><div class="reading-value" id="atterberg-blows">--</div><div class="reading-unit">N</div></div>
                         <div class="reading-card"><div class="reading-label">Cone Depth</div><div class="reading-value" id="atterberg-cone-depth">--</div><div class="reading-unit">mm</div></div>
                         <div class="reading-card"><div class="reading-label">Liquid Limit</div><div class="reading-value" id="atterberg-ll">--</div><div class="reading-unit">%</div></div>
@@ -1316,13 +1333,13 @@
                 </div>
             </div>
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon blue">📋</div><h3>Readings Log</h3></div>
+                <div class="panel-header"><div class="panel-header-icon blue" aria-hidden="true">📋</div><h3>Readings Log</h3></div>
                 <div class="panel-body" style="padding:0;">
                     <table class="strike-log"><thead><tr><th>#</th><th>Blows</th><th>Moisture%</th><th>Mode</th></tr></thead><tbody id="atterberg-log-body"><tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:20px;">Start test to see data</td></tr></tbody></table>
                 </div>
             </div>
             <div class="panel" id="atterberg-results-panel" style="display:none;margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon purple">📊</div><h3>Results</h3></div>
+                <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">📊</div><h3>Results</h3></div>
                 <div class="panel-body"><div id="atterberg-results-body"></div></div>
             </div>
         </div>
@@ -1331,16 +1348,16 @@
 
 <!-- ============ SCREEN: SIEVE ANALYSIS ============ -->
 <div id="screen-sieve" class="screen">
-    <header class="app-header">
+    <header class="app-header" role="navigation" aria-label="Page header">
         <div class="header-right">
             <div class="header-logo">SL</div>
             <span class="header-title">Sieve Analysis</span>
         </div>
         <div class="header-left">
             <button onclick="goBackToDashboard()" class="btn-back">→ <span data-i18n="dashboard">Dashboard</span></button>
-            <div class="header-user-btn" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
+            <div class="header-user-btn" role="button" tabindex="0" aria-label="User menu" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
                 <div class="user-icon" id="sieve-user-icon">U</div>
-                <span class="dd-arrow">▼</span>
+                <span class="dd-arrow" aria-hidden="true">▼</span>
                 <div class="user-dropdown" id="sieve-user-dropdown">
                     <div class="dd-header"><div class="dd-name" id="sieve-dd-name">User</div><div class="dd-email" id="sieve-dd-email">—</div></div>
                     <button class="dd-item" onclick="showScreen('domains')"><span class="dd-icon">🏠</span> Change Domain</button>
@@ -1349,10 +1366,10 @@
             </div>
         </div>
     </header>
-    <div class="test-layout">
+    <div class="test-layout" role="main">
         <div class="slide-up">
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon blue">📝</div><h3>Test Parameters</h3></div>
+                <div class="panel-header"><div class="panel-header-icon blue" aria-hidden="true">📝</div><h3>Test Parameters</h3></div>
                 <div class="panel-body">
                     <div class="form-group"><label>Sample ID</label><input type="text" id="sieve-sample-id" placeholder="SV-001"></div>
                     <div class="form-group"><label>Dry Sample Mass (g)</label><input type="number" id="sieve-total-mass" step="any" value="500"></div>
@@ -1362,7 +1379,7 @@
                 </div>
             </div>
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon green">🔌</div><h3>Connection</h3></div>
+                <div class="panel-header"><div class="panel-header-icon green" aria-hidden="true">🔌</div><h3>Connection</h3></div>
                 <div class="panel-body">
                     <div class="form-group"><label>Connection Type</label>
                         <select id="sieve-conn" onchange="onSieveConnChange()">
@@ -1380,9 +1397,9 @@
         </div>
         <div class="slide-up" style="animation-delay:0.15s;">
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon orange">📐</div><h3>Sieve Stack Input</h3></div>
+                <div class="panel-header"><div class="panel-header-icon orange" aria-hidden="true">📐</div><h3>Sieve Stack Input</h3></div>
                 <div class="panel-body">
-                    <div id="sieve-demo-banner" class="demo-banner" style="display:none;">⚠️ Demo mode — simulated data</div>
+                    <div id="sieve-demo-banner" class="demo-banner" role="status" style="display:none;">⚠️ Demo mode — simulated data</div>
                     <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">Enter mass retained on each sieve (g)</p>
                     <table class="strike-log"><thead><tr><th>Sieve (mm)</th><th>Mass Retained (g)</th><th>% Retained</th><th>% Passing</th></tr></thead>
                     <tbody id="sieve-input-body">
@@ -1401,7 +1418,7 @@
                 </div>
             </div>
             <div class="panel" id="sieve-results-panel" style="display:none;margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon purple">📊</div><h3>Results</h3></div>
+                <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">📊</div><h3>Results</h3></div>
                 <div class="panel-body"><div id="sieve-results-body"></div></div>
             </div>
         </div>
@@ -1410,16 +1427,16 @@
 
 <!-- ============ SCREEN: COMPRESSIVE STRENGTH ============ -->
 <div id="screen-compressive" class="screen">
-    <header class="app-header">
+    <header class="app-header" role="navigation" aria-label="Page header">
         <div class="header-right">
             <div class="header-logo">SL</div>
             <span class="header-title">Compressive Strength</span>
         </div>
         <div class="header-left">
             <button onclick="goBackToDashboard()" class="btn-back">→ <span data-i18n="dashboard">Dashboard</span></button>
-            <div class="header-user-btn" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
+            <div class="header-user-btn" role="button" tabindex="0" aria-label="User menu" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
                 <div class="user-icon" id="comp-user-icon">U</div>
-                <span class="dd-arrow">▼</span>
+                <span class="dd-arrow" aria-hidden="true">▼</span>
                 <div class="user-dropdown" id="comp-user-dropdown">
                     <div class="dd-header"><div class="dd-name" id="comp-dd-name">User</div><div class="dd-email" id="comp-dd-email">—</div></div>
                     <button class="dd-item" onclick="showScreen('domains')"><span class="dd-icon">🏠</span> Change Domain</button>
@@ -1428,10 +1445,10 @@
             </div>
         </div>
     </header>
-    <div class="test-layout">
+    <div class="test-layout" role="main">
         <div class="slide-up">
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon blue">📝</div><h3>Test Parameters</h3></div>
+                <div class="panel-header"><div class="panel-header-icon blue" aria-hidden="true">📝</div><h3>Test Parameters</h3></div>
                 <div class="panel-body">
                     <div class="form-group"><label>Sample ID</label><input type="text" id="comp-sample-id" placeholder="CS-001"></div>
                     <div class="form-group"><label>Specimen Type</label>
@@ -1446,7 +1463,7 @@
                 </div>
             </div>
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon green">🔌</div><h3>Connection</h3></div>
+                <div class="panel-header"><div class="panel-header-icon green" aria-hidden="true">🔌</div><h3>Connection</h3></div>
                 <div class="panel-body">
                     <div class="form-group"><label>Connection Type</label>
                         <select id="comp-conn" onchange="onCompConnChange()">
@@ -1466,14 +1483,14 @@
         </div>
         <div class="slide-up" style="animation-delay:0.15s;">
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon orange">📡</div><h3>Live Data</h3></div>
+                <div class="panel-header"><div class="panel-header-icon orange" aria-hidden="true">📡</div><h3>Live Data</h3></div>
                 <div class="panel-body">
-                    <div id="comp-demo-banner" class="demo-banner" style="display:none;">⚠️ Demo mode — simulated data</div>
+                    <div id="comp-demo-banner" class="demo-banner" role="status" style="display:none;">⚠️ Demo mode — simulated data</div>
                     <div class="progress-ring">
                         <div style="text-align:center;"><div class="gauge-container"><svg viewBox="0 0 100 100"><circle class="gauge-bg" cx="50" cy="50" r="42"/><circle class="gauge-fill" id="comp-gauge-fill" cx="50" cy="50" r="42" stroke-dasharray="264" stroke-dashoffset="264"/></svg><div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;"><div class="ring-text" id="comp-force-display">0</div><div class="ring-label">kN</div></div></div></div>
                         <div><div style="margin-bottom:10px;"><div class="reading-label">Peak Force</div><div style="font-size:18px;font-weight:700;" id="comp-peak-force">-- kN</div></div><div><div class="reading-label">Strength</div><div style="font-size:18px;font-weight:700;color:var(--accent);" id="comp-strength-display">-- MPa</div></div></div>
                     </div>
-                    <div class="data-readings">
+                    <div class="data-readings" aria-live="polite">
                         <div class="reading-card"><div class="reading-label">Force</div><div class="reading-value" id="comp-val-force">--</div><div class="reading-unit">kN</div></div>
                         <div class="reading-card"><div class="reading-label">Displacement</div><div class="reading-value" id="comp-val-disp">--</div><div class="reading-unit">mm</div></div>
                         <div class="reading-card"><div class="reading-label">Stress</div><div class="reading-value" id="comp-val-stress">--</div><div class="reading-unit">MPa</div></div>
@@ -1482,7 +1499,7 @@
                 </div>
             </div>
             <div class="panel" id="comp-results-panel" style="display:none;margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon purple">📊</div><h3>Results</h3></div>
+                <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">📊</div><h3>Results</h3></div>
                 <div class="panel-body"><div id="comp-results-body"></div>
                     <div style="margin-top:16px;display:flex;gap:12px;">
                         <button onclick="generateCompPDF()" class="btn-primary">📄 Download PDF</button>
@@ -1495,16 +1512,16 @@
 
 <!-- ============ SCREEN: DUCTILITY ============ -->
 <div id="screen-ductility" class="screen">
-    <header class="app-header">
+    <header class="app-header" role="navigation" aria-label="Page header">
         <div class="header-right">
             <div class="header-logo">SL</div>
             <span class="header-title">Bitumen Ductility</span>
         </div>
         <div class="header-left">
             <button onclick="goBackToDashboard()" class="btn-back">→ <span data-i18n="dashboard">Dashboard</span></button>
-            <div class="header-user-btn" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
+            <div class="header-user-btn" role="button" tabindex="0" aria-label="User menu" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
                 <div class="user-icon" id="duct-user-icon">U</div>
-                <span class="dd-arrow">▼</span>
+                <span class="dd-arrow" aria-hidden="true">▼</span>
                 <div class="user-dropdown" id="duct-user-dropdown">
                     <div class="dd-header"><div class="dd-name" id="duct-dd-name">User</div><div class="dd-email" id="duct-dd-email">—</div></div>
                     <button class="dd-item" onclick="showScreen('domains')"><span class="dd-icon">🏠</span> Change Domain</button>
@@ -1513,10 +1530,10 @@
             </div>
         </div>
     </header>
-    <div class="test-layout">
+    <div class="test-layout" role="main">
         <div class="slide-up">
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon blue">📝</div><h3>Test Parameters</h3></div>
+                <div class="panel-header"><div class="panel-header-icon blue" aria-hidden="true">📝</div><h3>Test Parameters</h3></div>
                 <div class="panel-body">
                     <div class="form-group"><label>Sample ID</label><input type="text" id="duct-sample-id" placeholder="DU-001"></div>
                     <div class="form-group"><label>Bitumen Grade</label>
@@ -1529,7 +1546,7 @@
                 </div>
             </div>
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon green">🔌</div><h3>Connection</h3></div>
+                <div class="panel-header"><div class="panel-header-icon green" aria-hidden="true">🔌</div><h3>Connection</h3></div>
                 <div class="panel-body">
                     <div class="form-group"><label>Connection Type</label>
                         <select id="duct-conn" onchange="onDuctConnChange()">
@@ -1548,10 +1565,10 @@
         </div>
         <div class="slide-up" style="animation-delay:0.15s;">
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon orange">📡</div><h3>Live Data</h3></div>
+                <div class="panel-header"><div class="panel-header-icon orange" aria-hidden="true">📡</div><h3>Live Data</h3></div>
                 <div class="panel-body">
-                    <div id="duct-demo-banner" class="demo-banner" style="display:none;">⚠️ Demo mode — simulated data</div>
-                    <div class="data-readings">
+                    <div id="duct-demo-banner" class="demo-banner" role="status" style="display:none;">⚠️ Demo mode — simulated data</div>
+                    <div class="data-readings" aria-live="polite">
                         <div class="reading-card"><div class="reading-label">Extension</div><div class="reading-value" id="duct-val-ext">--</div><div class="reading-unit">cm</div></div>
                         <div class="reading-card"><div class="reading-label">Force</div><div class="reading-value" id="duct-val-force">--</div><div class="reading-unit">N</div></div>
                         <div class="reading-card"><div class="reading-label">Speed</div><div class="reading-value" id="duct-val-speed">--</div><div class="reading-unit">cm/min</div></div>
@@ -1560,7 +1577,7 @@
                 </div>
             </div>
             <div class="panel" id="duct-results-panel" style="display:none;margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon purple">📊</div><h3>Results</h3></div>
+                <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">📊</div><h3>Results</h3></div>
                 <div class="panel-body"><div id="duct-results-body"></div></div>
             </div>
         </div>
@@ -1569,16 +1586,16 @@
 
 <!-- ============ SCREEN: AIR CONTENT ============ -->
 <div id="screen-air" class="screen">
-    <header class="app-header">
+    <header class="app-header" role="navigation" aria-label="Page header">
         <div class="header-right">
             <div class="header-logo">SL</div>
             <span class="header-title">Air Content — Fresh Concrete</span>
         </div>
         <div class="header-left">
             <button onclick="goBackToDashboard()" class="btn-back">→ <span data-i18n="dashboard">Dashboard</span></button>
-            <div class="header-user-btn" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
+            <div class="header-user-btn" role="button" tabindex="0" aria-label="User menu" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
                 <div class="user-icon" id="air-user-icon">U</div>
-                <span class="dd-arrow">▼</span>
+                <span class="dd-arrow" aria-hidden="true">▼</span>
                 <div class="user-dropdown" id="air-user-dropdown">
                     <div class="dd-header"><div class="dd-name" id="air-dd-name">User</div><div class="dd-email" id="air-dd-email">—</div></div>
                     <button class="dd-item" onclick="showScreen('domains')"><span class="dd-icon">🏠</span> Change Domain</button>
@@ -1587,10 +1604,10 @@
             </div>
         </div>
     </header>
-    <div class="test-layout">
+    <div class="test-layout" role="main">
         <div class="slide-up">
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon blue">📝</div><h3>Test Parameters</h3></div>
+                <div class="panel-header"><div class="panel-header-icon blue" aria-hidden="true">📝</div><h3>Test Parameters</h3></div>
                 <div class="panel-body">
                     <div class="form-group"><label>Sample ID</label><input type="text" id="air-sample-id" placeholder="AC-001"></div>
                     <div class="form-group"><label>Method</label>
@@ -1604,7 +1621,7 @@
                 </div>
             </div>
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon green">🔌</div><h3>Connection</h3></div>
+                <div class="panel-header"><div class="panel-header-icon green" aria-hidden="true">🔌</div><h3>Connection</h3></div>
                 <div class="panel-body">
                     <div class="form-group"><label>Connection Type</label>
                         <select id="air-conn" onchange="onAirConnChange()">
@@ -1623,10 +1640,10 @@
         </div>
         <div class="slide-up" style="animation-delay:0.15s;">
             <div class="panel" style="margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon orange">📡</div><h3>Live Data</h3></div>
+                <div class="panel-header"><div class="panel-header-icon orange" aria-hidden="true">📡</div><h3>Live Data</h3></div>
                 <div class="panel-body">
-                    <div id="air-demo-banner" class="demo-banner" style="display:none;">⚠️ Demo mode — simulated data</div>
-                    <div class="data-readings">
+                    <div id="air-demo-banner" class="demo-banner" role="status" style="display:none;">⚠️ Demo mode — simulated data</div>
+                    <div class="data-readings" aria-live="polite">
                         <div class="reading-card"><div class="reading-label">Pressure</div><div class="reading-value" id="air-val-pressure">--</div><div class="reading-unit">psi</div></div>
                         <div class="reading-card"><div class="reading-label">Air Content</div><div class="reading-value" id="air-val-air">--</div><div class="reading-unit">%</div></div>
                         <div class="reading-card"><div class="reading-label">Unit Weight</div><div class="reading-value" id="air-val-uw">--</div><div class="reading-unit">kg/m³</div></div>
@@ -1635,7 +1652,7 @@
                 </div>
             </div>
             <div class="panel" id="air-results-panel" style="display:none;margin-bottom:20px;">
-                <div class="panel-header"><div class="panel-header-icon purple">📊</div><h3>Results</h3></div>
+                <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">📊</div><h3>Results</h3></div>
                 <div class="panel-body"><div id="air-results-body"></div></div>
             </div>
         </div>
@@ -1643,10 +1660,10 @@
 </div>
 
 <!-- ============ FOOTER ============ -->
-<footer class="site-footer">
+<footer class="site-footer" role="contentinfo">
     <div class="footer-top">
         <div class="footer-brand"><h3>Fimto Soft</h3><p class="tagline">Integrated Tech Solutions</p><p class="description" data-i18n="footer_desc">We provide comprehensive software solutions including advanced interactive ERP systems, web design, digital marketing, security systems, AI applications, and smart home solutions.</p></div>
-        <div class="footer-section"><h4 data-i18n="quick_links">Quick Links</h4><ul><li><a href="#">Home</a></li><li><a href="#">Services</a></li><li><a href="#">Blog</a></li><li><a href="#">Contact</a></li></ul></div>
+        <div class="footer-section"><h4 data-i18n="quick_links">Quick Links</h4><ul role="navigation" aria-label="Quick links"><li><a href="#">Home</a></li><li><a href="#">Services</a></li><li><a href="#">Blog</a></li><li><a href="#">Contact</a></li></ul></div>
         <div class="footer-section"><h4 data-i18n="contact_us">Contact Us</h4><ul><li><a href="mailto:info@fimtosoft.com">✉ info@fimtosoft.com</a></li><li><a href="tel:01001006627">📱 EG: 01001006627</a></li><li><a href="tel:0500439617">📱 KSA: 0500439617</a></li></ul></div>
     </div>
     <div class="footer-bottom"><p>&copy; 2026 Fimto Soft — All Rights Reserved</p><div class="footer-locations"><span>🇪🇬 Cairo, Egypt</span><span>🇸🇦 Riyadh, Saudi Arabia</span></div></div>
@@ -1696,6 +1713,26 @@ firebase.initializeApp({apiKey:"AIzaSyDDr7EQ95hLdecc1BDIZIFhmmmVMLArBsU",authDom
 var db = firebase.firestore();
 var auth = firebase.auth();
 var currentUser = null;
+
+function showToast(message, type) {
+    type = type || 'info';
+    var container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+    var icons = { error: '⚠️', success: '✅', info: 'ℹ️', warning: '⚡' };
+    var toast = document.createElement('div');
+    toast.className = 'toast ' + type;
+    toast.innerHTML = '<span>' + (icons[type] || 'ℹ️') + '</span><span>' + message + '</span>';
+    container.appendChild(toast);
+    setTimeout(function() {
+        toast.style.animation = 'toastOut 0.3s ease forwards';
+        setTimeout(function() { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 300);
+    }, 5000);
+}
 
 // ================================================================
 // AUTH
@@ -2038,9 +2075,9 @@ async function loadDomains() {
         var icons = { 'طرق':'🛣️', 'خرسانة':'🏗️', 'أسفلت':'🛤️', 'Roads':'🛣️', 'Concrete':'🏗️', 'Asphalt':'🛤️', '道路':'🛣️', '混凝土':'🏗️', '沥青':'🛤️', 'Straßen':'🛣️', 'Beton':'🏗️', 'Asphalt':'🛤️' };
         domains.forEach(function(d) {
             var ik = Object.keys(icons).find(function(k){return d.name.includes(k);}) || '🔬';
-            var card = document.createElement('a'); card.href='#'; card.className='domain-card';
+            var card = document.createElement('a'); card.href='#'; card.className='domain-card'; card.setAttribute('tabindex','0'); card.setAttribute('role','button'); card.setAttribute('aria-label',d.name);
             card.onclick = function(e){e.preventDefault();selectDomain(d);};
-            card.innerHTML = '<div class="domain-icon">'+(icons[ik]||'🔬')+'</div><div class="domain-info"><h3>'+d.name+'</h3><p>'+(d.description||'')+'</p></div>';
+            card.innerHTML = '<div class="domain-icon" aria-hidden="true">'+(icons[ik]||'🔬')+'</div><div class="domain-info"><h3>'+d.name+'</h3><p>'+(d.description||'')+'</p></div>';
             c.appendChild(card);
         });
         loadAITeam();
@@ -2073,8 +2110,8 @@ async function selectDomain(domain) {
     var tIcons={'دمك':'⚡','رطوبة':'💧','انضباط':'📐','انساب':'🌡️','نسبة':'📊','CBR':'📊','cbr':'📊','استقامة':'📐','straightedge':'📐','هبوط':'📐','slump':'📐','مaturity':'🌡️','maturity':'🌡️','مارشال':'⚖️','marshall':'⚖️','بتومين':'🧪','bitumen':'🧪','marşal':'⚖️','_photo':'🧪','فتو':'🧪','Atterberg':'🧪','atterberg':'🧪','sieve':'📐','Sieve':'📐','compressive':'🏗️','Compressive':'🏗️','ductility':'🔗','Ductility':'🔗','air':'💨','Air':'💨'};
     var tDescs={compaction:'Proctor compaction test with real-time density calculations',cbr:'California Bearing Ratio — penetration & load analysis',straightedge:'Surface evenness measurement with IMU + laser',slump:'Ultrasonic cone height measurement',maturity:'Temperature logging with Nurse-Saul / Arrhenius index',marshall:'Load-displacement stability & flow test',bitumen:'Light intensity transmission & purity test',penetration:'Needle penetration depth measurement',moisture:'Soil moisture content determination',atterberg:'Liquid & Plastic limits — Atterberg consistency test',sieve:'Grain size distribution — gradation analysis',compressive:'Uniaxial compressive strength — cylinder/cube',ductility:'Bitumen ductility — extension at break test',air:'Fresh concrete air content — pressure/volumetric method'};
     tests.forEach(function(t){var ik=Object.keys(tIcons).find(function(k){return t.name.includes(k);});
-    var card=document.createElement('a');card.href='#';card.className='test-card slide-up';card.onclick=function(e){e.preventDefault();openTest(t);};
-    card.innerHTML='<div class="test-card-icon">'+(tIcons[ik]||'🔬')+'</div><h3>'+t.name+'</h3><p>'+(tDescs[t.type]||'Interactive test with real-time sensor data')+'</p><div class="card-footer"><span class="card-tag">'+(t.type==='compaction'||t.type==='cbr'?'Hardware':'Manual')+'</span><div class="card-arrow">←</div></div>';
+    var card=document.createElement('a');card.href='#';card.className='test-card slide-up';card.setAttribute('tabindex','0');card.setAttribute('role','button');card.setAttribute('aria-label',t.name);card.onclick=function(e){e.preventDefault();openTest(t);};
+    card.innerHTML='<div class="test-card-icon" aria-hidden="true">'+(tIcons[ik]||'🔬')+'</div><h3>'+t.name+'</h3><p>'+(tDescs[t.type]||'Interactive test with real-time sensor data')+'</p><div class="card-footer"><span class="card-tag">'+(t.type==='compaction'||t.type==='cbr'?'Hardware':'Manual')+'</span><div class="card-arrow" aria-hidden="true">←</div></div>';
     grid.appendChild(card);});}catch(e){grid.innerHTML='<p style="color:#ef4444;">Error: '+e.message+'</p>';}
 }
 
@@ -2254,12 +2291,12 @@ function sendBtCommand(cmd) {
     }
 }
 
-async function startSerialStream(){if(!serialPort||!serialPort.readable)return;serialKeepReading=true;var decoder=new TextDecoder();var buffer='';while(serialPort.readable&&serialKeepReading){try{serialReader=serialPort.readable.getReader();while(serialKeepReading){var{value,done}=await serialReader.read();if(done)break;buffer+=decoder.decode(value,{stream:true});var lines=buffer.split('\n');buffer=lines.pop();for(var i=0;i<lines.length;i++){var line=lines[i].trim();if(line)handleSerialLine(line);}}}catch(e){if(serialKeepReading)serialLog('Error: '+e.message,'rx');}finally{try{if(serialReader)serialReader.releaseLock();}catch(e){}}}}
+async function startSerialStream(){if(!serialPort||!serialPort.readable)return;serialKeepReading=true;var decoder=new TextDecoder();var buffer='';while(serialPort.readable&&serialKeepReading){try{serialReader=serialPort.readable.getReader();while(serialKeepReading){var{value,done}=await serialReader.read();if(done)break;buffer+=decoder.decode(value,{stream:true});var lines=buffer.split('\n');buffer=lines.pop();for(var i=0;i<lines.length;i++){var line=lines[i].trim();if(line)handleSerialLine(line);}}}catch(e){if(serialKeepReading)serialLog('Error: '+e.message,'rx');}finally{try{if(serialReader)serialReader.releaseLock();}catch(e){console.error('Serial reader release error:',e);}}}}
 function handleSerialLine(line){serialLog('← '+line,'rx');if(line.indexOf('SmartLAP:READY')===0){serialLog('Arduino ready','tx');return;}if(line.indexOf('SmartLAP:TARED')===0){serialLog('Tared','tx');return;}var parts=line.split(',');if(parts.length>=2){var v1=parseFloat(parts[0]),v2=parseFloat(parts[1]);if(isNaN(v1)||isNaN(v2))return;if(!isTesting)return;if(currentTest&&currentTest.type==='cbr'){processCBRReading(v1,v2);}else if(currentTest&&currentTest.type==='straightedge'){var v3=parts.length>=3?parseFloat(parts[2]):0;processSEReading(v1,v2,v3);}else if(currentTest&&currentTest.type==='maturity'){processMatSerial(v1);}else if(currentTest&&currentTest.type==='marshall'){var v3=parts.length>=3?parseFloat(parts[2]):0;var v4=parts.length>=4?parseFloat(parts[3]):v1;processMarReading(v2,v1,v3,v4);}else if(currentTest&&currentTest.type==='slump'){processSlumpSerial(v1);}else if(currentTest&&currentTest.type==='bitumen'){var v3=parts.length>=3?parseFloat(parts[2]):0;processBitSerial(v1,v2,v3);}else if(currentTest&&currentTest.type==='penetration'){processPenSerial(v1);}else{processStrike(v1,v2);}}}
 function processSlumpSerial(dist){var h=parseFloat(document.getElementById('slump_inp_height').value)||305;var slump=Math.round(h-dist);document.getElementById('slump-val-dist').textContent=dist;document.getElementById('slump-val-slump').textContent=slump;var tol=parseFloat(document.getElementById('slump_inp_tolerance').value)||25;var target=parseFloat(document.getElementById('slump_inp_target').value)||100;var dev=Math.abs(slump-target);document.getElementById('slump-val-dev').textContent=dev;var ok=dev<=tol;document.getElementById('slump-val-status').textContent=ok?'✅ PASS':'❌ FAIL';document.getElementById('slump-results-panel').style.display='block';document.getElementById('slump-results-body').innerHTML='<div class="result-status '+(ok?'pass':'fail')+'">'+(ok?'✅':'❌')+' '+(ok?'PASS':'FAIL')+'</div><div class="result-row"><span class="result-label">Slump Value</span><span class="result-value">'+slump+' mm</span></div><div class="result-row"><span class="result-label">Target</span><span class="result-value">'+target+' mm</span></div><div class="result-row"><span class="result-label">Deviation</span><span class="result-value">'+dev+' mm</span></div><div class="result-row"><span class="result-label">Tolerance</span><span class="result-value">±'+tol+' mm</span></div>';}
 function processMatSerial(tempC){var now=Date.now();if(!window._matStartTime)window._matStartTime=now;var hours=Math.round(((now-window._matStartTime)/3600000)*100)/100;if(hours<0.01)hours=0.25;var totalMat=(window._matTotalMat||0)+tempC*0.25;window._matTotalMat=totalMat;var strength=Math.round(30*(1-Math.exp(-0.02*totalMat))*100)/100;var target=parseFloat(document.getElementById('mat_inp_target').value)||30;var pct=Math.round(strength/target*100);document.getElementById('mat-val-temp').textContent=tempC+'°C';document.getElementById('mat-val-maturity').textContent=Math.round(totalMat);document.getElementById('mat-val-strength').textContent=strength;document.getElementById('mat-val-time').textContent=hours;processMatReading(hours,tempC,totalMat,strength,pct);}
 function processBitSerial(lux,trans,purity){var pass=purity>=80;document.getElementById('bit-val-light').textContent=lux.toFixed(0);document.getElementById('bit-val-trans').textContent=trans.toFixed(2);document.getElementById('bit-val-purity').textContent=purity;document.getElementById('bit-val-status').textContent=pass?'✅ PASS':'❌ FAIL';document.getElementById('bit-val-status').style.color=pass?'#16a34a':'#ef4444';}
-function stopSerial(){serialKeepReading=false;if(serialReader){try{serialReader.releaseLock();}catch(e){}}}
+function stopSerial(){serialKeepReading=false;if(serialReader){try{serialReader.releaseLock();}catch(e){console.error('Serial release error:',e);}}}
 async function sendSerialCommand(cmd){if(!serialPort||!serialPort.writable)return;try{var w=serialPort.writable.getWriter();var e=new TextEncoder();await w.write(e.encode(cmd+'\n'));w.releaseLock();serialLog('→ '+cmd,'tx');}catch(e){serialLog('Send error: '+e.message,'rx');}}
 function sendHardwareCommand(cmd) {
     if (connType === 'browser-serial') sendSerialCommand(cmd);
@@ -2268,8 +2305,8 @@ function sendHardwareCommand(cmd) {
 }
 function stopAllConnections() {
     stopSerial();
-    if (lanSocket) { try { lanSocket.close(); } catch(e){} lanSocket = null; }
-    if (btDevice && btDevice.gatt.connected) { try { btDevice.gatt.disconnect(); } catch(e){} }
+    if (lanSocket) { try { lanSocket.close(); } catch(e){console.error('LAN socket close error:',e);} lanSocket = null; }
+    if (btDevice && btDevice.gatt.connected) { try { btDevice.gatt.disconnect(); } catch(e){console.error('BT disconnect error:',e);} }
     btDevice = null; btCharacteristic = null;
 }
 
@@ -2294,7 +2331,7 @@ db.collection('sessions').add({testId:currentTest.id,domainId:currentDomain.id,d
 
 function displayResults(results){var panel=document.getElementById('results-panel');var body=document.getElementById('results-body');panel.style.display='block';var labels={strikes_count:'Strikes Completed',target_strikes:'Target Strikes',max_dry_density:'Max Dry Density (kg/m³)',optimum_moisture:'Optimum Moisture %',average_moisture:'Avg Moisture %',average_force:'Avg Force (N)',max_force:'Max Force (N)',reference_density:'Reference Density (kg/m³)',compaction_ratio:'Compaction Ratio %',hammer_weight:'Hammer (kg)',mold_volume:'Mold (m³)',status:'Status'};var html='';if(results.status){var p=results.status==='PASS';html+='<div class="result-status '+(p?'pass':'fail')+'">'+(p?'✅':'❌')+' '+results.status+' — '+results.compaction_ratio+'%</div>';}Object.keys(results).forEach(function(k){html+='<div class="result-row"><span class="result-label">'+(labels[k]||k)+'</span><span class="result-value">'+results[k]+'</span></div>';});body.innerHTML=html;if(results.compaction_ratio>0){document.getElementById('chart-box').style.display='block';setTimeout(function(){document.getElementById('chart-fill').style.width=Math.min(results.compaction_ratio,100)+'%';},100);}document.getElementById('btn-pdf').style.display='flex';}
 
-async function loadHistory(){if(!currentTest)return;try{var snap=await db.collection('sessions').where('testId','==',currentTest.id).get();var tbody=document.getElementById('history-body');if(snap.empty)return;tbody.innerHTML='';var rows=[];snap.forEach(function(doc){var s=doc.data();rows.push(s);});rows.sort(function(a,b){return (b.createdAt&&b.createdAt.seconds||0)-(a.createdAt&&a.createdAt.seconds||0);});rows.slice(0,10).forEach(function(s){var st=(s.results&&s.results.status)||'?';var dens=(s.results&&s.results.max_dry_density)||'--';var date=s.createdAt?new Date(s.createdAt.seconds*1000).toLocaleDateString():'--';var cls=st==='PASS'?'result-pass':(st==='FAIL'?'result-fail':'');var tr=document.createElement('tr');tr.innerHTML='<td>'+date+'</td><td class="'+cls+'">'+st+'</td><td>'+dens+' kg/m³</td>';tbody.appendChild(tr);});}catch(e){}}
+async function loadHistory(){if(!currentTest)return;try{var snap=await db.collection('sessions').where('testId','==',currentTest.id).get();var tbody=document.getElementById('history-body');if(snap.empty)return;tbody.innerHTML='';var rows=[];snap.forEach(function(doc){var s=doc.data();rows.push(s);});rows.sort(function(a,b){return (b.createdAt&&b.createdAt.seconds||0)-(a.createdAt&&a.createdAt.seconds||0);});rows.slice(0,10).forEach(function(s){var st=(s.results&&s.results.status)||'?';var dens=(s.results&&s.results.max_dry_density)||'--';var date=s.createdAt?new Date(s.createdAt.seconds*1000).toLocaleDateString():'--';var cls=st==='PASS'?'result-pass':(st==='FAIL'?'result-fail':'');var tr=document.createElement('tr');tr.innerHTML='<td>'+date+'</td><td class="'+cls+'">'+st+'</td><td>'+dens+' kg/m³</td>';tbody.appendChild(tr);});}catch(e){console.error('loadHistory error:',e);showToast('Failed to load history: '+e.message,'error');}}
 
 function saveTestSession(type,results){
     try{
@@ -2305,7 +2342,7 @@ function saveTestSession(type,results){
             results:results,
             createdAt:firebase.firestore.FieldValue.serverTimestamp()
         });
-    }catch(e){}
+    }catch(e){console.error('saveTestSession error:',e);showToast('Failed to save session: '+e.message,'error');}
 }
 
 // ================================================================
@@ -2535,7 +2572,7 @@ async function loadCBRHistory(){
     var rows=[];snap.forEach(function(doc){rows.push(doc.data());});rows.sort(function(a,b){return (b.createdAt&&b.createdAt.seconds||0)-(a.createdAt&&a.createdAt.seconds||0);});
     rows.slice(0,10).forEach(function(s){var st=(s.results&&s.results.status)||'?';var cbr=(s.results&&s.results.cbr_value)||'--';var date=s.createdAt?new Date(s.createdAt.seconds*1000).toLocaleDateString():'--';
     var cls=st==='PASS'?'result-pass':(st==='FAIL'?'result-fail':'');
-    var tr=document.createElement('tr');tr.innerHTML='<td>'+date+'</td><td class="'+cls+'">'+st+'</td><td>'+cbr+'%</td>';tbody.appendChild(tr);});}catch(e){}
+    var tr=document.createElement('tr');tr.innerHTML='<td>'+date+'</td><td class="'+cls+'">'+st+'</td><td>'+cbr+'%</td>';tbody.appendChild(tr);});}catch(e){console.error('loadCBRHistory error:',e);showToast('Failed to load CBR history: '+e.message,'error');}
 }
 
 // ================================================================
@@ -3160,7 +3197,7 @@ async function loadQRList(){
         var rows=[];snap.forEach(function(doc){var s=doc.data();s.firestoreId=doc.id;rows.push(s);});
         rows.sort(function(a,b){return (b.createdAt&&b.createdAt.seconds||0)-(a.createdAt&&a.createdAt.seconds||0);});
         rows.slice(0,50).forEach(function(s){qrSpecimens.push(s);addQRToTable(s);});
-    }catch(e){}
+    }catch(e){console.error('loadQRList error:',e);showToast('Failed to load specimens: '+e.message,'error');}
 }
 
 // ================================================================
@@ -3222,7 +3259,7 @@ function loadBreakSchedules(){
                 tbody.appendChild(tr);
             });
         });
-    }catch(e){}
+    }catch(e){console.error('loadBreakSchedules error:',e);showToast('Failed to load schedules: '+e.message,'error');}
 }
 
 // ================================================================

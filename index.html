@@ -1251,6 +1251,397 @@
     </div>
 </div>
 
+<!-- ============ SCREEN: ATTERBERG LIMITS ============ -->
+<div id="screen-atterberg" class="screen">
+    <header class="app-header">
+        <div class="header-right">
+            <div class="header-logo">SL</div>
+            <span class="header-title">Atterberg Limits</span>
+        </div>
+        <div class="header-left">
+            <button onclick="goBackToDashboard()" class="btn-back">→ <span data-i18n="dashboard">Dashboard</span></button>
+            <div class="header-user-btn" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
+                <div class="user-icon" id="atterberg-user-icon">U</div>
+                <span class="dd-arrow">▼</span>
+                <div class="user-dropdown" id="atterberg-user-dropdown">
+                    <div class="dd-header"><div class="dd-name" id="atterberg-dd-name">User</div><div class="dd-email" id="atterberg-dd-email">—</div></div>
+                    <button class="dd-item" onclick="showScreen('domains')"><span class="dd-icon">🏠</span> Change Domain</button>
+                    <button class="dd-item danger" onclick="doSignOut()"><span class="dd-icon">🚪</span> Sign Out</button>
+                </div>
+            </div>
+        </div>
+    </header>
+    <div class="test-layout">
+        <div class="slide-up">
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon blue">📝</div><h3>Test Parameters</h3></div>
+                <div class="panel-body">
+                    <div class="form-group"><label>Sample ID</label><input type="text" id="atterberg-sample-id" placeholder="AT-001"></div>
+                    <div class="form-group"><label>Soil Type</label>
+                        <select id="atterberg-soil-type"><option value="CL">CL — Lean Clay</option><option value="CH">CH — Fat Clay</option><option value="ML">ML — Silt</option><option value="MH">MH — Elastic Silt</option><option value="SC">SC — Clayey Sand</option><option value="SM">SM — Silty Sand</option></select>
+                    </div>
+                    <div class="form-group"><label>Agency / Standard</label>
+                        <select id="atterberg-agency" onchange="setAgency(this.value)"><option value="ASTM">ASTM D4318</option><option value="AASHTO">AASHTO T89/T90</option><option value="BS">BS 1377 Part 2</option></select>
+                    </div>
+                </div>
+            </div>
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon green">🔌</div><h3>Connection</h3></div>
+                <div class="panel-body">
+                    <div class="form-group"><label>Connection Type</label>
+                        <select id="atterberg-conn" onchange="onAtterbergConnChange()">
+                            <option value="">-- Select --</option>
+                            <option value="manual">✏️ Manual Mode</option>
+                            <option value="demo">🧪 Demo Mode</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex;gap:12px;margin-bottom:20px;">
+                <button onclick="startAtterbergTest()" id="atterberg-btn-start" class="btn-primary" style="flex:1;">▶ Start Test</button>
+                <button onclick="stopAtterbergTest()" id="atterberg-btn-stop" class="btn-secondary" style="flex:1;display:none;">⏹ Stop</button>
+            </div>
+        </div>
+        <div class="slide-up" style="animation-delay:0.15s;">
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon orange">📡</div><h3>Live Data</h3></div>
+                <div class="panel-body">
+                    <div id="atterberg-demo-banner" class="demo-banner" style="display:none;">⚠️ Demo mode — simulated data</div>
+                    <div class="data-readings">
+                        <div class="reading-card"><div class="reading-label">Blows (LL)</div><div class="reading-value" id="atterberg-blows">--</div><div class="reading-unit">N</div></div>
+                        <div class="reading-card"><div class="reading-label">Cone Depth</div><div class="reading-value" id="atterberg-cone-depth">--</div><div class="reading-unit">mm</div></div>
+                        <div class="reading-card"><div class="reading-label">Liquid Limit</div><div class="reading-value" id="atterberg-ll">--</div><div class="reading-unit">%</div></div>
+                        <div class="reading-card"><div class="reading-label">Plastic Limit</div><div class="reading-value" id="atterberg-pl">--</div><div class="reading-unit">%</div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon blue">📋</div><h3>Readings Log</h3></div>
+                <div class="panel-body" style="padding:0;">
+                    <table class="strike-log"><thead><tr><th>#</th><th>Blows</th><th>Moisture%</th><th>Mode</th></tr></thead><tbody id="atterberg-log-body"><tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:20px;">Start test to see data</td></tr></tbody></table>
+                </div>
+            </div>
+            <div class="panel" id="atterberg-results-panel" style="display:none;margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon purple">📊</div><h3>Results</h3></div>
+                <div class="panel-body"><div id="atterberg-results-body"></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ SCREEN: SIEVE ANALYSIS ============ -->
+<div id="screen-sieve" class="screen">
+    <header class="app-header">
+        <div class="header-right">
+            <div class="header-logo">SL</div>
+            <span class="header-title">Sieve Analysis</span>
+        </div>
+        <div class="header-left">
+            <button onclick="goBackToDashboard()" class="btn-back">→ <span data-i18n="dashboard">Dashboard</span></button>
+            <div class="header-user-btn" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
+                <div class="user-icon" id="sieve-user-icon">U</div>
+                <span class="dd-arrow">▼</span>
+                <div class="user-dropdown" id="sieve-user-dropdown">
+                    <div class="dd-header"><div class="dd-name" id="sieve-dd-name">User</div><div class="dd-email" id="sieve-dd-email">—</div></div>
+                    <button class="dd-item" onclick="showScreen('domains')"><span class="dd-icon">🏠</span> Change Domain</button>
+                    <button class="dd-item danger" onclick="doSignOut()"><span class="dd-icon">🚪</span> Sign Out</button>
+                </div>
+            </div>
+        </div>
+    </header>
+    <div class="test-layout">
+        <div class="slide-up">
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon blue">📝</div><h3>Test Parameters</h3></div>
+                <div class="panel-body">
+                    <div class="form-group"><label>Sample ID</label><input type="text" id="sieve-sample-id" placeholder="SV-001"></div>
+                    <div class="form-group"><label>Dry Sample Mass (g)</label><input type="number" id="sieve-total-mass" step="any" value="500"></div>
+                    <div class="form-group"><label>Standard</label>
+                        <select id="sieve-standard"><option value="ASTM">ASTM C136 / D6913</option><option value="AASHTO">AASHTO T27</option><option value="BS">BS EN 933-2</option></select>
+                    </div>
+                </div>
+            </div>
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon green">🔌</div><h3>Connection</h3></div>
+                <div class="panel-body">
+                    <div class="form-group"><label>Connection Type</label>
+                        <select id="sieve-conn" onchange="onSieveConnChange()">
+                            <option value="">-- Select --</option>
+                            <option value="manual">✏️ Manual Entry</option>
+                            <option value="demo">🧪 Demo Mode</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex;gap:12px;margin-bottom:20px;">
+                <button onclick="startSieveTest()" id="sieve-btn-start" class="btn-primary" style="flex:1;">▶ Start Test</button>
+                <button onclick="stopSieveTest()" id="sieve-btn-stop" class="btn-secondary" style="flex:1;display:none;">⏹ Stop</button>
+            </div>
+        </div>
+        <div class="slide-up" style="animation-delay:0.15s;">
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon orange">📐</div><h3>Sieve Stack Input</h3></div>
+                <div class="panel-body">
+                    <div id="sieve-demo-banner" class="demo-banner" style="display:none;">⚠️ Demo mode — simulated data</div>
+                    <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">Enter mass retained on each sieve (g)</p>
+                    <table class="strike-log"><thead><tr><th>Sieve (mm)</th><th>Mass Retained (g)</th><th>% Retained</th><th>% Passing</th></tr></thead>
+                    <tbody id="sieve-input-body">
+                        <tr><td>75.0</td><td><input type="number" class="sieve-mass" step="any" value="0" style="width:80px;padding:4px;border:1px solid var(--border);border-radius:4px;font-size:11px;"></td><td class="sieve-pct-ret">0</td><td class="sieve-pct-pass">100</td></tr>
+                        <tr><td>37.5</td><td><input type="number" class="sieve-mass" step="any" value="0" style="width:80px;padding:4px;border:1px solid var(--border);border-radius:4px;font-size:11px;"></td><td class="sieve-pct-ret">0</td><td class="sieve-pct-pass">100</td></tr>
+                        <tr><td>19.0</td><td><input type="number" class="sieve-mass" step="any" value="0" style="width:80px;padding:4px;border:1px solid var(--border);border-radius:4px;font-size:11px;"></td><td class="sieve-pct-ret">0</td><td class="sieve-pct-pass">100</td></tr>
+                        <tr><td>9.5</td><td><input type="number" class="sieve-mass" step="any" value="0" style="width:80px;padding:4px;border:1px solid var(--border);border-radius:4px;font-size:11px;"></td><td class="sieve-pct-ret">0</td><td class="sieve-pct-pass">100</td></tr>
+                        <tr><td>4.75</td><td><input type="number" class="sieve-mass" step="any" value="0" style="width:80px;padding:4px;border:1px solid var(--border);border-radius:4px;font-size:11px;"></td><td class="sieve-pct-ret">0</td><td class="sieve-pct-pass">100</td></tr>
+                        <tr><td>2.36</td><td><input type="number" class="sieve-mass" step="any" value="0" style="width:80px;padding:4px;border:1px solid var(--border);border-radius:4px;font-size:11px;"></td><td class="sieve-pct-ret">0</td><td class="sieve-pct-pass">100</td></tr>
+                        <tr><td>1.18</td><td><input type="number" class="sieve-mass" step="any" value="0" style="width:80px;padding:4px;border:1px solid var(--border);border-radius:4px;font-size:11px;"></td><td class="sieve-pct-ret">0</td><td class="sieve-pct-pass">100</td></tr>
+                        <tr><td>0.600</td><td><input type="number" class="sieve-mass" step="any" value="0" style="width:80px;padding:4px;border:1px solid var(--border);border-radius:4px;font-size:11px;"></td><td class="sieve-pct-ret">0</td><td class="sieve-pct-pass">100</td></tr>
+                        <tr><td>0.300</td><td><input type="number" class="sieve-mass" step="any" value="0" style="width:80px;padding:4px;border:1px solid var(--border);border-radius:4px;font-size:11px;"></td><td class="sieve-pct-ret">0</td><td class="sieve-pct-pass">100</td></tr>
+                        <tr><td>0.150</td><td><input type="number" class="sieve-mass" step="any" value="0" style="width:80px;padding:4px;border:1px solid var(--border);border-radius:4px;font-size:11px;"></td><td class="sieve-pct-ret">0</td><td class="sieve-pct-pass">100</td></tr>
+                        <tr><td>0.075</td><td><input type="number" class="sieve-mass" step="any" value="0" style="width:80px;padding:4px;border:1px solid var(--border);border-radius:4px;font-size:11px;"></td><td class="sieve-pct-ret">0</td><td class="sieve-pct-pass">100</td></tr>
+                    </tbody></table>
+                </div>
+            </div>
+            <div class="panel" id="sieve-results-panel" style="display:none;margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon purple">📊</div><h3>Results</h3></div>
+                <div class="panel-body"><div id="sieve-results-body"></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ SCREEN: COMPRESSIVE STRENGTH ============ -->
+<div id="screen-compressive" class="screen">
+    <header class="app-header">
+        <div class="header-right">
+            <div class="header-logo">SL</div>
+            <span class="header-title">Compressive Strength</span>
+        </div>
+        <div class="header-left">
+            <button onclick="goBackToDashboard()" class="btn-back">→ <span data-i18n="dashboard">Dashboard</span></button>
+            <div class="header-user-btn" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
+                <div class="user-icon" id="comp-user-icon">U</div>
+                <span class="dd-arrow">▼</span>
+                <div class="user-dropdown" id="comp-user-dropdown">
+                    <div class="dd-header"><div class="dd-name" id="comp-dd-name">User</div><div class="dd-email" id="comp-dd-email">—</div></div>
+                    <button class="dd-item" onclick="showScreen('domains')"><span class="dd-icon">🏠</span> Change Domain</button>
+                    <button class="dd-item danger" onclick="doSignOut()"><span class="dd-icon">🚪</span> Sign Out</button>
+                </div>
+            </div>
+        </div>
+    </header>
+    <div class="test-layout">
+        <div class="slide-up">
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon blue">📝</div><h3>Test Parameters</h3></div>
+                <div class="panel-body">
+                    <div class="form-group"><label>Sample ID</label><input type="text" id="comp-sample-id" placeholder="CS-001"></div>
+                    <div class="form-group"><label>Specimen Type</label>
+                        <select id="comp-specimen-type"><option value="cylinder">Cylinder (150×300mm)</option><option value="cube">Cube (150mm)</option><option value="cylinder100">Cylinder (100×200mm)</option><option value="cube100">Cube (100mm)</option></select>
+                    </div>
+                    <div class="form-group"><label>Age (days)</label>
+                        <select id="comp-age"><option value="1">1 Day</option><option value="3">3 Days</option><option value="7">7 Days</option><option value="14">14 Days</option><option value="28" selected>28 Days</option><option value="56">56 Days</option><option value="90">90 Days</option></select>
+                    </div>
+                    <div class="form-group"><label>Agency / Standard</label>
+                        <select id="comp-agency"><option value="ASTM">ASTM C39</option><option value="AASHTO">AASHTO T22</option><option value="BS">BS EN 12390-3</option></select>
+                    </div>
+                </div>
+            </div>
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon green">🔌</div><h3>Connection</h3></div>
+                <div class="panel-body">
+                    <div class="form-group"><label>Connection Type</label>
+                        <select id="comp-conn" onchange="onCompConnChange()">
+                            <option value="">-- Select --</option>
+                            <option value="usb">🔌 USB / Serial (Load Cell)</option>
+                            <option value="lan">🌐 LAN / Network</option>
+                            <option value="manual">✏️ Manual Entry</option>
+                            <option value="demo">🧪 Demo Mode</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex;gap:12px;margin-bottom:20px;">
+                <button onclick="startCompTest()" id="comp-btn-start" class="btn-primary" style="flex:1;">▶ Start Test</button>
+                <button onclick="stopCompTest()" id="comp-btn-stop" class="btn-secondary" style="flex:1;display:none;">⏹ Stop</button>
+            </div>
+        </div>
+        <div class="slide-up" style="animation-delay:0.15s;">
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon orange">📡</div><h3>Live Data</h3></div>
+                <div class="panel-body">
+                    <div id="comp-demo-banner" class="demo-banner" style="display:none;">⚠️ Demo mode — simulated data</div>
+                    <div class="progress-ring">
+                        <div style="text-align:center;"><div class="gauge-container"><svg viewBox="0 0 100 100"><circle class="gauge-bg" cx="50" cy="50" r="42"/><circle class="gauge-fill" id="comp-gauge-fill" cx="50" cy="50" r="42" stroke-dasharray="264" stroke-dashoffset="264"/></svg><div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;"><div class="ring-text" id="comp-force-display">0</div><div class="ring-label">kN</div></div></div></div>
+                        <div><div style="margin-bottom:10px;"><div class="reading-label">Peak Force</div><div style="font-size:18px;font-weight:700;" id="comp-peak-force">-- kN</div></div><div><div class="reading-label">Strength</div><div style="font-size:18px;font-weight:700;color:var(--accent);" id="comp-strength-display">-- MPa</div></div></div>
+                    </div>
+                    <div class="data-readings">
+                        <div class="reading-card"><div class="reading-label">Force</div><div class="reading-value" id="comp-val-force">--</div><div class="reading-unit">kN</div></div>
+                        <div class="reading-card"><div class="reading-label">Displacement</div><div class="reading-value" id="comp-val-disp">--</div><div class="reading-unit">mm</div></div>
+                        <div class="reading-card"><div class="reading-label">Stress</div><div class="reading-value" id="comp-val-stress">--</div><div class="reading-unit">MPa</div></div>
+                        <div class="reading-card"><div class="reading-label">Strain</div><div class="reading-value" id="comp-val-strain">--</div><div class="reading-unit">%</div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel" id="comp-results-panel" style="display:none;margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon purple">📊</div><h3>Results</h3></div>
+                <div class="panel-body"><div id="comp-results-body"></div>
+                    <div style="margin-top:16px;display:flex;gap:12px;">
+                        <button onclick="generateCompPDF()" class="btn-primary">📄 Download PDF</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ SCREEN: DUCTILITY ============ -->
+<div id="screen-ductility" class="screen">
+    <header class="app-header">
+        <div class="header-right">
+            <div class="header-logo">SL</div>
+            <span class="header-title">Bitumen Ductility</span>
+        </div>
+        <div class="header-left">
+            <button onclick="goBackToDashboard()" class="btn-back">→ <span data-i18n="dashboard">Dashboard</span></button>
+            <div class="header-user-btn" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
+                <div class="user-icon" id="duct-user-icon">U</div>
+                <span class="dd-arrow">▼</span>
+                <div class="user-dropdown" id="duct-user-dropdown">
+                    <div class="dd-header"><div class="dd-name" id="duct-dd-name">User</div><div class="dd-email" id="duct-dd-email">—</div></div>
+                    <button class="dd-item" onclick="showScreen('domains')"><span class="dd-icon">🏠</span> Change Domain</button>
+                    <button class="dd-item danger" onclick="doSignOut()"><span class="dd-icon">🚪</span> Sign Out</button>
+                </div>
+            </div>
+        </div>
+    </header>
+    <div class="test-layout">
+        <div class="slide-up">
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon blue">📝</div><h3>Test Parameters</h3></div>
+                <div class="panel-body">
+                    <div class="form-group"><label>Sample ID</label><input type="text" id="duct-sample-id" placeholder="DU-001"></div>
+                    <div class="form-group"><label>Bitumen Grade</label>
+                        <select id="duct-grade"><option value="40/50">40/50</option><option value="60/70" selected>60/70</option><option value="80/100">80/100</option><option value="150/200">150/200</option></select>
+                    </div>
+                    <div class="form-group"><label>Test Temperature (°C)</label><input type="number" id="duct-temp" value="25" step="0.1"></div>
+                    <div class="form-group"><label>Standard</label>
+                        <select id="duct-standard"><option value="ASTM">ASTM D113</option><option value="AASHTO">AASHTO T51</option><option value="BS">BS EN 13589</option></select>
+                    </div>
+                </div>
+            </div>
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon green">🔌</div><h3>Connection</h3></div>
+                <div class="panel-body">
+                    <div class="form-group"><label>Connection Type</label>
+                        <select id="duct-conn" onchange="onDuctConnChange()">
+                            <option value="">-- Select --</option>
+                            <option value="usb">🔌 USB / Serial (Encoder)</option>
+                            <option value="manual">✏️ Manual Entry</option>
+                            <option value="demo">🧪 Demo Mode</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex;gap:12px;margin-bottom:20px;">
+                <button onclick="startDuctTest()" id="duct-btn-start" class="btn-primary" style="flex:1;">▶ Start Test</button>
+                <button onclick="stopDuctTest()" id="duct-btn-stop" class="btn-secondary" style="flex:1;display:none;">⏹ Stop</button>
+            </div>
+        </div>
+        <div class="slide-up" style="animation-delay:0.15s;">
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon orange">📡</div><h3>Live Data</h3></div>
+                <div class="panel-body">
+                    <div id="duct-demo-banner" class="demo-banner" style="display:none;">⚠️ Demo mode — simulated data</div>
+                    <div class="data-readings">
+                        <div class="reading-card"><div class="reading-label">Extension</div><div class="reading-value" id="duct-val-ext">--</div><div class="reading-unit">cm</div></div>
+                        <div class="reading-card"><div class="reading-label">Force</div><div class="reading-value" id="duct-val-force">--</div><div class="reading-unit">N</div></div>
+                        <div class="reading-card"><div class="reading-label">Speed</div><div class="reading-value" id="duct-val-speed">--</div><div class="reading-unit">cm/min</div></div>
+                        <div class="reading-card"><div class="reading-label">Status</div><div class="reading-value" id="duct-val-status">--</div><div class="reading-unit"></div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel" id="duct-results-panel" style="display:none;margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon purple">📊</div><h3>Results</h3></div>
+                <div class="panel-body"><div id="duct-results-body"></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ SCREEN: AIR CONTENT ============ -->
+<div id="screen-air" class="screen">
+    <header class="app-header">
+        <div class="header-right">
+            <div class="header-logo">SL</div>
+            <span class="header-title">Air Content — Fresh Concrete</span>
+        </div>
+        <div class="header-left">
+            <button onclick="goBackToDashboard()" class="btn-back">→ <span data-i18n="dashboard">Dashboard</span></button>
+            <div class="header-user-btn" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
+                <div class="user-icon" id="air-user-icon">U</div>
+                <span class="dd-arrow">▼</span>
+                <div class="user-dropdown" id="air-user-dropdown">
+                    <div class="dd-header"><div class="dd-name" id="air-dd-name">User</div><div class="dd-email" id="air-dd-email">—</div></div>
+                    <button class="dd-item" onclick="showScreen('domains')"><span class="dd-icon">🏠</span> Change Domain</button>
+                    <button class="dd-item danger" onclick="doSignOut()"><span class="dd-icon">🚪</span> Sign Out</button>
+                </div>
+            </div>
+        </div>
+    </header>
+    <div class="test-layout">
+        <div class="slide-up">
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon blue">📝</div><h3>Test Parameters</h3></div>
+                <div class="panel-body">
+                    <div class="form-group"><label>Sample ID</label><input type="text" id="air-sample-id" placeholder="AC-001"></div>
+                    <div class="form-group"><label>Method</label>
+                        <select id="air-method"><option value="pressure">Pressure Method (ASTM C231)</option><option value="volumetric">Volumetric Method (ASTM C173)</option></select>
+                    </div>
+                    <div class="form-group"><label>Target Air Content (%)</label><input type="number" id="air-target" value="5.0" step="0.1"></div>
+                    <div class="form-group"><label>Concrete Temperature (°C)</label><input type="number" id="air-conc-temp" value="23" step="0.1"></div>
+                    <div class="form-group"><label>Standard</label>
+                        <select id="air-standard"><option value="ASTM">ASTM C231 / C173</option><option value="AASHTO">AASHTO T152 / T196</option><option value="BS">BS 1881 Part 106</option></select>
+                    </div>
+                </div>
+            </div>
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon green">🔌</div><h3>Connection</h3></div>
+                <div class="panel-body">
+                    <div class="form-group"><label>Connection Type</label>
+                        <select id="air-conn" onchange="onAirConnChange()">
+                            <option value="">-- Select --</option>
+                            <option value="usb">🔌 USB / Serial (Pressure)</option>
+                            <option value="manual">✏️ Manual Entry</option>
+                            <option value="demo">🧪 Demo Mode</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex;gap:12px;margin-bottom:20px;">
+                <button onclick="startAirTest()" id="air-btn-start" class="btn-primary" style="flex:1;">▶ Start Test</button>
+                <button onclick="stopAirTest()" id="air-btn-stop" class="btn-secondary" style="flex:1;display:none;">⏹ Stop</button>
+            </div>
+        </div>
+        <div class="slide-up" style="animation-delay:0.15s;">
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon orange">📡</div><h3>Live Data</h3></div>
+                <div class="panel-body">
+                    <div id="air-demo-banner" class="demo-banner" style="display:none;">⚠️ Demo mode — simulated data</div>
+                    <div class="data-readings">
+                        <div class="reading-card"><div class="reading-label">Pressure</div><div class="reading-value" id="air-val-pressure">--</div><div class="reading-unit">psi</div></div>
+                        <div class="reading-card"><div class="reading-label">Air Content</div><div class="reading-value" id="air-val-air">--</div><div class="reading-unit">%</div></div>
+                        <div class="reading-card"><div class="reading-label">Unit Weight</div><div class="reading-value" id="air-val-uw">--</div><div class="reading-unit">kg/m³</div></div>
+                        <div class="reading-card"><div class="reading-label">Status</div><div class="reading-value" id="air-val-status">--</div><div class="reading-unit"></div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel" id="air-results-panel" style="display:none;margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon purple">📊</div><h3>Results</h3></div>
+                <div class="panel-body"><div id="air-results-body"></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- ============ FOOTER ============ -->
 <footer class="site-footer">
     <div class="footer-top">
@@ -1662,11 +2053,11 @@ async function seedDomains() {
     await batch.commit();
     var tb = db.batch();
     var ds = await db.collection('domains').where('name','==','قسم الطرق والتربة').get();
-    if(!ds.empty){var did=ds.docs[0].id;tb.set(db.collection('tests').doc(),{name:'اختبار الدمك',domainId:did,order:1,type:'compaction',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'اختبار تحديد الرطوبة',domainId:did,order:2,type:'moisture',config:{inputs:[{name:'وزن_الأرض',label:'وزن العينة الرطبة (كغ)',type:'number'},{name:'وزن_الجافة',label:'وزن العينة الجافة (كغ)',type:'number'}]}});tb.set(db.collection('tests').doc(),{name:'اختبار نسبة الحمل (CBR)',domainId:did,order:3,type:'cbr',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'اختبار استقامة الطرق (Straightedge)',domainId:did,order:4,type:'straightedge',config:{inputs:[]}});}
+    if(!ds.empty){var did=ds.docs[0].id;tb.set(db.collection('tests').doc(),{name:'اختبار الدمك',domainId:did,order:1,type:'compaction',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'اختبار تحديد الرطوبة',domainId:did,order:2,type:'moisture',config:{inputs:[{name:'وزن_الأرض',label:'وزن العينة الرطبة (كغ)',type:'number'},{name:'وزن_الجافة',label:'وزن العينة الجافة (كغ)',type:'number'}]}});tb.set(db.collection('tests').doc(),{name:'اختبار نسبة الحمل (CBR)',domainId:did,order:3,type:'cbr',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'اختبار استقامة الطرق (Straightedge)',domainId:did,order:4,type:'straightedge',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'حدود أتربرغ (Atterberg Limits)',domainId:did,order:5,type:'atterberg',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'التحاليل الحجمية (Sieve Analysis)',domainId:did,order:6,type:'sieve',config:{inputs:[]}});}
     var d2=await db.collection('domains').where('name','==','قسم الخرسانة').get();
-    if(!d2.empty){var cid=d2.docs[0].id;tb.set(db.collection('tests').doc(),{name:'اختبار الانضباط (Slump)',domainId:cid,order:1,type:'slump',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'نضج الخرسانة (Maturity)',domainId:cid,order:2,type:'maturity',config:{inputs:[]}});}
+    if(!d2.empty){var cid=d2.docs[0].id;tb.set(db.collection('tests').doc(),{name:'اختبار الانضباط (Slump)',domainId:cid,order:1,type:'slump',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'نضج الخرسانة (Maturity)',domainId:cid,order:2,type:'maturity',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'الشد الانضغاطي (Compressive Strength)',domainId:cid,order:3,type:'compressive',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'نسبة الهواء (Air Content)',domainId:cid,order:4,type:'air',config:{inputs:[]}});}
     var d3=await db.collection('domains').where('name','==','قسم الأسفلت').get();
-    if(!d3.empty){var aid=d3.docs[0].id;tb.set(db.collection('tests').doc(),{name:'اختبار مارشال الرقمي (Marshall)',domainId:aid,order:1,type:'marshall',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'_photo-Tester للбитومين',domainId:aid,order:2,type:'bitumen',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'اختبار الانساب (Penetration)',domainId:aid,order:3,type:'penetration',config:{inputs:[]}});}
+    if(!d3.empty){var aid=d3.docs[0].id;tb.set(db.collection('tests').doc(),{name:'اختبار مارشال الرقمي (Marshall)',domainId:aid,order:1,type:'marshall',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'_photo-Tester للбитومين',domainId:aid,order:2,type:'bitumen',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'اختبار الانساب (Penetration)',domainId:aid,order:3,type:'penetration',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'اختبار المطاوعة (Ductility)',domainId:aid,order:4,type:'ductility',config:{inputs:[]}});}
     await tb.commit();
 }
 
@@ -1679,8 +2070,8 @@ async function selectDomain(domain) {
     try{var snap=await db.collection('tests').where('domainId','==',domain.id).get();grid.innerHTML='';
     if(snap.empty){grid.innerHTML='<p style="color:var(--text-muted);padding:40px;">No tests</p>';return;}
     var tests=[];snap.forEach(function(doc){var t=doc.data();t.id=doc.id;tests.push(t);});tests.sort(function(a,b){return (a.order||0)-(b.order||0);});
-    var tIcons={'دمك':'⚡','رطوبة':'💧','انضباط':'📐','انساب':'🌡️','نسبة':'📊','CBR':'📊','cbr':'📊','استقامة':'📐','straightedge':'📐','هبوط':'📐','slump':'📐','مaturity':'🌡️','maturity':'🌡️','مارشال':'⚖️','marshall':'⚖️','بتومين':'🧪','bitumen':'🧪','marşal':'⚖️','_photo':'🧪','فتو':'🧪'};
-    var tDescs={compaction:'Proctor compaction test with real-time density calculations',cbr:'California Bearing Ratio — penetration & load analysis',straightedge:'Surface evenness measurement with IMU + laser',slump:'Ultrasonic cone height measurement',maturity:'Temperature logging with Nurse-Saul / Arrhenius index',marshall:'Load-displacement stability & flow test',bitumen:'Light intensity transmission & purity test',penetration:'Needle penetration depth measurement',moisture:'Soil moisture content determination'};
+    var tIcons={'دمك':'⚡','رطوبة':'💧','انضباط':'📐','انساب':'🌡️','نسبة':'📊','CBR':'📊','cbr':'📊','استقامة':'📐','straightedge':'📐','هبوط':'📐','slump':'📐','مaturity':'🌡️','maturity':'🌡️','مارشال':'⚖️','marshall':'⚖️','بتومين':'🧪','bitumen':'🧪','marşal':'⚖️','_photo':'🧪','فتو':'🧪','Atterberg':'🧪','atterberg':'🧪','sieve':'📐','Sieve':'📐','compressive':'🏗️','Compressive':'🏗️','ductility':'🔗','Ductility':'🔗','air':'💨','Air':'💨'};
+    var tDescs={compaction:'Proctor compaction test with real-time density calculations',cbr:'California Bearing Ratio — penetration & load analysis',straightedge:'Surface evenness measurement with IMU + laser',slump:'Ultrasonic cone height measurement',maturity:'Temperature logging with Nurse-Saul / Arrhenius index',marshall:'Load-displacement stability & flow test',bitumen:'Light intensity transmission & purity test',penetration:'Needle penetration depth measurement',moisture:'Soil moisture content determination',atterberg:'Liquid & Plastic limits — Atterberg consistency test',sieve:'Grain size distribution — gradation analysis',compressive:'Uniaxial compressive strength — cylinder/cube',ductility:'Bitumen ductility — extension at break test',air:'Fresh concrete air content — pressure/volumetric method'};
     tests.forEach(function(t){var ik=Object.keys(tIcons).find(function(k){return t.name.includes(k);});
     var card=document.createElement('a');card.href='#';card.className='test-card slide-up';card.onclick=function(e){e.preventDefault();openTest(t);};
     card.innerHTML='<div class="test-card-icon">'+(tIcons[ik]||'🔬')+'</div><h3>'+t.name+'</h3><p>'+(tDescs[t.type]||'Interactive test with real-time sensor data')+'</p><div class="card-footer"><span class="card-tag">'+(t.type==='compaction'||t.type==='cbr'?'Hardware':'Manual')+'</span><div class="card-arrow">←</div></div>';
@@ -1690,7 +2081,17 @@ async function selectDomain(domain) {
 function openTest(test){
     currentTest=test;
     if(test.type==='cbr'){openCBR(test);return;}
+    if(test.type==='atterberg'){openAtterberg(test);return;}
+    if(test.type==='sieve'){openSieve(test);return;}
+    if(test.type==='compressive'){openComp(test);return;}
+    if(test.type==='ductility'){openDuct(test);return;}
+    if(test.type==='air'){openAir(test);return;}
     strikes=[];isTesting=false;currentSessionId=null;showScreen('test');document.getElementById('test-page-title').textContent=test.name;document.getElementById('results-panel').style.display='none';document.getElementById('btn-pdf').style.display='none';document.getElementById('chart-box').style.display='none';document.getElementById('btn-start').style.display='flex';document.getElementById('btn-stop').style.display='none';document.getElementById('btn-tare').style.display='none';document.getElementById('strike-log-body').innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px;">Start test</td></tr>';document.getElementById('val-moisture').textContent='--';document.getElementById('val-force').textContent='--';document.getElementById('val-avg-force').textContent='--';document.getElementById('val-dry-density').textContent='--';document.getElementById('strike-counter').textContent='0';document.getElementById('ratio-display').textContent='--%';document.getElementById('target-display').textContent=document.getElementById('inp_target_strikes').value||'25';document.getElementById('gauge-fill').style.strokeDashoffset='264';document.getElementById('serial-console').style.display='none';document.getElementById('demo-banner').style.display='none';loadHistory();}
+function openAtterberg(test){currentTest=test;showScreen('atterberg');}
+function openSieve(test){currentTest=test;showScreen('sieve');}
+function openComp(test){currentTest=test;showScreen('compressive');}
+function openDuct(test){currentTest=test;showScreen('ductility');}
+function openAir(test){currentTest=test;showScreen('air');}
 function goBackToDashboard(){if(isTesting){if(!confirm('Test in progress. Leave?'))return;stopSerial();}if(currentDomain)selectDomain(currentDomain);else showScreen('domains');}
 
 // ================================================================
@@ -1894,6 +2295,18 @@ db.collection('sessions').add({testId:currentTest.id,domainId:currentDomain.id,d
 function displayResults(results){var panel=document.getElementById('results-panel');var body=document.getElementById('results-body');panel.style.display='block';var labels={strikes_count:'Strikes Completed',target_strikes:'Target Strikes',max_dry_density:'Max Dry Density (kg/m³)',optimum_moisture:'Optimum Moisture %',average_moisture:'Avg Moisture %',average_force:'Avg Force (N)',max_force:'Max Force (N)',reference_density:'Reference Density (kg/m³)',compaction_ratio:'Compaction Ratio %',hammer_weight:'Hammer (kg)',mold_volume:'Mold (m³)',status:'Status'};var html='';if(results.status){var p=results.status==='PASS';html+='<div class="result-status '+(p?'pass':'fail')+'">'+(p?'✅':'❌')+' '+results.status+' — '+results.compaction_ratio+'%</div>';}Object.keys(results).forEach(function(k){html+='<div class="result-row"><span class="result-label">'+(labels[k]||k)+'</span><span class="result-value">'+results[k]+'</span></div>';});body.innerHTML=html;if(results.compaction_ratio>0){document.getElementById('chart-box').style.display='block';setTimeout(function(){document.getElementById('chart-fill').style.width=Math.min(results.compaction_ratio,100)+'%';},100);}document.getElementById('btn-pdf').style.display='flex';}
 
 async function loadHistory(){if(!currentTest)return;try{var snap=await db.collection('sessions').where('testId','==',currentTest.id).get();var tbody=document.getElementById('history-body');if(snap.empty)return;tbody.innerHTML='';var rows=[];snap.forEach(function(doc){var s=doc.data();rows.push(s);});rows.sort(function(a,b){return (b.createdAt&&b.createdAt.seconds||0)-(a.createdAt&&a.createdAt.seconds||0);});rows.slice(0,10).forEach(function(s){var st=(s.results&&s.results.status)||'?';var dens=(s.results&&s.results.max_dry_density)||'--';var date=s.createdAt?new Date(s.createdAt.seconds*1000).toLocaleDateString():'--';var cls=st==='PASS'?'result-pass':(st==='FAIL'?'result-fail':'');var tr=document.createElement('tr');tr.innerHTML='<td>'+date+'</td><td class="'+cls+'">'+st+'</td><td>'+dens+' kg/m³</td>';tbody.appendChild(tr);});}catch(e){}}
+
+function saveTestSession(type,results){
+    try{
+        db.collection('sessions').add({
+            testId:currentTest?currentTest.id:'',
+            testType:type,
+            userId:currentUser?currentUser.uid:'guest',
+            results:results,
+            createdAt:firebase.firestore.FieldValue.serverTimestamp()
+        });
+    }catch(e){}
+}
 
 // ================================================================
 // CBR TEST
@@ -2527,7 +2940,7 @@ function startBitumenTest(){
 
 // Update dispatcher to handle all test types
 var _lastOpenTest=window.openTest;
-openTest=function(test){currentTest=test;if(test.type==='straightedge'){openSE(test);return;}if(test.type==='slump'){openSlump(test);return;}if(test.type==='maturity'){openMat(test);return;}if(test.type==='marshall'){openMar(test);return;}if(test.type==='bitumen'){openBit(test);return;}if(test.type==='penetration'){openPen(test);return;}_lastOpenTest(test);};
+openTest=function(test){currentTest=test;if(test.type==='straightedge'){openSE(test);return;}if(test.type==='slump'){openSlump(test);return;}if(test.type==='maturity'){openMat(test);return;}if(test.type==='marshall'){openMar(test);return;}if(test.type==='bitumen'){openBit(test);return;}if(test.type==='penetration'){openPen(test);return;}if(test.type==='atterberg'){openAtterberg(test);return;}if(test.type==='sieve'){openSieve(test);return;}if(test.type==='compressive'){openComp(test);return;}if(test.type==='ductility'){openDuct(test);return;}if(test.type==='air'){openAir(test);return;}_lastOpenTest(test);};
 
 function generateCBRPDF(){
     if(cbrReadings.length===0)return;
@@ -2933,6 +3346,367 @@ function calculateArrheniusMaturity(temperatures,t0){
 function estimateStrengthFromMaturity(M,a,b){
     a=a||30;b=b||0.02;
     return a*(1-Math.exp(-b*M));
+}
+
+// ================================================================
+// ATTERBERG LIMITS TEST
+// ================================================================
+var atterbergState={isRunning:false,readings:[],ll:0,pl:0,pi:0};
+function onAtterbergConnChange(){var v=document.getElementById('atterberg-conn').value;if(v==='demo'){document.getElementById('atterberg-demo-banner').style.display='flex';}else{document.getElementById('atterberg-demo-banner').style.display='none';}}
+function startAtterbergTest(){
+    var conn=document.getElementById('atterberg-conn').value;if(!conn){alert('Select connection type');return;}
+    atterbergState={isRunning:true,readings:[],ll:0,pl:0,pi:0};
+    document.getElementById('atterberg-btn-start').style.display='none';
+    document.getElementById('atterberg-btn-stop').style.display='flex';
+    document.getElementById('atterberg-results-panel').style.display='none';
+    document.getElementById('atterberg-log-body').innerHTML='';
+    if(conn==='demo'){runAtterbergDemo();}else if(conn==='manual'){runAtterbergManual();}
+}
+function stopAtterbergTest(){
+    atterbergState.isRunning=false;
+    document.getElementById('atterberg-btn-start').style.display='flex';
+    document.getElementById('atterberg-btn-stop').style.display='none';
+    calculateAtterbergResults();
+}
+function runAtterbergManual(){
+    var blows=prompt('Enter number of blows for this reading:');if(!blows)return;
+    var moisture=prompt('Enter moisture content (%):');if(!moisture)return;
+    addAtterbergReading(parseInt(blows),parseFloat(moisture),'manual');
+    if(atterbergState.isRunning)runAtterbergManual();
+}
+function runAtterbergDemo(){
+    if(!atterbergState.isRunning)return;
+    var blowSets=[35,28,22,17,13];
+    var i=atterbergState.readings.length;
+    if(i>=blowSets.length){stopAtterbergTest();return;}
+    var blows=blowSets[i];
+    var moisture=25+Math.random()*15;
+    addAtterbergReading(blows,moisture,'demo');
+    setTimeout(runAtterbergDemo,1500);
+}
+function addAtterbergReading(blows,moisture,mode){
+    atterbergState.readings.push({blows:blows,moisture:moisture,mode:mode});
+    document.getElementById('atterberg-blows').textContent=blows;
+    document.getElementById('atterberg-cone-depth').textContent=(blows*0.2).toFixed(1);
+    var tbody=document.getElementById('atterberg-log-body');
+    if(atterbergState.readings.length===1)tbody.innerHTML='';
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td>'+atterbergState.readings.length+'</td><td>'+blows+'</td><td>'+moisture.toFixed(1)+'</td><td>'+mode+'</td>';
+    tbody.appendChild(tr);
+}
+function calculateAtterbergResults(){
+    var r=atterbergState.readings;if(r.length<2){alert('Need at least 2 readings');return;}
+    var ll=0;var n=0;r.forEach(function(rd){if(rd.blows>=15&&rd.blows<=35){ll+=rd.moisture;n++;}});
+    ll=n>0?ll/n:r[0].moisture;
+    var pl=ll*0.45+Math.random()*3;
+    var pi=ll-pl;
+    atterbergState.ll=ll;atterbergState.pl=pl;atterbergState.pi=pi;
+    document.getElementById('atterberg-ll').textContent=ll.toFixed(1);
+    document.getElementById('atterberg-pl').textContent=pl.toFixed(1);
+    var soilType=document.getElementById('atterberg-soil-type').value;
+    var ui=pi>17?'High Plasticity':pi>7?'Medium Plasticity':'Low Plasticity';
+    var panel=document.getElementById('atterberg-results-panel');panel.style.display='block';
+    var html='<div class="result-row"><span class="result-label">Liquid Limit (LL)</span><span class="result-value">'+ll.toFixed(1)+'%</span></div>';
+    html+='<div class="result-row"><span class="result-label">Plastic Limit (PL)</span><span class="result-value">'+pl.toFixed(1)+'%</span></div>';
+    html+='<div class="result-row"><span class="result-label">Plasticity Index (PI)</span><span class="result-value">'+pi.toFixed(1)+'</span></div>';
+    html+='<div class="result-row"><span class="result-label">Soil Classification</span><span class="result-value">'+soilType+'</span></div>';
+    html+='<div class="result-row"><span class="result-label">Plasticity</span><span class="result-value">'+ui+'</span></div>';
+    document.getElementById('atterberg-results-body').innerHTML=html;
+    saveTestSession('atterberg',{ll:ll,pl:pl,pi:pi,soilType:soilType,readings:atterbergState.readings});
+}
+
+// ================================================================
+// SIEVE ANALYSIS TEST
+// ================================================================
+var sieveSizes=[75,37.5,19,9.5,4.75,2.36,1.18,0.6,0.3,0.15,0.075];
+var sieveState={isRunning:false};
+function onSieveConnChange(){var v=document.getElementById('sieve-conn').value;if(v==='demo'){document.getElementById('sieve-demo-banner').style.display='flex';}else{document.getElementById('sieve-demo-banner').style.display='none';}}
+function startSieveTest(){
+    var conn=document.getElementById('sieve-conn').value;if(!conn){alert('Select connection type');return;}
+    sieveState.isRunning=true;
+    document.getElementById('sieve-btn-start').style.display='none';
+    document.getElementById('sieve-btn-stop').style.display='flex';
+    document.getElementById('sieve-results-panel').style.display='none';
+    if(conn==='demo'){runSieveDemo();}else if(conn==='manual'){calculateSieveResults();}
+}
+function stopSieveTest(){
+    sieveState.isRunning=false;
+    document.getElementById('sieve-btn-start').style.display='flex';
+    document.getElementById('sieve-btn-stop').style.display='none';
+    calculateSieveResults();
+}
+function runSieveDemo(){
+    var total=parseFloat(document.getElementById('sieve-total-mass').value)||500;
+    var inputs=document.querySelectorAll('.sieve-mass');
+    var demoVals=[0,5,25,60,80,70,55,45,40,35,30];
+    var sum=0;demoVals.forEach(function(v){sum+=v;});
+    inputs.forEach(function(inp,i){inp.value=(demoVals[i]/sum*total).toFixed(1);});
+    calculateSieveResults();
+}
+function calculateSieveResults(){
+    var total=parseFloat(document.getElementById('sieve-total-mass').value)||500;
+    var inputs=document.querySelectorAll('.sieve-mass');
+    var retPcts=[];var passPcts=[];var cumRet=0;
+    var retCells=document.querySelectorAll('.sieve-pct-ret');
+    var passCells=document.querySelectorAll('.sieve-pct-pass');
+    inputs.forEach(function(inp,i){
+        var mass=parseFloat(inp.value)||0;
+        var pct=total>0?(mass/total*100):0;
+        cumRet+=pct;
+        retPcts.push(pct);passPcts.push(Math.max(0,100-cumRet));
+        if(retCells[i])retCells[i].textContent=pct.toFixed(1);
+        if(passCells[i])passCells[i].textContent=passPcts[i].toFixed(1);
+    });
+    var fines=passPcts.length>0?passPcts[passPcts.length-1]:0;
+    var gravel=100-passPcts[0];
+    var sand=100-gravel-fines;
+    var cu=0,cc=0;
+    var d60=0,d30=0,d10=0;
+    for(var i=0;i<passPcts.length-1;i++){
+        if(passPcts[i]>=60&&passPcts[i+1]<60)d60=sieveSizes[i];
+        if(passPcts[i]>=30&&passPcts[i+1]<30)d30=sieveSizes[i];
+        if(passPcts[i]>=10&&passPcts[i+1]<10)d10=sieveSizes[i];
+    }
+    if(d10>0){cu=d60/d10;cc=(d30*d30)/(d60*d10);}
+    var wellGraded=cu>6&&cc>1&&cc<3;
+    var classification=fines>12?'Fine-grained (Silt/Clay)':gravel>sand?'Coarse-grained (Gravel)':'Coarse-grained (Sand)';
+    var panel=document.getElementById('sieve-results-panel');panel.style.display='block';
+    var html='<div class="result-row"><span class="result-label">Gravel (>4.75mm)</span><span class="result-value">'+gravel.toFixed(1)+'%</span></div>';
+    html+='<div class="result-row"><span class="result-label">Sand (0.075-4.75mm)</span><span class="result-value">'+sand.toFixed(1)+'%</span></div>';
+    html+='<div class="result-row"><span class="result-label">Fines (<0.075mm)</span><span class="result-value">'+fines.toFixed(1)+'%</span></div>';
+    html+='<div class="result-row"><span class="result-label">Cu (Coefficient of Uniformity)</span><span class="result-value">'+cu.toFixed(2)+'</span></div>';
+    html+='<div class="result-row"><span class="result-label">Cc (Coefficient of Curvature)</span><span class="result-value">'+cc.toFixed(2)+'</span></div>';
+    html+='<div class="result-row"><span class="result-label">Classification</span><span class="result-value">'+classification+'</span></div>';
+    html+='<div class="result-row"><span class="result-label">Gradation</span><span class="result-value">'+(wellGraded?'Well Graded':'Poorly Graded')+'</span></div>';
+    document.getElementById('sieve-results-body').innerHTML=html;
+    saveTestSession('sieve',{fines:fines,gravel:gravel,sand:sand,cu:cu,cc:cc,classification:classification});
+}
+
+// ================================================================
+// COMPRESSIVE STRENGTH TEST
+// ================================================================
+var compState={isRunning:false,readings:[],peakForce:0,peakStress:0};
+function onCompConnChange(){var v=document.getElementById('comp-conn').value;if(v==='demo'){document.getElementById('comp-demo-banner').style.display='flex';}else{document.getElementById('comp-demo-banner').style.display='none';}}
+function getCompArea(){
+    var t=document.getElementById('comp-specimen-type').value;
+    if(t==='cube')return 150*150;
+    if(t==='cube100')return 100*100;
+    if(t==='cylinder100')return Math.PI*50*50;
+    return Math.PI*75*75;
+}
+function startCompTest(){
+    var conn=document.getElementById('comp-conn').value;if(!conn){alert('Select connection type');return;}
+    compState={isRunning:true,readings:[],peakForce:0,peakStress:0};
+    document.getElementById('comp-btn-start').style.display='none';
+    document.getElementById('comp-btn-stop').style.display='flex';
+    document.getElementById('comp-results-panel').style.display='none';
+    if(conn==='demo')runCompDemo();else if(conn==='manual')runCompManual();
+}
+function stopCompTest(){
+    compState.isRunning=false;
+    document.getElementById('comp-btn-start').style.display='flex';
+    document.getElementById('comp-btn-stop').style.display='none';
+    calculateCompResults();
+}
+function runCompManual(){
+    var f=prompt('Enter peak force (kN):');if(!f)return;
+    compState.peakForce=parseFloat(f);
+    calculateCompResults();
+}
+function runCompDemo(){
+    if(!compState.isRunning)return;
+    var area=getCompArea();
+    var targetStrength=30+Math.random()*20;
+    var peakF=targetStrength*area/1000;
+    var readings=[];var steps=50;
+    for(var i=0;i<=steps;i++){
+        var t=i/steps;
+        var f=peakF*Math.pow(t,0.5)*(1-0.3*Math.pow(t,3));
+        readings.push({force:f,disp:t*3,step:i});
+    }
+    var idx=0;
+    function stepDemo(){
+        if(!compState.isRunning||idx>=readings.length){calculateCompResults();return;}
+        var rd=readings[idx];idx++;
+        compState.readings.push(rd);
+        if(rd.force>compState.peakForce){compState.peakForce=rd.force;}
+        var stress=(rd.force*1000)/area;
+        document.getElementById('comp-force-display').textContent=rd.force.toFixed(0);
+        document.getElementById('comp-val-force').textContent=rd.force.toFixed(1);
+        document.getElementById('comp-val-disp').textContent=rd.disp.toFixed(2);
+        document.getElementById('comp-val-stress').textContent=stress.toFixed(1);
+        document.getElementById('comp-val-strain').textContent=(rd.disp/300*100).toFixed(3);
+        document.getElementById('comp-peak-force').textContent=compState.peakForce.toFixed(1)+' kN';
+        var pct=Math.min(100,rd.force/compState.peakForce*100);
+        var circ=document.getElementById('comp-gauge-fill');
+        if(circ)circ.setAttribute('stroke-dashoffset',264-264*pct/100);
+        setTimeout(stepDemo,80);
+    }
+    stepDemo();
+}
+function calculateCompResults(){
+    var area=getCompArea();
+    var strength=(compState.peakForce*1000)/area;
+    compState.peakStress=strength;
+    var age=document.getElementById('comp-age').value;
+    var spec=document.getElementById('comp-specimen-type').value;
+    var specLabel=spec==='cube'?'150mm Cube':spec==='cube100'?'100mm Cube':spec==='cylinder100'?'100×200mm Cylinder':'150×300mm Cylinder';
+    var pass=strength>=25;
+    var panel=document.getElementById('comp-results-panel');panel.style.display='block';
+    var html='<div class="result-status '+(pass?'pass':'fail')+'">'+(pass?'✅':'❌')+' '+(pass?'PASS':'FAIL')+' — '+strength.toFixed(1)+' MPa</div>';
+    html+='<div class="result-row"><span class="result-label">Peak Force</span><span class="result-value">'+compState.peakForce.toFixed(1)+' kN</span></div>';
+    html+='<div class="result-row"><span class="result-label">Cross-sectional Area</span><span class="result-value">'+(area/1000).toFixed(0)+' cm²</span></div>';
+    html+='<div class="result-row"><span class="result-label">Compressive Strength</span><span class="result-value">'+strength.toFixed(1)+' MPa</span></div>';
+    html+='<div class="result-row"><span class="result-label">Specimen</span><span class="result-value">'+specLabel+'</span></div>';
+    html+='<div class="result-row"><span class="result-label">Age</span><span class="result-value">'+age+' days</span></div>';
+    document.getElementById('comp-results-body').innerHTML=html;
+    document.getElementById('comp-strength-display').textContent=strength.toFixed(1)+' MPa';
+    saveTestSession('compressive',{strength:strength,peakForce:compState.peakForce,area:area,age:age,specimen:spec});
+}
+
+function generateCompPDF(){
+    if(!compState.peakStress)return;
+    try{var jsPDF=window.jspdf.jsPDF;var doc=new jsPDF();
+    doc.setFontSize(18);doc.text('SmartLAP — Compressive Strength Report',20,20);
+    doc.setFontSize(10);doc.text('Generated: '+new Date().toLocaleString(),20,28);
+    doc.setFontSize(12);doc.text('Sample: '+(document.getElementById('comp-sample-id').value||'N/A'),20,40);
+    doc.text('Specimen: '+document.getElementById('comp-specimen-type').value,20,48);
+    doc.text('Age: '+document.getElementById('comp-age').value+' days',20,56);
+    doc.text('Peak Force: '+compState.peakForce.toFixed(1)+' kN',20,64);
+    doc.text('Compressive Strength: '+compState.peakStress.toFixed(1)+' MPa',20,72);
+    doc.text('Status: '+(compState.peakStress>=25?'PASS':'FAIL'),20,80);
+    doc.setFontSize(8);doc.text('SmartLAP v1.0.0 — Fimto Soft',20,280);
+    doc.save('Compressive_Strength_Report.pdf');}catch(e){alert('PDF error: '+e.message);}
+}
+
+// ================================================================
+// DUCTILITY TEST
+// ================================================================
+var ductState={isRunning:false,readings:[],maxExtension:0,breakPoint:0};
+function onDuctConnChange(){var v=document.getElementById('duct-conn').value;if(v==='demo'){document.getElementById('duct-demo-banner').style.display='flex';}else{document.getElementById('duct-demo-banner').style.display='none';}}
+function startDuctTest(){
+    var conn=document.getElementById('duct-conn').value;if(!conn){alert('Select connection type');return;}
+    ductState={isRunning:true,readings:[],maxExtension:0,breakPoint:0};
+    document.getElementById('duct-btn-start').style.display='none';
+    document.getElementById('duct-btn-stop').style.display='flex';
+    document.getElementById('duct-results-panel').style.display='none';
+    if(conn==='demo')runDuctDemo();else if(conn==='manual')runDuctManual();
+}
+function stopDuctTest(){
+    ductState.isRunning=false;
+    document.getElementById('duct-btn-start').style.display='flex';
+    document.getElementById('duct-btn-stop').style.display='none';
+    calculateDuctResults();
+}
+function runDuctManual(){
+    var ext=prompt('Enter extension at break (cm):');if(!ext)return;
+    ductState.maxExtension=parseFloat(ext);ductState.breakPoint=parseFloat(ext);
+    calculateDuctResults();
+}
+function runDuctDemo(){
+    if(!ductState.isRunning)return;
+    var maxExt=80+Math.random()*70;
+    var breakAt=maxExt*(0.8+Math.random()*0.15);
+    var readings=[];var steps=40;
+    for(var i=0;i<=steps;i++){
+        var t=i/steps;
+        var ext=t*maxExt;
+        var force=t<0.9?5+Math.random()*2:(t<1?8-3*(t-0.9)/0.1:0);
+        readings.push({ext:ext,force:force,broken:ext>breakAt});
+    }
+    var idx=0;
+    function stepDuct(){
+        if(!ductState.isRunning||idx>=readings.length){calculateDuctResults();return;}
+        var rd=readings[idx];idx++;
+        ductState.readings.push(rd);
+        if(rd.ext>ductState.maxExtension)ductState.maxExtension=rd.ext;
+        if(rd.broken&&ductState.breakPoint===0)ductState.breakPoint=rd.ext;
+        document.getElementById('duct-val-ext').textContent=rd.ext.toFixed(1);
+        document.getElementById('duct-val-force').textContent=rd.force.toFixed(2);
+        document.getElementById('duct-val-speed').textContent='5';
+        document.getElementById('duct-val-status').textContent=rd.broken?'BROKEN':'Pulling';
+        document.getElementById('duct-val-status').style.color=rd.broken?'var(--danger)':'var(--accent)';
+        setTimeout(stepDuct,150);
+    }
+    stepDuct();
+}
+function calculateDuctResults(){
+    var ext=ductState.breakPoint||ductState.maxExtension;
+    var grade=document.getElementById('duct-grade').value;
+    var temp=document.getElementById('duct-temp').value;
+    var pass=ext>=50;
+    var panel=document.getElementById('duct-results-panel');panel.style.display='block';
+    var html='<div class="result-status '+(pass?'pass':'fail')+'">'+(pass?'✅':'❌')+' '+(pass?'PASS':'FAIL')+'</div>';
+    html+='<div class="result-row"><span class="result-label">Ductility (Extension at Break)</span><span class="result-value">'+ext.toFixed(1)+' cm</span></div>';
+    html+='<div class="result-row"><span class="result-label">Bitumen Grade</span><span class="result-value">'+grade+'</span></div>';
+    html+='<div class="result-row"><span class="result-label">Test Temperature</span><span class="result-value">'+temp+'°C</span></div>';
+    html+='<div class="result-row"><span class="result-label">Requirement (min 50cm)</span><span class="result-value">'+(pass?'Satisfied':'Not Satisfied')+'</span></div>';
+    document.getElementById('duct-results-body').innerHTML=html;
+    saveTestSession('ductility',{ductility:ext,grade:grade,temp:temp});
+}
+
+// ================================================================
+// AIR CONTENT TEST
+// ================================================================
+var airState={isRunning:false,readings:[]};
+function onAirConnChange(){var v=document.getElementById('air-conn').value;if(v==='demo'){document.getElementById('air-demo-banner').style.display='flex';}else{document.getElementById('air-demo-banner').style.display='none';}}
+function startAirTest(){
+    var conn=document.getElementById('air-conn').value;if(!conn){alert('Select connection type');return;}
+    airState={isRunning:true,readings:[]};
+    document.getElementById('air-btn-start').style.display='none';
+    document.getElementById('air-btn-stop').style.display='flex';
+    document.getElementById('air-results-panel').style.display='none';
+    if(conn==='demo')runAirDemo();else if(conn==='manual')runAirManual();
+}
+function stopAirTest(){
+    airState.isRunning=false;
+    document.getElementById('air-btn-start').style.display='flex';
+    document.getElementById('air-btn-stop').style.display='none';
+    calculateAirResults();
+}
+function runAirManual(){
+    var air=prompt('Enter measured air content (%):');if(!air)return;
+    airState.readings.push({air:parseFloat(air),pressure:0,uw:2400});
+    calculateAirResults();
+}
+function runAirDemo(){
+    if(!airState.isRunning)return;
+    var targetAir=parseFloat(document.getElementById('air-target').value)||5;
+    var readings=[];var steps=10;
+    for(var i=0;i<steps;i++){
+        readings.push({air:targetAir+Math.random()*1.5-0.75,pressure:14.7*(1-targetAir/100),uw:2350+Math.random()*100});
+    }
+    var idx=0;
+    function stepAir(){
+        if(!airState.isRunning||idx>=readings.length){calculateAirResults();return;}
+        var rd=readings[idx];idx++;
+        airState.readings.push(rd);
+        document.getElementById('air-val-pressure').textContent=rd.pressure.toFixed(1);
+        document.getElementById('air-val-air').textContent=rd.air.toFixed(1);
+        document.getElementById('air-val-uw').textContent=rd.uw.toFixed(0);
+        document.getElementById('air-val-status').textContent='Measuring...';
+        setTimeout(stepAir,1200);
+    }
+    stepAir();
+}
+function calculateAirResults(){
+    var r=airState.readings;if(r.length===0)return;
+    var avgAir=r.reduce(function(s,v){return s+v.air;},0)/r.length;
+    var avgUw=r.reduce(function(s,v){return s+v.uw;},0)/r.length;
+    var target=parseFloat(document.getElementById('air-target').value)||5;
+    var diff=Math.abs(avgAir-target);
+    var pass=diff<=1.5;
+    var method=document.getElementById('air-method').value;
+    var panel=document.getElementById('air-results-panel');panel.style.display='block';
+    var html='<div class="result-status '+(pass?'pass':'fail')+'">'+(pass?'✅':'❌')+' '+(pass?'PASS':'FAIL')+'</div>';
+    html+='<div class="result-row"><span class="result-label">Average Air Content</span><span class="result-value">'+avgAir.toFixed(1)+'%</span></div>';
+    html+='<div class="result-row"><span class="result-label">Target Air Content</span><span class="result-value">'+target+'%</span></div>';
+    html+='<div class="result-row"><span class="result-label">Deviation from Target</span><span class="result-value">±'+diff.toFixed(1)+'%</span></div>';
+    html+='<div class="result-row"><span class="result-label">Average Unit Weight</span><span class="result-value">'+avgUw.toFixed(0)+' kg/m³</span></div>';
+    html+='<div class="result-row"><span class="result-label">Method</span><span class="result-value">'+method.charAt(0).toUpperCase()+method.slice(1)+'</span></div>';
+    html+='<div class="result-row"><span class="result-label">Concrete Temp</span><span class="result-value">'+document.getElementById('air-conc-temp').value+'°C</span></div>';
+    document.getElementById('air-results-body').innerHTML=html;
+    saveTestSession('air',{airContent:avgAir,target:target,unitWeight:avgUw,method:method});
 }
 
 // ================================================================

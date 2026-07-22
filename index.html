@@ -1640,12 +1640,12 @@ async function loadDomains() {
     var c = document.getElementById('domains-list');
     c.innerHTML = '<p style="color:var(--text-muted);">Loading...</p>';
     try {
-        var snap = await db.collection('domains').orderBy('order').get();
+        var snap = await db.collection('domains').get();
         if (snap.empty) { await seedDomains(); return loadDomains(); }
         c.innerHTML = '';
+        var domains=[];snap.forEach(function(doc){var d=doc.data();d.id=doc.id;domains.push(d);});domains.sort(function(a,b){return (a.order||0)-(b.order||0);});
         var icons = { 'طرق':'🛣️', 'خرسانة':'🏗️', 'أسفلت':'🛤️', 'Roads':'🛣️', 'Concrete':'🏗️', 'Asphalt':'🛤️', '道路':'🛣️', '混凝土':'🏗️', '沥青':'🛤️', 'Straßen':'🛣️', 'Beton':'🏗️', 'Asphalt':'🛤️' };
-        snap.forEach(function(doc) {
-            var d = doc.data(); d.id = doc.id;
+        domains.forEach(function(d) {
             var ik = Object.keys(icons).find(function(k){return d.name.includes(k);}) || '🔬';
             var card = document.createElement('a'); card.href='#'; card.className='domain-card';
             card.onclick = function(e){e.preventDefault();selectDomain(d);};
@@ -1676,12 +1676,14 @@ async function selectDomain(domain) {
     document.getElementById('dash-title').textContent=domain.name;
     document.getElementById('dash-subtitle').textContent=domain.description;
     var grid=document.getElementById('tests-grid');grid.innerHTML='<p style="color:var(--text-muted);">Loading...</p>';
-    try{var snap=await db.collection('tests').where('domainId','==',domain.id).orderBy('order').get();grid.innerHTML='';
+    try{var snap=await db.collection('tests').where('domainId','==',domain.id).get();grid.innerHTML='';
     if(snap.empty){grid.innerHTML='<p style="color:var(--text-muted);padding:40px;">No tests</p>';return;}
+    var tests=[];snap.forEach(function(doc){var t=doc.data();t.id=doc.id;tests.push(t);});tests.sort(function(a,b){return (a.order||0)-(b.order||0);});
     var tIcons={'دمك':'⚡','رطوبة':'💧','انضباط':'📐','انساب':'🌡️','نسبة':'📊','CBR':'📊','cbr':'📊','استقامة':'📐','straightedge':'📐','هبوط':'📐','slump':'📐','مaturity':'🌡️','maturity':'🌡️','مارشال':'⚖️','marshall':'⚖️','بتومين':'🧪','bitumen':'🧪','marşal':'⚖️','_photo':'🧪','فتو':'🧪'};
-    snap.forEach(function(doc){var t=doc.data();t.id=doc.id;var ik=Object.keys(tIcons).find(function(k){return t.name.includes(k);});
+    var tDescs={compaction:'Proctor compaction test with real-time density calculations',cbr:'California Bearing Ratio — penetration & load analysis',straightedge:'Surface evenness measurement with IMU + laser',slump:'Ultrasonic cone height measurement',maturity:'Temperature logging with Nurse-Saul / Arrhenius index',marshall:'Load-displacement stability & flow test',bitumen:'Light intensity transmission & purity test',penetration:'Needle penetration depth measurement',moisture:'Soil moisture content determination'};
+    tests.forEach(function(t){var ik=Object.keys(tIcons).find(function(k){return t.name.includes(k);});
     var card=document.createElement('a');card.href='#';card.className='test-card slide-up';card.onclick=function(e){e.preventDefault();openTest(t);};
-    var tDescs={compaction:'Proctor compaction test with real-time density calculations',cbr:'California Bearing Ratio — penetration & load analysis',straightedge:'Surface evenness measurement with IMU + laser',slump:'Ultrasonic cone height measurement',maturity:'Temperature logging with Nurse-Saul / Arrhenius index',marshall:'Load-displacement stability & flow test',bitumen:'Light intensity transmission & purity test',penetration:'Needle penetration depth measurement',moisture:'Soil moisture content determination'};card.innerHTML='<div class="test-card-icon">'+(tIcons[ik]||'🔬')+'</div><h3>'+t.name+'</h3><p>'+(tDescs[t.type]||'Interactive test with real-time sensor data')+'</p><div class="card-footer"><span class="card-tag">'+(t.type==='compaction'||t.type==='cbr'?'Hardware':'Manual')+'</span><div class="card-arrow">←</div></div>';
+    card.innerHTML='<div class="test-card-icon">'+(tIcons[ik]||'🔬')+'</div><h3>'+t.name+'</h3><p>'+(tDescs[t.type]||'Interactive test with real-time sensor data')+'</p><div class="card-footer"><span class="card-tag">'+(t.type==='compaction'||t.type==='cbr'?'Hardware':'Manual')+'</span><div class="card-arrow">←</div></div>';
     grid.appendChild(card);});}catch(e){grid.innerHTML='<p style="color:#ef4444;">Error: '+e.message+'</p>';}
 }
 
@@ -1891,7 +1893,7 @@ db.collection('sessions').add({testId:currentTest.id,domainId:currentDomain.id,d
 
 function displayResults(results){var panel=document.getElementById('results-panel');var body=document.getElementById('results-body');panel.style.display='block';var labels={strikes_count:'Strikes Completed',target_strikes:'Target Strikes',max_dry_density:'Max Dry Density (kg/m³)',optimum_moisture:'Optimum Moisture %',average_moisture:'Avg Moisture %',average_force:'Avg Force (N)',max_force:'Max Force (N)',reference_density:'Reference Density (kg/m³)',compaction_ratio:'Compaction Ratio %',hammer_weight:'Hammer (kg)',mold_volume:'Mold (m³)',status:'Status'};var html='';if(results.status){var p=results.status==='PASS';html+='<div class="result-status '+(p?'pass':'fail')+'">'+(p?'✅':'❌')+' '+results.status+' — '+results.compaction_ratio+'%</div>';}Object.keys(results).forEach(function(k){html+='<div class="result-row"><span class="result-label">'+(labels[k]||k)+'</span><span class="result-value">'+results[k]+'</span></div>';});body.innerHTML=html;if(results.compaction_ratio>0){document.getElementById('chart-box').style.display='block';setTimeout(function(){document.getElementById('chart-fill').style.width=Math.min(results.compaction_ratio,100)+'%';},100);}document.getElementById('btn-pdf').style.display='flex';}
 
-async function loadHistory(){if(!currentTest)return;try{var snap=await db.collection('sessions').where('testId','==',currentTest.id).orderBy('createdAt','desc').limit(10).get();var tbody=document.getElementById('history-body');if(snap.empty)return;tbody.innerHTML='';snap.forEach(function(doc){var s=doc.data();var st=(s.results&&s.results.status)||'?';var dens=(s.results&&s.results.max_dry_density)||'--';var date=s.createdAt?new Date(s.createdAt.seconds*1000).toLocaleDateString():'--';var cls=st==='PASS'?'result-pass':(st==='FAIL'?'result-fail':'');var tr=document.createElement('tr');tr.innerHTML='<td>'+date+'</td><td class="'+cls+'">'+st+'</td><td>'+dens+' kg/m³</td>';tbody.appendChild(tr);});}catch(e){}}
+async function loadHistory(){if(!currentTest)return;try{var snap=await db.collection('sessions').where('testId','==',currentTest.id).get();var tbody=document.getElementById('history-body');if(snap.empty)return;tbody.innerHTML='';var rows=[];snap.forEach(function(doc){var s=doc.data();rows.push(s);});rows.sort(function(a,b){return (b.createdAt&&b.createdAt.seconds||0)-(a.createdAt&&a.createdAt.seconds||0);});rows.slice(0,10).forEach(function(s){var st=(s.results&&s.results.status)||'?';var dens=(s.results&&s.results.max_dry_density)||'--';var date=s.createdAt?new Date(s.createdAt.seconds*1000).toLocaleDateString():'--';var cls=st==='PASS'?'result-pass':(st==='FAIL'?'result-fail':'');var tr=document.createElement('tr');tr.innerHTML='<td>'+date+'</td><td class="'+cls+'">'+st+'</td><td>'+dens+' kg/m³</td>';tbody.appendChild(tr);});}catch(e){}}
 
 // ================================================================
 // CBR TEST
@@ -2114,10 +2116,11 @@ function displayCBRResults(results){
 
 async function loadCBRHistory(){
     if(!currentTest)return;
-    try{var snap=await db.collection('sessions').where('testId','==',currentTest.id).orderBy('createdAt','desc').limit(10).get();
+    try{var snap=await db.collection('sessions').where('testId','==',currentTest.id).get();
     var tbody=document.getElementById('cbr-history-body');
     if(snap.empty)return;tbody.innerHTML='';
-    snap.forEach(function(doc){var s=doc.data();var st=(s.results&&s.results.status)||'?';var cbr=(s.results&&s.results.cbr_value)||'--';var date=s.createdAt?new Date(s.createdAt.seconds*1000).toLocaleDateString():'--';
+    var rows=[];snap.forEach(function(doc){rows.push(doc.data());});rows.sort(function(a,b){return (b.createdAt&&b.createdAt.seconds||0)-(a.createdAt&&a.createdAt.seconds||0);});
+    rows.slice(0,10).forEach(function(s){var st=(s.results&&s.results.status)||'?';var cbr=(s.results&&s.results.cbr_value)||'--';var date=s.createdAt?new Date(s.createdAt.seconds*1000).toLocaleDateString():'--';
     var cls=st==='PASS'?'result-pass':(st==='FAIL'?'result-fail':'');
     var tr=document.createElement('tr');tr.innerHTML='<td>'+date+'</td><td class="'+cls+'">'+st+'</td><td>'+cbr+'%</td>';tbody.appendChild(tr);});}catch(e){}
 }
@@ -2737,11 +2740,13 @@ function addQRToTable(specimen){
 
 async function loadQRList(){
     try{
-        var snap=await db.collection('qr_specimens').orderBy('createdAt','desc').limit(50).get();
+        var snap=await db.collection('qr_specimens').get();
         var tbody=document.getElementById('qr-list-body');
         if(!tbody||snap.empty)return;
         tbody.innerHTML='';
-        snap.forEach(function(doc){var s=doc.data();s.firestoreId=doc.id;qrSpecimens.push(s);addQRToTable(s);});
+        var rows=[];snap.forEach(function(doc){var s=doc.data();s.firestoreId=doc.id;rows.push(s);});
+        rows.sort(function(a,b){return (b.createdAt&&b.createdAt.seconds||0)-(a.createdAt&&a.createdAt.seconds||0);});
+        rows.slice(0,50).forEach(function(s){qrSpecimens.push(s);addQRToTable(s);});
     }catch(e){}
 }
 
@@ -2791,13 +2796,14 @@ function generateBreakSchedule(){
 
 function loadBreakSchedules(){
     try{
-        db.collection('break_schedules').where('userId','==',currentUser?currentUser.uid:'guest').orderBy('createdAt','desc').limit(10).get().then(function(snap){
+        db.collection('break_schedules').where('userId','==',currentUser?currentUser.uid:'guest').get().then(function(snap){
             if(snap.empty)return;
             var tbody=document.getElementById('bs-history-body');
             if(!tbody)return;
             tbody.innerHTML='';
-            snap.forEach(function(doc){
-                var s=doc.data();
+            var rows=[];snap.forEach(function(doc){var s=doc.data();rows.push(s);});
+            rows.sort(function(a,b){return (b.createdAt&&b.createdAt.seconds||0)-(a.createdAt&&a.createdAt.seconds||0);});
+            rows.slice(0,10).forEach(function(s){
                 var tr=document.createElement('tr');
                 tr.innerHTML='<td>'+s.mixId+'</td><td>'+s.concreteGrade+'</td><td>'+s.castDate+'</td><td>'+(s.schedule?s.schedule.length+' breaks':'--')+'</td>';
                 tbody.appendChild(tr);

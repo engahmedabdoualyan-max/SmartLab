@@ -235,6 +235,55 @@
             <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px;" data-i18n="ai_team_desc">Your intelligent assistants for hardware, lab testing, programming, project management, and research.</p>
             <div class="ai-team-grid" id="ai-team-grid"></div>
         </div>
+        <div style="margin-top:40px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                <div class="panel" style="overflow:hidden;">
+                    <div class="panel-header" style="background:linear-gradient(135deg,rgba(59,130,246,0.05),rgba(59,130,246,0.02));">
+                        <div class="panel-header-icon blue">📋</div>
+                        <h3>QR Specimen Tracking</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div style="display:flex;gap:8px;margin-bottom:12px;">
+                            <input type="text" id="qr-sample-id" placeholder="Sample ID" style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:'Cairo',sans-serif;">
+                            <input type="date" id="qr-cast-date" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:'Cairo',sans-serif;">
+                        </div>
+                        <div style="display:flex;gap:8px;margin-bottom:12px;">
+                            <select id="qr-test-type" style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:'Cairo',sans-serif;">
+                                <option value="compaction">Compaction</option><option value="cbr">CBR</option><option value="slump">Slump</option><option value="maturity">Maturity</option><option value="marshall">Marshall</option><option value="bitumen">Bitumen</option>
+                            </select>
+                            <select id="qr-grade" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:'Cairo',sans-serif;">
+                                <option value="">Grade</option><option value="C20">C20</option><option value="C25">C25</option><option value="C30">C30</option><option value="C35">C35</option><option value="C40">C40</option>
+                            </select>
+                        </div>
+                        <button onclick="createQRSpecimen()" style="width:100%;padding:10px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Cairo',sans-serif;margin-bottom:12px;">Generate QR Code</button>
+                        <div id="qr-code-display" style="text-align:center;"></div>
+                        <table class="strike-log" style="margin-top:12px;"><thead><tr><th>Sample</th><th>Type</th><th>Date</th><th>Status</th><th>Action</th></tr></thead><tbody id="qr-list-body"></tbody></table>
+                    </div>
+                </div>
+                <div class="panel" style="overflow:hidden;">
+                    <div class="panel-header" style="background:linear-gradient(135deg,rgba(16,185,129,0.05),rgba(16,185,129,0.02));">
+                        <div class="panel-header-icon green">📅</div>
+                        <h3>Break Schedule Generator</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div style="display:flex;gap:8px;margin-bottom:12px;">
+                            <input type="text" id="bs-mix-id" placeholder="Mix ID" value="MIX-001" style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:'Cairo',sans-serif;">
+                            <input type="date" id="bs-cast-date" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:'Cairo',sans-serif;">
+                        </div>
+                        <div style="display:flex;gap:8px;margin-bottom:12px;">
+                            <select id="bs-concrete-grade" style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:'Cairo',sans-serif;">
+                                <option value="C20">C20</option><option value="C25">C25</option><option value="C30" selected>C30</option><option value="C35">C35</option><option value="C40">C40</option>
+                            </select>
+                        </div>
+                        <button onclick="generateBreakSchedule()" style="width:100%;padding:10px;background:var(--success);color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Cairo',sans-serif;margin-bottom:12px;">Generate Schedule</button>
+                        <div id="bs-results-panel" style="display:none;margin-bottom:12px;">
+                            <table class="strike-log"><thead><tr><th>Age</th><th>Break Date</th><th>Specimen</th><th>Status</th></tr></thead><tbody id="bs-schedule-body"></tbody></table>
+                        </div>
+                        <p style="font-size:11px;color:var(--text-muted);text-align:center;">Schedule will calculate 1d, 3d, 7d, 14d, 28d, 56d, 90d breaks from cast date</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
 </div>
 
@@ -341,6 +390,7 @@
                     <div class="form-group"><label data-i18n="ref_weight">Reference Weight (kg)</label><input type="number" id="inp_ref_weight" step="any"></div>
                     <div class="form-group"><label data-i18n="target_strikes">Target Strikes</label><input type="number" id="inp_target_strikes" value="25"></div>
                     <div class="form-group"><label data-i18n="target_ratio">Target Ratio (%)</label><input type="number" id="inp_target_ratio" value="95"></div>
+                    <div class="form-group"><label>Agency / Standard</label><select id="agency-select" onchange="setAgency(this.value)"><option value="ASTM">ASTM</option><option value="AASHTO">AASHTO</option><option value="BS">BS / EN</option></select></div>
                 </div>
             </div>
             <div class="panel" style="margin-bottom:20px;">
@@ -426,6 +476,15 @@
             <div class="panel">
                 <div class="panel-header"><div class="panel-header-icon blue">📂</div><h3 data-i18n="history">History</h3></div>
                 <div class="panel-body" style="padding:0;"><table class="history-table"><thead><tr><th data-i18n="th_date">Date</th><th data-i18n="th_status">Status</th><th data-i18n="th_density2">Density</th></tr></thead><tbody id="history-body"><tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:24px;" data-i18n="no_history">No previous tests</td></tr></tbody></table></div>
+            </div>
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon" style="background:rgba(239,68,68,0.1);">🚨</div><h3>AI Anomaly Detection</h3></div>
+                <div class="panel-body">
+                    <div id="anomaly-log" style="display:none;">
+                        <table class="strike-log"><thead><tr><th>Time</th><th>Type</th><th>Message</th><th>Value</th><th>Mean</th><th>±StdDev</th></tr></thead><tbody id="anomaly-log-body"></tbody></table>
+                    </div>
+                    <p id="anomaly-placeholder" style="font-size:12px;color:var(--text-muted);text-align:center;padding:16px;">Anomalies will appear here during testing</p>
+                </div>
             </div>
         </div>
     </div>
@@ -699,6 +758,7 @@
                 <div class="panel-body">
                     <div class="form-group"><label data-i18n="cbr_sample_diameter">Sample Diameter (mm)</label><input type="number" id="cbr_inp_diameter" step="any" value="152"></div>
                     <div class="form-group"><label data-i18n="cbr_piston_area">Piston Area (mm²)</label><input type="number" id="cbr_inp_piston_area" step="any" value="1963.5"></div>
+                    <div class="form-group"><label>Agency / Standard</label><select id="agency-select-cbr" onchange="setAgency(this.value)"><option value="ASTM">ASTM D1883</option><option value="AASHTO">AASHTO T193</option><option value="BS">BS 1377</option></select></div>
                     <div class="form-group"><label data-i18n="cbr_std_load_25">Standard Load @ 2.5mm (N)</label><input type="number" id="cbr_inp_std_25" step="any" value="13240"></div>
                     <div class="form-group"><label data-i18n="cbr_std_load_50">Standard Load @ 5.0mm (N)</label><input type="number" id="cbr_inp_std_50" step="any" value="19960"></div>
                     <div class="form-group"><label data-i18n="cbr_penetration_limit">Max Penetration (mm)</label><input type="number" id="cbr_inp_max_pen" step="any" value="12.5"></div>
@@ -880,6 +940,7 @@
                     <div class="form-group"><label data-i18n="slump_cone_height">Cone Height (mm)</label><input type="number" id="slump_inp_height" step="any" value="305"></div>
                     <div class="form-group"><label data-i18n="slump_tolerance">Tolerance (mm)</label><input type="number" id="slump_inp_tolerance" step="any" value="25"></div>
                     <div class="form-group"><label data-i18n="slump_target">Target Slump (mm)</label><input type="number" id="slump_inp_target" step="any" value="100"></div>
+                    <div class="form-group"><label>Agency / Standard</label><select id="agency-select-slump" onchange="setAgency(this.value)"><option value="ASTM">ASTM C143</option><option value="AASHTO">AASHTO T119</option><option value="BS">BS 1881</option></select></div>
                 </div>
             </div>
             <div class="panel" style="margin-bottom:20px;">
@@ -946,6 +1007,7 @@
                     <div class="form-group"><label data-i18n="mat_cement_type">Cement Type</label><select id="mat_inp_cement"><option value="opc">OPC (Type I)</option><option value="src">SRC (Type II)</option><option value="ppc">PPC</option></select></div>
                     <div class="form-group"><label data-i18n="mat_wcr">W/C Ratio</label><input type="number" id="mat_inp_wcr" step="any" value="0.45"></div>
                     <div class="form-group"><label data-i18n="mat_target_strength">Target Strength (MPa)</label><input type="number" id="mat_inp_target" step="any" value="30"></div>
+                    <div class="form-group"><label>Agency / Standard</label><select id="agency-select-mat" onchange="setAgency(this.value)"><option value="ASTM">ASTM C1074</option><option value="BS">BS EN 12390</option></select></div>
                     <div class="form-group"><label data-i18n="mat_logging_interval">Logging Interval (min)</label><input type="number" id="mat_inp_interval" value="15"></div>
                 </div>
             </div>
@@ -1022,6 +1084,7 @@
                     <div class="form-group"><label data-i18n="mar_specimen">Specimen #</label><input type="number" id="mar_inp_specimen" value="1"></div>
                     <div class="form-group"><label data-i18n="mar_diameter">Diameter (mm)</label><input type="number" id="mar_inp_diameter" step="any" value="101.6"></div>
                     <div class="form-group"><label data-i18n="mar_height">Height (mm)</label><input type="number" id="mar_inp_height" step="any" value="63.5"></div>
+                    <div class="form-group"><label>Agency / Standard</label><select id="agency-select-mar" onchange="setAgency(this.value)"><option value="ASTM">ASTM D6927</option><option value="AASHTO">AASHTO T245</option><option value="BS">BS EN 12697</option></select></div>
                     <div class="form-group"><label data-i18n="mar_loading_rate">Loading Rate (mm/min)</label><input type="number" id="mar_inp_rate" step="any" value="50"></div>
                 </div>
             </div>
@@ -1029,7 +1092,7 @@
                 <div class="panel-header"><div class="panel-header-icon green">🔌</div><h3 data-i18n="hardware">Hardware Connection</h3></div>
                 <div class="panel-body">
                     <div class="form-group"><label data-i18n="connection">Connection</label>
-                        <select id="mar-com-port-select" onchange="onMarConnTypeChange()"><option value="">-- Select Connection --</option><option value="browser-serial">🔌 USB / Serial</option><option value="demo">🧪 Demo Mode</option></select>
+                        <select id="mar-com-port-select" onchange="onMarConnTypeChange()"><option value="">-- Select Connection --</option><option value="browser-serial">🔌 USB / Serial</option><option value="lan">🌐 LAN / Network</option><option value="bluetooth">📡 Bluetooth</option><option value="manual">✏️ Manual Mode</option><option value="demo">🧪 Demo Mode</option></select>
                     </div>
                     <div class="serial-status"><div class="status-dot disconnected" id="mar-serial-dot"></div><span id="mar-serial-text" data-i18n="disconnected">Disconnected</span></div>
                 </div>
@@ -1094,7 +1157,7 @@
                 <div class="panel-header"><div class="panel-header-icon green">🔌</div><h3 data-i18n="hardware">Hardware Connection</h3></div>
                 <div class="panel-body">
                     <div class="form-group"><label data-i18n="connection">Connection</label>
-                        <select id="bit-com-port-select" onchange="onBitConnTypeChange()"><option value="">-- Select Connection --</option><option value="browser-serial">🔌 USB / Serial</option><option value="demo">🧪 Demo Mode</option></select>
+                        <select id="bit-com-port-select" onchange="onBitConnTypeChange()"><option value="">-- Select Connection --</option><option value="browser-serial">🔌 USB / Serial</option><option value="lan">🌐 LAN / Network</option><option value="bluetooth">📡 Bluetooth</option><option value="manual">✏️ Manual Mode</option><option value="demo">🧪 Demo Mode</option></select>
                     </div>
                     <div class="serial-status"><div class="status-dot disconnected" id="bit-serial-dot"></div><span id="bit-serial-text" data-i18n="disconnected">Disconnected</span></div>
                 </div>
@@ -1129,7 +1192,17 @@
 <div id="screen-penetration" class="screen">
     <header class="app-header">
         <div class="header-right"><div class="header-logo">SL</div><span class="header-title" id="pen-page-title">Bitumen Penetration Test</span></div>
-        <div class="header-left"><button onclick="goBackToDashboard()" class="btn-back">→ <span data-i18n="dashboard">Dashboard</span></button></div>
+        <div class="header-left">
+                <div class="header-user-btn" onclick="toggleUserDropdown(event)">
+                    <div class="user-icon" id="pen-user-icon">U</div>
+                    <div class="user-dropdown">
+                        <div class="dd-header"><div class="dd-name" id="pen-dd-name">User</div><div class="dd-email" id="pen-dd-email">—</div></div>
+                        <button class="dd-item" onclick="showScreen('domains')"><span class="dd-icon">🏠</span> <span data-i18n="change_domain">Change Domain</span></button>
+                        <button class="dd-item danger" onclick="doSignOut()"><span class="dd-icon">🚪</span> <span data-i18n="sign_out">Sign Out</span></button>
+                    </div>
+                </div>
+                <button onclick="goBackToDashboard()" class="btn-back">→ <span data-i18n="dashboard">Dashboard</span></button>
+            </div>
     </header>
     <div class="test-layout">
         <div class="slide-up">
@@ -1147,7 +1220,7 @@
                 <div class="panel-header"><div class="panel-header-icon green">🔌</div><h3 data-i18n="hardware">Hardware Connection</h3></div>
                 <div class="panel-body">
                     <div class="form-group"><label data-i18n="connection">Connection</label>
-                        <select id="pen-com-port-select" onchange="onPenConnTypeChange()"><option value="">-- Select Connection --</option><option value="browser-serial">🔌 USB / Serial</option><option value="demo">🧪 Demo Mode</option></select>
+                        <select id="pen-com-port-select" onchange="onPenConnTypeChange()"><option value="">-- Select Connection --</option><option value="browser-serial">🔌 USB / Serial</option><option value="lan">🌐 LAN / Network</option><option value="bluetooth">📡 Bluetooth</option><option value="manual">✏️ Manual Mode</option><option value="demo">🧪 Demo Mode</option></select>
                     </div>
                     <div class="serial-status"><div class="status-dot disconnected" id="pen-serial-dot"></div><span id="pen-serial-text" data-i18n="disconnected">Disconnected</span></div>
                 </div>

@@ -35,10 +35,21 @@ body {
     direction: rtl;
 }
 
-body[data-dir="ltr"] { direction: ltr; }
+body[data-dir="ltr"] { direction: ltr; text-align: left; }
 body[data-dir="ltr"] .domain-info,
 body[data-dir="ltr"] .app-header,
-body[data-dir="ltr"] .result-row { direction: ltr; }
+body[data-dir="ltr"] .result-row,
+body[data-dir="ltr"] .header-right,
+body[data-dir="ltr"] .header-left,
+body[data-dir="ltr"] .domain-header { direction: ltr; text-align: left; }
+
+/* ===== SCREENS ===== */
+.screen { display: none; min-height: 100vh; }
+.screen.active { display: block; }
+body[data-dir="rtl"] .login-card { text-align: right; }
+body[data-dir="ltr"] .login-card { text-align: left; }
+body[data-dir="rtl"] .login-form-side .login-card { text-align: right; }
+body[data-dir="ltr"] .login-form-side .login-card { text-align: left; }
 
 /* ===== LANGUAGE SWITCHER ===== */
 .lang-switcher {
@@ -609,6 +620,17 @@ body[data-dir="ltr"] .forgot-link { text-align: left; }
     text-decoration: none; transition: color 0.2s; cursor: pointer;
 }
 .forgot-link a:hover { color: var(--accent); }
+
+/* ===== GUEST BUTTON ===== */
+.btn-guest {
+    width: 100%; padding: 12px;
+    background: transparent; border: 1px dashed rgba(255,255,255,0.15);
+    border-radius: 12px; color: rgba(255,255,255,0.5);
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    font-family: 'Cairo', sans-serif; transition: all 0.2s;
+    margin-top: 12px;
+}
+.btn-guest:hover { border-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.03); }
 
 /* ===== USER DROPDOWN ===== */
 .user-badge { position: relative; }

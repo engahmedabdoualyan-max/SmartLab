@@ -4563,6 +4563,10 @@ document.addEventListener('keydown', function(e) {
         if (fabOpen) toggleFab();
     }
 });
+
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(function(e) { console.log('SW registration failed:', e); });
+}
 </script>
 </body>
 </html>

@@ -37,7 +37,7 @@ function hasPermission(action) {
 
 function canRunTest(testType) {
     var allowed = TEST_ROLE_ACCESS[currentUserRole] || [];
-    return allowed.indexOf(testType) !== -1;
+    logAudit('permission_denied', `Test type: ${testType}`);
 }
 
 function canExportData() { return hasPermission('export_data'); }

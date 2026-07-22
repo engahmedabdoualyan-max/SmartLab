@@ -9,7 +9,20 @@ function runDemoMode(){var n=0;var iv=setInterval(function(){if(!isTesting||n>=t
 // ================================================================
 // PROCESS STRIKE
 // ================================================================
-function processStrike(moisture,force){if(!isTesting)return;var wetDensity=force/(moldVolume*9.81);var dryDensity=wetDensity/(1+moisture/100);var strike={index:strikes.length+1,moisture:moisture,force:force,wetDensity:Math.round(wetDensity*100)/100,dryDensity:Math.round(dryDensity*100)/100,time:new Date().toLocaleTimeString()};strikes.push(strike);document.getElementById('val-moisture').textContent=moisture;document.getElementById('val-force').textContent=force;document.getElementById('strike-counter').textContent=strikes.length;var sf=0;for(var i=0;i<strikes.length;i++)sf+=strikes[i].force;document.getElementById('val-avg-force').textContent=Math.round(sf/strikes.length*100)/100;document.getElementById('val-dry-density').textContent=dryDensity;var progress=Math.min(strikes.length/targetStrikes,1);document.getElementById('gauge-fill').style.strokeDashoffset=264-(progress*264);var mdd=dryDensity;for(var j=0;j<strikes.length;j++)if(strikes[j].dryDensity>mdd)mdd=strikes[j].dryDensity;var rw=parseFloat(document.getElementById('inp_ref_weight').value)||0;var rd=rw>0?rw/moldVolume:0;var cr=rd>0?(mdd/rd)*100:0;document.getElementById('ratio-display').textContent=cr>0?Math.round(cr)+'%':'--%';var tbody=document.getElementById('strike-log-body');if(strikes.length===1)tbody.innerHTML='';var tr=document.createElement('tr');tr.innerHTML='<td style="font-weight:700;">'+strike.index+'</td><td>'+strike.moisture+'</td><td>'+strike.force+'</td><td>'+strike.dryDensity+'</td><td style="color:var(--text-muted);font-size:10px;">'+strike.time+'</td>';tbody.appendChild(tr);var lc=tbody.closest('.strike-log');if(lc)lc.scrollTop=lc.scrollHeight;if(strikes.length>=targetStrikes)stopTest();}
+function processStrike(moisture,force){ // Add input validation and sanitization
+if (Number.isFinite(moisture) && Number.isFinite(force)) {
+    processStrike(moisture, force);
+} else {
+    alert('Invalid input: Must be numeric values');
+    return;
+}
+
+// Add CSRF protection
+const csrfToken = document.cookie.match(/csrf_token=([^;]+)/)?.[1];
+if (!csrfToken || csrfToken !== document.getElementById('csrf-token').value) {
+    alert('CSRF verification failed');
+    return;
+}var wetDensity=force/(moldVolume*9.81);var dryDensity=wetDensity/(1+moisture/100);var strike={index:strikes.length+1,moisture:moisture,force:force,wetDensity:Math.round(wetDensity*100)/100,dryDensity:Math.round(dryDensity*100)/100,time:new Date().toLocaleTimeString()};strikes.push(strike);document.getElementById('val-moisture').textContent=moisture;document.getElementById('val-force').textContent=force;document.getElementById('strike-counter').textContent=strikes.length;var sf=0;for(var i=0;i<strikes.length;i++)sf+=strikes[i].force;document.getElementById('val-avg-force').textContent=Math.round(sf/strikes.length*100)/100;document.getElementById('val-dry-density').textContent=dryDensity;var progress=Math.min(strikes.length/targetStrikes,1);document.getElementById('gauge-fill').style.strokeDashoffset=264-(progress*264);var mdd=dryDensity;for(var j=0;j<strikes.length;j++)if(strikes[j].dryDensity>mdd)mdd=strikes[j].dryDensity;var rw=parseFloat(document.getElementById('inp_ref_weight').value)||0;var rd=rw>0?rw/moldVolume:0;var cr=rd>0?(mdd/rd)*100:0;document.getElementById('ratio-display').textContent=cr>0?Math.round(cr)+'%':'--%';var tbody=document.getElementById('strike-log-body');if(strikes.length===1)tbody.innerHTML='';var tr=document.createElement('tr');tr.innerHTML='<td style="font-weight:700;">'+strike.index+'</td><td>'+strike.moisture+'</td><td>'+strike.force+'</td><td>'+strike.dryDensity+'</td><td style="color:var(--text-muted);font-size:10px;">'+strike.time+'</td>';tbody.appendChild(tr);var lc=tbody.closest('.strike-log');if(lc)lc.scrollTop=lc.scrollHeight;if(strikes.length>=targetStrikes)stopTest();}
 
 // ================================================================
 // FINAL RESULTS

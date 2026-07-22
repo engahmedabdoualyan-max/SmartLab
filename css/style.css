@@ -170,8 +170,8 @@ body[data-dir="ltr"] .login-form-side .login-card { text-align: left; }
 .login-card .subtitle { color: rgba(255,255,255,0.45); font-size: 13px; margin-bottom: 24px; }
 .domain-grid { display: grid; gap: 14px; }
 .domain-card {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
+    background: white;
+    border: 1px solid var(--border);
     border-radius: 14px; padding: 20px;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -179,10 +179,10 @@ body[data-dir="ltr"] .login-form-side .login-card { text-align: left; }
     display: flex; align-items: center; gap: 16px;
 }
 .domain-card:hover {
-    background: rgba(59,130,246,0.15);
+    background: rgba(59,130,246,0.04);
     border-color: var(--accent);
     transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(59,130,246,0.2);
+    box-shadow: 0 8px 30px rgba(59,130,246,0.12);
 }
 .domain-icon {
     width: 52px; height: 52px;
@@ -193,8 +193,8 @@ body[data-dir="ltr"] .login-form-side .login-card { text-align: left; }
 }
 .domain-info { text-align: right; }
 body[data-dir="ltr"] .domain-info { text-align: left; }
-.domain-info h3 { color: white; font-size: 16px; font-weight: 700; margin-bottom: 2px; }
-.domain-info p { color: rgba(255,255,255,0.45); font-size: 12px; }
+.domain-info h3 { color: var(--text); font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+.domain-info p { color: var(--text-muted); font-size: 12px; }
 .version-badge {
     display: inline-block;
     background: rgba(59,130,246,0.15);

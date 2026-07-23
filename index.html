@@ -14,6 +14,7 @@
     <meta property="og:locale" content="en_US"><meta property="og:site_name" content="SmartLAP">
     <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="SmartLAP — Dynamic Lab Automation">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style-enhanced.css">
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
@@ -160,6 +161,27 @@
     </style>
 </head>
 <body>
+<!-- Hidden SVG definitions for gradients -->
+<svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden;">
+    <defs>
+        <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#3b82f6" />
+            <stop offset="100%" stop-color="#60a5fa" />
+        </linearGradient>
+        <linearGradient id="successGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#10b981" />
+            <stop offset="100%" stop-color="#34d399" />
+        </linearGradient>
+        <linearGradient id="warningGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#f59e0b" />
+            <stop offset="100%" stop-color="#fbbf24" />
+        </linearGradient>
+        <linearGradient id="purpleGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#8b5cf6" />
+            <stop offset="100%" stop-color="#a78bfa" />
+        </linearGradient>
+    </defs>
+</svg>
 <a href="#screen-domains" class="skip-link" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:99999;padding:8px 16px;background:var(--accent);color:white;border-radius:0 0 8px 0;font-weight:700;">Skip to main content</a>
 
 <!-- ============ SCREEN: AUTH ============ -->
@@ -1094,18 +1116,30 @@
     </div>
 </div>
 
-<!-- ============ FAB MENU ============ -->
-<div class="fab-container" id="fab-container" aria-label="Quick actions">
-    <div class="fab-menu" id="fab-menu" role="menu">
-        <div class="fab-item"><span class="fab-item-label" role="menuitem" tabindex="0" onclick="openFabModal('modal-refs')" data-i18n="fab_refs">📚 Test References</span></div>
-        <div class="fab-item"><span class="fab-item-label" role="menuitem" tabindex="0" onclick="openFabModal('modal-howto')" data-i18n="fab_howto">❓ How to Use</span></div>
-        <div class="fab-item"><span class="fab-item-label" role="menuitem" tabindex="0" onclick="openFabModal('modal-features')" data-i18n="fab_features">🛠️ Supported Hardware</span></div>
-        <div class="fab-item"><span class="fab-item-label" role="menuitem" tabindex="0" onclick="openFabModal('modal-qr')">📱 QR Specimen Tracking</span></div>
-        <div class="fab-item"><span class="fab-item-label" role="menuitem" tabindex="0" onclick="openFabModal('modal-calibration')">🔧 Equipment Calibration</span></div>
-        <div class="fab-item"><span class="fab-item-label" role="menuitem" tabindex="0" onclick="openFabModal('modal-schedule')">📅 Break Schedule</span></div>
-        <div class="fab-item"><span class="fab-item-label" role="menuitem" tabindex="0" onclick="openFabModal('modal-contact')" data-i18n="fab_contact">📞 Contact Support</span></div>
+<!-- ============ MASTER FLOATING ACTION BUTTON (FAB) ============ -->
+<div class="smartlap-master-fab" id="fab-container" aria-label="Quick actions">
+    <div class="fab-menu" id="fab-menu" role="menu" aria-label="Floating action menu">
+        <!-- ===== GENERAL SECTION ===== -->
+        <div class="fab-group-label" data-i18n="fab_group_general">📋 General</div>
+        <div class="fab-item"><span class="fab-item-label fab-sub-btn" role="menuitem" tabindex="0" onclick="openFabModal('modal-refs')" data-i18n="fab_refs">📚 Test References</span></div>
+        <div class="fab-item"><span class="fab-item-label fab-sub-btn" role="menuitem" tabindex="0" onclick="openFabModal('modal-howto')" data-i18n="fab_howto">❓ How to Use</span></div>
+        <div class="fab-item"><span class="fab-item-label fab-sub-btn" role="menuitem" tabindex="0" onclick="openFabModal('modal-features')" data-i18n="fab_features">🛠️ Supported Hardware</span></div>
+        <div class="fab-item"><span class="fab-item-label fab-sub-btn" role="menuitem" tabindex="0" onclick="openFabModal('modal-rateus')">⭐ Rate Us</span></div>
+        <div class="fab-item"><span class="fab-item-label fab-sub-btn" role="menuitem" tabindex="0" onclick="openFabModal('modal-contact')" data-i18n="fab_contact">📞 Contact Support</span></div>
+        <div class="fab-item"><span class="fab-item-label fab-sub-btn" role="menuitem" tabindex="0" onclick="openFabModal('modal-qr')">📱 QR Specimen Tracking</span></div>
+        <div class="fab-item"><span class="fab-item-label fab-sub-btn" role="menuitem" tabindex="0" onclick="openFabModal('modal-calibration')">🔧 Equipment Calibration</span></div>
+        <div class="fab-item"><span class="fab-item-label fab-sub-btn" role="menuitem" tabindex="0" onclick="openFabModal('modal-schedule')">📅 Break Schedule</span></div>
+
+        <div class="fab-group-divider" role="separator"></div>
+
+        <!-- ===== INNOVATIONS SECTION ===== -->
+        <div class="fab-group-label fab-group-label-innovation" data-i18n="fab_group_innovation">🚀 Innovations</div>
+        <div class="fab-item"><span class="fab-item-label fab-sub-btn fab-sub-btn-innovation" role="menuitem" tabindex="0" onclick="openDocumentViewer()" id="fab-trigger-docs">📖 <span>Document Viewer</span><span class="fab-badge">NEW</span></span></div>
+        <div class="fab-item"><span class="fab-item-label fab-sub-btn fab-sub-btn-innovation" role="menuitem" tabindex="0" onclick="openFirmwareDownloader()" id="fab-trigger-firmware">🔌 <span>Firmware Downloader</span><span class="fab-badge">NEW</span></span></div>
+        <div class="fab-item"><span class="fab-item-label fab-sub-btn fab-sub-btn-innovation" role="menuitem" tabindex="0" onclick="openDynamicTest()" id="fab-trigger-dynamic">🧪 <span>Dynamic Test Engine</span><span class="fab-badge">NEW</span></span></div>
+        <div class="fab-item"><span class="fab-item-label fab-sub-btn fab-sub-btn-innovation" role="menuitem" tabindex="0" onclick="openAIAnalytics()" id="fab-trigger-ai">🧠 <span>AI Predictions & Analytics</span><span class="fab-badge">NEW</span></span></div>
     </div>
-    <button class="fab-btn fab-main" id="fab-toggle" onclick="toggleFab()" aria-label="Open quick actions menu" aria-expanded="false">✦</button>
+    <button class="fab-btn fab-main master-fab-toggle" id="fab-toggle" onclick="toggleFab()" aria-label="Open quick actions menu" aria-expanded="false">✦</button>
 </div>
 
 <!-- MODAL: Test References -->
@@ -1334,6 +1368,35 @@
                 <li>Export as PDF for lab technicians</li>
             </ol>
             <p style="margin-top:12px;color:var(--text-secondary);font-size:12px;">💡 In v2.0, this will integrate with session history to auto-track specimens and generate printable daily break lists.</p>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: Rate Us -->
+<div class="fab-modal-overlay" id="modal-rateus" onclick="closeFabOverlay(event)" role="dialog" aria-labelledby="modal-rateus-title">
+    <div class="fab-modal">
+        <div class="fab-modal-header"><h3 id="modal-rateus-title">⭐ <span>Rate SmartLAP</span></h3><button class="fab-modal-close" onclick="closeFabModal('modal-rateus')" aria-label="Close">✕</button></div>
+        <div class="fab-modal-body" style="text-align:center;">
+            <div style="font-size:48px;margin-bottom:12px;">⭐</div>
+            <h4 style="font-size:18px;font-weight:800;color:var(--text);margin-bottom:6px;">Love SmartLAP?</h4>
+            <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">Your feedback helps us improve the platform for engineers worldwide.</p>
+            <div class="star-rating" id="star-rating" style="margin-bottom:20px;display:flex;justify-content:center;gap:8px;font-size:36px;cursor:pointer;direction:ltr;">
+                <span class="star" data-value="1" onclick="setRating(1)" style="transition:all 0.2s;color:var(--border);">☆</span>
+                <span class="star" data-value="2" onclick="setRating(2)" style="transition:all 0.2s;color:var(--border);">☆</span>
+                <span class="star" data-value="3" onclick="setRating(3)" style="transition:all 0.2s;color:var(--border);">☆</span>
+                <span class="star" data-value="4" onclick="setRating(4)" style="transition:all 0.2s;color:var(--border);">☆</span>
+                <span class="star" data-value="5" onclick="setRating(5)" style="transition:all 0.2s;color:var(--border);">☆</span>
+            </div>
+            <div style="display:none;" id="rating-feedback">
+                <p style="font-size:14px;font-weight:700;color:var(--success);margin-bottom:8px;">✅ Thank you for your rating!</p>
+                <textarea id="rating-comment" placeholder="Tell us what you think..." style="width:100%;padding:12px;border:1px solid var(--border);border-radius:10px;font-family:'Cairo',sans-serif;font-size:13px;resize:vertical;min-height:80px;margin-bottom:12px;background:var(--surface-alt);color:var(--text);"></textarea>
+                <button onclick="submitRating()" class="btn-primary" style="width:100%;">Submit Feedback</button>
+            </div>
+            <div id="rating-thankyou" style="display:none;">
+                <div style="font-size:48px;margin-bottom:12px;">🎉</div>
+                <h4 style="font-size:18px;font-weight:800;color:var(--text);margin-bottom:6px;">Thank You!</h4>
+                <p style="font-size:13px;color:var(--text-muted);">Your feedback has been recorded.</p>
+            </div>
         </div>
     </div>
 </div>
@@ -2587,4 +2650,5 @@
 <script src="js/analytics.js"></script>
 <script src="js/ml.js"></script>
     <script src="js/cloud_storage.js"></script>
+    <script src="js/ui-enhancements.js"></script>
 </body></html>

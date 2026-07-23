@@ -2,7 +2,7 @@
 // SmartLab API Module - v2.0 (Security Hardened)
 // ================================================================
 
-var API_ENDPOINTS = API_ENDPOINTS || {
+window.API_ENDPOINTS = window.API_ENDPOINTS || {
   lims: 'https://lims.example.com/api',
   export: '/export'
 };
@@ -85,7 +85,7 @@ async function callLIMS(endpoint, body = {}) {
   
   var sanitizedBody = sanitizeAPIData(body);
   
-  var response = await fetch(API_ENDPOINTS.lims + endpoint, {
+  var response = await fetch(window.API_ENDPOINTS.lims + endpoint, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

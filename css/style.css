@@ -119,7 +119,7 @@ body[data-dir="ltr"] .header-left,
 body[data-dir="ltr"] .domain-header { direction: ltr; text-align: left; }
 
 /* ===== SCREENS ===== */
-.screen { display: none; min-height: 100vh; }
+.screen { display: none; min-height: 100dvh; }
 .screen.active { display: block; }
 body[data-dir="rtl"] .login-card { text-align: right; }
 body[data-dir="ltr"] .login-card { text-align: left; }
@@ -606,24 +606,26 @@ body[data-dir="ltr"] .domain-info { text-align: left; }
     .tests-grid { grid-template-columns: 1fr; gap: 12px; }
     .test-card { padding: 20px; }
 
-    .test-layout { padding: 12px; gap: 12px; }
-    .panel-body { padding: 16px; }
-    .panel-header { padding: 14px 16px; }
+    .test-layout { padding: 4px; gap: 8px; }
+    .panel-body { padding: 12px; }
+    .panel-header { padding: 12px 14px; }
     .panel-header h3 { font-size: 13px; }
 
     .data-readings { grid-template-columns: 1fr 1fr; gap: 8px; }
-    .reading-card { padding: 12px 8px; }
-    .reading-value { font-size: 20px; }
+    .reading-card { padding: 10px 6px; }
+    .reading-value { font-size: 18px; }
 
     .progress-ring { gap: 10px; }
     .gauge-container { width: 80px; height: 80px; }
-    .ring-text { font-size: 24px; }
+    .ring-text { font-size: 22px; }
 
-    .strike-log th, .strike-log td { padding: 5px 6px; font-size: 10px; }
+    .strike-log th, .strike-log td { padding: 4px 5px; font-size: 10px; }
 
-    .footer-top { grid-template-columns: 1fr; gap: 20px; padding: 28px 16px 20px; }
-    .footer-bottom { flex-direction: column; gap: 10px; text-align: center; padding: 14px 16px; }
+    .footer-top { grid-template-columns: 1fr; gap: 20px; padding: 24px 14px 16px; }
+    .footer-bottom { flex-direction: column; gap: 8px; text-align: center; padding: 12px 14px; }
     .footer-locations { justify-content: center; }
+
+    .slide-up { padding: 0; }
 }
 
 @media (max-width: 400px) {
@@ -1281,9 +1283,9 @@ body[data-dir="rtl"] .exp-section ul { padding-right: 20px; padding-left: 0; }
     .domain-card p { font-size: 11px; }
     .domain-header h2 { font-size: 18px; }
     .domain-header p { font-size: 12px; }
-    .test-layout { padding: 0 4px; }
-    .data-readings { grid-template-columns: repeat(2, 1fr); gap: 6px; }
-    .slide-up { padding: 8px 4px; }
+    .test-layout { padding: 4px; gap: 8px; }
+    .data-readings { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .slide-up { padding: 0; }
     .panel { padding: 12px; }
     .panel-header h3 { font-size: 13px; }
     .form-group label { font-size: 11px; }
@@ -1309,6 +1311,26 @@ body[data-dir="rtl"] .exp-section ul { padding-right: 20px; padding-left: 0; }
     .settings-group { grid-template-columns: 1fr; }
     .strike-log { font-size: 10px; }
     .strike-log th, .stroke-log td { padding: 4px 6px; }
+    .panel-body { padding: 12px; }
+    .panel-header { padding: 12px 14px; }
+    .login-card { padding: 24px 16px; border-radius: 16px; }
+    .login-logo { width: 56px; height: 56px; font-size: 22px; border-radius: 14px; }
+    .login-card h1 { font-size: 20px; }
+    .login-card .subtitle { font-size: 11px; margin-bottom: 20px; }
+    .domain-icon { width: 40px; height: 40px; font-size: 18px; border-radius: 10px; }
+    .domain-info h3 { font-size: 13px; }
+    .app-header { padding: 0 12px; height: 50px; }
+    .header-title { font-size: 13px; }
+    .btn-back { padding: 5px 8px; font-size: 10px; }
+    .dashboard-content { padding: 12px 10px; }
+    .domain-header h2 { font-size: 18px; }
+    .tests-grid { grid-template-columns: 1fr; gap: 10px; }
+    .test-card { padding: 16px; }
+    .gauge-container { width: 72px; height: 72px; }
+    .ring-text { font-size: 20px; }
+    .footer-top { grid-template-columns: 1fr; gap: 16px; padding: 20px 12px 14px; }
+    .footer-bottom { flex-direction: column; gap: 8px; text-align: center; padding: 10px 12px; }
+    .footer-locations { justify-content: center; }
 }
 
 @media (max-width: 480px) {
@@ -1318,7 +1340,7 @@ body[data-dir="rtl"] .exp-section ul { padding-right: 20px; padding-left: 0; }
     .btn-back { font-size: 10px; padding: 3px 8px; }
     .lang-select { font-size: 10px; padding: 3px 4px; max-width: 70px; }
     .dark-toggle { font-size: 13px; padding: 2px 6px; }
-    .data-readings { grid-template-columns: 1fr 1fr; }
+    .data-readings { grid-template-columns: 1fr; }
     .domain-stats { grid-template-columns: 1fr; }
     .reading-value { font-size: 14px; }
     .user-dropdown { min-width: 140px; font-size: 11px; }

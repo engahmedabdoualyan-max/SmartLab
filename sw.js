@@ -1,4 +1,4 @@
-const CACHE_NAME = 'smartlap-v1';
+const CACHE_NAME = 'smartlap-v2';
 const OFFLINE_PAGE = '/offline.html';
 
 const APP_SHELL = [

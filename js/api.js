@@ -2,7 +2,7 @@
 // SmartLab API Module - v2.0 (Security Hardened)
 // ================================================================
 
-const API_ENDPOINTS = {
+var API_ENDPOINTS = API_ENDPOINTS || {
   lims: 'https://lims.example.com/api',
   export: '/export'
 };

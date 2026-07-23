@@ -1,12 +1,55 @@
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const crypto = require('crypto');
 const calc = require('../js/calculations.js');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(cors());
-app.use(express.json());
+let rateLimit;
+try { rateLimit = require('express-rate-limit'); } catch(e) { rateLimit = null; }
+
+app.use(helmet());
+app.use(cors({
+    origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['http://localhost:3000', 'http://localhost:5000', 'http://127.0.0.1:5500'],
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type', 'X-CSRF-Token']
+}));
+app.use(express.json({ limit: '100kb' }));
+
+// Rate limiting
+if (rateLimit) {
+    app.use(rateLimit({
+        windowMs: 15 * 60 * 1000,
+        max: 100,
+        standardHeaders: true,
+        legacyHeaders: false,
+        message: { success: false, error: 'Too many requests. Please try again later.' }
+    }));
+}
+
+// CSRF protection
+const CSRF_SECRET = process.env.CSRF_SECRET || crypto.randomBytes(32).toString('hex');
+function csrfProtection(req, res, next) {
+    if (req.method === 'GET') {
+        res.cookie('csrf-token', crypto.createHmac('sha256', CSRF_SECRET).update(req.ip || '0.0.0.0').digest('hex'), { httpOnly: true, sameSite: 'strict', maxAge: 86400000 });
+        return next();
+    }
+    const headerToken = req.headers['x-csrf-token'];
+    const cookieToken = req.cookies && req.cookies['csrf-token'];
+    if (!headerToken || !cookieToken || headerToken !== cookieToken) {
+        return res.status(403).json({ success: false, error: 'CSRF validation failed' });
+    }
+    next();
+}
+app.use(csrfProtection);
+
+// Request logging
+app.use(function(req, res, next) {
+    console.log('[' + new Date().toISOString() + '] ' + req.method + ' ' + req.path + ' — ' + req.ip);
+    next();
+});
 
 const endpoints = [];
 

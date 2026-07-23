@@ -2,36 +2,40 @@
 // ATTERBERG LIMITS TEST
 // ================================================================
 var atterbergState={isRunning:false,readings:[],ll:0,pl:0,pi:0};
-function onAtterbergConnChange(){var v=document.getElementById('atterberg-conn').value;if(v==='demo'){document.getElementById('atterberg-demo-banner').style.display='flex';}else{document.getElementById('atterberg-demo-banner').style.display='none';}}
+function onAtterbergConnChange(){var v=document.getElementById('atterberg-conn').value;if(v==='demo'){document.getElementById('atterberg-demo-banner').style.display='flex';document.getElementById('atterberg-manual-inputs').style.display='none';}else{document.getElementById('atterberg-demo-banner').style.display='none';document.getElementById('atterberg-manual-inputs').style.display='flex';}}
 function startAtterbergTest(){
     var conn=document.getElementById('atterberg-conn').value;if(!conn){alert('Select connection type');return;}
     atterbergState={isRunning:true,readings:[],ll:0,pl:0,pi:0};
     document.getElementById('atterberg-btn-start').style.display='none';
     document.getElementById('atterberg-btn-stop').style.display='flex';
     document.getElementById('atterberg-results-panel').style.display='none';
-    document.getElementById('atterberg-log-body').innerHTML='';
-    if(conn==='demo'){runAtterbergDemo();}else if(conn==='manual'){runAtterbergManual();}
+    document.getElementById('atterberg-log-body').innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:20px;">Collecting readings...</td></tr>';
+    if(conn==='demo'){runAtterbergDemo();} else{document.getElementById('atterberg-manual-inputs').style.display='flex';}
 }
 function stopAtterbergTest(){
     atterbergState.isRunning=false;
     document.getElementById('atterberg-btn-start').style.display='flex';
     document.getElementById('atterberg-btn-stop').style.display='none';
+    document.getElementById('atterberg-manual-inputs').style.display='none';
     calculateAtterbergResults();
 }
-function runAtterbergManual(){
-    var blows=prompt('Enter number of blows for this reading:');if(!blows)return;
-    var moisture=prompt('Enter moisture content (%):');if(!moisture)return;
-    addAtterbergReading(parseInt(blows),parseFloat(moisture),'manual');
-    if(atterbergState.isRunning)runAtterbergManual();
+function submitAtterbergReading(){
+    if(!atterbergState.isRunning) return;
+    var blows=parseInt(document.getElementById('atterberg-inp-blows').value,10);
+    var moisture=parseFloat(document.getElementById('atterberg-inp-moisture').value);
+    if(isNaN(blows)||blows<1){showToast('Enter valid number of blows','warning');return;}
+    if(isNaN(moisture)||moisture<0||moisture>100){showToast('Enter valid moisture content (0-100%)','warning');return;}
+    addAtterbergReading(blows,moisture,'manual');
+    document.getElementById('atterberg-inp-blows').value='';
+    document.getElementById('atterberg-inp-moisture').value='';
 }
 function runAtterbergDemo(){
     if(!atterbergState.isRunning)return;
-    var blowSets=[35,28,22,17,13];
+    var calibData=[{blows:35,moisture:18.2},{blows:28,moisture:21.5},{blows:22,moisture:24.8},{blows:17,moisture:28.3},{blows:13,moisture:32.1}];
     var i=atterbergState.readings.length;
-    if(i>=blowSets.length){stopAtterbergTest();return;}
-    var blows=blowSets[i];
-    var moisture=25+Math.random()*15;
-    addAtterbergReading(blows,moisture,'demo');
+    if(i>=calibData.length){stopAtterbergTest();return;}
+    var d=calibData[i];
+    addAtterbergReading(d.blows,d.moisture,'demo');
     setTimeout(runAtterbergDemo,1500);
 }
 function addAtterbergReading(blows,moisture,mode){
@@ -43,18 +47,26 @@ function addAtterbergReading(blows,moisture,mode){
     var tr=document.createElement('tr');
     tr.innerHTML='<td>'+atterbergState.readings.length+'</td><td>'+blows+'</td><td>'+moisture.toFixed(1)+'</td><td>'+mode+'</td>';
     tbody.appendChild(tr);
+    if(atterbergState.readings.length>=3){
+        var hint=document.getElementById('atterberg-pl-hint');
+        if(hint)hint.style.display='block';
+    }
 }
 function calculateAtterbergResults(){
     var r=atterbergState.readings;if(r.length<2){alert('Need at least 2 readings');return;}
     var ll=0;var n=0;r.forEach(function(rd){if(rd.blows>=15&&rd.blows<=35){ll+=rd.moisture;n++;}});
-    ll=n>0?ll/n:r[0].moisture;
-    var pl=ll*0.45+Math.random()*3;
-    var pi=ll-pl;
+    ll=n>0?ll/n:r[r.length-1].moisture;
+    var pl=parseFloat(document.getElementById('atterberg-inp-pl').value);
+    if(isNaN(pl)||pl<0||pl>100){
+        pl=ll*0.45;
+        showToast('Plastic Limit (PL) not entered. Using estimated PL='+pl.toFixed(1)+'%. Enter PL manually for accuracy.','info');
+    }
+    var pi=typeof calcPI==='function'?calcPI(ll,pl):ll-pl;
+    var soilType=document.getElementById('atterberg-soil-type').value;
+    var ui=typeof classifyPlasticity==='function'?classifyPlasticity(pi):(pi>17?'High Plasticity':pi>7?'Medium Plasticity':'Low Plasticity');
     atterbergState.ll=ll;atterbergState.pl=pl;atterbergState.pi=pi;
     safeSetText('atterberg-ll',ll.toFixed(1));
     safeSetText('atterberg-pl',pl.toFixed(1));
-    var soilType=document.getElementById('atterberg-soil-type').value;
-    var ui=pi>17?'High Plasticity':pi>7?'Medium Plasticity':'Low Plasticity';
     var panel=document.getElementById('atterberg-results-panel');panel.style.display='block';
     var html=safeResultRow('Liquid Limit (LL)',ll.toFixed(1)+'%');
     html+=safeResultRow('Plastic Limit (PL)',pl.toFixed(1)+'%');

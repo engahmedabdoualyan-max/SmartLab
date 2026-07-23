@@ -2014,6 +2014,11 @@
                 <div class="panel-header"><div class="panel-header-icon orange" aria-hidden="true">📡</div><h3>Live Data</h3></div>
                 <div class="panel-body">
                     <div id="atterberg-demo-banner" class="demo-banner" role="status" style="display:none;">⚠️ Demo mode — simulated data</div>
+                    <div id="atterberg-manual-inputs" class="manual-inputs" style="display:none;margin-bottom:12px;gap:8px;">
+                        <div class="form-group" style="flex:1;"><label>Blows</label><input type="number" id="atterberg-inp-blows" min="1" max="100" placeholder="e.g. 25"></div>
+                        <div class="form-group" style="flex:1;"><label>Moisture %</label><input type="number" id="atterberg-inp-moisture" min="0" max="100" step="0.1" placeholder="e.g. 20.5"></div>
+                        <button onclick="submitAtterbergReading()" class="btn-primary" style="align-self:flex-end;">+ Add</button>
+                    </div>
                     <div class="data-readings" aria-live="polite">
                         <div class="reading-card"><div class="reading-label">Blows (LL)</div><div class="reading-value" id="atterberg-blows">--</div><div class="reading-unit">N</div></div>
                         <div class="reading-card"><div class="reading-label">Cone Depth</div><div class="reading-value" id="atterberg-cone-depth">--</div><div class="reading-unit">mm</div></div>
@@ -2026,6 +2031,13 @@
                 <div class="panel-header"><div class="panel-header-icon blue" aria-hidden="true">📋</div><h3>Readings Log</h3></div>
                 <div class="panel-body" style="padding:0;">
                     <table class="strike-log"><thead><tr><th>#</th><th>Blows</th><th>Moisture%</th><th>Mode</th></tr></thead><tbody id="atterberg-log-body"><tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:20px;">Start test to see data</td></tr></tbody></table>
+                </div>
+            </div>
+            <div id="atterberg-pl-hint" class="panel" style="display:none;margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon green" aria-hidden="true">🧪</div><h3>Plastic Limit (PL)</h3></div>
+                <div class="panel-body">
+                    <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">Enter Plastic Limit manually for accuracy, or leave empty for automatic estimate.</p>
+                    <div class="form-group"><label>PL (%)</label><input type="number" id="atterberg-inp-pl" min="0" max="100" step="0.1" placeholder="e.g. 12.5"></div>
                 </div>
             </div>
             <div class="panel" id="atterberg-results-panel" style="display:none;margin-bottom:20px;">
@@ -2593,6 +2605,14 @@
 <script src="js/ml.js"></script>
     <script src="js/cloud_storage.js"></script>
     <script src="js/ui-enhancements.js"></script>
+<script>
+(function() {
+    var tip = '\u270F\uFE0F Manual: Enter data yourself on this screen | \uD83E\uDDEA Demo: Watch test with pre-loaded calibration data | \uD83D\uDD0C Hardware: Read from a physical USB/Serial/BLE device';
+    document.querySelectorAll('select[id$="-conn"],select[id$="-port-select"],select[id$="conn-select"],select[id$="com-port-select"]').forEach(function(el) {
+        if (!el.getAttribute('title')) el.setAttribute('title', tip);
+    });
+})();
+</script>
 
 <!-- ===== MODAL: EXPERIMENT EXPLANATION ===== -->
 <div class="fab-modal-overlay" id="modal-experiment" onclick="closeFabOverlay(event)" role="dialog" aria-labelledby="modal-experiment-title">

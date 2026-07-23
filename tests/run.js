@@ -7,6 +7,9 @@
 var fs = require('fs');
 var path = require('path');
 
+// Load test framework
+eval(fs.readFileSync(path.join(__dirname, 'framework.js'), 'utf8'));
+
 // Load the test file (defines functions + _tests array)
 var testFile = path.join(__dirname, 'calculations.test.js');
 eval(fs.readFileSync(testFile, 'utf8'));

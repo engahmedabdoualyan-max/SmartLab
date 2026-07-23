@@ -94,29 +94,26 @@ function submitManualCBRReading(){
     document.getElementById('cbr-manual-pen').focus();
 }
 
+var CBR_CALIB_DATA=[{pen:0.5,load:824},{pen:1.0,load:1890},{pen:1.5,load:3120},{pen:2.0,load:4600},{pen:2.5,load:6200},{pen:3.0,load:7210},{pen:3.5,load:7900},{pen:4.0,load:8400},{pen:4.5,load:8770},{pen:5.0,load:9100},{pen:5.5,load:9380},{pen:6.0,load:9580},{pen:6.5,load:9720},{pen:7.0,load:9820},{pen:7.5,load:9900},{pen:8.0,load:9960},{pen:8.5,load:10010},{pen:9.0,load:10050},{pen:9.5,load:10080},{pen:10.0,load:10100}];
 function runCBRDemo(){
-    var pen=0;var step=0.5;var maxPen=parseFloat(document.getElementById('cbr_inp_max_pen').value)||12.5;
+    var i=0;var maxPen=parseFloat(document.getElementById('cbr_inp_max_pen').value)||12.5;
     var iv=setInterval(function(){
-        if(!cbrIsTesting||pen>=maxPen){clearInterval(iv);if(cbrIsTesting)stopCBRTest();return;}
-        pen=Math.round((pen+step)*100)/100;
-        var load;
-        if(pen<=2.5) load=Math.round((pen/2.5)*6500*(0.9+Math.random()*0.2));
-        else if(pen<=5) load=Math.round(6500+((pen-2.5)/2.5)*3500*(0.9+Math.random()*0.2));
-        else load=Math.round(10000+((pen-5)/7.5)*2000*(0.9+Math.random()*0.2));
-        processCBRReading(pen,load);
+        if(!cbrIsTesting||i>=CBR_CALIB_DATA.length||CBR_CALIB_DATA[i].pen>maxPen){clearInterval(iv);if(cbrIsTesting)stopCBRTest();return;}
+        var d=CBR_CALIB_DATA[i];
+        processCBRReading(d.pen,d.load);
+        i++;
     },400);
 }
 
 function processCBRReading(penetration,load){
     if(!cbrIsTesting)return;
     var pistonArea=parseFloat(document.getElementById('cbr_inp_piston_area').value)||1963.5;
-    var pressure=Math.round(load/pistonArea*1000*100)/100;
     var std25=parseFloat(document.getElementById('cbr_inp_std_25').value)||13240;
     var std50=parseFloat(document.getElementById('cbr_inp_std_50').value)||19960;
-    var cbr25=Math.round(load/std25*100*100)/100;
-    var cbr50=Math.round(load/std50*100*100)/100;
-    var cbr=cbr25;
-    if(penetration>=4.5&&penetration<=5.5) cbr=cbr50;
+    var cbrVal=typeof calcCBR==='function'?calcCBR(penetration,load,std25,std50):(penetration>=4.5&&penetration<=5.5?load/std50:load/std25)*100;
+    var pressure=typeof calcCBRPressure==='function'?calcCBRPressure(load,pistonArea):Math.round(load/pistonArea*1000*100)/100;
+    var cbr=cbrVal;
+    var cbr25=(load/std25)*100,cbr50=(load/std50)*100;
     var reading={index:cbrReadings.length+1,penetration:penetration,load:load,pressure:pressure,cbr:cbr,time:new Date().toLocaleTimeString()};
     cbrReadings.push(reading);
     document.getElementById('cbr-val-pen').textContent=penetration;
@@ -188,8 +185,7 @@ function calculateCBRResults(){
         if(Math.abs(cbrReadings[i].penetration-2.5)<0.6)cbrAt25=cbrReadings[i].cbr;
         if(Math.abs(cbrReadings[i].penetration-5)<0.6)cbrAt50=cbrReadings[i].cbr;
     }
-    var finalCBR=cbrAt25;
-    if(cbrAt50>cbrAt25)finalCBR=cbrAt50;
+    var finalCBR=typeof calcCBRFinalResult==='function'?calcCBRFinalResult(cbrAt25,cbrAt50).cbr:(cbrAt50>cbrAt25?cbrAt50:cbrAt25);
     var passed=finalCBR>=3;
     var results={
         cbr_value:finalCBR,

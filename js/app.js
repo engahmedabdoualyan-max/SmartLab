@@ -127,5 +127,7 @@ function loadStats() {
     });
 }
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js').catch(function(e) { console.log('SW registration failed:', e); });
+    navigator.serviceWorker.register('/sw.js', {updateViaCache: 'none'}).then(function(reg) {
+        if (reg.waiting) reg.waiting.postMessage({type: 'SKIP_WAITING'});
+    }).catch(function(e) { console.log('SW registration failed:', e); });
 }

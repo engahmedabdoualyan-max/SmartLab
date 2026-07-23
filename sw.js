@@ -38,6 +38,10 @@ self.addEventListener('activate', function(event) {
   self.clients.claim();
 });
 
+self.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
+});
+
 self.addEventListener('fetch', function(event) {
   var url = new URL(event.request.url);
 
@@ -61,6 +65,25 @@ self.addEventListener('fetch', function(event) {
             if (response.ok) cache.put(event.request, response.clone());
             return response;
           });
+        });
+      })
+    );
+    return;
+  }
+
+  if (url.pathname.endsWith('.js') || url.pathname.endsWith('.css')) {
+    event.respondWith(
+      fetch(event.request).then(function(response) {
+        if (response.ok) {
+          var clone = response.clone();
+          caches.open(CACHE_NAME).then(function(cache) { cache.put(event.request, clone); });
+        }
+        return response;
+      }).catch(function() {
+        return caches.match(event.request).then(function(cached) {
+          if (cached) return cached;
+          if (event.request.destination === 'document') return caches.match(OFFLINE_PAGE);
+          return new Response('', {status: 408});
         });
       })
     );

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-SmartLAP Backend - Python Flask Application
+SmartLab Backend - Python Flask Application
 
-This provides the backend API for the SmartLAP frontend application,
+This provides the backend API for the SmartLab frontend application,
 with proper security controls and database integration.
 """
 
@@ -420,6 +420,6 @@ def internal_error(error):
     return jsonify({'error': 'Internal server error'}), 500
 
 if __name__ == '__main__':
-    print("Starting SmartLAP Backend Server...")
+    print("Starting SmartLab Backend Server...")
     print("Running on http://localhost:5000")
     app.run(host='0.0.0.0', port=5000, debug=app.config['DEBUG'])

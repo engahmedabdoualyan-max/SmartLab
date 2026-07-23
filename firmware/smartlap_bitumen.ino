@@ -1,9 +1,9 @@
 /*
- * SmartLAP — Bitumen Photo-Tester Firmware
+ * SmartLab — Bitumen Photo-Tester Firmware
  * =========================================
  * Board:      Arduino Uno / Nano
  * Sensors:    BH1750 Light Intensity (I2C)
- * Protocol:   SmartLAP Serial CSV
+ * Protocol:   SmartLab Serial CSV
  * Format:     light_lux,transmission_pct,purity_index\n
  * Wiring:
  *   BH1750 SDA → A4        SCL → A5
@@ -30,7 +30,7 @@ void setup() {
     Wire.write(0x10);
     Wire.endTransmission();
     delay(200);
-    Serial.println("SmartLAP:READY");
+    Serial.println("SmartLab:READY");
 }
 
 float readLightLux() {
@@ -50,16 +50,16 @@ void handleCommand(String cmd) {
     if (cmd == "START") {
         testing = true;
         lastRead = millis();
-        Serial.println("SmartLAP:STARTED");
+        Serial.println("SmartLab:STARTED");
     } else if (cmd == "STOP") {
         testing = false;
-        Serial.println("SmartLAP:STOPPED");
+        Serial.println("SmartLab:STOPPED");
     } else if (cmd == "TARE") {
         baselineLux = readLightLux();
         if (baselineLux < 0) baselineLux = REFERENCE_LUX;
-        Serial.println("SmartLAP:TARED");
+        Serial.println("SmartLab:TARED");
     } else if (cmd == "STATUS") {
-        Serial.println(testing ? "SmartLAP:TESTING" : "SmartLAP:IDLE");
+        Serial.println(testing ? "SmartLab:TESTING" : "SmartLab:IDLE");
     }
 }
 

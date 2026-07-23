@@ -1,9 +1,9 @@
 /*
- * SmartLAP — Digital Marshall Test Firmware
+ * SmartLab — Digital Marshall Test Firmware
  * ==========================================
  * Board:      Arduino Uno / Nano
  * Sensors:    HX711 Load Cell (stability) + LVDT Displacement (flow)
- * Protocol:   SmartLAP Serial CSV
+ * Protocol:   SmartLab Serial CSV
  * Format:     load_newtons,displacement_mm,flow_units\n
  * Wiring:
  *   HX711  DT  → D3        HX711  SCK → D2
@@ -29,7 +29,7 @@ void setup() {
     scale.begin(HX711_DT, HX711_SCK);
     scale.set_scale(CALIBRATION_FACTOR);
     scale.tare();
-    Serial.println("SmartLAP:READY");
+    Serial.println("SmartLab:READY");
 }
 
 float readLoadNewtons() {
@@ -57,15 +57,15 @@ void handleCommand(String cmd) {
     if (cmd == "START") {
         testing = true;
         scale.tare();
-        Serial.println("SmartLAP:STARTED");
+        Serial.println("SmartLab:STARTED");
     } else if (cmd == "STOP") {
         testing = false;
-        Serial.println("SmartLAP:STOPPED");
+        Serial.println("SmartLab:STOPPED");
     } else if (cmd == "TARE") {
         scale.tare();
-        Serial.println("SmartLAP:TARED");
+        Serial.println("SmartLab:TARED");
     } else if (cmd == "STATUS") {
-        Serial.println(testing ? "SmartLAP:TESTING" : "SmartLAP:IDLE");
+        Serial.println(testing ? "SmartLab:TESTING" : "SmartLab:IDLE");
     }
 }
 

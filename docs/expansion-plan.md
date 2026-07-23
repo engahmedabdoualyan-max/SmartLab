@@ -1,4 +1,4 @@
-# SmartLAP Expansion Plan: 20 → 50+ Tests
+# SmartLab Expansion Plan: 20 → 50+ Tests
 
 ## Current Tests (20)
 

@@ -33,7 +33,7 @@ var TASKS = [
 
 async function main() {
     console.log('\n========================================');
-    console.log('  SmartLAP —  Upgrade to v1.1.1');
+    console.log('  SmartLab —  Upgrade to v1.1.1');
     console.log('  فريق التطوير');
     console.log('========================================\n');
 

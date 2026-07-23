@@ -32,7 +32,7 @@ class CompetitorAnalysisAgent extends Agent {
                 type: 'Commercial LIMS',
                 strengths: ['Mature product with decades of use', 'Wide range of supported standards', 'Hardware integration with their own equipment'],
                 weaknesses: ['Very expensive license', 'Closed source - no customization', 'Windows-only desktop app'],
-                relevanceToSmartLAP: 'Direct competitor for hardware-based testing'
+                relevanceToSmartLab: 'Direct competitor for hardware-based testing'
             },
             {
                 name: 'Humboldt Mfg',
@@ -40,7 +40,7 @@ class CompetitorAnalysisAgent extends Agent {
                 type: 'Commercial + Software',
                 strengths: ['Complete hardware + software ecosystem', 'Strong brand in civil engineering', 'Cloud-based data storage'],
                 weaknesses: ['Tied to Humboldt hardware only', 'Limited test types', 'No AI assistants'],
-                relevanceToSmartLAP: 'Hardware competitor'
+                relevanceToSmartLab: 'Hardware competitor'
             },
             {
                 name: 'Controls Group',
@@ -48,7 +48,7 @@ class CompetitorAnalysisAgent extends Agent {
                 type: 'Commercial LIMS',
                 strengths: ['Global presence', 'Multi-language support', 'Comprehensive test coverage'],
                 weaknesses: ['Expensive', 'Complex setup', 'Requires training'],
-                relevanceToSmartLAP: 'Feature competitor'
+                relevanceToSmartLab: 'Feature competitor'
             },
             {
                 name: 'OpenLab (Open Source)',
@@ -56,7 +56,7 @@ class CompetitorAnalysisAgent extends Agent {
                 type: 'Open Source LIMS',
                 strengths: ['Free to use', 'Community supported', 'Customizable'],
                 weaknesses: ['Limited engineering test support', 'Poor UI/UX', 'No hardware integration'],
-                relevanceToSmartLAP: 'Open source alternative'
+                relevanceToSmartLab: 'Open source alternative'
             },
             {
                 name: 'LabWare LIMS',
@@ -64,7 +64,7 @@ class CompetitorAnalysisAgent extends Agent {
                 type: 'Enterprise LIMS',
                 strengths: ['Enterprise-grade', 'Highly configurable', 'Strong reporting'],
                 weaknesses: ['Extremely expensive', 'Overkill for civil engineering labs', 'Requires dedicated IT support'],
-                relevanceToSmartLAP: 'Enterprise competitor'
+                relevanceToSmartLab: 'Enterprise competitor'
             },
             {
                 name: 'SiteMax',
@@ -72,7 +72,7 @@ class CompetitorAnalysisAgent extends Agent {
                 type: 'Construction Management',
                 strengths: ['Construction-specific', 'Mobile-first', 'Good for field use'],
                 weaknesses: ['Not a lab testing system', 'Limited calculation engine', 'No hardware sensors'],
-                relevanceToSmartLAP: 'Indirect competitor'
+                relevanceToSmartLab: 'Indirect competitor'
             }
         ];
 
@@ -87,9 +87,9 @@ class CompetitorAnalysisAgent extends Agent {
         this.updateTaskStatus(task.id, 'in_progress');
 
         const report = {
-            title: 'SmartLAP Competitive Analysis Report',
+            title: 'SmartLab Competitive Analysis Report',
             date: new Date().toISOString(),
-            overview: 'SmartLAP is uniquely positioned as an open, web-based, hardware-integrated LIMS for civil engineering labs.',
+            overview: 'SmartLab is uniquely positioned as an open, web-based, hardware-integrated LIMS for civil engineering labs.',
             competitiveAdvantages: [
                 'Free and open source vs expensive commercial alternatives',
                 'Web-based (no installation) vs desktop-only competitors',

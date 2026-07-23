@@ -1,9 +1,9 @@
 /*
- * SmartLAP — CBR (California Bearing Ratio) Test Firmware
+ * SmartLab — CBR (California Bearing Ratio) Test Firmware
  * =======================================================
  * Board:      Arduino Uno / Nano
  * Sensors:    HX711 Load Cell + HC-SR04 Ultrasonic + Linear Actuator
- * Protocol:   SmartLAP Serial CSV
+ * Protocol:   SmartLab Serial CSV
  * Format:     penetration_mm,load_newtons\n
  * Wiring:
  *   HX711  DT  → D3        HX711  SCK → D2
@@ -41,7 +41,7 @@ void setup() {
     scale.set_scale(CALIBRATION_FACTOR);
     scale.tare();
     stopMotor();
-    Serial.println("SmartLAP:READY");
+    Serial.println("SmartLab:READY");
 }
 
 float readDistanceCM() {
@@ -84,16 +84,16 @@ void handleCommand(String cmd) {
         initialDistance = readDistanceCM();
         testing = true;
         runMotor();
-        Serial.println("SmartLAP:STARTED");
+        Serial.println("SmartLab:STARTED");
     } else if (cmd == "STOP") {
         testing = false;
         stopMotor();
-        Serial.println("SmartLAP:STOPPED");
+        Serial.println("SmartLab:STOPPED");
     } else if (cmd == "TARE") {
         scale.tare();
-        Serial.println("SmartLAP:TARED");
+        Serial.println("SmartLab:TARED");
     } else if (cmd == "STATUS") {
-        Serial.println(testing ? "SmartLAP:TESTING" : "SmartLAP:IDLE");
+        Serial.println(testing ? "SmartLab:TESTING" : "SmartLab:IDLE");
     }
 }
 
@@ -110,7 +110,7 @@ void loop() {
         if (penetration > MAX_PENETRATION_MM) {
             testing = false;
             stopMotor();
-            Serial.println("SmartLAP:STOPPED");
+            Serial.println("SmartLab:STOPPED");
             return;
         }
         float force = readForceNewtons();

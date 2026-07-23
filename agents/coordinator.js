@@ -1,5 +1,5 @@
 /*!
- * SmartLAP Multi-Agent System
+ * SmartLab Multi-Agent System
  * Main coordination and message passing framework
  */
 
@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Core agent system with message passing and task tracking
-class SmartLAPAgentSystem {
+class SmartLabAgentSystem {
     constructor() {
         this.agents = new Map();
         this.tasks = new Map();
@@ -183,4 +183,4 @@ class SmartLAPAgentSystem {
     }
 }
 
-module.exports = SmartLAPAgentSystem;
+module.exports = SmartLabAgentSystem;

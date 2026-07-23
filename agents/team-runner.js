@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const SmartLAPAgentSystem = require('./coordinator');
+const SmartLabAgentSystem = require('./coordinator');
 const ProjectManagerAgent = require('./project-manager-agent');
 const DeveloperAgent = require('./developer-agent');
 const LabEngineerAgent = require('./lab-engineer-agent');
@@ -27,12 +27,12 @@ const TEAM = {
 async function runTeam() {
     console.log('');
     console.log('╔══════════════════════════════════════════════════╗');
-    console.log('║     🤖 SmartLAP - فريق العمل الذكي              ║');
+    console.log('║     🤖 SmartLab - فريق العمل الذكي              ║');
     console.log('║     نظام إدارة المشروع بالأصول الرقمية           ║');
     console.log('╚══════════════════════════════════════════════════╝');
     console.log('');
 
-    const coordinator = new SmartLAPAgentSystem();
+    const coordinator = new SmartLabAgentSystem();
 
     const agents = {
         pm: new ProjectManagerAgent(TEAM.projectManager.id, coordinator),
@@ -57,7 +57,7 @@ async function runTeam() {
     const tasks = [
         coordinator.createTask({
             title: '🔍 تحليل المنافسين وأفضل الممارسات',
-            description: 'مقارنة SmartLAP مع المنتجات المماثلة (MATEST, Humboldt, Controls, OpenLab, LabWare, SiteMax) وتحليل الفجوات',
+            description: 'مقارنة SmartLab مع المنتجات المماثلة (MATEST, Humboldt, Controls, OpenLab, LabWare, SiteMax) وتحليل الفجوات',
             type: 'competitor_research',
             priority: 'high',
             assignedTo: TEAM.competitorAnalyst.id
@@ -99,7 +99,7 @@ async function runTeam() {
         }),
         coordinator.createTask({
             title: '🎯 تحليل الفجوات السوقية',
-            description: 'تحديد نقاط القوة والضعف والفرص والتهديدات لـ SmartLAP',
+            description: 'تحديد نقاط القوة والضعف والفرص والتهديدات لـ SmartLab',
             type: 'gap_analysis',
             priority: 'medium',
             assignedTo: TEAM.competitorAnalyst.id
@@ -134,7 +134,7 @@ async function runTeam() {
         }),
         coordinator.createTask({
             title: '🔗 تكامل API',
-            description: 'التحقق من تكامل API الخاص بـ SmartLAP مع الواجهة الأمامية',
+            description: 'التحقق من تكامل API الخاص بـ SmartLab مع الواجهة الأمامية',
             type: 'api_validation',
             priority: 'medium',
             assignedTo: TEAM.apiIntegration.id

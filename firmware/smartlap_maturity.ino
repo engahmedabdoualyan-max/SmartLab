@@ -1,9 +1,9 @@
 /*
- * SmartLAP — Concrete Maturity Sensor Firmware
+ * SmartLab — Concrete Maturity Sensor Firmware
  * =============================================
  * Board:      Arduino Uno / Nano
  * Sensors:    DS18B20 Digital Temperature (OneWire)
- * Protocol:   SmartLAP Serial CSV
+ * Protocol:   SmartLab Serial CSV
  * Format:     temperature_celsius\n
  * Wiring:
  *   DS18B20 DATA → D2 (with 4.7kΩ pull-up to VCC)
@@ -29,7 +29,7 @@ void setup() {
     Serial.begin(9600);
     sensors.begin();
     int count = sensors.getDeviceCount();
-    Serial.println("SmartLAP:READY");
+    Serial.println("SmartLab:READY");
 }
 
 float readTemperatureC() {
@@ -45,14 +45,14 @@ void handleCommand(String cmd) {
     if (cmd == "START") {
         testing = true;
         lastRead = millis();
-        Serial.println("SmartLAP:STARTED");
+        Serial.println("SmartLab:STARTED");
     } else if (cmd == "STOP") {
         testing = false;
-        Serial.println("SmartLAP:STOPPED");
+        Serial.println("SmartLab:STOPPED");
     } else if (cmd == "TARE") {
-        Serial.println("SmartLAP:TARED");
+        Serial.println("SmartLab:TARED");
     } else if (cmd == "STATUS") {
-        Serial.println(testing ? "SmartLAP:TESTING" : "SmartLAP:IDLE");
+        Serial.println(testing ? "SmartLab:TESTING" : "SmartLab:IDLE");
     }
 }
 

@@ -1,4 +1,4 @@
-**SmartLAP v1.0.0**  
+**SmartLab v1.0.0**  
 **نظام أتمتة المختبرات الهندسية الذكي**  
 *Dynamic Lab Automation System — by Fimto Soft*  
 **الميزات**  

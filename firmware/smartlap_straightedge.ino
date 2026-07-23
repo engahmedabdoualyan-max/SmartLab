@@ -1,9 +1,9 @@
 /*
- * SmartLAP — Straightedge (Road Roughness) Test Firmware
+ * SmartLab — Straightedge (Road Roughness) Test Firmware
  * ======================================================
  * Board:      Arduino Uno / Nano
  * Sensors:    MPU6050 IMU (I2C) + VL53L0X Laser Distance + Rotary Encoder
- * Protocol:   SmartLAP Serial CSV
+ * Protocol:   SmartLab Serial CSV
  * Format:     position_m,irregularity_mm,inclination_deg\n
  * Wiring:
  *   MPU6050 SDA → A4        SCL → A5
@@ -41,7 +41,7 @@ void setup() {
     pinMode(ENCODER_A, INPUT_PULLUP);
     pinMode(ENCODER_B, INPUT_PULLUP);
     attachInterrupt(digitalPinToInterrupt(ENCODER_A), encoderISR, RISING);
-    Serial.println("SmartLAP:READY");
+    Serial.println("SmartLab:READY");
 }
 
 float getPositionM() {
@@ -66,16 +66,16 @@ void handleCommand(String cmd) {
     cmd.toUpperCase();
     if (cmd == "START") {
         testing = true;
-        Serial.println("SmartLAP:STARTED");
+        Serial.println("SmartLab:STARTED");
     } else if (cmd == "STOP") {
         testing = false;
-        Serial.println("SmartLAP:STOPPED");
+        Serial.println("SmartLab:STOPPED");
     } else if (cmd == "TARE") {
         mpu.update();
         offsetIrregularity = getIrregularityMM();
-        Serial.println("SmartLAP:TARED");
+        Serial.println("SmartLab:TARED");
     } else if (cmd == "STATUS") {
-        Serial.println(testing ? "SmartLAP:TESTING" : "SmartLAP:IDLE");
+        Serial.println(testing ? "SmartLab:TESTING" : "SmartLab:IDLE");
     }
 }
 

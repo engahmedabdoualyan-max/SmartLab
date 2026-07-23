@@ -1,4 +1,4 @@
-# SmartLAP v1.0.0 — Comprehensive User Documentation
+# SmartLab v1.0.0 — Comprehensive User Documentation
 
 **Dynamic Lab Automation System**
 *by Fimto Soft — Integrated Tech Solutions*
@@ -23,9 +23,9 @@
 
 # Document 1: Quick Start Guide
 
-## 1.1 What Is SmartLAP?
+## 1.1 What Is SmartLab?
 
-SmartLAP is an open-source dynamic laboratory automation system designed for civil engineering laboratories. It replaces bulky, expensive traditional lab equipment with a smart web interface combined with affordable electronic sensors (Arduino-based). The system supports real-time sensor data collection, automatic engineering calculations, and instant PDF report generation.
+SmartLab is an open-source dynamic laboratory automation system designed for civil engineering laboratories. It replaces bulky, expensive traditional lab equipment with a smart web interface combined with affordable electronic sensors (Arduino-based). The system supports real-time sensor data collection, automatic engineering calculations, and instant PDF report generation.
 
 **Key Capabilities:**
 
@@ -80,20 +80,20 @@ Python dependencies (installed via `requirements.txt`):
 | **Power Supply** | USB-powered from the computer, or external 5V/12V adapter |
 | **Breadboard / PCB** | For wiring sensor connections |
 
-## 1.3 How to Access SmartLAP
+## 1.3 How to Access SmartLab
 
 ### Option A: Cloud Version (Recommended)
 
 1. Open your web browser (Google Chrome recommended).
 2. Navigate to: **[https://smartlab.fimtosoft.com](https://smartlab.fimtosoft.com)**
-3. The SmartLAP login screen will appear.
+3. The SmartLab login screen will appear.
 4. No installation is required — the system runs entirely in your browser.
 
 ### Option B: Local Installation (Self-Hosted)
 
 1. Ensure Python 3.9+ is installed on your computer.
 2. Open a terminal/command prompt.
-3. Clone or download the SmartLAP project files.
+3. Clone or download the SmartLab project files.
 4. Install dependencies:
    ```
    pip install -r requirements.txt
@@ -106,7 +106,7 @@ Python dependencies (installed via `requirements.txt`):
 
 ## 1.4 Account Creation
 
-SmartLAP offers three ways to sign in:
+SmartLab offers three ways to sign in:
 
 ### Method 1: Email and Password
 
@@ -126,7 +126,7 @@ To log in later:
 
 1. On the login screen, click the **"Sign in with Google"** button.
 2. A Google authentication window will open.
-3. Select your Google account and authorize SmartLAP.
+3. Select your Google account and authorize SmartLab.
 4. You will be redirected to the domain selection screen.
 
 ### Method 3: Guest Access
@@ -207,7 +207,7 @@ In the **Engineer Inputs** panel, fill in:
 
 # Document 2: Test Procedures Manual
 
-This section provides step-by-step procedures for all seven tests supported by SmartLAP.
+This section provides step-by-step procedures for all seven tests supported by SmartLab.
 
 ---
 
@@ -238,7 +238,7 @@ This section provides step-by-step procedures for all seven tests supported by S
 
 ### Step 2: Open the Compaction Test
 
-1. Log in to SmartLAP.
+1. Log in to SmartLab.
 2. Select **Roads & Soil** department.
 3. Click **Compaction Test**.
 
@@ -1017,7 +1017,7 @@ Install these libraries via **Sketch → Include Library → Manage Libraries**:
 4. Wait for the "Done uploading" message.
 5. Open **Tools → Serial Monitor** (or press `Ctrl+Shift+M`) to verify:
    - Set baud rate to **9600**.
-   - You should see: `SmartLAP:READY` (or the test-specific ready message).
+   - You should see: `SmartLab:READY` (or the test-specific ready message).
 
 ### Uploading to ESP32
 
@@ -1153,7 +1153,7 @@ Download the WeasyPrint Windows build from the official website, or use the stan
 
 ## 4.1 System Architecture
 
-SmartLAP uses a dual architecture:
+SmartLab uses a dual architecture:
 
 1. **Client-Side (Browser):** The main application runs as a single-page application (SPA) in the browser. It handles authentication, UI rendering, real-time serial communication, sensor data processing, and PDF generation via jsPDF.
 
@@ -1580,7 +1580,7 @@ All firmware files communicate at **9600 baud** over serial.
 
 **Ready Signal (from firmware):**
 ```
-SmartLAP:READY
+SmartLab:READY
 ```
 
 **Data Format (Compaction Test):**
@@ -1662,7 +1662,7 @@ light_intensity_lux:234.5,transmission_pct:23.45,purity_index:45
 | **Saudi Arabia Office** | 0500439617 |
 | **WhatsApp** | +20 100 100 6627 |
 | **Website** | [https://fimtosoft.com](https://fimtosoft.com) |
-| **SmartLAP** | [https://smartlab.fimtosoft.com](https://smartlab.fimtosoft.com) |
+| **SmartLab** | [https://smartlab.fimtosoft.com](https://smartlab.fimtosoft.com) |
 
 # Appendix B: Applicable Standards Summary
 
@@ -1696,4 +1696,4 @@ light_intensity_lux:234.5,transmission_pct:23.45,purity_index:45
 ---
 
 *© 2026 Fimto Soft — Integrated Tech Solutions. All rights reserved.*
-*SmartLAP v1.0.0*
+*SmartLab v1.0.0*

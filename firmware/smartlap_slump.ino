@@ -1,9 +1,9 @@
 /*
- * SmartLAP — Digital Slump Test Firmware
+ * SmartLab — Digital Slump Test Firmware
  * =======================================
  * Board:      Arduino Uno / Nano
  * Sensors:    HC-SR04 Ultrasonic Distance
- * Protocol:   SmartLAP Serial CSV
+ * Protocol:   SmartLab Serial CSV
  * Format:     distance_cm\n
  * Wiring:
  *   HC-SR04 TRIG → D9       ECHO → D10
@@ -23,7 +23,7 @@ void setup() {
     Serial.begin(9600);
     pinMode(TRIG_PIN, OUTPUT);
     pinMode(ECHO_PIN, INPUT);
-    Serial.println("SmartLAP:READY");
+    Serial.println("SmartLab:READY");
 }
 
 float readDistanceCM() {
@@ -43,16 +43,16 @@ void handleCommand(String cmd) {
     cmd.toUpperCase();
     if (cmd == "START") {
         testing = true;
-        Serial.println("SmartLAP:STARTED");
+        Serial.println("SmartLab:STARTED");
     } else if (cmd == "STOP") {
         testing = false;
-        Serial.println("SmartLAP:STOPPED");
+        Serial.println("SmartLab:STOPPED");
     } else if (cmd == "TARE") {
         float d = readDistanceCM();
         if (d > 0) offsetCM = d;
-        Serial.println("SmartLAP:TARED");
+        Serial.println("SmartLab:TARED");
     } else if (cmd == "STATUS") {
-        Serial.println(testing ? "SmartLAP:TESTING" : "SmartLAP:IDLE");
+        Serial.println(testing ? "SmartLab:TESTING" : "SmartLab:IDLE");
     }
 }
 

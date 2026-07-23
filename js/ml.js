@@ -1,7 +1,10 @@
 // ================================================================
 // SMARTLAP ML — PREDICTIONS ENGINE
 // ================================================================
-var SmartLAPML = {
+var SmartLabML = {
+
+// Backward compatibility alias
+if (typeof window !== 'undefined') window.SmartLAPML = SmartLabML;
 
     predictConcreteStrength: function(params) {
         var wc = params.water / params.cement;
@@ -116,7 +119,7 @@ function mlComparisonTable(headers, rows) {
 function runMLCompactionPrediction() {
     var soilType = document.getElementById('ml-soil-type').value;
     var energy = document.getElementById('ml-comp-energy').value;
-    var pred = SmartLAPML.predictMoistureContent({ soilType: soilType, compactionEnergy: energy });
+    var pred = SmartLabML.predictMoistureContent({ soilType: soilType, compactionEnergy: energy });
     var actualOM = '--', actualMDD = '--';
     if (typeof strikes !== 'undefined' && strikes.length > 0) {
         var mdd = 0, om = 0;
@@ -148,7 +151,7 @@ function runMLConcretePrediction() {
     var coarseAgg = parseFloat(document.getElementById('ml-coarse-agg').value) || 1100;
     var admixtures = parseFloat(document.getElementById('ml-admixtures').value) || 0;
     var age = parseFloat(document.getElementById('ml-age').value) || 28;
-    var pred = SmartLAPML.predictConcreteStrength({ cement: cement, water: water, fineAgg: fineAgg, coarseAgg: coarseAgg, admixtures: admixtures, age: age });
+    var pred = SmartLabML.predictConcreteStrength({ cement: cement, water: water, fineAgg: fineAgg, coarseAgg: coarseAgg, admixtures: admixtures, age: age });
     var actualStrength = (typeof compState !== 'undefined' && compState.peakStress) ? compState.peakStress.toFixed(1) : '--';
     var resultDiv = document.getElementById('ml-concrete-result');
     var html = '<div style="background:var(--surface-alt);border:1px solid var(--border);border-radius:10px;padding:16px;">';
@@ -168,7 +171,7 @@ function runMLConcretePrediction() {
 function runMLMarshallPrediction() {
     var bc = parseFloat(document.getElementById('ml-bc').value) || 4.5;
     var vma = parseFloat(document.getElementById('ml-vma').value) || 14;
-    var pred = SmartLAPML.predictMarshallStability({ bitumenContent: bc, voidsInMineralAggregate: vma });
+    var pred = SmartLabML.predictMarshallStability({ bitumenContent: bc, voidsInMineralAggregate: vma });
     var actualStab = '--', actualFlow = '--';
     if (typeof marData !== 'undefined' && marData.length > 0) {
         var maxLoad = Math.max.apply(null, marData.map(function(r) { return r.load; }));

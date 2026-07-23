@@ -1,4 +1,4 @@
-# SmartLAP Hardware Recommendations
+# SmartLab Hardware Recommendations
 
 > **Document Version:** 1.0 | **Date:** July 2026 | **Status:** Research-Only
 
@@ -20,7 +20,7 @@
 
 ### Recommended MCU Strategy: Hybrid ESP32 + STM32
 
-For SmartLAP, a dual-MCU architecture is recommended across all test stations:
+For SmartLab, a dual-MCU architecture is recommended across all test stations:
 
 | Component | Role | Justification |
 |---|---|---|
@@ -320,7 +320,7 @@ ESP32 (MQTT) -> EMQX Broker -> Node-RED (edge logic) -> ThingsBoard (device mgmt
 | InfluxDB 3 Core | Arrow/Parquet/Flight | MIT | InfluxQL + SQL | IoT sensor ingestion, Telegraf ecosystem | Free |
 | QuestDB | Column-oriented | Apache 2.0 | PostgreSQL wire protocol | Ultra-fast ingestion (1M+ rows/s), financial-grade | Free |
 
-**Recommendation: TimescaleDB** for SmartLAP because:
+**Recommendation: TimescaleDB** for SmartLab because:
 - Full SQL support (team likely knows SQL)
 - Can store both time-series sensor data AND relational lab metadata (operators, standards, calibration)
 - PostgreSQL ecosystem (backups, replication, tooling)

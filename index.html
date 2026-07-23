@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <title>SmartLAP — Dynamic Lab Automation | Fimto Soft</title>
-    <meta name="description" content="SmartLAP is an open dynamic lab automation system. Replace bulky lab equipment with a smart web interface and affordable electronic sensors. Compaction, moisture, concrete, asphalt testing with real-time reports.">
-    <meta name="keywords" content="SmartLAP, lab automation, soil testing, compaction test, Proctor, HX711, load cell, concrete, asphalt, Fimto Soft, engineering lab">
+    <title>SmartLab — Dynamic Lab Automation | Fimto Soft</title>
+    <meta name="description" content="SmartLab is an open dynamic lab automation system. Replace bulky lab equipment with a smart web interface and affordable electronic sensors. Compaction, moisture, concrete, asphalt testing with real-time reports.">
+    <meta name="keywords" content="SmartLab, lab automation, soil testing, compaction test, Proctor, HX711, load cell, concrete, asphalt, Fimto Soft, engineering lab">
     <meta name="author" content="Fimto Soft">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://smartlab.fimtosoft.com/">
     <meta property="og:type" content="website"><meta property="og:url" content="https://smartlab.fimtosoft.com/">
-    <meta property="og:title" content="SmartLAP — Dynamic Lab Automation"><meta property="og:description" content="Open dynamic lab automation system with real-time sensor data and PDF reports.">
-    <meta property="og:locale" content="en_US"><meta property="og:site_name" content="SmartLAP">
-    <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="SmartLAP — Dynamic Lab Automation">
+    <meta property="og:title" content="SmartLab — Dynamic Lab Automation"><meta property="og:description" content="Open dynamic lab automation system with real-time sensor data and PDF reports.">
+    <meta property="og:locale" content="en_US"><meta property="og:site_name" content="SmartLab">
+    <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="SmartLab — Dynamic Lab Automation">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/style-enhanced.css">
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -21,8 +21,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%233b82f6'/%3E%3Ctext x='50' y='65' font-size='40' font-weight='bold' fill='white' text-anchor='middle' font-family='sans-serif'%3ESL%3C/text%3E%3C/svg%3E">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%233b82f6'/%3E%3Ctext x='50' y='65' font-size='40' font-weight='bold' fill='white' text-anchor='middle' font-family='sans-serif'%3ESL%3C/text%3E%3C/svg%3E">
+    <link rel="icon" type="image/svg+xml" href="logo.svg">
+    <link rel="apple-touch-icon" href="logo.svg">
     <meta name="theme-color" content="#1e293b">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -191,7 +191,7 @@
             <div class="login-brand enhanced-brand">
                 <div class="login-brand-content">
                     <div class="enhanced-logo-lg" aria-hidden="true">SL</div>
-                    <h1>SmartLAP</h1>
+                    <h1>SmartLab</h1>
                     <p class="login-tagline" data-i18n="auth_subtitle">Dynamic Lab Automation System</p>
                     <div class="login-features">
                         <div class="login-feature"><span class="lf-icon" aria-hidden="true">⚡</span><span data-i18n="feat_realtime">Real-time sensor monitoring</span></div>
@@ -1110,14 +1110,14 @@
 <!-- MODAL: How to Use -->
 <div class="fab-modal-overlay" id="modal-howto" onclick="closeFabOverlay(event)" role="dialog" aria-labelledby="modal-howto-title">
     <div class="fab-modal">
-        <div class="fab-modal-header"><h3 id="modal-howto-title">❓ <span data-i18n="modal_howto_title">How to Use SmartLAP</span></h3><button class="fab-modal-close" onclick="closeFabModal('modal-howto')" aria-label="Close">✕</button></div>
+        <div class="fab-modal-header"><h3 id="modal-howto-title">❓ <span data-i18n="modal_howto_title">How to Use SmartLab</span></h3><button class="fab-modal-close" onclick="closeFabModal('modal-howto')" aria-label="Close">✕</button></div>
         <div class="fab-modal-body">
             <h4 data-i18n="howto_step1">Step 1 — Choose Connection</h4>
             <p data-i18n="howto_step1_desc">Select the connection type from the <strong>Hardware Connection</strong> panel:</p>
             <ul>
                 <li data-i18n="howto_usb">🔌 <strong>USB / Serial:</strong> Connect Arduino/ESP32 via USB cable, then select "Web Serial" and click "Start Test" — the browser will ask you to pick the port.</li>
-                <li data-i18n="howto_lan">🌐 <strong>LAN / Network:</strong> Enter the device IP address (e.g. 192.168.1.50). The device must run a WebSocket server on the SmartLAP protocol.</li>
-                <li data-i18n="howto_bt">📡 <strong>Bluetooth:</strong> Click "Scan & Pair Bluetooth" to find nearby BLE devices running the SmartLAP firmware.</li>
+                <li data-i18n="howto_lan">🌐 <strong>LAN / Network:</strong> Enter the device IP address (e.g. 192.168.1.50). The device must run a WebSocket server on the SmartLab protocol.</li>
+                <li data-i18n="howto_bt">📡 <strong>Bluetooth:</strong> Click "Scan & Pair Bluetooth" to find nearby BLE devices running the SmartLab firmware.</li>
                 <li data-i18n="howto_manual">✏️ <strong>Manual Mode:</strong> Enter moisture % and force (N) values manually for each strike — no hardware needed.</li>
                 <li data-i18n="howto_demo">🧪 <strong>Demo Mode:</strong> Simulates sensor data for testing the interface.</li>
             </ul>
@@ -1143,7 +1143,7 @@
             </div>
             <div class="hw-card">
                 <h5>💧 Capacitive Soil Moisture Sensor</h5>
-                <p data-i18n="feat_soil">Capacitive v1.2 / v2.0 — corrosion-resistant soil moisture measurement. Range: 0–100%. Analog output, calibrated via SmartLAP firmware.</p>
+                <p data-i18n="feat_soil">Capacitive v1.2 / v2.0 — corrosion-resistant soil moisture measurement. Range: 0–100%. Analog output, calibrated via SmartLab firmware.</p>
             </div>
             <div class="hw-card">
                 <h5>📡 Ultrasonic HC-SR04</h5>
@@ -1308,10 +1308,10 @@
 <!-- MODAL: Rate Us -->
 <div class="fab-modal-overlay" id="modal-rateus" onclick="closeFabOverlay(event)" role="dialog" aria-labelledby="modal-rateus-title">
     <div class="fab-modal">
-        <div class="fab-modal-header"><h3 id="modal-rateus-title">⭐ <span>Rate SmartLAP</span></h3><button class="fab-modal-close" onclick="closeFabModal('modal-rateus')" aria-label="Close">✕</button></div>
+        <div class="fab-modal-header"><h3 id="modal-rateus-title">⭐ <span>Rate SmartLab</span></h3><button class="fab-modal-close" onclick="closeFabModal('modal-rateus')" aria-label="Close">✕</button></div>
         <div class="fab-modal-body" style="text-align:center;">
             <div style="font-size:48px;margin-bottom:12px;">⭐</div>
-            <h4 style="font-size:18px;font-weight:800;color:var(--text);margin-bottom:6px;">Love SmartLAP?</h4>
+            <h4 style="font-size:18px;font-weight:800;color:var(--text);margin-bottom:6px;">Love SmartLab?</h4>
             <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">Your feedback helps us improve the platform for engineers worldwide.</p>
             <div class="star-rating" id="star-rating" style="margin-bottom:20px;display:flex;justify-content:center;gap:8px;font-size:36px;cursor:pointer;direction:ltr;">
                 <span class="star" data-value="1" onclick="setRating(1)" style="transition:all 0.2s;color:var(--border);">☆</span>

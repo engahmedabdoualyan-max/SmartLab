@@ -1,7 +1,7 @@
 {
   "name": "smartlap-agent-system",
   "version": "1.0.0",
-  "description": "Multi-agent system for SmartLAP laboratory automation - Team Runner",
+  "description": "Multi-agent system for SmartLab laboratory automation - Team Runner",
   "author": "Fimto Soft - Integrated Tech Solutions",
   "license": "MIT",
   "private": true,

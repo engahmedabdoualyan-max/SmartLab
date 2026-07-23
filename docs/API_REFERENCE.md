@@ -1,10 +1,10 @@
-# SmartLAP API Reference
+# SmartLab API Reference
 
 > Version 1.0.0 — Firestore-backed Client API
 
 ## Overview
 
-SmartLAP is a **single-page application (SPA)** that communicates directly with **Cloud Firestore** from the browser. There is no traditional REST server. All data operations go through the Firebase JavaScript SDK (`firebase/firestore-compat`). This document describes the Firestore collections, their schemas, and the client-side functions that read/write them.
+SmartLab is a **single-page application (SPA)** that communicates directly with **Cloud Firestore** from the browser. There is no traditional REST server. All data operations go through the Firebase JavaScript SDK (`firebase/firestore-compat`). This document describes the Firestore collections, their schemas, and the client-side functions that read/write them.
 
 The "API" is effectively the **Firestore data model** plus the **client-side service functions** defined across `js/*.js`.
 
@@ -12,7 +12,7 @@ The "API" is effectively the **Firestore data model** plus the **client-side ser
 
 ## Authentication
 
-SmartLAP uses **Firebase Authentication** with the following sign-in methods:
+SmartLab uses **Firebase Authentication** with the following sign-in methods:
 
 | Method | Function | Firebase SDK Call |
 |---|---|---|
@@ -253,9 +253,9 @@ User profiles (created on registration).
 
 | Function | File | Description |
 |---|---|---|
-| `SmartLAPML.predictConcreteStrength(params)` | `js/ml.js` | Predicts concrete strength |
-| `SmartLAPML.predictMoistureContent(params)` | `js/ml.js` | Predicts OMC and MDD |
-| `SmartLAPML.predictMarshallStability(params)` | `js/ml.js` | Predicts Marshall stability/flow |
+| `SmartLabML.predictConcreteStrength(params)` | `js/ml.js` | Predicts concrete strength |
+| `SmartLabML.predictMoistureContent(params)` | `js/ml.js` | Predicts OMC and MDD |
+| `SmartLabML.predictMarshallStability(params)` | `js/ml.js` | Predicts Marshall stability/flow |
 
 ---
 

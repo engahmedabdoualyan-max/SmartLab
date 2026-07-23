@@ -1,5 +1,5 @@
 /* ================================================================
-   SmartLAP — Enhanced UI/UX Styles
+   SmartLab — Enhanced UI/UX Styles
    Modern Minimalist | Glassmorphism | Gradients | Animations
    Author: Fimto Soft Design Team
    ================================================================ */
@@ -65,8 +65,138 @@
 }
 
 /* ================================================================
-   2. GLASSMORPHISM UTILITIES
-   ================================================================ */
+    1a. DARK MODE OVERRIDES FOR ENHANCED COMPONENTS
+    ================================================================ */
+[data-theme="dark"] .glass {
+    background: rgba(15, 23, 42, 0.78);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+[data-theme="dark"] .glass-card {
+    background: rgba(15, 23, 42, 0.72);
+    border-color: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+}
+[data-theme="dark"] .glass-card:hover {
+    border-color: rgba(59, 130, 246, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+[data-theme="dark"] .glass-panel {
+    background: rgba(15, 23, 42, 0.85);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+[data-theme="dark"] .domain-card-enhanced {
+    background: rgba(15, 23, 42, 0.72);
+    border-color: rgba(255, 255, 255, 0.06) !important;
+}
+[data-theme="dark"] .domain-card-enhanced:hover {
+    border-color: rgba(59, 130, 246, 0.3) !important;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3) !important;
+}
+[data-theme="dark"] .test-card-enhanced {
+    background: rgba(15, 23, 42, 0.72);
+    border-color: rgba(255, 255, 255, 0.06) !important;
+}
+[data-theme="dark"] .test-card-enhanced:hover {
+    border-color: rgba(59, 130, 246, 0.25) !important;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3) !important;
+}
+[data-theme="dark"] .test-card-enhanced .shimmer {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+}
+[data-theme="dark"] .stat-card-enhanced {
+    background: rgba(15, 23, 42, 0.72);
+    border-color: rgba(255, 255, 255, 0.06) !important;
+}
+[data-theme="dark"] .stat-card-enhanced:hover {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3) !important;
+}
+[data-theme="dark"] .panel-enhanced {
+    background: rgba(15, 23, 42, 0.72);
+    border-color: rgba(255, 255, 255, 0.06) !important;
+}
+[data-theme="dark"] .panel-enhanced:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+[data-theme="dark"] .panel-header-enhanced {
+    border-bottom-color: rgba(255, 255, 255, 0.06) !important;
+}
+[data-theme="dark"] .modal-enhanced {
+    background: rgba(15, 23, 42, 0.85);
+    border-color: rgba(255, 255, 255, 0.08) !important;
+}
+[data-theme="dark"] .modal-header-enhanced {
+    border-bottom-color: rgba(255, 255, 255, 0.06) !important;
+}
+[data-theme="dark"] .btn-glass {
+    background: rgba(15, 23, 42, 0.72) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    color: var(--text) !important;
+}
+[data-theme="dark"] .btn-glass:hover {
+    background: rgba(15, 23, 42, 0.85) !important;
+    border-color: rgba(59, 130, 246, 0.3) !important;
+}
+[data-theme="dark"] .btn-soft {
+    background: var(--surface-alt) !important;
+    box-shadow: -4px -4px 10px rgba(0, 0, 0, 0.3), 4px 4px 10px rgba(0, 0, 0, 0.2) !important;
+}
+[data-theme="dark"] .btn-soft:hover {
+    box-shadow: -2px -2px 6px rgba(0, 0, 0, 0.3), 2px 2px 6px rgba(0, 0, 0, 0.2) !important;
+}
+[data-theme="dark"] .btn-soft:active {
+    box-shadow: inset -2px -2px 6px rgba(0, 0, 0, 0.3), inset 2px 2px 6px rgba(0, 0, 0, 0.2) !important;
+}
+[data-theme="dark"] .btn-soft-blue {
+    box-shadow: -4px -4px 10px rgba(0, 0, 0, 0.3), 4px 4px 10px rgba(59, 130, 246, 0.15) !important;
+}
+[data-theme="dark"] .btn-soft-green {
+    box-shadow: -4px -4px 10px rgba(0, 0, 0, 0.3), 4px 4px 10px rgba(16, 185, 129, 0.15) !important;
+}
+[data-theme="dark"] .btn-outline-gradient {
+    background-image: linear-gradient(var(--surface-alt), var(--surface-alt)), var(--accent-gradient) !important;
+}
+[data-theme="dark"] .enhanced-header {
+    background: rgba(15, 23, 42, 0.78) !important;
+    border-bottom-color: rgba(255, 255, 255, 0.06) !important;
+}
+[data-theme="dark"] .enhanced-header.scrolled {
+    background: rgba(15, 23, 42, 0.88) !important;
+}
+[data-theme="dark"] .modal-overlay-enhanced {
+    background: rgba(0, 0, 0, 0.6) !important;
+}
+[data-theme="dark"] .reading-card-enhanced {
+    background: var(--surface) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
+[data-theme="dark"] .reading-card-enhanced:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
+}
+[data-theme="dark"] .table-enhanced thead th {
+    background: rgba(59, 130, 246, 0.08);
+    border-bottom-color: rgba(59, 130, 246, 0.15);
+}
+[data-theme="dark"] .table-enhanced tbody tr:nth-child(even) {
+    background: rgba(59, 130, 246, 0.03);
+}
+[data-theme="dark"] .table-enhanced tbody tr:hover {
+    background: rgba(59, 130, 246, 0.06);
+}
+[data-theme="dark"] .form-input-enhanced {
+    background: var(--surface-alt) !important;
+    border-color: var(--border) !important;
+    color: var(--text) !important;
+}
+[data-theme="dark"] .form-select-enhanced {
+    background: var(--surface-alt) !important;
+    border-color: var(--border) !important;
+    color: var(--text) !important;
+}
+
+/* ================================================================
+    2. GLASSMORPHISM UTILITIES
+    ================================================================ */
 .glass {
     background: var(--glass-bg);
     backdrop-filter: blur(16px) saturate(180%);

@@ -1,4 +1,4 @@
-# دليل الأجهزة الشامل — SmartLAP Hardware Guide
+# دليل الأجهزة الشامل — SmartLab Hardware Guide
 **الإصدار:** v1.1.6 | **التاريخ:** 2026-07-23
 
 ---
@@ -38,7 +38,7 @@
 - الأمر `START` يبدأ القراءات
 - الأمر `STOP` يوقف القراءات
 - الأمر `TARE` يصفر الحساس (load cell)
-- الأمر `STATUS` يعيد `SmartLAP:READY`
+- الأمر `STATUS` يعيد `SmartLab:READY`
 
 ### 1.3 لوحة Arduino Uno Pinout المرجعية
 ```
@@ -71,7 +71,7 @@ DS18B20 DATA├───────┤ D11                 │
 ### 2.1 منافذ الـ PCB المقترحة
 ```
 ┌────────────────────────────────────────────────────────────┐
-│                   SmartLAP Backplane v1                    │
+│                   SmartLab Backplane v1                    │
 ├────────────┬───────────────────────────────────────────────┤
 │  Power In  │  24V DC (Mean Well HDR-30-24)                │
 ├────────────┼───────────────────────────────────────────────┤
@@ -572,9 +572,9 @@ REFERENCE_LUX = 1000.0        // مرجع الهواء النظيف
 
 ### 10.4 رسائل الحالة
 ```
-SmartLAP:READY        ← الجهاز جاهز بعد الـ boot
-SmartLAP:STARTED      ← تأكيد استلام أمر START
-SmartLAP:STOPPED      ← تأكيد استلام أمر STOP
+SmartLab:READY        ← الجهاز جاهز بعد الـ boot
+SmartLab:STARTED      ← تأكيد استلام أمر START
+SmartLab:STOPPED      ← تأكيد استلام أمر STOP
 ```
 
 ### 10.5 معالجة الأخطاء (على المتصفح)
@@ -586,7 +586,7 @@ if (isNaN(v1) || isNaN(v2)) { serialLog('Invalid data', 'rx'); return; }
 if (!currentTest) { serialLog('No active test', 'rx'); return; }
 
 // رسائل الحالة: تسجيل وعرض
-if (line.match(/^SmartLAP:\w+/)) { serialLog(line, 'rx'); return; }
+if (line.match(/^SmartLab:\w+/)) { serialLog(line, 'rx'); return; }
 ```
 
 ---

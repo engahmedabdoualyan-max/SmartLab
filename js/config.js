@@ -6,7 +6,7 @@
 // restricted via Firebase Security Rules and App Check.
 // ================================================================
 
-const SmartLAP_CONFIG = {
+const SmartLab_CONFIG = {
     // Firebase Configuration
     firebase: {
         apiKey: "AIzaSyDDr7EQ95hLdecc1BDIZIFhmmmVMLArBsU",
@@ -47,5 +47,8 @@ const SmartLAP_CONFIG = {
 };
 
 // Prevent accidental modification
-Object.freeze(SmartLAP_CONFIG);
+Object.freeze(SmartLab_CONFIG);
+
+// Backward compatibility alias (legacy code may reference SmartLAP_CONFIG)
+if (typeof window !== 'undefined') { window.SmartLAP_CONFIG = SmartLab_CONFIG; }
 

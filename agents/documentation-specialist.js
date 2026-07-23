@@ -23,7 +23,7 @@ class DocumentationSpecialistAgent extends AssistantAgent {
         this.updateTaskStatus(task.id, 'in_progress');
 
         const documentation = {
-            title: 'SmartLAP Automated Testing Documentation',
+            title: 'SmartLab Automated Testing Documentation',
             testCases: [],
             procedures: [],
             validationRules: []

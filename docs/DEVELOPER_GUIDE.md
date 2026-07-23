@@ -1,10 +1,10 @@
-# SmartLAP Developer Guide
+# SmartLab Developer Guide
 
-> Contributing to SmartLAP — Dynamic Lab Automation System
+> Contributing to SmartLab — Dynamic Lab Automation System
 
 ## Architecture Overview
 
-SmartLAP is a **client-side single-page application** with no backend server. All logic runs in the browser.
+SmartLab is a **client-side single-page application** with no backend server. All logic runs in the browser.
 
 ```
 ┌─────────────────────────────────────────────┐
@@ -141,7 +141,7 @@ smartLAP/
 
 ### No Build Step
 
-SmartLAP uses vanilla JavaScript with no transpilation, bundling, or build process. All files are served directly. CDN dependencies are loaded in `index.html`:
+SmartLab uses vanilla JavaScript with no transpilation, bundling, or build process. All files are served directly. CDN dependencies are loaded in `index.html`:
 
 ```html
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -341,7 +341,7 @@ function generateMyNewTestPDF() {
     var jsPDF = window.jspdf.jsPDF;
     var doc = new jsPDF();
     // Build PDF document...
-    doc.save('SmartLAP_MyNewTest_' + new Date().toISOString().slice(0, 10) + '.pdf');
+    doc.save('SmartLab_MyNewTest_' + new Date().toISOString().slice(0, 10) + '.pdf');
 }
 ```
 
@@ -361,7 +361,7 @@ Add translations to `js/i18n.js` for all 7 languages.
 
 ### Firmware Template
 
-Every SmartLAP firmware follows this pattern:
+Every SmartLab firmware follows this pattern:
 
 ```cpp
 #include "HX711.h"  // if using load cell
@@ -373,16 +373,16 @@ bool testing = false;
 void setup() {
     Serial.begin(9600);
     // Initialize sensors...
-    Serial.println("SmartLAP:READY");
+    Serial.println("SmartLab:READY");
 }
 
 void handleCommand(String cmd) {
     cmd.trim();
     cmd.toUpperCase();
-    if (cmd == "START")      { testing = true;  Serial.println("SmartLAP:STARTED"); }
-    else if (cmd == "STOP")  { testing = false; Serial.println("SmartLAP:STOPPED"); }
-    else if (cmd == "TARE")  { /* tare sensors */ Serial.println("SmartLAP:TARED"); }
-    else if (cmd == "STATUS"){ Serial.println(testing ? "SmartLAP:TESTING" : "SmartLAP:IDLE"); }
+    if (cmd == "START")      { testing = true;  Serial.println("SmartLab:STARTED"); }
+    else if (cmd == "STOP")  { testing = false; Serial.println("SmartLab:STOPPED"); }
+    else if (cmd == "TARE")  { /* tare sensors */ Serial.println("SmartLab:TARED"); }
+    else if (cmd == "STATUS"){ Serial.println(testing ? "SmartLab:TESTING" : "SmartLab:IDLE"); }
 }
 
 void loop() {
@@ -404,21 +404,21 @@ See `firmware/` directory for complete implementations.
 
 ---
 
-## SmartLAP Protocol
+## SmartLab Protocol
 
 The serial protocol between firmware and browser:
 
 | Direction | Message | Meaning |
 |---|---|---|
-| Firmware → Browser | `SmartLAP:READY` | Device initialized, ready for commands |
+| Firmware → Browser | `SmartLab:READY` | Device initialized, ready for commands |
 | Browser → Firmware | `START\n` | Begin data streaming |
-| Firmware → Browser | `SmartLAP:STARTED` | Streaming acknowledged |
+| Firmware → Browser | `SmartLab:STARTED` | Streaming acknowledged |
 | Browser → Firmware | `STOP\n` | Stop data streaming |
-| Firmware → Browser | `SmartLAP:STOPPED` | Streaming stopped |
+| Firmware → Browser | `SmartLab:STOPPED` | Streaming stopped |
 | Browser → Firmware | `TARE\n` | Zero the sensors |
-| Firmware → Browser | `SmartLAP:TARED` | Tare complete |
+| Firmware → Browser | `SmartLab:TARED` | Tare complete |
 | Browser → Firmware | `STATUS\n` | Query state |
-| Firmware → Browser | `SmartLAP:TESTING` or `SmartLAP:IDLE` | Current state |
+| Firmware → Browser | `SmartLab:TESTING` or `SmartLab:IDLE` | Current state |
 | Firmware → Browser | `value1,value2,...\n` | CSV sensor data |
 
 See [FIRMWARE_PROTOCOL.md](./FIRMWARE_PROTOCOL.md) for complete specification.
@@ -592,7 +592,7 @@ service cloud.firestore {
 
 ## i18n (Internationalization)
 
-SmartLAP supports **7 languages**: English, Arabic, Chinese, German, French, Japanese, Russian.
+SmartLab supports **7 languages**: English, Arabic, Chinese, German, French, Japanese, Russian.
 
 ### Adding a Translation
 
@@ -614,7 +614,7 @@ CSS uses `body[data-dir="rtl"]` selectors for directional overrides.
 
 ## AI Chat Integration
 
-SmartLAP includes 5 AI engineering assistants powered by **Google Gemini 2.0 Flash**:
+SmartLab includes 5 AI engineering assistants powered by **Google Gemini 2.0 Flash**:
 
 | Agent | System Prompt Focus |
 |---|---|

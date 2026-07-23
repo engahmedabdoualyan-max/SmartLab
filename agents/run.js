@@ -10,7 +10,7 @@ const UnifiedTestingInterface = require('./unified-interface.js');
 const VersionControlIntegration = require('./version-control.js');
 
 async function runMultiAgentSystem() {
-    console.log('🚀 SmartLAP Multi-Agent System Initialization');
+    console.log('🚀 SmartLab Multi-Agent System Initialization');
 
     const coordinator = new AgentCoordinator();
 

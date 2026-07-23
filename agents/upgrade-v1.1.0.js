@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const SmartLAPAgentSystem = require('./coordinator');
+const SmartLabAgentSystem = require('./coordinator');
 const ProjectManagerAgent = require('./project-manager-agent');
 const DeveloperAgent = require('./developer-agent');
 const LabEngineerAgent = require('./lab-engineer-agent');
@@ -27,12 +27,12 @@ const TEAM = {
 async function upgradeV110() {
     console.log('');
     console.log('╔══════════════════════════════════════════════════╗');
-    console.log('║     🚀 SmartLAP v1.1.0 — خطة التطوير           ║');
+    console.log('║     🚀 SmartLab v1.1.0 — خطة التطوير           ║');
     console.log('║     تقرير أحمد بعد استماعه للفريق               ║');
     console.log('╚══════════════════════════════════════════════════╝');
     console.log('');
 
-    const coordinator = new SmartLAPAgentSystem();
+    const coordinator = new SmartLabAgentSystem();
     const agents = {
         pm: new ProjectManagerAgent(TEAM.pm.id, coordinator),
         dev: new DeveloperAgent(TEAM.dev.id, coordinator),

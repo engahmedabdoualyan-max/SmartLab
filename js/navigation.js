@@ -196,8 +196,8 @@ async function sendChat() {
     document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
 
     try {
-        var GEMINI_API_KEY = (typeof SmartLAP_CONFIG !== 'undefined' && SmartLAP_CONFIG.gemini && SmartLAP_CONFIG.gemini.apiKey) 
-            ? SmartLAP_CONFIG.gemini.apiKey 
+        var GEMINI_API_KEY = (typeof SmartLab_CONFIG !== 'undefined' && SmartLab_CONFIG.gemini && SmartLab_CONFIG.gemini.apiKey) 
+            ? SmartLab_CONFIG.gemini.apiKey 
             : null;
         if (!GEMINI_API_KEY) {
             document.getElementById('typing-indicator').remove();
@@ -205,8 +205,8 @@ async function sendChat() {
             addChatMsg('ai', msg);
             return;
         }
-        var GEMINI_MODEL = (typeof SmartLAP_CONFIG !== 'undefined' && SmartLAP_CONFIG.gemini && SmartLAP_CONFIG.gemini.model) 
-            ? SmartLAP_CONFIG.gemini.model 
+        var GEMINI_MODEL = (typeof SmartLab_CONFIG !== 'undefined' && SmartLab_CONFIG.gemini && SmartLab_CONFIG.gemini.model) 
+            ? SmartLab_CONFIG.gemini.model 
             : 'gemini-2.0-flash';
         var response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + GEMINI_MODEL + ':generateContent?key=' + GEMINI_API_KEY, {
             method: 'POST',
@@ -470,6 +470,7 @@ function openTest(test){
   if (test.type === 'maturity') { openMat(test); return; }
   if (test.type === 'marshall') { openMar(test); return; }
   if (test.type === 'bitumen') { openBit(test); return; }
+  if (test.type === 'penetration') { openPen(test); return; }
   if (test.type === 'straightedge') { openSE(test); return; }
   // Default: compaction test screen
   strikes = []; isTesting = false; currentSessionId = null;

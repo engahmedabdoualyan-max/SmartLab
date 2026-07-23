@@ -1,9 +1,9 @@
 /*
- * SmartLAP — Compaction Test Firmware
+ * SmartLab — Compaction Test Firmware
  * ====================================
  * Board:      Arduino Uno / Nano
  * Sensors:    HX711 Load Cell (force) + Capacitive Soil Moisture v1.2
- * Protocol:   SmartLAP Serial CSV
+ * Protocol:   SmartLab Serial CSV
  * Format:     moisture_pct,force_newtons\n
  * Wiring:
  *   HX711  DT  → D3        HX711  SCK → D2
@@ -31,7 +31,7 @@ void setup() {
     scale.begin(HX711_DT, HX711_SCK);
     scale.set_scale(CALIBRATION_FACTOR);
     scale.tare();
-    Serial.println("SmartLAP:READY");
+    Serial.println("SmartLab:READY");
 }
 
 float readMoisturePercent() {
@@ -54,10 +54,10 @@ float readForceNewtons() {
 void handleCommand(String cmd) {
     cmd.trim();
     cmd.toUpperCase();
-    if (cmd == "START") { testing = true; Serial.println("SmartLAP:STARTED"); }
-    else if (cmd == "STOP") { testing = false; Serial.println("SmartLAP:STOPPED"); }
-    else if (cmd == "TARE") { scale.tare(); tared = true; Serial.println("SmartLAP:TARED"); }
-    else if (cmd == "STATUS") { Serial.println(testing ? "SmartLAP:TESTING" : "SmartLAP:IDLE"); }
+    if (cmd == "START") { testing = true; Serial.println("SmartLab:STARTED"); }
+    else if (cmd == "STOP") { testing = false; Serial.println("SmartLab:STOPPED"); }
+    else if (cmd == "TARE") { scale.tare(); tared = true; Serial.println("SmartLab:TARED"); }
+    else if (cmd == "STATUS") { Serial.println(testing ? "SmartLab:TESTING" : "SmartLab:IDLE"); }
 }
 
 void loop() {

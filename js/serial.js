@@ -196,11 +196,11 @@ async function startSerialStream(){
 }
 
 function handleSerialLine(line){
-  var statusMatch=line.match(/^SmartLAP:\w+/);
+  var statusMatch=line.match(/^(SmartLAP|SmartLab):\w+/);
   if(statusMatch){
     serialLog('\u2190 '+line,'rx');
     var status=statusMatch[0];
-    if(status==='SmartLAP:READY'||status==='SmartLAP:STARTED'||status==='SmartLAP:STOPPED'){
+    if(/:READY$/.test(status)||/:STARTED$/.test(status)||/:STOPPED$/.test(status)){
       serialLog('Firmware status: '+status,'rx');
     }
     return;

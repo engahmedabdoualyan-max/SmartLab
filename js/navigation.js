@@ -1494,7 +1494,7 @@ function showExperiment(type) {
         '<div class="exp-section" style="background:var(--surface-alt);border-radius:8px;padding:12px;margin-top:8px;">' +
             '<h4>' + (isAr ? '💡 ملاحظات هامة' : '💡 Important Notes') + '</h4>' +
             '<p style="font-size:12px;color:var(--text-muted);">' + (isAr ?
-                'تأكد من معايرة الأجهزة قبل البدء. سجل جميع القراءات في دفتر الملاحظات. اتبع إرشادات السلامة المهنية.',
+                'تأكد من معايرة الأجهزة قبل البدء. سجل جميع القراءات في دفتر الملاحظات. اتبع إرشادات السلامة المهنية.' :
                 'Ensure all equipment is calibrated before starting. Record all readings in the lab notebook. Follow all safety guidelines.') + '</p>' +
         '</div>';
     document.getElementById('modal-experiment').classList.add('show');

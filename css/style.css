@@ -1306,3 +1306,50 @@ body[data-dir="rtl"] .exp-section ul { padding-right: 20px; padding-left: 0; }
     .doc-title { font-size: 17px; }
     .badge { font-size: 9px; padding: 3px 8px; }
 }
+
+/* ===== SKELETON LOADING ===== */
+.skeleton-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 12px;
+    position: relative;
+    overflow: hidden;
+}
+.skeleton-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(128,128,128,0.1), transparent);
+    background-size: 200% 100%;
+    animation: skeletonShimmer 1.5s ease-in-out infinite;
+}
+@keyframes skeletonShimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+.skeleton-line {
+    height: 14px;
+    background: var(--border);
+    border-radius: 4px;
+    margin-bottom: 8px;
+}
+.skeleton-line:first-child { width: 60%; height: 18px; }
+.skeleton-line:nth-child(2) { width: 90%; }
+.skeleton-line:nth-child(3) { width: 40%; }
+.loading-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 40px 20px;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+.loading-spinner {
+    width: 20px; height: 20px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}

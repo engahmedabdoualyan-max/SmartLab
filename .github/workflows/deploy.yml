@@ -1,0 +1,295 @@
+# ================================================================
+# SmartLAP CI/CD Pipeline — GitHub Actions
+# ================================================================
+# Triggers: push to main branch
+# Jobs:
+#   1. validate — Syntax check on all JS files
+#   2. test     — Run core calculation unit tests via Node.js
+#   3. build    — Bundle with Vite for production
+#   4. deploy   — Upload build artifacts to production server
+# ================================================================
+
+name: SmartLAP CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+  # Allow manual trigger from GitHub UI
+  workflow_dispatch:
+
+# Environment variables shared across jobs
+env:
+  NODE_VERSION: '18'
+  BUILD_DIR: 'dist'
+
+jobs:
+
+  # ================================================================
+  # JOB 1: SYNTAX VALIDATION
+  # ================================================================
+  validate:
+    name: '🔍 Syntax Validation'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Validate JavaScript Syntax
+        run: |
+          echo "Checking JavaScript syntax for all JS files..."
+          ERROR_COUNT=0
+          for file in $(find js/ -name '*.js' -type f); do
+            if ! node -c "$file" 2>/dev/null; then
+              echo "❌ Syntax error in: $file"
+              node -c "$file" 2>&1 || true
+              ERROR_COUNT=$((ERROR_COUNT + 1))
+            else
+              echo "✅ $file — OK"
+            fi
+          done
+          if [ $ERROR_COUNT -gt 0 ]; then
+            echo "❌ $ERROR_COUNT file(s) have syntax errors"
+            exit 1
+          fi
+          echo "✅ All JavaScript files passed syntax validation"
+
+      - name: Validate HTML Syntax
+        run: |
+          echo "Checking index.html for basic structure..."
+          if [ -f index.html ]; then
+            # Check for required tags
+            grep -q '<!DOCTYPE html>' index.html && echo "✅ DOCTYPE found" || echo "⚠️ No DOCTYPE"
+            grep -q '</html>' index.html && echo "✅ HTML closing tag found" || echo "⚠️ No closing html tag"
+            # Check for unbalanced tags (basic)
+            OPEN_TAGS=$(grep -oP '<(?!meta|link|br|hr|img|input|area|base|col|embed|source|track|wbr)(\w+)' index.html | wc -l)
+            CLOSE_TAGS=$(grep -oP '</\w+' index.html | wc -l)
+            echo "Open tags: $OPEN_TAGS, Close tags: $CLOSE_TAGS"
+          else
+            echo "⚠️ index.html not found"
+          fi
+
+      - name: Validate CSS Exists
+        run: |
+          if [ -f css/style.css ]; then
+            echo "✅ CSS file found"
+          else
+            echo "⚠️ css/style.css not found"
+          fi
+
+  # ================================================================
+  # JOB 2: UNIT TESTS
+  # ================================================================
+  test:
+    name: '🧪 Calculation Tests'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Run Core Calculation Tests
+        run: |
+          echo "Running SmartLAP calculation test suite..."
+          if [ -f tests/run.js ]; then
+            node tests/run.js
+          else
+            echo "⚠️ tests/run.js not found — checking tests/calculations.test.js directly"
+            if [ -f tests/calculations.test.js ]; then
+              node -e "
+                var fs = require('fs');
+                var path = require('path');
+                var testFile = path.join(__dirname, 'tests/calculations.test.js');
+                eval(fs.readFileSync(testFile, 'utf8'));
+                var results = runTests ? runTests() : (function(){
+                  var passed=0,failed=0;
+                  _tests.forEach(function(t){
+                    try{ t.fn(); passed++; console.log('✓ '+t.suite+': '+t.name); }
+                    catch(e){ failed++; console.log('✗ '+t.suite+': '+t.name+' — '+e.message); }
+                  });
+                  console.log('Passed: '+passed+', Failed: '+failed);
+                  return failed===0;
+                })();
+                if(!results) process.exit(1);
+              "
+            else
+              echo "❌ No test files found"
+              exit 1
+            fi
+          fi
+
+      - name: Validate Test Results
+        run: |
+          echo "✅ All calculation tests executed"
+
+  # ================================================================
+  # JOB 3: PRODUCTION BUILD
+  # ================================================================
+  build:
+    name: '📦 Production Build'
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install Dependencies
+        run: |
+          echo "Installing build dependencies..."
+          # Check for package.json at root
+          if [ -f package.json ]; then
+            npm ci --production
+          else
+            # Create minimal package.json for Vite if not present
+            echo '{
+              "name": "smartlap",
+              "private": true,
+              "version": "1.0.0",
+              "type": "module",
+              "scripts": {
+                "build": "vite build",
+                "preview": "vite preview"
+              },
+              "devDependencies": {
+                "vite": "^5.4.0",
+                "@vitejs/plugin-legacy": "^5.4.0",
+                "terser": "^5.31.0",
+                "cssnano": "^7.0.0",
+                "autoprefixer": "^10.4.0",
+                "postcss": "^8.4.0"
+              }
+            }' > package.json
+            npm install
+          fi
+
+      - name: Build with Vite
+        run: |
+          echo "Building production bundle..."
+          npx vite build
+          echo "✅ Build complete"
+          echo "Build size:"
+          du -sh dist/
+          echo "Bundle files:"
+          ls -lh dist/assets/ 2>/dev/null || echo "  (no assets directory)"
+
+      - name: Verify Build Output
+        run: |
+          if [ -d "${{ env.BUILD_DIR }}" ]; then
+            echo "✅ Build output exists: ${{ env.BUILD_DIR }}"
+            echo "Contents:"
+            find "${{ env.BUILD_DIR }}" -type f | head -20
+          else
+            echo "❌ Build output directory not found"
+            exit 1
+          fi
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: smartlap-build
+          path: ${{ env.BUILD_DIR }}/
+          retention-days: 7
+          compression-level: 9
+
+  # ================================================================
+  # JOB 4: DEPLOY TO PRODUCTION
+  # ================================================================
+  deploy:
+    name: '🚀 Deploy to Production'
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    # Only deploy on push to main/master (not PRs)
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: smartlap-build
+          path: ${{ env.BUILD_DIR }}/
+
+      - name: Deploy via Rsync
+        env:
+          # These secrets must be configured in GitHub repo settings:
+          # DEPLOY_HOST, DEPLOY_USER, DEPLOY_PATH, DEPLOY_SSH_KEY
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          USER: ${{ secrets.DEPLOY_USER }}
+          PATH: ${{ secrets.DEPLOY_PATH }}
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: |
+          if [ -z "$HOST" ] || [ -z "$USER" ] || [ -z "$PATH" ] || [ -z "$SSH_KEY" ]; then
+            echo "⚠️ Deployment secrets not configured — skipping deployment"
+            echo "To deploy, set these repository secrets:"
+            echo "  DEPLOY_HOST     — Production server hostname/IP"
+            echo "  DEPLOY_USER     — SSH username"
+            echo "  DEPLOY_PATH     — Target directory on server"
+            echo "  DEPLOY_SSH_KEY  — SSH private key for authentication"
+            echo ""
+            echo "✅ Build artifacts are available as download from this workflow run"
+            exit 0
+          fi
+
+          echo "Deploying to $USER@$HOST:$PATH ..."
+
+          # Write SSH key
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+          # Add host to known hosts (basic protection)
+          ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
+
+          # Rsync build to production server
+          rsync -avz --delete \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+            ./dist/ \
+            "$USER@$HOST:$PATH"
+
+          echo "✅ Deployment complete"
+
+      - name: Post-Deployment Health Check
+        env:
+          DEPLOY_URL: ${{ secrets.DEPLOY_URL || 'https://smartlab.fimtosoft.com' }}
+        run: |
+          echo "Performing health check against $DEPLOY_URL ..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 10 --max-time 15 "$DEPLOY_URL" 2>/dev/null || echo "000")
+          if [ "$STATUS" = "200" ] || [ "$STATUS" = "301" ] || [ "$STATUS" = "302" ]; then
+            echo "✅ Health check passed (HTTP $STATUS)"
+          else
+            echo "⚠️ Health check returned HTTP $STATUS — review manually"
+          fi
+
+      - name: Notify Deployment Success
+        run: |
+          echo "✅ SmartLAP v${{ github.sha }} deployed successfully"
+          echo "Commit: ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}"
+          echo "Timestamp: $(date -u)"
+

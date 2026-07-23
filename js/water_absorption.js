@@ -53,12 +53,12 @@ function calculateWAResults(){
     var material=document.getElementById('wa-material').value;
     var pass=avgAbs<=7;
     var panel=document.getElementById('wa-results-panel');panel.style.display='block';
-    var html='<div class="result-status '+(pass?'pass':'fail')+'">'+(pass?'✅':'❌')+' '+avgAbs.toFixed(2)+'%</div>';
-    html+='<div class="result-row"><span class="result-label">Water Absorption</span><span class="result-value">'+avgAbs.toFixed(2)+'%</span></div>';
-    html+='<div class="result-row"><span class="result-label">Material</span><span class="result-value">'+material+'</span></div>';
-    html+='<div class="result-row"><span class="result-label">Requirement (max 7%)</span><span class="result-value">'+(pass?'Satisfied':'Not Satisfied')+'</span></div>';
-    html+='<div class="result-row"><span class="result-label">Readings Count</span><span class="result-value">'+r.length+'</span></div>';
-    document.getElementById('wa-results-body').innerHTML=html;
+    var html=safeResultStatus(pass,avgAbs.toFixed(2)+'%');
+    html+=safeResultRow('Water Absorption',avgAbs.toFixed(2)+'%');
+    html+=safeResultRow('Material',material);
+    html+=safeResultRow('Requirement (max 7%)',pass?'Satisfied':'Not Satisfied');
+    html+=safeResultRow('Readings Count',r.length);
+    safeSetHTML('wa-results-body',html);
     saveTestSession('water_absorption',{absorption:avgAbs,material:material,readings:r});
 }
 function generateWAPDF(){

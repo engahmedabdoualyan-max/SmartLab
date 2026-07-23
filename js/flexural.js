@@ -66,15 +66,15 @@ function calculateFlexResults(){
     var grade=document.getElementById('flex-grade').value;
     var pass=modulus>=3.5;
     var panel=document.getElementById('flex-results-panel');panel.style.display='block';
-    var html='<div class="result-status '+(pass?'pass':'fail')+'">'+(pass?'✅':'❌')+' '+modulus.toFixed(2)+' MPa</div>';
-    html+='<div class="result-row"><span class="result-label">Peak Load P</span><span class="result-value">'+flexState.peakForce.toFixed(1)+' N</span></div>';
-    html+='<div class="result-row"><span class="result-label">Modulus of Rupture R</span><span class="result-value">'+modulus.toFixed(2)+' MPa</span></div>';
-    html+='<div class="result-row"><span class="result-label">Beam Width b</span><span class="result-value">'+b+' mm</span></div>';
-    html+='<div class="result-row"><span class="result-label">Beam Depth d</span><span class="result-value">'+d+' mm</span></div>';
-    html+='<div class="result-row"><span class="result-label">Span L</span><span class="result-value">'+L+' mm</span></div>';
-    html+='<div class="result-row"><span class="result-label">Loading Type</span><span class="result-value">'+loading.charAt(0).toUpperCase()+loading.slice(1)+'-point</span></div>';
-    html+='<div class="result-row"><span class="result-label">Concrete Grade</span><span class="result-value">'+grade+'</span></div>';
-    document.getElementById('flex-results-body').innerHTML=html;
+    var html=safeResultStatus(pass,modulus.toFixed(2)+' MPa');
+    html+=safeResultRow('Peak Load P',flexState.peakForce.toFixed(1)+' N');
+    html+=safeResultRow('Modulus of Rupture R',modulus.toFixed(2)+' MPa');
+    html+=safeResultRow('Beam Width b',b+' mm');
+    html+=safeResultRow('Beam Depth d',d+' mm');
+    html+=safeResultRow('Span L',L+' mm');
+    html+=safeResultRow('Loading Type',loading.charAt(0).toUpperCase()+loading.slice(1)+'-point');
+    html+=safeResultRow('Concrete Grade',grade);
+    safeSetHTML('flex-results-body',html);
     saveTestSession('flexural',{modulus:modulus,peakForce:flexState.peakForce,width:b,depth:d,span:L,loading:loading,grade:grade});
 }
 function generateFlexPDF(){

@@ -114,7 +114,13 @@ async function sendChat() {
     document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
 
     try {
-        var response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyDDr7EQ95hLdecc1BDIZIFhmmmVMLArBsU', {
+        var GEMINI_API_KEY = (typeof SmartLAP_CONFIG !== 'undefined') 
+            ? SmartLAP_CONFIG.gemini.apiKey 
+            : 'AIzaSyDDr7EQ95hLdecc1BDIZIFhmmmVMLArBsU';
+        var GEMINI_MODEL = (typeof SmartLAP_CONFIG !== 'undefined') 
+            ? SmartLAP_CONFIG.gemini.model 
+            : 'gemini-2.0-flash';
+        var response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + GEMINI_MODEL + ':generateContent?key=' + GEMINI_API_KEY, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -146,23 +152,28 @@ function retryChat(text) {
 // ================================================================
 async function loadDomains() {
     var c = document.getElementById('domains-list');
-    c.innerHTML = '<p style="color:var(--text-muted);">Loading...</p>';
+    safeSetText(c,'Loading...');
     try {
         var snap = await db.collection('domains').get();
         if (snap.empty) { await seedDomains(); return loadDomains(); }
-        c.innerHTML = '';
+        if(c)c.textContent='';
         var domains=[];snap.forEach(function(doc){var d=doc.data();d.id=doc.id;domains.push(d);});domains.sort(function(a,b){return (a.order||0)-(b.order||0);});
         var icons = { 'طرق':'🛣️', 'خرسانة':'🏗️', 'أسفلت':'🛤️', 'Roads':'🛣️', 'Concrete':'🏗️', 'Asphalt':'🛤️', '道路':'🛣️', '混凝土':'🏗️', '沥青':'🛤️', 'Straßen':'🛣️', 'Beton':'🏗️', 'Asphalt':'🛤️' };
         domains.forEach(function(d) {
             var ik = Object.keys(icons).find(function(k){return d.name.includes(k);}) || '🔬';
             var card = document.createElement('a'); card.href='#'; card.className='domain-card'; card.setAttribute('tabindex','0'); card.setAttribute('role','button'); card.setAttribute('aria-label',d.name);
             card.onclick = function(e){e.preventDefault();selectDomain(d);};
-            card.innerHTML = '<div class="domain-icon" aria-hidden="true">'+(icons[ik]||'🔬')+'</div><div class="domain-info"><h3>'+d.name+'</h3><p>'+(d.description||'')+'</p></div>';
+            var iconDiv=document.createElement('div');iconDiv.className='domain-icon';iconDiv.setAttribute('aria-hidden','true');iconDiv.textContent=icons[ik]||'🔬';
+            var infoDiv=document.createElement('div');infoDiv.className='domain-info';
+            var h3=document.createElement('h3');h3.textContent=d.name;
+            var pDesc=document.createElement('p');pDesc.textContent=d.description||'';
+            infoDiv.appendChild(h3);infoDiv.appendChild(pDesc);
+            card.appendChild(iconDiv);card.appendChild(infoDiv);
             c.appendChild(card);
         });
         loadAITeam();
         loadStats();
-    } catch(e) { c.innerHTML='<p style="color:#ef4444;">Error: '+e.message+'</p>'; }
+    } catch(e) { if(c)safeSetText(c,'Error: '+sanitizeInput(e.message)); }
 }
 
 async function seedDomains() {
@@ -171,7 +182,7 @@ async function seedDomains() {
     await batch.commit();
     var tb = db.batch();
     var ds = await db.collection('domains').where('name','==','قسم الطرق والتربة').get();
-    if(!ds.empty){var did=ds.docs[0].id;tb.set(db.collection('tests').doc(),{name:'اختبار الدمك',domainId:did,order:1,type:'compaction',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'اختبار تحديد الرطوبة',domainId:did,order:2,type:'moisture',config:{inputs:[{name:'وزن_الأرض',label:'وزن العينة الرطبة (كغ)',type:'number'},{name:'وزن_الجافة',label:'وزن العينة الجافة (كغ)',type:'number'}]}});tb.set(db.collection('tests').doc(),{name:'اختبار نسبة الحمل (CBR)',domainId:did,order:3,type:'cbr',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'اختبار استقامة الطرق (Straightedge)',domainId:did,order:4,type:'straightedge',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'حدود أتربرغ (Atterberg Limits)',domainId:did,order:5,type:'atterberg',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'التحاليل الحجمية (Sieve Analysis)',domainId:did,order:6,type:'sieve',config:{inputs:[]}});}
+if(!ds.empty){var did=ds.docs[0].id;tb.set(db.collection('tests').doc(),{name:'اختبار الدمك',domainId:did,order:1,type:'compaction',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'اختبار تحديد الرطوبة',domainId:did,order:2,type:'moisture',config:{inputs:[{name:'وزن_الأرض',label:'وزن العينة الرطبة (كغ)',type:'number'},{name:'وزن_الجافة',label:'وزن العينة الجافة (كغ)',type:'number'}]}});tb.set(db.collection('tests').doc(),{name:'اختبار نسبة الحمل (CBR)',domainId:did,order:3,type:'cbr',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'اختبار استقامة الطرق (Straightedge)',domainId:did,order:4,type:'straightedge',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'حدود أتربرغ (Atterberg Limits)',domainId:did,order:5,type:'atterberg',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'التحاليل الحجمية (Sieve Analysis)',domainId:did,order:6,type:'sieve',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'اختبار القص المباشر (Direct Shear)',domainId:did,order:7,type:'direct_shear',config:{inputs:[]}});}
     var d2=await db.collection('domains').where('name','==','قسم الخرسانة').get();
     if(!d2.empty){var cid=d2.docs[0].id;tb.set(db.collection('tests').doc(),{name:'اختبار الانضباط (Slump)',domainId:cid,order:1,type:'slump',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'نضج الخرسانة (Maturity)',domainId:cid,order:2,type:'maturity',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'الشد الانضغاطي (Compressive Strength)',domainId:cid,order:3,type:'compressive',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'نسبة الهواء (Air Content)',domainId:cid,order:4,type:'air',config:{inputs:[]}});}
     var d3=await db.collection('domains').where('name','==','قسم الأسفلت').get();
@@ -184,16 +195,23 @@ async function selectDomain(domain) {
     document.getElementById('dash-domain-name').textContent=domain.name;
     document.getElementById('dash-title').textContent=domain.name;
     document.getElementById('dash-subtitle').textContent=domain.description;
-    var grid=document.getElementById('tests-grid');grid.innerHTML='<p style="color:var(--text-muted);">Loading...</p>';
-    try{var snap=await db.collection('tests').where('domainId','==',domain.id).get();grid.innerHTML='';
-    if(snap.empty){grid.innerHTML='<p style="color:var(--text-muted);padding:40px;">No tests</p>';return;}
+    var grid=document.getElementById('tests-grid');safeSetText(grid,'Loading...');
+    try{var snap=await db.collection('tests').where('domainId','==',domain.id).get();if(grid)grid.textContent='';
+    if(snap.empty){safeSetText(grid,'No tests');return;}
     var tests=[];snap.forEach(function(doc){var t=doc.data();t.id=doc.id;tests.push(t);});tests.sort(function(a,b){return (a.order||0)-(b.order||0);});
     var tIcons={'دمك':'⚡','رطوبة':'💧','انضباط':'📐','انساب':'🌡️','نسبة':'📊','CBR':'📊','cbr':'📊','استقامة':'📐','straightedge':'📐','هبوط':'📐','slump':'📐','مaturity':'🌡️','maturity':'🌡️','مارشال':'⚖️','marshall':'⚖️','بتومين':'🧪','bitumen':'🧪','marşal':'⚖️','_photo':'🧪','فتو':'🧪','Atterberg':'🧪','atterberg':'🧪','sieve':'📐','Sieve':'📐','compressive':'🏗️','Compressive':'🏗️','ductility':'🔗','Ductility':'🔗','air':'💨','Air':'💨'};
     var tDescs={compaction:'Proctor compaction test with real-time density calculations',cbr:'California Bearing Ratio — penetration & load analysis',straightedge:'Surface evenness measurement with IMU + laser',slump:'Ultrasonic cone height measurement',maturity:'Temperature logging with Nurse-Saul / Arrhenius index',marshall:'Load-displacement stability & flow test',bitumen:'Light intensity transmission & purity test',penetration:'Needle penetration depth measurement',moisture:'Soil moisture content determination',atterberg:'Liquid & Plastic limits — Atterberg consistency test',sieve:'Grain size distribution — gradation analysis',compressive:'Uniaxial compressive strength — cylinder/cube',ductility:'Bitumen ductility — extension at break test',air:'Fresh concrete air content — pressure/volumetric method'};
     tests.forEach(function(t){var ik=Object.keys(tIcons).find(function(k){return t.name.includes(k);});
     var card=document.createElement('a');card.href='#';card.className='test-card slide-up';card.setAttribute('tabindex','0');card.setAttribute('role','button');card.setAttribute('aria-label',t.name);card.onclick=function(e){e.preventDefault();openTest(t);};
-    card.innerHTML='<div class="test-card-icon" aria-hidden="true">'+(tIcons[ik]||'🔬')+'</div><h3>'+t.name+'</h3><p>'+(tDescs[t.type]||'Interactive test with real-time sensor data')+'</p><div class="card-footer"><span class="card-tag">'+(t.type==='compaction'||t.type==='cbr'?'Hardware':'Manual')+'</span><div class="card-arrow" aria-hidden="true">←</div></div>';
-    grid.appendChild(card);});}catch(e){grid.innerHTML='<p style="color:#ef4444;">Error: '+e.message+'</p>';}
+    var iconDiv=document.createElement('div');iconDiv.className='test-card-icon';iconDiv.setAttribute('aria-hidden','true');iconDiv.textContent=tIcons[ik]||'🔬';
+    var h3=document.createElement('h3');h3.textContent=t.name;
+    var pDesc=document.createElement('p');pDesc.textContent=tDescs[t.type]||'Interactive test with real-time sensor data';
+    var footer=document.createElement('div');footer.className='card-footer';
+    var tag=document.createElement('span');tag.className='card-tag';tag.textContent=(t.type==='compaction'||t.type==='cbr'?'Hardware':'Manual');
+    var arrow=document.createElement('div');arrow.className='card-arrow';arrow.setAttribute('aria-hidden','true');arrow.textContent='←';
+    footer.appendChild(tag);footer.appendChild(arrow);
+    card.appendChild(iconDiv);card.appendChild(h3);card.appendChild(pDesc);card.appendChild(footer);
+    grid.appendChild(card);});}catch(e){if(grid)safeSetText(grid,'Error: '+sanitizeInput(e.message));}
 }
 
 function openTest(test){
@@ -208,7 +226,8 @@ function openTest(test){
     if(test.type==='compressive'){openComp(test);return;}
     if(test.type==='ductility'){openDuct(test);return;}
     if(test.type==='air'){openAir(test);return;}
-    strikes=[];isTesting=false;currentSessionId=null;showScreen('test');document.getElementById('test-page-title').textContent=test.name;document.getElementById('results-panel').style.display='none';document.getElementById('btn-pdf').style.display='none';document.getElementById('chart-box').style.display='none';document.getElementById('btn-start').style.display='flex';document.getElementById('btn-stop').style.display='none';document.getElementById('btn-tare').style.display='none';document.getElementById('strike-log-body').innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px;">Start test</td></tr>';document.getElementById('val-moisture').textContent='--';document.getElementById('val-force').textContent='--';document.getElementById('val-avg-force').textContent='--';document.getElementById('val-dry-density').textContent='--';document.getElementById('strike-counter').textContent='0';document.getElementById('ratio-display').textContent='--%';document.getElementById('target-display').textContent=document.getElementById('inp_target_strikes').value||'25';document.getElementById('gauge-fill').style.strokeDashoffset='264';document.getElementById('serial-console').style.display='none';document.getElementById('demo-banner').style.display='none';loadHistory();}
+    if(test.type==='direct_shear'){openDirectShear(test);return;}
+    strikes=[];isTesting=false;currentSessionId=null;showScreen('test');document.getElementById('test-page-title').textContent=test.name;document.getElementById('results-panel').style.display='none';document.getElementById('btn-pdf').style.display='none';document.getElementById('chart-box').style.display='none';document.getElementById('btn-start').style.display='flex';document.getElementById('btn-stop').style.display='none';document.getElementById('btn-tare').style.display='none';var slb=document.getElementById('strike-log-body');if(slb)slb.textContent='Start test';safeSetText('val-moisture','--');safeSetText('val-force','--');safeSetText('val-avg-force','--');safeSetText('val-dry-density','--');safeSetText('strike-counter','0');safeSetText('ratio-display','--%');safeSetText('target-display',document.getElementById('inp_target_strikes').value||'25');var gf=document.getElementById('gauge-fill');if(gf)gf.style.strokeDashoffset='264';var sc=document.getElementById('serial-console');if(sc)sc.style.display='none';var db=document.getElementById('demo-banner');if(db)db.style.display='none';loadHistory();}
 function openAtterberg(test){currentTest=test;showScreen('atterberg');}
 function openSieve(test){currentTest=test;showScreen('sieve');}
 function openComp(test){currentTest=test;showScreen('compressive');}

@@ -22,9 +22,15 @@ function startSlumpTest(){
     document.getElementById('slump-results-panel').style.display='none';
     logTestStarted('slump',currentTest?currentTest.id:'');
     if(conn==='demo'){document.getElementById('slump-demo-banner').style.display='flex';document.getElementById('slump-serial-dot').className='status-dot scanning';document.getElementById('slump-serial-text').textContent='Demo';
-        setTimeout(function(){var h=parseFloat(document.getElementById('slump_inp_height').value)||305;var slump=Math.round(60+Math.random()*80);var dist=h-slump;document.getElementById('slump-val-dist').textContent=dist;document.getElementById('slump-val-slump').textContent=slump;var tol=parseFloat(document.getElementById('slump_inp_tolerance').value)||25;var target=parseFloat(document.getElementById('slump_inp_target').value)||100;var dev=Math.abs(slump-target);document.getElementById('slump-val-dev').textContent=dev;var ok=dev<=tol;document.getElementById('slump-val-status').textContent=ok?'✅ PASS':'❌ FAIL';
-            document.getElementById('slump-results-panel').style.display='block';document.getElementById('slump-results-body').innerHTML='<div class="result-status '+(ok?'pass':'fail')+'">'+(ok?'✅':'❌')+' '+(ok?'PASS':'FAIL')+'</div><div class="result-row"><span class="result-label">Slump Value</span><span class="result-value">'+slump+' mm</span></div><div class="result-row"><span class="result-label">Target</span><span class="result-value">'+target+' mm</span></div><div class="result-row"><span class="result-label">Deviation</span><span class="result-value">'+dev+' mm</span></div><div class="result-row"><span class="result-label">Tolerance</span><span class="result-value">±'+tol+' mm</span></div>';
-            db.collection('sessions').add({testId:currentTest.id,domainId:currentDomain?currentDomain.id:'',domainName:currentDomain?currentDomain.name:'',testName:currentTest.name,results:{slump_value:slump,target:target,deviation:dev,tolerance:tol,status:ok?'PASS':'FAIL'},userId:currentUser?currentUser.uid:'guest',createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+        setTimeout(function(){var h=parseFloat(document.getElementById('slump_inp_height').value)||305;var slump=Math.round(60+Math.random()*80);var dist=h-slump;safeSetText('slump-val-dist',dist);safeSetText('slump-val-slump',slump);var tol=parseFloat(document.getElementById('slump_inp_tolerance').value)||25;var target=parseFloat(document.getElementById('slump_inp_target').value)||100;var dev=Math.abs(slump-target);safeSetText('slump-val-dev',dev);var ok=dev<=tol;safeSetText('slump-val-status',ok?'✅ PASS':'❌ FAIL');
+            document.getElementById('slump-results-panel').style.display='block';
+            var slumpHtml=safeResultStatus(ok,ok?'PASS':'FAIL')+
+                safeResultRow('Slump Value',slump+' mm')+
+                safeResultRow('Target',target+' mm')+
+                safeResultRow('Deviation',dev+' mm')+
+                safeResultRow('Tolerance','±'+tol+' mm');
+            safeSetHTML('slump-results-body',slumpHtml);
+            rateLimitedFirestoreWrite('sessions',{testId:currentTest.id,domainId:currentDomain?currentDomain.id:'',domainName:currentDomain?currentDomain.name:'',testName:currentTest.name,results:{slump_value:slump,target:target,deviation:dev,tolerance:tol,status:ok?'PASS':'FAIL'},userId:currentUser?currentUser.uid:'guest'}).catch(function(err){console.error('startSlumpTest save error:',err);});
         },2000);
     }
 }

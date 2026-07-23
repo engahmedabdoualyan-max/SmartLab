@@ -85,8 +85,15 @@ function showMarResults(){
     var area=Math.PI*Math.pow(dia/2,2);
     var stabilityPSI=stab/area;
     document.getElementById('mar-results-panel').style.display='block';
-    document.getElementById('mar-results-body').innerHTML='<div class="result-status '+(pass?'pass':'fail')+'">'+(pass?'✅ PASS':'❌ FAIL')+'</div><div class="result-row"><span class="result-label">Stability</span><span class="result-value">'+stab+' N</span></div><div class="result-row"><span class="result-label">Flow</span><span class="result-value">'+flowAtMax+' × 0.25mm</span></div><div class="result-row"><span class="result-label">Max Load</span><span class="result-value">'+maxLoad.toFixed(0)+' N</span></div><div class="result-row"><span class="result-label">Stability (PSI)</span><span class="result-value">'+stabilityPSI.toFixed(2)+' N/mm²</span></div><div class="result-row"><span class="result-label">Diameter</span><span class="result-value">'+dia+' mm</span></div><div class="result-row"><span class="result-label">Height</span><span class="result-value">'+ht+' mm</span></div>';
-    db.collection('sessions').add({testId:currentTest.id,domainId:currentDomain?currentDomain.id:'',domainName:currentDomain?currentDomain.name:'',testName:currentTest.name,results:{stability:stab,flow:flowAtMax,max_load:maxLoad,stability_psi:stabilityPSI,diameter:dia,height:ht,status:pass?'PASS':'FAIL'},userId:currentUser?currentUser.uid:'guest',createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    var marHtml=safeResultStatus(pass,pass?'PASS':'FAIL')+
+        safeResultRow('Stability',stab+' N')+
+        safeResultRow('Flow',flowAtMax+' × 0.25mm')+
+        safeResultRow('Max Load',maxLoad.toFixed(0)+' N')+
+        safeResultRow('Stability (PSI)',stabilityPSI.toFixed(2)+' N/mm²')+
+        safeResultRow('Diameter',dia+' mm')+
+        safeResultRow('Height',ht+' mm');
+    safeSetHTML('mar-results-body',marHtml);
+    rateLimitedFirestoreWrite('sessions',{testId:currentTest.id,domainId:currentDomain?currentDomain.id:'',domainName:currentDomain?currentDomain.name:'',testName:currentTest.name,results:{stability:stab,flow:flowAtMax,max_load:maxLoad,stability_psi:stabilityPSI,diameter:dia,height:ht,status:pass?'PASS':'FAIL'},userId:currentUser?currentUser.uid:'guest'}).catch(function(err){console.error('showMarResults save error:',err);});
 }
 function onMarConnTypeChange(){
     var sel=document.getElementById('mar-com-port-select').value;

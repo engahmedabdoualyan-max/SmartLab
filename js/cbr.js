@@ -124,9 +124,14 @@ function processCBRReading(penetration,load){
     document.getElementById('cbr-val-pressure').textContent=pressure;
     document.getElementById('cbr-val-ratio').textContent=cbr+'%';
     var tbody=document.getElementById('cbr-log-body');
-    if(cbrReadings.length===1)tbody.innerHTML='';
+    if(cbrReadings.length===1&&tbody)tbody.textContent='';
     var tr=document.createElement('tr');
-    tr.innerHTML='<td style="font-weight:700;">'+reading.index+'</td><td>'+reading.penetration+'</td><td>'+reading.load+'</td><td>'+reading.pressure+'</td><td style="color:var(--text-muted);font-size:10px;">'+reading.time+'</td>';
+    var td1=document.createElement('td');td1.style.fontWeight='700';td1.textContent=reading.index;
+    var td2=document.createElement('td');td2.textContent=reading.penetration;
+    var td3=document.createElement('td');td3.textContent=reading.load;
+    var td4=document.createElement('td');td4.textContent=reading.pressure;
+    var td5=document.createElement('td');td5.style.color='var(--text-muted)';td5.style.fontSize='10px';td5.textContent=reading.time;
+    tr.appendChild(td1);tr.appendChild(td2);tr.appendChild(td3);tr.appendChild(td4);tr.appendChild(td5);
     tbody.appendChild(tr);
     var lc=tbody.closest('.strike-log');
     if(lc)lc.scrollTop=lc.scrollHeight;
@@ -195,13 +200,12 @@ function calculateCBRResults(){
         readings_count:cbrReadings.length,
         status:passed?'PASS':'FAIL'
     };
-    db.collection('sessions').add({
+    rateLimitedFirestoreWrite('sessions',{
         testId:currentTest.id,domainId:currentDomain?currentDomain.id:'',
         domainName:currentDomain?currentDomain.name:'',testName:currentTest.name,
         readings:cbrReadings,results:results,
-        userId:currentUser?currentUser.uid:'guest',
-        createdAt:firebase.firestore.FieldValue.serverTimestamp()
-    }).then(function(docRef){currentSessionId=docRef.id;displayCBRResults(results);loadCBRHistory();});
+        userId:currentUser?currentUser.uid:'guest'
+    }).then(function(docRef){currentSessionId=docRef.id;displayCBRResults(results);loadCBRHistory();}).catch(function(err){showToast('Failed to save CBR results: '+err.message,'error');});
 }
 
 function displayCBRResults(results){
@@ -210,12 +214,12 @@ function displayCBRResults(results){
     panel.style.display='block';
     var html='';
     var p=results.status==='PASS';
-    html+='<div class="result-status '+(p?'pass':'fail')+'">'+(p?'✅':'❌')+' '+results.status+' — CBR: '+results.cbr_value+'%</div>';
+    html+=safeResultStatus(p,results.status+' — CBR: '+results.cbr_value+'%');
     var labels={cbr_value:'CBR Value %',cbr_at_25:'CBR @ 2.5mm %',cbr_at_50:'CBR @ 5.0mm %',max_load:'Maximum Load (N)',max_penetration:'Max Penetration (mm)',readings_count:'Total Readings',status:'Status'};
     Object.keys(results).forEach(function(k){
-        html+='<div class="result-row"><span class="result-label">'+(labels[k]||k)+'</span><span class="result-value">'+results[k]+'</span></div>';
+        html+=safeResultRow(labels[k]||k,results[k]);
     });
-    body.innerHTML=html;
+    safeSetHTML(body,html);
     document.getElementById('cbr-btn-pdf').style.display='flex';
 }
 
@@ -223,9 +227,12 @@ async function loadCBRHistory(){
     if(!currentTest)return;
     try{var snap=await db.collection('sessions').where('testId','==',currentTest.id).get();
     var tbody=document.getElementById('cbr-history-body');
-    if(snap.empty)return;tbody.innerHTML='';
+    if(snap.empty)return;if(tbody)tbody.textContent='';
     var rows=[];snap.forEach(function(doc){rows.push(doc.data());});rows.sort(function(a,b){return (b.createdAt&&b.createdAt.seconds||0)-(a.createdAt&&a.createdAt.seconds||0);});
     rows.slice(0,10).forEach(function(s){var st=(s.results&&s.results.status)||'?';var cbr=(s.results&&s.results.cbr_value)||'--';var date=s.createdAt?new Date(s.createdAt.seconds*1000).toLocaleDateString():'--';
-    var cls=st==='PASS'?'result-pass':(st==='FAIL'?'result-fail':'');
-    var tr=document.createElement('tr');tr.innerHTML='<td>'+date+'</td><td class="'+cls+'">'+st+'</td><td>'+cbr+'%</td>';tbody.appendChild(tr);});}catch(e){console.error('loadCBRHistory error:',e);showToast('Failed to load CBR history: '+e.message,'error');}
+    var tr=document.createElement('tr');
+    var td1=document.createElement('td');td1.textContent=date;
+    var td2=document.createElement('td');td2.textContent=st;if(st==='PASS')td2.className='result-pass';else if(st==='FAIL')td2.className='result-fail';
+    var td3=document.createElement('td');td3.textContent=cbr+'%';
+    tr.appendChild(td1);tr.appendChild(td2);tr.appendChild(td3);tbody.appendChild(tr);});}catch(e){console.error('loadCBRHistory error:',e);showToast('Failed to load CBR history: '+e.message,'error');}
 }

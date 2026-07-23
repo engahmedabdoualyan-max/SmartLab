@@ -10,7 +10,12 @@ function showToast(message, type) {
     var icons = { error: '⚠️', success: '✅', info: 'ℹ️', warning: '⚡' };
     var toast = document.createElement('div');
     toast.className = 'toast ' + type;
-    toast.innerHTML = '<span>' + (icons[type] || 'ℹ️') + '</span><span>' + message + '</span>';
+    var iconSpan = document.createElement('span');
+    iconSpan.textContent = icons[type] || 'ℹ️';
+    var msgSpan = document.createElement('span');
+    msgSpan.textContent = typeof sanitizeInput === 'function' ? sanitizeInput(message) : String(message);
+    toast.appendChild(iconSpan);
+    toast.appendChild(msgSpan);
     container.appendChild(toast);
     setTimeout(function() {
         toast.style.animation = 'toastOut 0.3s ease forwards';

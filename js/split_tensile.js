@@ -58,13 +58,13 @@ function calculateSplitResults(){
     var grade=document.getElementById('split-grade').value;
     var pass=T>=2.0;
     var panel=document.getElementById('split-results-panel');panel.style.display='block';
-    var html='<div class="result-status '+(pass?'pass':'fail')+'">'+(pass?'✅':'❌')+' '+T.toFixed(2)+' MPa</div>';
-    html+='<div class="result-row"><span class="result-label">Peak Load P</span><span class="result-value">'+splitState.peakForce.toFixed(1)+' kN</span></div>';
-    html+='<div class="result-row"><span class="result-label">Split Tensile Strength T</span><span class="result-value">'+T.toFixed(2)+' MPa</span></div>';
-    html+='<div class="result-row"><span class="result-label">Diameter D</span><span class="result-value">'+D+' mm</span></div>';
-    html+='<div class="result-row"><span class="result-label">Length L</span><span class="result-value">'+L+' mm</span></div>';
-    html+='<div class="result-row"><span class="result-label">Concrete Grade</span><span class="result-value">'+grade+'</span></div>';
-    document.getElementById('split-results-body').innerHTML=html;
+    var html=safeResultStatus(pass,T.toFixed(2)+' MPa');
+    html+=safeResultRow('Peak Load P',splitState.peakForce.toFixed(1)+' kN');
+    html+=safeResultRow('Split Tensile Strength T',T.toFixed(2)+' MPa');
+    html+=safeResultRow('Diameter D',D+' mm');
+    html+=safeResultRow('Length L',L+' mm');
+    html+=safeResultRow('Concrete Grade',grade);
+    safeSetHTML('split-results-body',html);
     saveTestSession('split_tensile',{tensileStrength:T,peakForce:splitState.peakForce,diameter:D,length:L,grade:grade});
 }
 function generateSplitPDF(){

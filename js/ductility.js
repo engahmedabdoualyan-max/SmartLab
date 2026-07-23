@@ -55,11 +55,11 @@ function calculateDuctResults(){
     var temp=document.getElementById('duct-temp').value;
     var pass=ext>=50;
     var panel=document.getElementById('duct-results-panel');panel.style.display='block';
-    var html='<div class="result-status '+(pass?'pass':'fail')+'">'+(pass?'✅':'❌')+' '+(pass?'PASS':'FAIL')+'</div>';
-    html+='<div class="result-row"><span class="result-label">Ductility (Extension at Break)</span><span class="result-value">'+ext.toFixed(1)+' cm</span></div>';
-    html+='<div class="result-row"><span class="result-label">Bitumen Grade</span><span class="result-value">'+grade+'</span></div>';
-    html+='<div class="result-row"><span class="result-label">Test Temperature</span><span class="result-value">'+temp+'°C</span></div>';
-    html+='<div class="result-row"><span class="result-label">Requirement (min 50cm)</span><span class="result-value">'+(pass?'Satisfied':'Not Satisfied')+'</span></div>';
-    document.getElementById('duct-results-body').innerHTML=html;
+    var html=safeResultStatus(pass,pass?'PASS':'FAIL');
+    html+=safeResultRow('Ductility (Extension at Break)',ext.toFixed(1)+' cm');
+    html+=safeResultRow('Bitumen Grade',grade);
+    html+=safeResultRow('Test Temperature',temp+'°C');
+    html+=safeResultRow('Requirement (min 50cm)',pass?'Satisfied':'Not Satisfied');
+    safeSetHTML('duct-results-body',html);
     saveTestSession('ductility',{ductility:ext,grade:grade,temp:temp});
 }

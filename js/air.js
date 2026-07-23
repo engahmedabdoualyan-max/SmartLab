@@ -50,14 +50,15 @@ function calculateAirResults(){
     var diff=Math.abs(avgAir-target);
     var pass=diff<=1.5;
     var method=document.getElementById('air-method').value;
+    var concTemp=document.getElementById('air-conc-temp').value;
     var panel=document.getElementById('air-results-panel');panel.style.display='block';
-    var html='<div class="result-status '+(pass?'pass':'fail')+'">'+(pass?'✅':'❌')+' '+(pass?'PASS':'FAIL')+'</div>';
-    html+='<div class="result-row"><span class="result-label">Average Air Content</span><span class="result-value">'+avgAir.toFixed(1)+'%</span></div>';
-    html+='<div class="result-row"><span class="result-label">Target Air Content</span><span class="result-value">'+target+'%</span></div>';
-    html+='<div class="result-row"><span class="result-label">Deviation from Target</span><span class="result-value">±'+diff.toFixed(1)+'%</span></div>';
-    html+='<div class="result-row"><span class="result-label">Average Unit Weight</span><span class="result-value">'+avgUw.toFixed(0)+' kg/m³</span></div>';
-    html+='<div class="result-row"><span class="result-label">Method</span><span class="result-value">'+method.charAt(0).toUpperCase()+method.slice(1)+'</span></div>';
-    html+='<div class="result-row"><span class="result-label">Concrete Temp</span><span class="result-value">'+document.getElementById('air-conc-temp').value+'°C</span></div>';
-    document.getElementById('air-results-body').innerHTML=html;
+    var html=safeResultStatus(pass,pass?'PASS':'FAIL');
+    html+=safeResultRow('Average Air Content',avgAir.toFixed(1)+'%');
+    html+=safeResultRow('Target Air Content',target+'%');
+    html+=safeResultRow('Deviation from Target','±'+diff.toFixed(1)+'%');
+    html+=safeResultRow('Average Unit Weight',avgUw.toFixed(0)+' kg/m³');
+    html+=safeResultRow('Method',method.charAt(0).toUpperCase()+method.slice(1));
+    html+=safeResultRow('Concrete Temp',concTemp+'°C');
+    safeSetHTML('air-results-body',html);
     saveTestSession('air',{airContent:avgAir,target:target,unitWeight:avgUw,method:method});
 }

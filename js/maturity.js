@@ -83,6 +83,11 @@ function showMatResults(){
     var reached=last.strength>=target;
     var results={final_strength:last.strength,max_maturity:last.maturity,total_hours:last.hours,target_strength:target,status:reached?'PASS':'CURING'};
     document.getElementById('mat-results-panel').style.display='block';
-    document.getElementById('mat-results-body').innerHTML='<div class="result-status '+(reached?'pass':'fail')+'">'+(reached?'✅ Target Reached':'⏳ Still Curing')+'</div><div class="result-row"><span class="result-label">Final Strength</span><span class="result-value">'+last.strength+' MPa</span></div><div class="result-row"><span class="result-label">Maturity Index</span><span class="result-value">'+last.maturity+' °C·h</span></div><div class="result-row"><span class="result-label">Elapsed Time</span><span class="result-value">'+last.hours+' hours</span></div><div class="result-row"><span class="result-label">Target Strength</span><span class="result-value">'+target+' MPa</span></div>';
-    db.collection('sessions').add({testId:currentTest.id,domainId:currentDomain?currentDomain.id:'',domainName:currentDomain?currentDomain.name:'',testName:currentTest.name,results:results,userId:currentUser?currentUser.uid:'guest',createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    var matHtml=safeResultStatus(reached,reached?'✅ Target Reached':'⏳ Still Curing')+
+        safeResultRow('Final Strength',last.strength+' MPa')+
+        safeResultRow('Maturity Index',last.maturity+' °C·h')+
+        safeResultRow('Elapsed Time',last.hours+' hours')+
+        safeResultRow('Target Strength',target+' MPa');
+    safeSetHTML('mat-results-body',matHtml);
+    rateLimitedFirestoreWrite('sessions',{testId:currentTest.id,domainId:currentDomain?currentDomain.id:'',domainName:currentDomain?currentDomain.name:'',testName:currentTest.name,results:results,userId:currentUser?currentUser.uid:'guest'}).catch(function(err){console.error('showMatResults save error:',err);});
 }

@@ -69,13 +69,13 @@ function calculateCompResults(){
     var specLabel=spec==='cube'?'150mm Cube':spec==='cube100'?'100mm Cube':spec==='cylinder100'?'100×200mm Cylinder':'150×300mm Cylinder';
     var pass=strength>=25;
     var panel=document.getElementById('comp-results-panel');panel.style.display='block';
-    var html='<div class="result-status '+(pass?'pass':'fail')+'">'+(pass?'✅':'❌')+' '+(pass?'PASS':'FAIL')+' — '+strength.toFixed(1)+' MPa</div>';
-    html+='<div class="result-row"><span class="result-label">Peak Force</span><span class="result-value">'+compState.peakForce.toFixed(1)+' kN</span></div>';
-    html+='<div class="result-row"><span class="result-label">Cross-sectional Area</span><span class="result-value">'+(area/1000).toFixed(0)+' cm²</span></div>';
-    html+='<div class="result-row"><span class="result-label">Compressive Strength</span><span class="result-value">'+strength.toFixed(1)+' MPa</span></div>';
-    html+='<div class="result-row"><span class="result-label">Specimen</span><span class="result-value">'+specLabel+'</span></div>';
-    html+='<div class="result-row"><span class="result-label">Age</span><span class="result-value">'+age+' days</span></div>';
-    document.getElementById('comp-results-body').innerHTML=html;
-    document.getElementById('comp-strength-display').textContent=strength.toFixed(1)+' MPa';
+    var html=safeResultStatus(pass,pass?'PASS':'FAIL — '+strength.toFixed(1)+' MPa');
+    html+=safeResultRow('Peak Force',compState.peakForce.toFixed(1)+' kN');
+    html+=safeResultRow('Cross-sectional Area',(area/1000).toFixed(0)+' cm²');
+    html+=safeResultRow('Compressive Strength',strength.toFixed(1)+' MPa');
+    html+=safeResultRow('Specimen',specLabel);
+    html+=safeResultRow('Age',age+' days');
+    safeSetHTML('comp-results-body',html);
+    safeSetText('comp-strength-display',strength.toFixed(1)+' MPa');
     saveTestSession('compressive',{strength:strength,peakForce:compState.peakForce,area:area,age:age,specimen:spec});
 }

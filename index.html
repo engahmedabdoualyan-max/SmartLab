@@ -1744,6 +1744,110 @@
     </div>
 </div>
 
+<!-- ============ SCREEN: DIRECT SHEAR TEST ============ -->
+<div id="screen-direct_shear" class="screen">
+    <header class="app-header" role="navigation" aria-label="Page header">
+        <div class="header-right">
+            <div class="header-logo">SL</div>
+            <span class="header-title" id="ds-page-title">Direct Shear Test</span>
+        </div>
+        <div class="header-left">
+            <button onclick="goBackToDashboard()" class="btn-back">→ <span data-i18n="dashboard">Dashboard</span></button>
+            <div class="header-user-btn" role="button" tabindex="0" aria-label="User menu" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
+                <div class="user-icon" id="ds-user-icon">U</div>
+                <span class="dd-arrow" aria-hidden="true">▼</span>
+                <div class="user-dropdown" id="ds-user-dropdown">
+                    <div class="dd-header"><div class="dd-name" id="ds-dd-name">User</div><div class="dd-email" id="ds-dd-email">—</div></div>
+                    <button class="dd-item" onclick="showScreen('domains')"><span class="dd-icon">🏠</span> Change Domain</button>
+                    <button class="dd-item danger" onclick="doSignOut()"><span class="dd-icon">🚪</span> Sign Out</button>
+                </div>
+            </div>
+        </div>
+    </header>
+    <div class="test-layout" role="main">
+        <div class="slide-up">
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon blue" aria-hidden="true">📝</div><h3 data-i18n="ds_params">Direct Shear Parameters</h3></div>
+                <div class="panel-body">
+                    <div class="form-group"><label data-i18n="ds_specimen_width">Specimen Width (mm)</label><input type="number" id="ds_inp_width" step="any" value="60"></div>
+                    <div class="form-group"><label data-i18n="ds_specimen_height">Specimen Height (mm)</label><input type="number" id="ds_inp_height" step="any" value="60"></div>
+                    <div class="form-group"><label data-i18n="ds_normal_load">Normal Load (N)</label><input type="number" id="ds_inp_normal_load" step="any" value="500"></div>
+                    <div class="form-group"><label data-i18n="ds_max_disp">Max Horizontal Displacement (mm)</label><input type="number" id="ds_inp_max_disp" step="any" value="10"></div>
+                    <div class="form-group"><label>Agency / Standard</label><select id="agency-select-ds" onchange="setAgency(this.value)"><option value="ASTM">ASTM D3080</option><option value="AASHTO">AASHTO T236</option><option value="BS">BS 1377 Part 7</option></select></div>
+                </div>
+            </div>
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon green" aria-hidden="true">🔌</div><h3 data-i18n="hardware">Hardware Connection</h3></div>
+                <div class="panel-body">
+                    <div class="form-group"><label data-i18n="connection">Connection</label>
+                        <select id="ds-com-port-select" onchange="onDSConnTypeChange()">
+                            <option value="">-- Select Connection --</option>
+                            <option value="browser-serial">🔌 USB / Serial (Web Serial API)</option>
+                            <option value="lan">🌐 LAN / Network (Wi-Fi / Ethernet)</option>
+                            <option value="bluetooth">📡 Bluetooth</option>
+                            <option value="manual">✏️ Manual Mode</option>
+                            <option value="demo">🧪 Demo Mode</option>
+                        </select>
+                    </div>
+                    <div id="ds-lan-config" class="form-group" style="display:none;">
+                        <label data-i18n="lan_ip">Device IP Address</label>
+                        <input type="text" id="ds-lan-ip-input" placeholder="192.168.1.50">
+                    </div>
+                    <div id="ds-bt-config" style="display:none;">
+                        <div class="serial-status"><div class="status-dot disconnected" id="ds-bt-dot"></div><span id="ds-bt-status-text">Not paired</span></div>
+                        <button onclick="connectBluetooth()" class="btn-secondary" style="margin-top:8px;">📡 <span data-i18n="bt_scan">Scan & Pair Bluetooth</span></button>
+                    </div>
+                    <div id="ds-manual-config" style="display:none;">
+                        <div class="manual-inputs">
+                            <div class="form-group"><label data-i18n="ds_shear_force">Shear Force (N)</label><input type="number" id="ds-manual-force" step="any" placeholder="500"></div>
+                            <div class="form-group"><label data-i18n="ds_hdisp">Horizontal Disp. (mm)</label><input type="number" id="ds-manual-hdisp" step="any" placeholder="0.5"></div>
+                            <div class="form-group"><label data-i18n="ds_vdisp">Vertical Disp. (mm)</label><input type="number" id="ds-manual-vdisp" step="any" placeholder="0.1"></div>
+                        </div>
+                        <button onclick="submitManualDSReading()" class="btn-primary" id="ds-btn-manual" style="display:none;">➕ <span data-i18n="add_reading">Add Reading</span></button>
+                    </div>
+                    <div id="ds-conn-status-area">
+                        <div class="serial-status"><div class="status-dot disconnected" id="ds-serial-dot"></div><span id="ds-serial-text" data-i18n="disconnected">Disconnected</span></div>
+                    </div>
+                    <div class="serial-console" id="ds-serial-console" style="display:none;margin-top:12px;"></div>
+                </div>
+            </div>
+            <div style="display:flex;gap:12px;margin-bottom:20px;">
+                <button onclick="startDSTest()" id="ds-btn-start" class="btn-primary" style="flex:1;" data-i18n="start_test">Start Test</button>
+                <button onclick="stopDSTest()" id="ds-btn-stop" class="btn-secondary" style="flex:1;display:none;" data-i18n="stop">Stop</button>
+            </div>
+        </div>
+        <div class="slide-up" style="animation-delay:0.15s;">
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon orange" aria-hidden="true">📡</div><h3 data-i18n="live_data">Live Data</h3><div class="live-indicator" aria-live="polite" id="ds-live-indicator" style="display:none;"><div class="live-dot"></div> LIVE</div></div>
+                <div class="panel-body">
+                    <div id="ds-demo-banner" class="demo-banner" role="status" style="display:none;">⚠️ <span data-i18n="demo_warning">Demo mode — simulated data</span></div>
+                    <div class="data-readings" aria-live="polite">
+                        <div class="reading-card"><div class="reading-label" data-i18n="ds_shear_stress">Shear Stress</div><div class="reading-value" id="ds-val-shear-stress">--</div><div class="reading-unit">N/mm²</div></div>
+                        <div class="reading-card"><div class="reading-label" data-i18n="ds_hdisp">H. Displacement</div><div class="reading-value" id="ds-val-horiz-disp">--</div><div class="reading-unit">mm</div></div>
+                        <div class="reading-card"><div class="reading-label" data-i18n="ds_vdisp">V. Displacement</div><div class="reading-value" id="ds-val-vert-disp">--</div><div class="reading-unit">mm</div></div>
+                        <div class="reading-card"><div class="reading-label" data-i18n="ds_normal_stress">Normal Stress</div><div class="reading-value" id="ds-val-normal-stress">--</div><div class="reading-unit">N/mm²</div></div>
+                    </div>
+                    <div class="reading-card" style="margin-top:8px;"><div class="reading-label" data-i18n="ds_peak_shear" style="color:var(--accent);font-weight:700;">Peak Shear Stress</div><div class="reading-value" id="ds-val-peak-shear" style="color:var(--accent);font-weight:700;font-size:22px;">--</div><div class="reading-unit">N/mm²</div></div>
+                </div>
+            </div>
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon blue" aria-hidden="true">📋</div><h3 data-i18n="ds_readings_log">Readings Log</h3></div>
+                <div class="panel-body strike-log" style="padding:0;">
+                    <table><thead><tr><th>#</th><th data-i18n="ds_hdisp">H. Disp mm</th><th data-i18n="ds_vdisp">V. Disp mm</th><th data-i18n="ds_shear_force">Force N</th><th data-i18n="ds_shear_stress">τ N/mm²</th><th data-i18n="th_time">Time</th></tr></thead><tbody id="ds-log-body"><tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:20px;" data-i18n="start_hint">Start test to see data</td></tr></tbody></table>
+                </div>
+            </div>
+            <div class="panel" id="ds-results-panel" style="display:none;margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">📊</div><h3 data-i18n="results">Results</h3></div>
+                <div class="panel-body"><div id="ds-results-body"></div><div style="margin-top:16px;display:flex;gap:12px;"><button onclick="generateDSPDF()" id="ds-btn-pdf" class="btn-primary" style="display:none;">📄 <span data-i18n="download_pdf">Download PDF</span></button></div></div>
+            </div>
+            <div class="panel">
+                <div class="panel-header"><div class="panel-header-icon blue" aria-hidden="true">📂</div><h3 data-i18n="history">History</h3></div>
+                <div class="panel-body" style="padding:0;"><table class="history-table"><thead><tr><th data-i18n="th_date">Date</th><th data-i18n="th_status">Status</th><th data-i18n="ds_peak_shear">Peak τ</th></tr></thead><tbody id="ds-history-body"><tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:24px;" data-i18n="no_history">No previous tests</td></tr></tbody></table></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- ============ SCREEN: ATTERBERG LIMITS ============ -->
 <div id="screen-atterberg" class="screen">
     <header class="app-header" role="navigation" aria-label="Page header">
@@ -2161,6 +2265,7 @@
 <script src="js/marshall.js"></script>
 <script src="js/bitumen.js"></script>
 <script src="js/penetration.js"></script>
+<script src="js/direct_shear.js"></script>
 <script src="js/atterberg.js"></script>
 <script src="js/sieve.js"></script>
 <script src="js/compressive.js"></script>

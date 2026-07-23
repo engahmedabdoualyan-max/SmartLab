@@ -54,13 +54,13 @@ function calculateSieveResults(){
     var wellGraded=cu>6&&cc>1&&cc<3;
     var classification=fines>12?'Fine-grained (Silt/Clay)':gravel>sand?'Coarse-grained (Gravel)':'Coarse-grained (Sand)';
     var panel=document.getElementById('sieve-results-panel');panel.style.display='block';
-    var html='<div class="result-row"><span class="result-label">Gravel (>4.75mm)</span><span class="result-value">'+gravel.toFixed(1)+'%</span></div>';
-    html+='<div class="result-row"><span class="result-label">Sand (0.075-4.75mm)</span><span class="result-value">'+sand.toFixed(1)+'%</span></div>';
-    html+='<div class="result-row"><span class="result-label">Fines (<0.075mm)</span><span class="result-value">'+fines.toFixed(1)+'%</span></div>';
-    html+='<div class="result-row"><span class="result-label">Cu (Coefficient of Uniformity)</span><span class="result-value">'+cu.toFixed(2)+'</span></div>';
-    html+='<div class="result-row"><span class="result-label">Cc (Coefficient of Curvature)</span><span class="result-value">'+cc.toFixed(2)+'</span></div>';
-    html+='<div class="result-row"><span class="result-label">Classification</span><span class="result-value">'+classification+'</span></div>';
-    html+='<div class="result-row"><span class="result-label">Gradation</span><span class="result-value">'+(wellGraded?'Well Graded':'Poorly Graded')+'</span></div>';
-    document.getElementById('sieve-results-body').innerHTML=html;
+    var html=safeResultRow('Gravel (>4.75mm)',gravel.toFixed(1)+'%');
+    html+=safeResultRow('Sand (0.075-4.75mm)',sand.toFixed(1)+'%');
+    html+=safeResultRow('Fines (<0.075mm)',fines.toFixed(1)+'%');
+    html+=safeResultRow('Cu (Coefficient of Uniformity)',cu.toFixed(2));
+    html+=safeResultRow('Cc (Coefficient of Curvature)',cc.toFixed(2));
+    html+=safeResultRow('Classification',classification);
+    html+=safeResultRow('Gradation',wellGraded?'Well Graded':'Poorly Graded');
+    safeSetHTML('sieve-results-body',html);
     saveTestSession('sieve',{fines:fines,gravel:gravel,sand:sand,cu:cu,cc:cc,classification:classification});
 }

@@ -51,16 +51,16 @@ function calculateAtterbergResults(){
     var pl=ll*0.45+Math.random()*3;
     var pi=ll-pl;
     atterbergState.ll=ll;atterbergState.pl=pl;atterbergState.pi=pi;
-    document.getElementById('atterberg-ll').textContent=ll.toFixed(1);
-    document.getElementById('atterberg-pl').textContent=pl.toFixed(1);
+    safeSetText('atterberg-ll',ll.toFixed(1));
+    safeSetText('atterberg-pl',pl.toFixed(1));
     var soilType=document.getElementById('atterberg-soil-type').value;
     var ui=pi>17?'High Plasticity':pi>7?'Medium Plasticity':'Low Plasticity';
     var panel=document.getElementById('atterberg-results-panel');panel.style.display='block';
-    var html='<div class="result-row"><span class="result-label">Liquid Limit (LL)</span><span class="result-value">'+ll.toFixed(1)+'%</span></div>';
-    html+='<div class="result-row"><span class="result-label">Plastic Limit (PL)</span><span class="result-value">'+pl.toFixed(1)+'%</span></div>';
-    html+='<div class="result-row"><span class="result-label">Plasticity Index (PI)</span><span class="result-value">'+pi.toFixed(1)+'</span></div>';
-    html+='<div class="result-row"><span class="result-label">Soil Classification</span><span class="result-value">'+soilType+'</span></div>';
-    html+='<div class="result-row"><span class="result-label">Plasticity</span><span class="result-value">'+ui+'</span></div>';
-    document.getElementById('atterberg-results-body').innerHTML=html;
+    var html=safeResultRow('Liquid Limit (LL)',ll.toFixed(1)+'%');
+    html+=safeResultRow('Plastic Limit (PL)',pl.toFixed(1)+'%');
+    html+=safeResultRow('Plasticity Index (PI)',pi.toFixed(1));
+    html+=safeResultRow('Soil Classification',soilType);
+    html+=safeResultRow('Plasticity',ui);
+    safeSetHTML('atterberg-results-body',html);
     saveTestSession('atterberg',{ll:ll,pl:pl,pi:pi,soilType:soilType,readings:atterbergState.readings});
 }

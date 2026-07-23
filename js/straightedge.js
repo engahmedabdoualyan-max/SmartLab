@@ -125,9 +125,9 @@ function calculateSEResults(){
     var results={readings_count:seReadings.length,max_deviation:maxDev,average_deviation:avgDev,tolerance:tol,status:passed?'PASS':'FAIL'};
     document.getElementById('se-results-panel').style.display='block';
     var body=document.getElementById('se-results-body');
-    var html='<div class="result-status '+(passed?'pass':'fail')+'">'+(passed?'✅':'❌')+' '+results.status+'</div>';
+    var html=safeResultStatus(passed,results.status);
     var labels={readings_count:'Total Readings',max_deviation:'Max Deviation (mm)',average_deviation:'Avg Deviation (mm)',tolerance:'Tolerance (mm)',status:'Status'};
-    Object.keys(results).forEach(function(k){html+='<div class="result-row"><span class="result-label">'+(labels[k]||k)+'</span><span class="result-value">'+results[k]+'</span></div>';});
-    body.innerHTML=html;
-    db.collection('sessions').add({testId:currentTest.id,domainId:currentDomain?currentDomain.id:'',domainName:currentDomain?currentDomain.name:'',testName:currentTest.name,results:results,userId:currentUser?currentUser.uid:'guest',createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    Object.keys(results).forEach(function(k){html+=safeResultRow(labels[k]||k,results[k]);});
+    safeSetHTML(body,html);
+    rateLimitedFirestoreWrite('sessions',{testId:currentTest.id,domainId:currentDomain?currentDomain.id:'',domainName:currentDomain?currentDomain.name:'',testName:currentTest.name,results:results,userId:currentUser?currentUser.uid:'guest'}).catch(function(err){console.error('calculateSEResults save error:',err);});
 }

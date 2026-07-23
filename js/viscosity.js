@@ -52,13 +52,13 @@ function calculateViscResults(){
     var temp=document.getElementById('visc-temp').value;
     var pass=avgFlow>=30;
     var panel=document.getElementById('visc-results-panel');panel.style.display='block';
-    var html='<div class="result-status '+(pass?'pass':'fail')+'">'+(pass?'✅':'❌')+' '+avgFlow.toFixed(0)+' sec</div>';
-    html+='<div class="result-row"><span class="result-label">Flow Time (Viscosity)</span><span class="result-value">'+avgFlow.toFixed(1)+' seconds</span></div>';
-    html+='<div class="result-row"><span class="result-label">Test Temperature</span><span class="result-value">'+temp+'°C</span></div>';
-    html+='<div class="result-row"><span class="result-label">Bitumen Grade</span><span class="result-value">'+grade+'</span></div>';
-    html+='<div class="result-row"><span class="result-label">Method</span><span class="result-value">Saybolt Furol</span></div>';
-    html+='<div class="result-row"><span class="result-label">Readings Count</span><span class="result-value">'+r.length+'</span></div>';
-    document.getElementById('visc-results-body').innerHTML=html;
+    var html=safeResultStatus(pass,avgFlow.toFixed(0)+' sec');
+    html+=safeResultRow('Flow Time (Viscosity)',avgFlow.toFixed(1)+' seconds');
+    html+=safeResultRow('Test Temperature',temp+'°C');
+    html+=safeResultRow('Bitumen Grade',grade);
+    html+=safeResultRow('Method','Saybolt Furol');
+    html+=safeResultRow('Readings Count',r.length);
+    safeSetHTML('visc-results-body',html);
     saveTestSession('viscosity',{viscosity:avgFlow,temp:temp,grade:grade,readings:r});
 }
 function generateViscPDF(){

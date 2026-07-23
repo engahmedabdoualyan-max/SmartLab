@@ -61,14 +61,21 @@ function stopPenTest(){
         var grade=document.getElementById('pen_inp_grade').value;
         var temp=document.getElementById('pen_inp_temp').value;
         var load=document.getElementById('pen_inp_load').value;
+        var sampleId=document.getElementById('pen_inp_sampleid').value;
         var gradeSplit=grade.split('-');
         var minGrade=parseFloat(gradeSplit[0])||0;
         var maxGrade=parseFloat(gradeSplit[1])||100;
         var pass=penVal>=minGrade&&penVal<=maxGrade;
-        document.getElementById('pen-val-status').textContent=pass?'✅ PASS':'❌ FAIL';
+        safeSetText('pen-val-status',pass?'✅ PASS':'❌ FAIL');
         document.getElementById('pen-results-panel').style.display='block';
-        document.getElementById('pen-results-body').innerHTML='<div class="result-status '+(pass?'pass':'fail')+'">'+(pass?'✅ PASS':'❌ FAIL')+'</div><div class="result-row"><span class="result-label">Penetration</span><span class="result-value">'+penVal+' × 0.1mm</span></div><div class="result-row"><span class="result-label">Grade Range</span><span class="result-value">'+grade+'</span></div><div class="result-row"><span class="result-label">Temperature</span><span class="result-value">'+temp+' °C</span></div><div class="result-row"><span class="result-label">Needle Load</span><span class="result-value">'+load+' g</span></div><div class="result-row"><span class="result-label">Sample ID</span><span class="result-value">'+document.getElementById('pen_inp_sampleid').value+'</span></div>';
-        db.collection('sessions').add({testId:currentTest?currentTest.id:'',domainId:currentDomain?currentDomain.id:'',domainName:currentDomain?currentDomain.name:'',testName:currentTest?currentTest.name:'',results:{penetration:penVal,grade:grade,temperature:temp,needle_load:load,status:pass?'PASS':'FAIL'},userId:currentUser?currentUser.uid:'guest',createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+        var penHtml=safeResultStatus(pass,pass?'PASS':'FAIL')+
+            safeResultRow('Penetration',penVal+' × 0.1mm')+
+            safeResultRow('Grade Range',grade)+
+            safeResultRow('Temperature',temp+' °C')+
+            safeResultRow('Needle Load',load+' g')+
+            safeResultRow('Sample ID',sampleId);
+        safeSetHTML('pen-results-body',penHtml);
+        rateLimitedFirestoreWrite('sessions',{testId:currentTest?currentTest.id:'',domainId:currentDomain?currentDomain.id:'',domainName:currentDomain?currentDomain.name:'',testName:currentTest?currentTest.name:'',results:{penetration:penVal,grade:grade,temperature:temp,needle_load:load,status:pass?'PASS':'FAIL'},userId:currentUser?currentUser.uid:'guest'}).catch(function(err){console.error('stopPenTest save error:',err);});
     }
 }
 function processPenReading(pen,temp,load){

@@ -57,12 +57,12 @@ function calculateSGResults(){
     var soilType=document.getElementById('sg-soil-type').value;
     var pass=avgGs>=2.4&&avgGs<=3.0;
     var panel=document.getElementById('sg-results-panel');panel.style.display='block';
-    var html='<div class="result-status '+(pass?'pass':'fail')+'">'+(pass?'✅':'❌')+' Result</div>';
-    html+='<div class="result-row"><span class="result-label">Specific Gravity Gs</span><span class="result-value">'+avgGs.toFixed(3)+'</span></div>';
-    html+='<div class="result-row"><span class="result-label">Soil Type</span><span class="result-value">'+soilType+'</span></div>';
-    html+='<div class="result-row"><span class="result-label">Typical Range</span><span class="result-value">2.60 – 2.80</span></div>';
-    html+='<div class="result-row"><span class="result-label">Readings Count</span><span class="result-value">'+r.length+'</span></div>';
-    document.getElementById('sg-results-body').innerHTML=html;
+    var html=safeResultStatus(pass,'Result');
+    html+=safeResultRow('Specific Gravity Gs',avgGs.toFixed(3));
+    html+=safeResultRow('Soil Type',soilType);
+    html+=safeResultRow('Typical Range','2.60 – 2.80');
+    html+=safeResultRow('Readings Count',r.length);
+    safeSetHTML('sg-results-body',html);
     saveTestSession('specific_gravity',{Gs:avgGs,soilType:soilType,readings:r});
 }
 function generateSGPDF(){

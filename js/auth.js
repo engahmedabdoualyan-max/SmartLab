@@ -157,6 +157,24 @@ function updateUserUI(user) {
     });
 }
 
+async function fetchUserRole(user) {
+    if (!user) { currentUserRole = 'viewer'; currentUserData = null; return; }
+    try {
+        var doc = await db.collection('users').doc(user.uid).get();
+        if (doc.exists) {
+            currentUserData = doc.data();
+            currentUserRole = currentUserData.role || 'viewer';
+        } else {
+            currentUserRole = 'viewer';
+            currentUserData = null;
+        }
+    } catch(e) {
+        console.warn('fetchUserRole error:', e);
+        currentUserRole = 'viewer';
+        currentUserData = null;
+    }
+}
+
 auth.onAuthStateChanged(function(user) {
     currentUser = user;
     if (user) {

@@ -53,11 +53,11 @@ function calculateSPResults(){
     var grade=document.getElementById('sp-grade').value;
     var pass=spState.softeningTemp>=40&&spState.softeningTemp<=60;
     var panel=document.getElementById('sp-results-panel');panel.style.display='block';
-    var html='<div class="result-status '+(pass?'pass':'fail')+'">'+(pass?'✅':'❌')+' '+spState.softeningTemp.toFixed(1)+'°C</div>';
-    html+='<div class="result-row"><span class="result-label">Softening Point</span><span class="result-value">'+spState.softeningTemp.toFixed(1)+'°C</span></div>';
-    html+='<div class="result-row"><span class="result-label">Bitumen Grade</span><span class="result-value">'+grade+'</span></div>';
-    html+='<div class="result-row"><span class="result-label">Method</span><span class="result-value">Ring and Ball</span></div>';
-    document.getElementById('sp-results-body').innerHTML=html;
+    var html=safeResultStatus(pass,spState.softeningTemp.toFixed(1)+'°C');
+    html+=safeResultRow('Softening Point',spState.softeningTemp.toFixed(1)+'°C');
+    html+=safeResultRow('Bitumen Grade',grade);
+    html+=safeResultRow('Method','Ring and Ball');
+    safeSetHTML('sp-results-body',html);
     saveTestSession('softening_point',{softeningTemp:spState.softeningTemp,grade:grade,readings:spState.readings});
 }
 function generateSPPDF(){

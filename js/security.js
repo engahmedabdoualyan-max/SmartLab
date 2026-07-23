@@ -293,6 +293,7 @@ function safeFirestoreAdd(collection, data) {
                     collection: collection,
                     size: JSON.stringify(safeData).length
                 });
+                if (typeof showToast === 'function') showToast('⚠️ ' + (typeof I18N !== 'undefined' && I18N[currentLang] ? (I18N[currentLang].cloud_save_failed || 'Cloud save unavailable. Saved locally only.') : 'Cloud save unavailable. Saved locally only.'), 'warning', 6000);
                 resolve({ id: safeData._localId });
                 return;
             }
@@ -311,6 +312,7 @@ function safeFirestoreAdd(collection, data) {
                     safeData._localId = 'local_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
                     _saveToLocalStore(collection, safeData);
                     console.warn('safeFirestoreAdd: permission denied, fell back to localStorage (' + collection + ')');
+                    if (typeof showToast === 'function') showToast('⚠️ ' + (typeof I18N !== 'undefined' && I18N[currentLang] ? (I18N[currentLang].cloud_permission_denied || 'Firebase permission denied. Data saved locally only.') : 'Firebase permission denied. Data saved locally only.'), 'error', 8000);
                     resolve({ id: safeData._localId });
                 } else {
                     console.error('Firestore write failed:', err);

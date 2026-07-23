@@ -169,5 +169,7 @@
   "test_specific_gravity": "الوزن النوعي",
   "test_water_absorption": "امتصاص الماء",
   "test_air": "نسبة الهواء",
-  "test_direct_shear": "القص المباشر (Direct Shear)"
+  "test_direct_shear": "القص المباشر (Direct Shear)",
+  "cloud_save_failed": "⚠️ الحفظ في السحاب غير متاح. تم الحفظ محليًا فقط.",
+  "cloud_permission_denied": "⚠️ صلاحيات Firebase مرفوضة. تم الحفظ محليًا فقط. راجع قواعد الأمان."
 }

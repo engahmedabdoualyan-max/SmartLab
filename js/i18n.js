@@ -176,7 +176,9 @@ I18N.en = {
     test_specific_gravity:"Specific Gravity",
     test_water_absorption:"Water Absorption",
     test_air:"Air Content",
-    test_direct_shear:"Direct Shear"
+    test_direct_shear:"Direct Shear",
+    cloud_save_failed:"⚠️ Cloud save unavailable. Saved locally only.",
+    cloud_permission_denied:"⚠️ Firebase permission denied. Data saved locally only. Check your security rules."
 };
 
 I18N.ar = {
@@ -350,7 +352,9 @@ I18N.ar = {
     test_specific_gravity:"الوزن النوعي",
     test_water_absorption:"امتصاص الماء",
     test_air:"نسبة الهواء",
-    test_direct_shear:"القص المباشر (Direct Shear)"
+    test_direct_shear:"القص المباشر (Direct Shear)",
+    cloud_save_failed:"⚠️ الحفظ في السحاب غير متاح. تم الحفظ محليًا فقط.",
+    cloud_permission_denied:"⚠️ صلاحيات Firebase مرفوضة. تم الحفظ محليًا فقط. راجع قواعد الأمان."
 };
 
 I18N.zh = {
@@ -524,7 +528,9 @@ I18N.zh = {
     test_specific_gravity:"Specific Gravity",
     test_water_absorption:"Water Absorption",
     test_air:"Air Content",
-    test_direct_shear:"Direct Shear"
+    test_direct_shear:"Direct Shear",
+    cloud_save_failed:"⚠️ 云存储不可用。仅在本地保存。",
+    cloud_permission_denied:"⚠️ Firebase权限被拒绝。数据仅在本地保存。请检查安全规则。"
 };
 
 I18N.de = {
@@ -698,7 +704,9 @@ I18N.de = {
     test_specific_gravity:"Specific Gravity",
     test_water_absorption:"Water Absorption",
     test_air:"Air Content",
-    test_direct_shear:"Direct Shear"
+    test_direct_shear:"Direct Shear",
+    cloud_save_failed:"⚠️ Cloud-Speicher nicht verfügbar. Nur lokal gespeichert.",
+    cloud_permission_denied:"⚠️ Firebase-Berechtigung verweigert. Daten nur lokal gespeichert. Überprüfen Sie Ihre Sicherheitsregeln."
 };
 
 I18N.fr = {
@@ -872,7 +880,9 @@ I18N.fr = {
     test_specific_gravity:"Specific Gravity",
     test_water_absorption:"Water Absorption",
     test_air:"Air Content",
-    test_direct_shear:"Direct Shear"
+    test_direct_shear:"Direct Shear",
+    cloud_save_failed:"⚠️ Sauvegarde cloud indisponible. Enregistré localement uniquement.",
+    cloud_permission_denied:"⚠️ Autorisation Firebase refusée. Données enregistrées localement uniquement. Vérifiez vos règles de sécurité."
 };
 
 I18N.ja = {
@@ -1046,7 +1056,9 @@ I18N.ja = {
     test_specific_gravity:"Specific Gravity",
     test_water_absorption:"Water Absorption",
     test_air:"Air Content",
-    test_direct_shear:"Direct Shear"
+    test_direct_shear:"Direct Shear",
+    cloud_save_failed:"⚠️ クラウド保存が利用できません。ローカルにのみ保存されました。",
+    cloud_permission_denied:"⚠️ Firebaseの権限が拒否されました。データはローカルにのみ保存されます。セキュリティルールを確認してください。"
 };
 
 I18N.ru = {
@@ -1220,7 +1232,9 @@ I18N.ru = {
     test_specific_gravity:"Specific Gravity",
     test_water_absorption:"Water Absorption",
     test_air:"Air Content",
-    test_direct_shear:"Direct Shear"
+    test_direct_shear:"Direct Shear",
+    cloud_save_failed:"⚠️ Облачное сохранение недоступно. Сохранено только локально.",
+    cloud_permission_denied:"⚠️ Отказано в разрешении Firebase. Данные сохранены только локально. Проверьте правила безопасности."
 };
 
 var currentLang = localStorage.getItem('smartlap_lang') || 'en';

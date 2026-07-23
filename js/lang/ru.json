@@ -169,5 +169,7 @@
   "test_specific_gravity": "Specific Gravity",
   "test_water_absorption": "Water Absorption",
   "test_air": "Air Content",
-  "test_direct_shear": "Direct Shear"
+  "test_direct_shear": "Direct Shear",
+  "cloud_save_failed": "⚠️ Облачное сохранение недоступно. Сохранено только локально.",
+  "cloud_permission_denied": "⚠️ Отказано в разрешении Firebase. Данные сохранены только локально. Проверьте правила безопасности."
 }

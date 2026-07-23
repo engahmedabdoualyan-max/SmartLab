@@ -578,58 +578,69 @@ function calcCc(d30, d60, d10) {
 
 /**
  * Determine soil classification based on grain size distribution
- * Uses USCS classification system for coarse-grained soils
+ * Uses USCS classification system per ASTM D2487
  * @param {number} d60 - Nominal size of 60% passing sieve (mm)
  * @param {number} d30 - Nominal size of 30% passing sieve (mm)
  * @param {number} d10 - Nominal size of 10% passing sieve (mm)
+ * @param {Object} [opts] - Additional classification parameters
+ * @param {number} [opts.fines] - Percent passing #200 sieve (0-100)
+ * @param {number} [opts.gravel] - Percent retained on #4 sieve (0-100)
+ * @param {number} [opts.LL] - Liquid limit (%)
+ * @param {number} [opts.PL] - Plastic limit (%)
  * @returns {string} Soil classification (e.g., 'SP', 'GW', 'CL', 'ML')
  */
-function classifySoil(d60, d30, d10) {
-    // Input validation
+function classifySoil(d60, d30, d10, opts) {
     if (typeof d60 !== 'number' || typeof d30 !== 'number' || typeof d10 !== 'number') {
         throw new Error('Invalid input: All sizes must be numbers');
     }
-    
-    // Calculate coefficients
-    const cu = calcCu(d60, d10);
-    const cc = calcCc(d30, d60, d10);
-    
-    // USCS coarse-grained soil classification
-    if (d10 > 0.075) {
-        // Coarse-grained soil
-        if (cu >= 6 && cc >= 1 && cc <= 3) {
-            return 'GW'; // Well-graded gravel
-        } else if (cu >= 4 && cc >= 1 && cc <= 3) {
-            return 'GP'; // Poorly graded gravel
-        } else if (cu >= 6) {
-            return 'SW'; // Well-graded sand
-        } else if (cu >= 4) {
-            return 'SP'; // Poorly graded sand
-        } else {
-            return 'GM'; // Silty gravel
+    opts = opts || {};
+    var cu = calcCu(d60, d10);
+    var cc = calcCc(d30, d60, d10);
+    var fines = opts.fines;
+    var gravel = opts.gravel;
+    var LL = opts.LL;
+    var PI = (typeof opts.PL !== 'undefined' && typeof LL !== 'undefined') ? LL - opts.PL : undefined;
+
+    // --- Fine-grained (≥50% passes #200) ---
+    if (typeof fines === 'number' && fines > 50) {
+        if (typeof PI === 'number' && typeof LL === 'number') {
+            var aboveA = PI >= 0.73 * (LL - 20);
+            if (LL < 50) return aboveA ? 'CL' : 'ML';
+            return aboveA ? 'CH' : 'MH';
         }
-    } else {
-        // Fine-grained soil
-        if (d60 > 0.075) {
-            // Silty soil
-            if (cu >= 4 && cc >= 1 && cc <= 3) {
-                return 'ML'; // Well-graded silty sand
-            } else if (cu >= 4) {
-                return 'PL'; // Poorly graded silty sand
-            } else {
-                return 'GM'; // Silty gravel
-            }
-        } else {
-            // Clayey soil
-            if (cu >= 4 && cc >= 1 && cc <= 3) {
-                return 'MH'; // Well-graded silt
-            } else if (cu >= 4) {
-                return 'PL'; // Poorly graded silt
-            } else {
-                return 'CL'; // Lean clay
-            }
-        }
+        if (d10 > 0.075) return 'ML';
+        return 'CL';
     }
+
+    // --- Coarse-grained (>50% retained on #200) ---
+    if (typeof gravel === 'number' && gravel > 50) {
+        if (typeof fines === 'number' && fines < 5) {
+            if (cu >= 4 && cc >= 1 && cc <= 3) return 'GW';
+            return 'GP';
+        }
+        if (typeof fines === 'number' && fines <= 12) {
+            if (cu >= 4 && cc >= 1 && cc <= 3) return 'GW-GM';
+            return 'GP-GM';
+        }
+        if (typeof fines === 'number' && fines > 12) {
+            if (typeof PI === 'number' && PI >= 7 && (typeof LL !== 'undefined' && LL >= 30)) return 'GC';
+            return 'GM';
+        }
+        if (d10 > 2) {
+            if (cu >= 4 && cc >= 1 && cc <= 3) return 'GW';
+            return 'GP';
+        }
+        if (cu >= 4 && cc >= 1 && cc <= 3) return 'SW';
+        return 'SP';
+    }
+
+    // --- Default: use d10 as proxy for fines ---
+    if (d10 > 0.075) {
+        if (cu >= 4 && cc >= 1 && cc <= 3) return 'SW';
+        return 'SP';
+    }
+    if (cu >= 4 && cc >= 1 && cc <= 3) return 'SW-SM';
+    return 'SP-SM';
 }
 
 // ---------- ATTERBERG LIMITS TESTS ----------

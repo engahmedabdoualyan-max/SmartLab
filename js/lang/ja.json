@@ -169,5 +169,7 @@
   "test_specific_gravity": "Specific Gravity",
   "test_water_absorption": "Water Absorption",
   "test_air": "Air Content",
-  "test_direct_shear": "Direct Shear"
+  "test_direct_shear": "Direct Shear",
+  "cloud_save_failed": "⚠️ クラウド保存が利用できません。ローカルにのみ保存されました。",
+  "cloud_permission_denied": "⚠️ Firebaseの権限が拒否されました。データはローカルにのみ保存されます。セキュリティルールを確認してください。"
 }

@@ -17,11 +17,11 @@ const SmartLAP_CONFIG = {
         appId: "1:1051839900093:web:fde212b37711cd6ff70ad4"
     },
 
-    // Gemini API Key (restricted by HTTP referrer)
+    // Gemini API — proxied through server/api.js to protect key
     gemini: {
-        apiKey: "AIzaSyDDr7EQ95hLdecc1BDIZIFhmmmVMLArBsU",
+        apiKey: "",
         model: "gemini-2.0-flash",
-        baseUrl: "https://generativelanguage.googleapis.com/v1beta/models/"
+        baseUrl: "/api/gemini"
     },
 
     // API Configuration

@@ -169,5 +169,7 @@
   "test_specific_gravity": "Specific Gravity",
   "test_water_absorption": "Water Absorption",
   "test_air": "Air Content",
-  "test_direct_shear": "Direct Shear"
+  "test_direct_shear": "Direct Shear",
+  "cloud_save_failed": "⚠️ Cloud-Speicher nicht verfügbar. Nur lokal gespeichert.",
+  "cloud_permission_denied": "⚠️ Firebase-Berechtigung verweigert. Daten nur lokal gespeichert. Überprüfen Sie Ihre Sicherheitsregeln."
 }

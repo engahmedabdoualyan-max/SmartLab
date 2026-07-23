@@ -26,7 +26,7 @@ function showToast(message, type) {
 // STATE
 // ================================================================
 var currentDomain = null, currentTest = null, currentSessionId = null;
-var serialPort = null, serialReader = null, serialKeepReading = false, isDemoMode = false;
+var serialPort = null, serialReader = null, serialKeepReading = false, isDemoMode = false, isManual = false;
 var isTesting = false, strikes = [], targetStrikes = 25, targetRatio = 95, hammerWeight = 2.5, moldVolume = 0.001;
 var currentAgent = null;
 var connType = '', lanSocket = null, btDevice = null, btCharacteristic = null;

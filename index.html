@@ -449,7 +449,112 @@
     </header>
     <main class="dashboard-content fade-in">
         <div class="domain-header"><h2 id="dash-title"></h2><p id="dash-subtitle"></p></div>
-        <div id="tests-grid" class="tests-grid"></div>
+        <!-- ===== STATIC DEPARTMENT SECTIONS ===== -->
+        <!-- Concrete Section -->
+        <div id="dept-concrete" class="dept-section tests-grid" style="display:none;">
+          <a href="#" class="test-card slide-up" tabindex="0" role="button" aria-label="Slump Test" onclick="openStaticTest('slump');return false;">
+            <div class="test-card-icon" aria-hidden="true">📐</div>
+            <h3>Slump Test</h3>
+            <p>Ultrasonic cone height measurement for fresh concrete workability</p>
+            <div class="card-footer"><span class="card-tag">Manual</span><div class="card-arrow" aria-hidden="true">←</div></div>
+          </a>
+          <a href="#" class="test-card slide-up" tabindex="0" role="button" aria-label="Concrete Maturity" onclick="openStaticTest('maturity');return false;">
+            <div class="test-card-icon" aria-hidden="true">🌡️</div>
+            <h3>Concrete Maturity</h3>
+            <p>Temperature logging with Nurse-Saul / Arrhenius maturity index</p>
+            <div class="card-footer"><span class="card-tag">Manual</span><div class="card-arrow" aria-hidden="true">←</div></div>
+          </a>
+          <a href="#" class="test-card slide-up" tabindex="0" role="button" aria-label="Flexural Strength" onclick="openStaticTest('flexural');return false;">
+            <div class="test-card-icon" aria-hidden="true">📐</div>
+            <h3>Flexural Strength</h3>
+            <p>Modulus of rupture — center-point or third-point loading test</p>
+            <div class="card-footer"><span class="card-tag">Manual</span><div class="card-arrow" aria-hidden="true">←</div></div>
+          </a>
+          <a href="#" class="test-card slide-up" tabindex="0" role="button" aria-label="Split Tensile" onclick="openStaticTest('split_tensile');return false;">
+            <div class="test-card-icon" aria-hidden="true">💥</div>
+            <h3>Split Tensile</h3>
+            <p>Split tensile strength — Brazilian test method for concrete</p>
+            <div class="card-footer"><span class="card-tag">Manual</span><div class="card-arrow" aria-hidden="true">←</div></div>
+          </a>
+        </div>
+        <!-- Soil/Roads Section -->
+        <div id="dept-soil" class="dept-section tests-grid" style="display:none;">
+          <a href="#" class="test-card slide-up" tabindex="0" role="button" aria-label="Compaction" onclick="openStaticTest('compaction');return false;">
+            <div class="test-card-icon" aria-hidden="true">⚡</div>
+            <h3>Compaction (Proctor)</h3>
+            <p>Proctor compaction test with real-time density calculations</p>
+            <div class="card-footer"><span class="card-tag">Hardware</span><div class="card-arrow" aria-hidden="true">←</div></div>
+          </a>
+          <a href="#" class="test-card slide-up" tabindex="0" role="button" aria-label="CBR" onclick="openStaticTest('cbr');return false;">
+            <div class="test-card-icon" aria-hidden="true">📊</div>
+            <h3>CBR</h3>
+            <p>California Bearing Ratio — penetration and load analysis</p>
+            <div class="card-footer"><span class="card-tag">Hardware</span><div class="card-arrow" aria-hidden="true">←</div></div>
+          </a>
+          <a href="#" class="test-card slide-up" tabindex="0" role="button" aria-label="Straightedge" onclick="openStaticTest('straightedge');return false;">
+            <div class="test-card-icon" aria-hidden="true">📐</div>
+            <h3>Straightedge</h3>
+            <p>Surface evenness measurement with IMU and laser sensor</p>
+            <div class="card-footer"><span class="card-tag">Hardware</span><div class="card-arrow" aria-hidden="true">←</div></div>
+          </a>
+          <a href="#" class="test-card slide-up" tabindex="0" role="button" aria-label="Atterberg Limits" onclick="openStaticTest('atterberg');return false;">
+            <div class="test-card-icon" aria-hidden="true">🧪</div>
+            <h3>Atterberg Limits</h3>
+            <p>Liquid and Plastic limits — Atterberg consistency test</p>
+            <div class="card-footer"><span class="card-tag">Manual</span><div class="card-arrow" aria-hidden="true">←</div></div>
+          </a>
+          <a href="#" class="test-card slide-up" tabindex="0" role="button" aria-label="Sieve Analysis" onclick="openStaticTest('sieve');return false;">
+            <div class="test-card-icon" aria-hidden="true">📐</div>
+            <h3>Sieve Analysis</h3>
+            <p>Grain size distribution and gradation analysis</p>
+            <div class="card-footer"><span class="card-tag">Manual</span><div class="card-arrow" aria-hidden="true">←</div></div>
+          </a>
+          <a href="#" class="test-card slide-up" tabindex="0" role="button" aria-label="Specific Gravity" onclick="openStaticTest('specific_gravity');return false;">
+            <div class="test-card-icon" aria-hidden="true">⚖️</div>
+            <h3>Specific Gravity</h3>
+            <p>Specific gravity of soil — pycnometer method</p>
+            <div class="card-footer"><span class="card-tag">Manual</span><div class="card-arrow" aria-hidden="true">←</div></div>
+          </a>
+          <a href="#" class="test-card slide-up" tabindex="0" role="button" aria-label="Permeability" onclick="openStaticTest('permeability');return false;">
+            <div class="test-card-icon" aria-hidden="true">💧</div>
+            <h3>Permeability</h3>
+            <p>Constant and falling head permeability coefficient K</p>
+            <div class="card-footer"><span class="card-tag">Manual</span><div class="card-arrow" aria-hidden="true">←</div></div>
+          </a>
+        </div>
+        <!-- Asphalt Section -->
+        <div id="dept-asphalt" class="dept-section tests-grid" style="display:none;">
+          <a href="#" class="test-card slide-up" tabindex="0" role="button" aria-label="Marshall" onclick="openStaticTest('marshall');return false;">
+            <div class="test-card-icon" aria-hidden="true">⚖️</div>
+            <h3>Marshall Test</h3>
+            <p>Load-displacement stability and flow test for asphalt mixes</p>
+            <div class="card-footer"><span class="card-tag">Hardware</span><div class="card-arrow" aria-hidden="true">←</div></div>
+          </a>
+          <a href="#" class="test-card slide-up" tabindex="0" role="button" aria-label="Bitumen Penetration" onclick="openStaticTest('penetration');return false;">
+            <div class="test-card-icon" aria-hidden="true">🌡️</div>
+            <h3>Bitumen Penetration</h3>
+            <p>Needle penetration depth measurement for bitumen grade</p>
+            <div class="card-footer"><span class="card-tag">Manual</span><div class="card-arrow" aria-hidden="true">←</div></div>
+          </a>
+          <a href="#" class="test-card slide-up" tabindex="0" role="button" aria-label="Ductility" onclick="openStaticTest('ductility');return false;">
+            <div class="test-card-icon" aria-hidden="true">🔗</div>
+            <h3>Ductility</h3>
+            <p>Bitumen ductility — extension at break test</p>
+            <div class="card-footer"><span class="card-tag">Manual</span><div class="card-arrow" aria-hidden="true">←</div></div>
+          </a>
+          <a href="#" class="test-card slide-up" tabindex="0" role="button" aria-label="Softening Point" onclick="openStaticTest('softening_point');return false;">
+            <div class="test-card-icon" aria-hidden="true">🌡️</div>
+            <h3>Softening Point</h3>
+            <p>Ring and Ball softening point test for bitumen</p>
+            <div class="card-footer"><span class="card-tag">Manual</span><div class="card-arrow" aria-hidden="true">←</div></div>
+          </a>
+          <a href="#" class="test-card slide-up" tabindex="0" role="button" aria-label="Viscosity" onclick="openStaticTest('viscosity');return false;">
+            <div class="test-card-icon" aria-hidden="true">⏳</div>
+            <h3>Viscosity</h3>
+            <p>Saybolt Furol viscosity — flow time measurement</p>
+            <div class="card-footer"><span class="card-tag">Manual</span><div class="card-arrow" aria-hidden="true">←</div></div>
+          </a>
+        </div>
     </main>
 </div>
 

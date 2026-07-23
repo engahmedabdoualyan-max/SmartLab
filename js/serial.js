@@ -147,32 +147,124 @@ function submitManualStrike() {
 function sendLanCommand(cmd) {
     if (lanSocket && lanSocket.readyState === WebSocket.OPEN) {
         lanSocket.send(cmd);
-        serialLog('→ ' + cmd, 'tx');
+        serialLog('\u2192 ' + cmd, 'tx');
     }
 }
 function sendBtCommand(cmd) {
     if (btCharacteristic) {
         var enc = new TextEncoder();
         btCharacteristic.writeValue(enc.encode(cmd + '\n'));
-        serialLog('→ ' + cmd, 'tx');
+        serialLog('\u2192 ' + cmd, 'tx');
     }
 }
 
-async function startSerialStream(){if(!serialPort||!serialPort.readable)return;serialKeepReading=true;var decoder=new TextDecoder();var buffer='';while(serialPort.readable&&serialKeepReading){try{serialReader=serialPort.readable.getReader();while(serialKeepReading){var{value,done}=await serialReader.read();if(done)break;buffer+=decoder.decode(value,{stream:true});var lines=buffer.split('\n');buffer=lines.pop();for(var i=0;i<lines.length;i++){var line=lines[i].trim();if(line)handleSerialLine(line);}}}catch(e){if(serialKeepReading)serialLog('Error: '+e.message,'rx');}finally{try{if(serialReader)serialReader.releaseLock();}catch(e){console.error('Serial reader release error:',e);}}}}
-}else if(currentTest&&currentTest.type==='penetration'){processPenSerial(v1);}else if(currentTest&&currentTest.type==='direct_shear'){var v3=parts.length>=3?parseFloat(parts[2]):0;processDSReading(v1,v2,v3);}else{processStrike(v1,v2);}}}
-function processSlumpSerial(dist){var h=parseFloat(document.getElementById('slump_inp_height').value)||305;var slump=Math.round(h-dist);document.getElementById('slump-val-dist').textContent=dist;document.getElementById('slump-val-slump').textContent=slump;var tol=parseFloat(document.getElementById('slump_inp_tolerance').value)||25;var target=parseFloat(document.getElementById('slump_inp_target').value)||100;var dev=Math.abs(slump-target);document.getElementById('slump-val-dev').textContent=dev;var ok=dev<=tol;document.getElementById('slump-val-status').textContent=ok?'✅ PASS':'❌ FAIL';document.getElementById('slump-results-panel').style.display='block';document.getElementById('slump-results-body').innerHTML='<div class="result-status '+(ok?'pass':'fail')+'">'+(ok?'✅':'❌')+' '+(ok?'PASS':'FAIL')+'</div><div class="result-row"><span class="result-label">Slump Value</span><span class="result-value">'+slump+' mm</span></div><div class="result-row"><span class="result-label">Target</span><span class="result-value">'+target+' mm</span></div><div class="result-row"><span class="result-label">Deviation</span><span class="result-value">'+dev+' mm</span></div><div class="result-row"><span class="result-label">Tolerance</span><span class="result-value">±'+tol+' mm</span></div>';}
-function processMatSerial(tempC){var now=Date.now();if(!window._matStartTime)window._matStartTime=now;var hours=Math.round(((now-window._matStartTime)/3600000)*100)/100;if(hours<0.01)hours=0.25;var totalMat=(window._matTotalMat||0)+tempC*0.25;window._matTotalMat=totalMat;var strength=Math.round(30*(1-Math.exp(-0.02*totalMat))*100)/100;var target=parseFloat(document.getElementById('mat_inp_target').value)||30;var pct=Math.round(strength/target*100);document.getElementById('mat-val-temp').textContent=tempC+'°C';document.getElementById('mat-val-maturity').textContent=Math.round(totalMat);document.getElementById('mat-val-strength').textContent=strength;document.getElementById('mat-val-time').textContent=hours;processMatReading(hours,tempC,totalMat,strength,pct);}
-function processBitSerial(lux,trans,purity){var pass=purity>=80;document.getElementById('bit-val-light').textContent=lux.toFixed(0);document.getElementById('bit-val-trans').textContent=trans.toFixed(2);document.getElementById('bit-val-purity').textContent=purity;document.getElementById('bit-val-status').textContent=pass?'✅ PASS':'❌ FAIL';document.getElementById('bit-val-status').style.color=pass?'#16a34a':'#ef4444';}
-function stopSerial(){serialKeepReading=false;if(serialReader){try{serialReader.releaseLock();}catch(e){console.error('Serial release error:',e);}}}
-async function sendSerialCommand(cmd){if(!serialPort||!serialPort.writable)return;try{var w=serialPort.writable.getWriter();var e=new TextEncoder();await w.write(e.encode(cmd+'\n'));w.releaseLock();serialLog('→ '+cmd,'tx');}catch(e){serialLog('Send error: '+e.message,'rx');}}
+// ================================================================
+// SERIAL STREAM
+// ================================================================
+async function startSerialStream(){
+  if(!serialPort||!serialPort.readable)return;
+  serialKeepReading=true;
+  var decoder=new TextDecoder();
+  var buffer='';
+  while(serialPort.readable&&serialKeepReading){
+    try{
+      serialReader=serialPort.readable.getReader();
+      while(serialKeepReading){
+        var{value,done}=await serialReader.read();
+        if(done)break;
+        buffer+=decoder.decode(value,{stream:true});
+        var lines=buffer.split('\n');
+        buffer=lines.pop();
+        for(var i=0;i<lines.length;i++){
+          var line=lines[i].trim();
+          if(line)handleSerialLine(line);
+        }
+      }
+    }catch(e){
+      if(serialKeepReading)serialLog('Error: '+e.message,'rx');
+    }finally{
+      try{if(serialReader)serialReader.releaseLock();}catch(e){console.error('Serial reader release error:',e);}
+    }
+  }
+}
+
+function handleSerialLine(line){
+  var parts=line.split(',');
+  if(parts.length<2)return;
+  var v1=parseFloat(parts[0]);
+  var v2=parseFloat(parts[1]);
+  if(currentTest&&currentTest.type==='penetration'){processPenSerial(v1);}
+  else if(currentTest&&currentTest.type==='direct_shear'){var v3=parts.length>=3?parseFloat(parts[2]):0;processDSReading(v1,v2,v3);}
+  else{processStrike(v1,v2);}
+}
+
+function processSlumpSerial(dist){
+  var h=parseFloat(document.getElementById('slump_inp_height').value)||305;
+  var slump=Math.round(h-dist);
+  document.getElementById('slump-val-dist').textContent=dist;
+  document.getElementById('slump-val-slump').textContent=slump;
+  var tol=parseFloat(document.getElementById('slump_inp_tolerance').value)||25;
+  var target=parseFloat(document.getElementById('slump_inp_target').value)||100;
+  var dev=Math.abs(slump-target);
+  document.getElementById('slump-val-dev').textContent=dev;
+  var ok=dev<=tol;
+  document.getElementById('slump-val-status').textContent=ok?'\u2705 PASS':'\u274C FAIL';
+  document.getElementById('slump-results-panel').style.display='block';
+  document.getElementById('slump-results-body').innerHTML='<div class="result-status '+(ok?'pass':'fail')+'">'+(ok?'\u2705':'\u274C')+' '+(ok?'PASS':'FAIL')+'</div><div class="result-row"><span class="result-label">Slump Value</span><span class="result-value">'+slump+' mm</span></div><div class="result-row"><span class="result-label">Target</span><span class="result-value">'+target+' mm</span></div><div class="result-row"><span class="result-label">Deviation</span><span class="result-value">'+dev+' mm</span></div><div class="result-row"><span class="result-label">Tolerance</span><span class="result-value">\u00B1'+tol+' mm</span></div>';
+}
+
+function processMatSerial(tempC){
+  var now=Date.now();
+  if(!window._matStartTime)window._matStartTime=now;
+  var hours=Math.round(((now-window._matStartTime)/3600000)*100)/100;
+  if(hours<0.01)hours=0.25;
+  var totalMat=(window._matTotalMat||0)+tempC*0.25;
+  window._matTotalMat=totalMat;
+  var strength=Math.round(30*(1-Math.exp(-0.02*totalMat))*100)/100;
+  var target=parseFloat(document.getElementById('mat_inp_target').value)||30;
+  var pct=Math.round(strength/target*100);
+  document.getElementById('mat-val-temp').textContent=tempC+'\u00B0C';
+  document.getElementById('mat-val-maturity').textContent=Math.round(totalMat);
+  document.getElementById('mat-val-strength').textContent=strength;
+  document.getElementById('mat-val-time').textContent=hours;
+  processMatReading(hours,tempC,totalMat,strength,pct);
+}
+
+function processBitSerial(lux,trans,purity){
+  var pass=purity>=80;
+  document.getElementById('bit-val-light').textContent=lux.toFixed(0);
+  document.getElementById('bit-val-trans').textContent=trans.toFixed(2);
+  document.getElementById('bit-val-purity').textContent=purity;
+  document.getElementById('bit-val-status').textContent=pass?'\u2705 PASS':'\u274C FAIL';
+  document.getElementById('bit-val-status').style.color=pass?'#16a34a':'#ef4444';
+}
+
+function stopSerial(){
+  serialKeepReading=false;
+  if(serialReader){try{serialReader.releaseLock();}catch(e){console.error('Serial release error:',e);}}
+}
+
+async function sendSerialCommand(cmd){
+  if(!serialPort||!serialPort.writable)return;
+  try{
+    var w=serialPort.writable.getWriter();
+    var e=new TextEncoder();
+    await w.write(e.encode(cmd+'\n'));
+    w.releaseLock();
+    serialLog('\u2192 '+cmd,'tx');
+  }catch(e){serialLog('Send error: '+e.message,'rx');}
+}
+
 function sendHardwareCommand(cmd) {
     if (connType === 'browser-serial') sendSerialCommand(cmd);
     else if (connType === 'lan') sendLanCommand(cmd);
     else if (connType === 'bluetooth') sendBtCommand(cmd);
 }
+
 function stopAllConnections() {
     stopSerial();
     if (lanSocket) { try { lanSocket.close(); } catch(e){console.error('LAN socket close error:',e);} lanSocket = null; }
     if (btDevice && btDevice.gatt.connected) { try { btDevice.gatt.disconnect(); } catch(e){console.error('BT disconnect error:',e);} }
     btDevice = null; btCharacteristic = null;
 }
+

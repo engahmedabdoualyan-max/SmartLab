@@ -152,6 +152,37 @@ function retryChat(text) {
 // ================================================================
 // DOMAINS & TESTS
 // ================================================================
+var TEST_DEFS = {
+  compaction:    { name:'Compaction (Proctor)',         icon:'⚡' },
+  cbr:           { name:'CBR',                          icon:'📊' },
+  straightedge:  { name:'Straightedge',                 icon:'📐' },
+  slump:         { name:'Slump Test',                   icon:'📐' },
+  maturity:      { name:'Concrete Maturity',            icon:'🌡️' },
+  marshall:      { name:'Marshall Test',                icon:'⚖️' },
+  bitumen:       { name:'Bitumen Photo-Tester',         icon:'🧪' },
+  penetration:   { name:'Bitumen Penetration',          icon:'🌡️' },
+  ductility:     { name:'Ductility',                    icon:'🔗' },
+  softening_point:{name:'Softening Point',              icon:'🌡️' },
+  viscosity:     { name:'Viscosity',                    icon:'⏳' },
+  atterberg:     { name:'Atterberg Limits',             icon:'🧪' },
+  sieve:         { name:'Sieve Analysis',               icon:'📐' },
+  compressive:   { name:'Compressive Strength',         icon:'🏗️' },
+  flexural:      { name:'Flexural Strength',            icon:'📐' },
+  split_tensile: { name:'Split Tensile',                icon:'💥' },
+  permeability:  { name:'Permeability',                 icon:'💧' },
+  specific_gravity:{name:'Specific Gravity',            icon:'⚖️' },
+  water_absorption:{name:'Water Absorption',            icon:'💧' },
+  air:           { name:'Air Content',                  icon:'💨' },
+  direct_shear:  { name:'Direct Shear',                 icon:'✂️' }
+};
+
+function openStaticTest(type, name) {
+  var def = TEST_DEFS[type] || { name: name || type };
+  var test = { id: type + '-static', type: type, name: def.name };
+  currentTest = test;
+  openTest(test);
+}
+
 async function loadDomains() {
     var c = document.getElementById('domains-list');
     safeSetText(c,'Loading...');
@@ -192,51 +223,86 @@ if(!ds.empty){var did=ds.docs[0].id;tb.set(db.collection('tests').doc(),{name:'�
     await tb.commit();
 }
 
-async function selectDomain(domain) {
-    currentDomain=domain;showScreen('dashboard');
-    document.getElementById('dash-domain-name').textContent=domain.name;
-    document.getElementById('dash-title').textContent=domain.name;
-    document.getElementById('dash-subtitle').textContent=domain.description;
-    var grid=document.getElementById('tests-grid');safeSetText(grid,'Loading...');
-    try{var snap=await db.collection('tests').where('domainId','==',domain.id).get();if(grid)grid.textContent='';
-    if(snap.empty){safeSetText(grid,'No tests');return;}
-    var tests=[];snap.forEach(function(doc){var t=doc.data();t.id=doc.id;tests.push(t);});tests.sort(function(a,b){return (a.order||0)-(b.order||0);});
-    var tIcons={'دمك':'⚡','رطوبة':'💧','انضباط':'📐','انساب':'🌡️','نسبة':'📊','CBR':'📊','cbr':'📊','استقامة':'📐','straightedge':'📐','هبوط':'📐','slump':'📐','مaturity':'🌡️','maturity':'🌡️','مارشال':'⚖️','marshall':'⚖️','بتومين':'🧪','bitumen':'🧪','marşal':'⚖️','_photo':'🧪','فتو':'🧪','Atterberg':'🧪','atterberg':'🧪','sieve':'📐','Sieve':'📐','compressive':'🏗️','Compressive':'🏗️','ductility':'🔗','Ductility':'🔗','air':'💨','Air':'💨','نفاذية':'💧','Permeability':'💧','permeability':'💧','نوعي':'⚖️','Specific Gravity':'⚖️','specific_gravity':'⚖️','امتصاص':'💧','Water Absorption':'💧','water_absorption':'💧','تليين':'🌡️','Softening Point':'🌡️','softening_point':'🌡️','لزوجة':'⏳','Viscosity':'⏳','viscosity':'⏳','انثناء':'📐','Flexural':'📐','flexural':'📐','انشعابي':'💥','Split Tensile':'💥','split_tensile':'💥'};
-    var tDescs={compaction:'Proctor compaction test with real-time density calculations',cbr:'California Bearing Ratio — penetration & load analysis',straightedge:'Surface evenness measurement with IMU + laser',slump:'Ultrasonic cone height measurement',maturity:'Temperature logging with Nurse-Saul / Arrhenius index',marshall:'Load-displacement stability & flow test',bitumen:'Light intensity transmission & purity test',penetration:'Needle penetration depth measurement',moisture:'Soil moisture content determination',atterberg:'Liquid & Plastic limits — Atterberg consistency test',sieve:'Grain size distribution — gradation analysis',compressive:'Uniaxial compressive strength — cylinder/cube',ductility:'Bitumen ductility — extension at break test',air:'Fresh concrete air content — pressure/volumetric method',permeability:'Constant & falling head permeability coefficient K',specific_gravity:'Specific gravity — pycnometer method',water_absorption:'Water absorption & SSD density determination',flexural:'Flexural strength — center-point / third-point loading',split_tensile:'Split tensile strength — Brazilian test method',softening_point:'Ring & Ball softening point for bitumen',viscosity:'Saybolt Furol viscosity — flow time measurement'};
-    tests.forEach(function(t){var ik=Object.keys(tIcons).find(function(k){return t.name.includes(k);});
-    var card=document.createElement('a');card.href='#';card.className='test-card slide-up';card.setAttribute('tabindex','0');card.setAttribute('role','button');card.setAttribute('aria-label',t.name);card.onclick=function(e){e.preventDefault();openTest(t);};
-    var iconDiv=document.createElement('div');iconDiv.className='test-card-icon';iconDiv.setAttribute('aria-hidden','true');iconDiv.textContent=tIcons[ik]||'🔬';
-    var h3=document.createElement('h3');h3.textContent=t.name;
-    var pDesc=document.createElement('p');pDesc.textContent=tDescs[t.type]||'Interactive test with real-time sensor data';
-    var footer=document.createElement('div');footer.className='card-footer';
-    var tag=document.createElement('span');tag.className='card-tag';tag.textContent=(t.type==='compaction'||t.type==='cbr'?'Hardware':'Manual');
-    var arrow=document.createElement('div');arrow.className='card-arrow';arrow.setAttribute('aria-hidden','true');arrow.textContent='←';
-    footer.appendChild(tag);footer.appendChild(arrow);
-    card.appendChild(iconDiv);card.appendChild(h3);card.appendChild(pDesc);card.appendChild(footer);
-    grid.appendChild(card);});}catch(e){if(grid)safeSetText(grid,'Error: '+sanitizeInput(e.message));}
+function selectDomain(domain) {
+  currentDomain = domain;
+  showScreen('dashboard');
+  document.getElementById('dash-domain-name').textContent = domain.name;
+  document.getElementById('dash-title').textContent = domain.name;
+  document.getElementById('dash-subtitle').textContent = domain.description;
+  // Hide all department sections first
+  var sections = document.querySelectorAll('.dept-section');
+  for (var i = 0; i < sections.length; i++) {
+    sections[i].style.display = 'none';
+  }
+  // Show matching section based on domain name
+  var sectionId = null;
+  var name = domain.name.toLowerCase();
+  if (name.indexOf('خرسانة') !== -1 || name.indexOf('concrete') !== -1 || name.indexOf('混凝土') !== -1 || name.indexOf('beton') !== -1) {
+    sectionId = 'dept-concrete';
+  } else if (name.indexOf('طرق') !== -1 || name.indexOf('تربة') !== -1 || name.indexOf('roads') !== -1 || name.indexOf('soil') !== -1 || name.indexOf('straße') !== -1) {
+    sectionId = 'dept-soil';
+  } else if (name.indexOf('أسفلت') !== -1 || name.indexOf('asphalt') !== -1 || name.indexOf('沥青') !== -1) {
+    sectionId = 'dept-asphalt';
+  }
+  if (sectionId) {
+    document.getElementById(sectionId).style.display = 'grid';
+  }
+  loadAITeam();
+  loadStats();
 }
 
 function openTest(test){
-    currentTest=test;
-    if(!canRunTest(test.type)){
-        showToast('Permission denied: your role ('+currentUserRole+') cannot run this test','error');
-        return;
-    }
-    if(test.type==='cbr'){openCBR(test);return;}
-    if(test.type==='atterberg'){openAtterberg(test);return;}
-    if(test.type==='sieve'){openSieve(test);return;}
-    if(test.type==='compressive'){openComp(test);return;}
-    if(test.type==='ductility'){openDuct(test);return;}
-    if(test.type==='air'){openAir(test);return;}
-    if(test.type==='direct_shear'){openDirectShear(test);return;}
-    if(test.type==='flexural'){openFlexural(test);return;}
-    if(test.type==='split_tensile'){openSplitTensile(test);return;}
-    if(test.type==='permeability'){openPermeability(test);return;}
-    if(test.type==='specific_gravity'){openSpecificGravity(test);return;}
-    if(test.type==='water_absorption'){openWaterAbsorption(test);return;}
-    if(test.type==='softening_point'){openSofteningPoint(test);return;}
-    if(test.type==='viscosity'){openViscosity(test);return;}
-    strikes=[];isTesting=false;currentSessionId=null;showScreen('test');document.getElementById('test-page-title').textContent=test.name;document.getElementById('results-panel').style.display='none';document.getElementById('btn-pdf').style.display='none';document.getElementById('chart-box').style.display='none';document.getElementById('btn-start').style.display='flex';document.getElementById('btn-stop').style.display='none';document.getElementById('btn-tare').style.display='none';var slb=document.getElementById('strike-log-body');if(slb)slb.textContent='Start test';safeSetText('val-moisture','--');safeSetText('val-force','--');safeSetText('val-avg-force','--');safeSetText('val-dry-density','--');safeSetText('strike-counter','0');safeSetText('ratio-display','--%');safeSetText('target-display',document.getElementById('inp_target_strikes').value||'25');var gf=document.getElementById('gauge-fill');if(gf)gf.style.strokeDashoffset='264';var sc=document.getElementById('serial-console');if(sc)sc.style.display='none';var db=document.getElementById('demo-banner');if(db)db.style.display='none';loadHistory();}
+  currentTest = test;
+  if (!canRunTest(test.type)) {
+    showToast('Permission denied: your role (' + currentUserRole + ') cannot run this test', 'error');
+    return;
+  }
+  if (test.type === 'cbr') { openCBR(test); return; }
+  if (test.type === 'atterberg') { openAtterberg(test); return; }
+  if (test.type === 'sieve') { openSieve(test); return; }
+  if (test.type === 'compressive') { openComp(test); return; }
+  if (test.type === 'ductility') { openDuct(test); return; }
+  if (test.type === 'air') { openAir(test); return; }
+  if (test.type === 'direct_shear') { openDirectShear(test); return; }
+  if (test.type === 'flexural') { openFlexural(test); return; }
+  if (test.type === 'split_tensile') { openSplitTensile(test); return; }
+  if (test.type === 'permeability') { openPermeability(test); return; }
+  if (test.type === 'specific_gravity') { openSpecificGravity(test); return; }
+  if (test.type === 'water_absorption') { openWaterAbsorption(test); return; }
+  if (test.type === 'softening_point') { openSofteningPoint(test); return; }
+  if (test.type === 'viscosity') { openViscosity(test); return; }
+  if (test.type === 'slump') { openSlump(test); return; }
+  if (test.type === 'maturity') { openMat(test); return; }
+  if (test.type === 'marshall') { openMar(test); return; }
+  if (test.type === 'bitumen') { openBit(test); return; }
+  if (test.type === 'straightedge') { openSE(test); return; }
+  // Default: compaction test screen
+  strikes = []; isTesting = false; currentSessionId = null;
+  showScreen('test');
+  document.getElementById('test-page-title').textContent = test.name;
+  document.getElementById('results-panel').style.display = 'none';
+  document.getElementById('btn-pdf').style.display = 'none';
+  document.getElementById('chart-box').style.display = 'none';
+  document.getElementById('btn-start').style.display = 'flex';
+  document.getElementById('btn-stop').style.display = 'none';
+  document.getElementById('btn-tare').style.display = 'none';
+  var slb = document.getElementById('strike-log-body');
+  if (slb) slb.textContent = 'Start test';
+  safeSetText('val-moisture', '--');
+  safeSetText('val-force', '--');
+  safeSetText('val-avg-force', '--');
+  safeSetText('val-dry-density', '--');
+  safeSetText('strike-counter', '0');
+  safeSetText('ratio-display', '--%');
+  safeSetText('target-display', document.getElementById('inp_target_strikes').value || '25');
+  var gf = document.getElementById('gauge-fill');
+  if (gf) gf.style.strokeDashoffset = '264';
+  var sc = document.getElementById('serial-console');
+  if (sc) sc.style.display = 'none';
+  var db = document.getElementById('demo-banner');
+  if (db) db.style.display = 'none';
+  loadHistory();
+}
 function openAtterberg(test){currentTest=test;showScreen('atterberg');}
 function openSieve(test){currentTest=test;showScreen('sieve');}
 function openComp(test){currentTest=test;showScreen('compressive');}

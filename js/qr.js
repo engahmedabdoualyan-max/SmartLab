@@ -27,7 +27,7 @@ function createQRSpecimen(){
 }
 
 function generateQRCode(specimen){
-    var qrData='SmartLAP:'+specimen.id+'|Sample:'+specimen.sampleId+'|Type:'+specimen.testType+'|Date:'+specimen.castDate;
+    var qrData='SmartLab:'+specimen.id+'|Sample:'+specimen.sampleId+'|Type:'+specimen.testType+'|Date:'+specimen.castDate;
     var container=document.getElementById('qr-code-display');
     if(!container){return;}
     container.innerHTML='';

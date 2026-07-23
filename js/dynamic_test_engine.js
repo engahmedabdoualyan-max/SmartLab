@@ -1,5 +1,5 @@
 // ================================================================
-// SmartLAP Dynamic Test Engine
+// SmartLab Dynamic Test Engine
 // ================================================================
 // This module provides a dynamic test creation and execution system
 // supporting Dual-Mode (Manual / Hardware IoT) operation.

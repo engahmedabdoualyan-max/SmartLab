@@ -88,9 +88,10 @@ function showMarResults(){
     var Gmm=parseFloat(document.getElementById('mar_inp_gmm').value);
     var Gsb=parseFloat(document.getElementById('mar_inp_gsb').value);
     var binderPct=parseFloat(document.getElementById('mar_inp_binder').value);
+    var GmbInput=parseFloat(document.getElementById('mar_inp_gmb').value);
     var va='--',vma='--',vfa='--';
     if(Gmm>0&&Gsb>0){
-        var GmbVal=stab/(area*ht*0.001);
+        var GmbVal=GmbInput>0?GmbInput:(stab/(area*ht*0.001));
         if(!isNaN(GmbVal)&&GmbVal>0){
             va=calcVa(GmbVal,Gmm).toFixed(1)+'%';
             var Ps=100-(binderPct||5);

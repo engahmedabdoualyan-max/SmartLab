@@ -1,5 +1,5 @@
 // ================================================================
-// SmartLAP Configuration Module
+// SmartLab Configuration Module
 // ================================================================
 // WARNING: This file exposes Firebase and API credentials needed
 // for client-side operations. In production, these should be
@@ -49,6 +49,6 @@ const SmartLab_CONFIG = {
 // Prevent accidental modification
 Object.freeze(SmartLab_CONFIG);
 
-// Backward compatibility alias (legacy code may reference SmartLAP_CONFIG)
-if (typeof window !== 'undefined') { window.SmartLAP_CONFIG = SmartLab_CONFIG; }
+// Backward compatibility alias (legacy code may reference SmartLab_CONFIG)
+if (typeof window !== 'undefined') { window.SmartLab_CONFIG = SmartLab_CONFIG; }
 

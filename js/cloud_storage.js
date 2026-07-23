@@ -1,5 +1,5 @@
 // ================================================================
-// SmartLAP Cloud Storage Module — Secure Encrypted Session Sync
+// SmartLab Cloud Storage Module — Secure Encrypted Session Sync
 // ================================================================
 // Handles encrypted Firestore sync, IndexedDB/LocalStorage offline
 // caching, and automatic queue flushing on network recovery.
@@ -106,7 +106,7 @@ function _getEncryptionKey() {
   var keyMaterial = encoder.encode(seed + ':' + navigator.userAgent);
   crypto.subtle.importKey('raw', keyMaterial, 'PBKDF2', false, ['deriveKey']).then(function(baseKey) {
   return crypto.subtle.deriveKey(
-  { name: 'PBKDF2', salt: encoder.encode('SmartLAP-Salt-v1'), iterations: 100000, hash: 'SHA-256' },
+  { name: 'PBKDF2', salt: encoder.encode('SmartLab-Salt-v1'), iterations: 100000, hash: 'SHA-256' },
   baseKey,
   { name: 'AES-GCM', length: 256 },
   false,
@@ -723,5 +723,5 @@ if (typeof window !== 'undefined') {
   window.CloudStorage = CloudStorage;
 }
 
-console.log('SmartLAP Cloud Storage Module v' + _SCHEMA_VERSION + ' loaded');
+console.log('SmartLab Cloud Storage Module v' + _SCHEMA_VERSION + ' loaded');
 

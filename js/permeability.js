@@ -1,54 +1,52 @@
-// ================================================================
-// PERMEABILITY TEST (Soil)
-// ================================================================
-var permeabilityState = { isRunning: false, readings: [] };
+var permState = { isRunning: false, readings: [] };
 
 function openPermeability(test) {
   currentTest = test;
   showScreen('permeability');
-  document.getElementById('permeability-page-title').textContent = test.name;
-  document.getElementById('permeability-btn-start').style.display = 'flex';
-  document.getElementById('permeability-btn-stop').style.display = 'none';
-  document.getElementById('permeability-results-panel').style.display = 'none';
-  document.getElementById('permeability-demo-banner').style.display = 'none';
-  document.getElementById('permeability-progress-ring').style.display = 'none';
-  var chartFill = document.getElementById('permeability-chart-fill');
+  document.getElementById('perm-page-title').textContent = test.name;
+  document.getElementById('perm-btn-start').style.display = 'flex';
+  document.getElementById('perm-btn-stop').style.display = 'none';
+  document.getElementById('perm-results-panel').style.display = 'none';
+  document.getElementById('perm-demo-banner').style.display = 'none';
+  var chartFill = document.getElementById('perm-chart-fill');
   if (chartFill) chartFill.style.strokeDashoffset = '264';
-  var readingsEl = document.getElementById('permeability-readings');
+  var readingsEl = document.getElementById('perm-readings');
   if (readingsEl) readingsEl.innerHTML = '';
 }
 
 function startPermeabilityTest() {
-  var conn = document.getElementById('permeability-conn').value;
-  if (!conn) { alert('Select connection first'); return; }
-  permeabilityState = { isRunning: true, readings: [] };
-  document.getElementById('permeability-btn-start').style.display = 'none';
-  document.getElementById('permeability-btn-stop').style.display = 'flex';
-  document.getElementById('permeability-results-panel').style.display = 'none';
-  document.getElementById('permeability-demo-banner').style.display = 'flex';
-  runPermeabilityDemo();
+  var conn = document.getElementById('perm-conn').value;
+  if (!conn) { showToast('Select connection first', 'error'); return; }
+  permState = { isRunning: true, readings: [] };
+  document.getElementById('perm-btn-start').style.display = 'none';
+  document.getElementById('perm-btn-stop').style.display = 'flex';
+  document.getElementById('perm-results-panel').style.display = 'none';
+  if (conn === 'demo') {
+    document.getElementById('perm-demo-banner').style.display = 'flex';
+    runPermeabilityDemo();
+  }
 }
 
 function stopPermeabilityTest() {
-  permeabilityState.isRunning = false;
-  document.getElementById('permeability-btn-start').style.display = 'flex';
-  document.getElementById('permeability-btn-stop').style.display = 'none';
+  permState.isRunning = false;
+  document.getElementById('perm-btn-start').style.display = 'flex';
+  document.getElementById('perm-btn-stop').style.display = 'none';
   calculatePermeabilityResults();
 }
 
 function runPermeabilityDemo() {
-  if (!permeabilityState.isRunning) return;
+  if (!permState.isRunning) return;
   var totalReadings = 5;
   var i = 0;
   function demoStep() {
-    if (!permeabilityState.isRunning) return;
+    if (!permState.isRunning) return;
     var pressure = Math.random() * 2 + 1;
     var flowRate = pressure * 0.5;
-    permeabilityState.readings.push({pressure: pressure, flowRate: flowRate});
-    updatePermeabilityTable(permeabilityState.readings.length);
+    permState.readings.push({pressure: pressure, flowRate: flowRate});
+    updatePermeabilityTable(permState.readings.length);
     var pctComplete = ((i + 1) / totalReadings) * 100;
     var fill = 264 * (1 - pctComplete / 100);
-    var gaugeFill = document.getElementById('permeability-gauge-fill');
+    var gaugeFill = document.getElementById('perm-gauge-fill');
     if (gaugeFill) gaugeFill.setAttribute('stroke-dashoffset', fill);
     i++;
     if (i < totalReadings) setTimeout(demoStep, 1500);
@@ -58,13 +56,13 @@ function runPermeabilityDemo() {
 }
 
 function processPermeabilityReading(pressure, flowRate) {
-  var valueEl = document.getElementById('permeability-value');
+  var valueEl = document.getElementById('perm-value');
   if (valueEl) valueEl.textContent = pressure.toFixed(2);
-  permeabilityState.readings.push({pressure: pressure, flowRate: flowRate});
+  permState.readings.push({pressure: pressure, flowRate: flowRate});
 }
 
 function updatePermeabilityTable(count) {
-  var tbody = document.getElementById('permeability-table-body');
+  var tbody = document.getElementById('perm-table-body');
   if (!tbody) return;
   var row = tbody.insertRow();
   var cell1 = row.insertCell(0);
@@ -76,7 +74,7 @@ function updatePermeabilityTable(count) {
 }
 
 function calculatePermeabilityResults() {
-  var r = permeabilityState.readings;
+  var r = permState.readings;
   if (r.length === 0) return;
   var totalPressure = 0, totalFlow = 0;
   for (var i = 0; i < r.length; i++) {
@@ -85,40 +83,47 @@ function calculatePermeabilityResults() {
   }
   var avgPressure = totalPressure / r.length;
   var avgFlow = totalFlow / r.length;
-  
-  var panel = document.getElementById('permeability-results-panel');
+  var panel = document.getElementById('perm-results-panel');
   panel.style.display = 'block';
   var passed = avgFlow > 1.0;
   var html = safeResultStatus(passed, passed ? 'PASS' : 'FAIL');
   html += safeResultRow('Avg Pressure', avgPressure.toFixed(2) + ' bar');
   html += safeResultRow('Avg Flow Rate', avgFlow.toFixed(2) + ' ml/s');
   html += safeResultRow('Readings Count', r.length);
-  safeSetHTML(panel, html);
+  safeSetHTML('perm-results-body', html);
   saveTestSession('permeability', {readings: r, avgPressure: avgPressure, avgFlow: avgFlow});
 }
 
 function generatePermeabilityPDF() {
-  if (!permeabilityState.readings.length) return;
+  if (!permState.readings.length) return;
   try {
     var jsPDF = window.jspdf.jsPDF;
     var doc = new jsPDF();
     doc.setFontSize(18);
-    doc.text('SmartLAP - Permeability Test Report', 20, 20);
+    doc.text('SmartLab - Permeability Test Report', 20, 20);
     doc.setFontSize(10);
     doc.text('Generated: ' + new Date().toLocaleString(), 20, 35);
-    var sampleIdEl = document.getElementById('permeability-sample-id');
+    var sampleIdEl = document.getElementById('perm-sample-id');
     doc.text('Sample ID: ' + (sampleIdEl ? sampleIdEl.value : 'N/A'), 20, 45);
-    var standardEl = document.getElementById('permeability-standard');
+    var standardEl = document.getElementById('perm-standard');
     doc.text('Standard: ' + (standardEl ? standardEl.value : 'N/A'), 20, 60);
-    
-    var r = permeabilityState.readings;
+    var r = permState.readings;
     var totalP = 0, totalF = 0;
     for (var i = 0; i < r.length; i++) { totalP += r[i].pressure || 0; totalF += r[i].flowRate || 0; }
     doc.text('Average Pressure: ' + (totalP / r.length).toFixed(2) + ' bar', 20, 75);
     doc.text('Avg Flow Rate: ' + (totalF / r.length).toFixed(2) + ' ml/s', 20, 90);
-    doc.text('SmartLAP v1.0.0 - Fimto Soft', 20, 280);
+    doc.text('SmartLab v1.0.0 - Fimto Soft', 20, 280);
     doc.save('Permeability_Report.pdf');
   } catch (e) {
-    alert('PDF generation error: ' + e.message);
+    showToast('PDF error: ' + e.message, 'error');
   }
+}
+
+/* === Backward compat aliases === */
+function startPermTest() { startPermeabilityTest(); }
+function stopPermTest() { stopPermeabilityTest(); }
+function generatePermPDF() { generatePermeabilityPDF(); }
+function onPermConnChange() {
+  var v = document.getElementById('perm-conn').value;
+  document.getElementById('perm-demo-banner').style.display = v === 'demo' ? 'flex' : 'none';
 }

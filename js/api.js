@@ -1,5 +1,5 @@
 // ================================================================
-// SmartLAP API Module - v2.0 (Security Hardened)
+// SmartLab API Module - v2.0 (Security Hardened)
 // ================================================================
 
 const API_ENDPOINTS = {

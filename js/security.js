@@ -1,5 +1,5 @@
 // ================================================================
-// SmartLAP Security Module - v2.1
+// SmartLab Security Module - v2.1
 // ================================================================
 // Comprehensive security: input sanitization, access control,
 // Firestore write validation, CSRF protection, rate limiting,
@@ -719,5 +719,5 @@ if (typeof auth !== 'undefined') {
     });
 }
 
-console.log('SmartLAP Security Module v2.0 loaded');
+console.log('SmartLab Security Module v2.0 loaded');
 

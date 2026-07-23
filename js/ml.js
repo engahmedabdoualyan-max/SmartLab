@@ -2,10 +2,6 @@
 // SMARTLAP ML — PREDICTIONS ENGINE
 // ================================================================
 var SmartLabML = {
-
-// Backward compatibility alias
-if (typeof window !== 'undefined') window.SmartLAPML = SmartLabML;
-
     predictConcreteStrength: function(params) {
         var wc = params.water / params.cement;
         var age = params.age || 28;
@@ -63,6 +59,9 @@ if (typeof window !== 'undefined') window.SmartLAPML = SmartLabML;
         };
     }
 };
+
+// Backward compatibility alias
+if (typeof window !== 'undefined') window.SmartLAPML = SmartLabML;
 
 function showMLPrediction(testType) {
     var body = document.getElementById('ml-predictions-body');

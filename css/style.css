@@ -17,6 +17,8 @@
     --text-light: #94a3b8;
     --radius: 16px;
     --radius-sm: 10px;
+    --radius-lg: 20px;
+    --bg-card: #ffffff;
     --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
     --shadow: 0 4px 20px rgba(0,0,0,0.08);
     --shadow-lg: 0 10px 40px rgba(0,0,0,0.12);
@@ -32,6 +34,7 @@
     --text: #f1f5f9;
     --text-muted: #94a3b8;
     --text-light: #64748b;
+    --bg-card: #1e293b;
     --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
     --shadow: 0 4px 20px rgba(0,0,0,0.4);
     --shadow-lg: 0 10px 40px rgba(0,0,0,0.5);

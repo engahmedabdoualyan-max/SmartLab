@@ -14,7 +14,7 @@ function renderAppHeader(screen) {
         hh += '<div class="header-logo" style="font-size:20px;" aria-hidden="true">\uD83E\uDD16</div>' +
               '<div><span class="header-title" id="chat-agent-name">Agent</span><div style="font-size:10px;color:var(--text-muted);" id="chat-agent-role"></div></div>';
     } else {
-        hh += '<div class="header-logo" aria-hidden="true">SL</div><span class="header-title">' + (screen === 'test' ? '<span id="test-page-title"></span>' : 'SmartLAP') + '</span>';
+        hh += '<div class="header-logo" aria-hidden="true">SL</div><span class="header-title">' + (screen === 'test' ? '<span id="test-page-title"></span>' : 'SmartLab') + '</span>';
         if (screen === 'dashboard') hh += '<span class="header-badge" id="dash-domain-name"></span>';
     }
     hh += '</div><div class="header-left">';
@@ -1102,7 +1102,7 @@ function generateDynamicPDF() {
         var jsPDF = window.jspdf.jsPDF;
         var doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
         doc.setFontSize(20); doc.setFont(undefined, 'bold');
-        doc.text('SmartLAP - Dynamic Test Report', 105, 18, { align: 'center' });
+        doc.text('SmartLab - Dynamic Test Report', 105, 18, { align: 'center' });
         doc.setFontSize(11); doc.setFont(undefined, 'normal');
         doc.text('Fimto Soft - Integrated Tech Solutions', 105, 26, { align: 'center' });
         doc.line(15, 30, 195, 30);
@@ -1147,7 +1147,7 @@ function generateDynamicPDF() {
             doc.text('Last Result: ' + lastResult.toFixed(4), 195, y, { align: 'right' }); y += 5;
         }
         doc.setFontSize(7); doc.setTextColor(150);
-        doc.text('SmartLAP v1.0.0 — Fimto Soft', 105, 285, { align: 'center' });
+        doc.text('SmartLab v1.3.0 — Fimto Soft', 105, 285, { align: 'center' });
         doc.save('Dynamic_Test_Report_' + new Date().toISOString().slice(0, 10) + '.pdf');
         showToast('PDF downloaded', 'success');
     } catch (e) {

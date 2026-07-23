@@ -3,7 +3,7 @@ function generateCBRPDF(){
     var jsPDF=window.jspdf.jsPDF;
     var doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
     doc.setFontSize(20);doc.setFont(undefined,'bold');
-    doc.text('SmartLAP - CBR Test Report',105,18,{align:'center'});
+    doc.text('SmartLab - CBR Test Report',105,18,{align:'center'});
     doc.setFontSize(11);doc.setFont(undefined,'normal');
     doc.text('Fimto Soft - Integrated Tech Solutions',105,26,{align:'center'});
     doc.line(15,30,195,30);
@@ -35,14 +35,14 @@ function generateCBRPDF(){
     doc.text('Max Load: '+document.getElementById('cbr-val-load').textContent+' N',195,y,{align:'right'});y+=5;
     doc.text('Max Penetration: '+document.getElementById('cbr-val-pen').textContent+' mm',195,y,{align:'right'});
     doc.setFontSize(7);doc.setTextColor(150);
-    doc.text('Fimto Soft | info@fimtosoft.com | SmartLAP v1.0.0',105,285,{align:'center'});
+    doc.text('Fimto Soft | info@fimtosoft.com | SmartLab v1.3.0',105,285,{align:'center'});
     doc.save('SmartLAP_CBR_'+new Date().toISOString().slice(0,10)+'.pdf');
 }
 
 // ================================================================
 // PDF
 // ================================================================
-function generatePDF(){if(strikes.length===0)return;var jsPDF=window.jspdf.jsPDF;var doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});doc.setFontSize(20);doc.setFont(undefined,'bold');doc.text('SmartLAP - Compaction Test Report',105,18,{align:'center'});doc.setFontSize(11);doc.setFont(undefined,'normal');doc.text('Fimto Soft - Integrated Tech Solutions',105,26,{align:'center'});doc.line(15,30,195,30);var y=38;doc.setFont(undefined,'bold');doc.text('Test Information',195,y,{align:'right'});y+=7;doc.setFont(undefined,'normal');doc.text('Date: '+new Date().toLocaleString(),195,y,{align:'right'});y+=5;doc.text('Domain: '+(currentDomain?currentDomain.name:''),195,y,{align:'right'});y+=5;doc.text('Hammer: '+hammerWeight+' kg | Mold: '+moldVolume+' m3',195,y,{align:'right'});y+=5;doc.text('Target: '+targetStrikes+' strikes | Ratio: '+targetRatio+'%',195,y,{align:'right'});y+=8;doc.line(15,y,195,y);y+=6;doc.setFont(undefined,'bold');doc.text('Strike Data',195,y,{align:'right'});y+=6;var hdrs=['#','Moisture%','Force(N)','Wet Den.','Dry Den.','Time'];var cx=[195,175,155,135,115,95];doc.setFontSize(8);for(var h=0;h<hdrs.length;h++)doc.text(hdrs[h],cx[h],y,{align:'right'});y+=1;doc.line(15,y,195,y);y+=4;doc.setFont(undefined,'normal');for(var i=0;i<strikes.length;i++){var s=strikes[i];doc.text(String(s.index),cx[0],y,{align:'right'});doc.text(String(s.moisture),cx[1],y,{align:'right'});doc.text(String(s.force),cx[2],y,{align:'right'});doc.text(String(s.wetDensity),cx[3],y,{align:'right'});doc.text(String(s.dryDensity),cx[4],y,{align:'right'});doc.text(s.time,cx[5],y,{align:'right'});y+=4;if(y>270){doc.addPage();y=20;}}y+=4;doc.line(15,y,195,y);y+=6;doc.setFontSize(11);doc.setFont(undefined,'bold');doc.text('Final Results',195,y,{align:'right'});y+=6;doc.setFont(undefined,'normal');var rl=['Strikes','Max Dry Density','Optimum Moisture%','Avg Moisture%','Avg Force(N)','Max Force(N)','Reference Density','Compaction Ratio%','Status'];var rv=[strikes.length,strikes[strikes.length-1].dryDensity,strikes[strikes.length-1].moisture,Math.round(tm()*100)/100,Math.round(tf()/strikes.length*100)/100,mf(),Math.round((parseFloat(document.getElementById('inp_ref_weight').value)||0)/moldVolume*100)/100,results_compRatio(),results_compRatio()>=targetRatio?'PASS':'FAIL'];for(var r=0;r<rl.length;r++){doc.text(rl[r]+': '+rv[r],195,y,{align:'right'});y+=5;}doc.setFontSize(7);doc.setTextColor(150);doc.text('Fimto Soft | info@fimtosoft.com | SmartLAP v1.0.0',105,285,{align:'center'});doc.save('SmartLAP_Report_'+new Date().toISOString().slice(0,10)+'.pdf');function tm(){var s=0;for(var i=0;i<strikes.length;i++)s+=strikes[i].moisture;return s/strikes.length;}function tf(){var s=0;for(var i=0;i<strikes.length;i++)s+=strikes[i].force;return s;}function mf(){var m=0;for(var i=0;i<strikes.length;i++)if(strikes[i].force>m)m=strikes[i].force;return m;}function results_compRatio(){var rw=parseFloat(document.getElementById('inp_ref_weight').value)||0;var rd=rw>0?rw/moldVolume:0;var mdd=0;for(var i=0;i<strikes.length;i++)if(strikes[i].dryDensity>mdd)mdd=strikes[i].dryDensity;return rd>0?Math.round(mdd/rd*100*100)/100:0;}}
+function generatePDF(){if(strikes.length===0)return;var jsPDF=window.jspdf.jsPDF;var doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});doc.setFontSize(20);doc.setFont(undefined,'bold');doc.text('SmartLab - Compaction Test Report',105,18,{align:'center'});doc.setFontSize(11);doc.setFont(undefined,'normal');doc.text('Fimto Soft - Integrated Tech Solutions',105,26,{align:'center'});doc.line(15,30,195,30);var y=38;doc.setFont(undefined,'bold');doc.text('Test Information',195,y,{align:'right'});y+=7;doc.setFont(undefined,'normal');doc.text('Date: '+new Date().toLocaleString(),195,y,{align:'right'});y+=5;doc.text('Domain: '+(currentDomain?currentDomain.name:''),195,y,{align:'right'});y+=5;doc.text('Hammer: '+hammerWeight+' kg | Mold: '+moldVolume+' m3',195,y,{align:'right'});y+=5;doc.text('Target: '+targetStrikes+' strikes | Ratio: '+targetRatio+'%',195,y,{align:'right'});y+=8;doc.line(15,y,195,y);y+=6;doc.setFont(undefined,'bold');doc.text('Strike Data',195,y,{align:'right'});y+=6;var hdrs=['#','Moisture%','Force(N)','Wet Den.','Dry Den.','Time'];var cx=[195,175,155,135,115,95];doc.setFontSize(8);for(var h=0;h<hdrs.length;h++)doc.text(hdrs[h],cx[h],y,{align:'right'});y+=1;doc.line(15,y,195,y);y+=4;doc.setFont(undefined,'normal');for(var i=0;i<strikes.length;i++){var s=strikes[i];doc.text(String(s.index),cx[0],y,{align:'right'});doc.text(String(s.moisture),cx[1],y,{align:'right'});doc.text(String(s.force),cx[2],y,{align:'right'});doc.text(String(s.wetDensity),cx[3],y,{align:'right'});doc.text(String(s.dryDensity),cx[4],y,{align:'right'});doc.text(s.time,cx[5],y,{align:'right'});y+=4;if(y>270){doc.addPage();y=20;}}y+=4;doc.line(15,y,195,y);y+=6;doc.setFontSize(11);doc.setFont(undefined,'bold');doc.text('Final Results',195,y,{align:'right'});y+=6;doc.setFont(undefined,'normal');var rl=['Strikes','Max Dry Density','Optimum Moisture%','Avg Moisture%','Avg Force(N)','Max Force(N)','Reference Density','Compaction Ratio%','Status'];var rv=[strikes.length,strikes[strikes.length-1].dryDensity,strikes[strikes.length-1].moisture,Math.round(tm()*100)/100,Math.round(tf()/strikes.length*100)/100,mf(),Math.round((parseFloat(document.getElementById('inp_ref_weight').value)||0)/moldVolume*100)/100,results_compRatio(),results_compRatio()>=targetRatio?'PASS':'FAIL'];for(var r=0;r<rl.length;r++){doc.text(rl[r]+': '+rv[r],195,y,{align:'right'});y+=5;}doc.setFontSize(7);doc.setTextColor(150);doc.text('Fimto Soft | info@fimtosoft.com | SmartLab v1.3.0',105,285,{align:'center'});doc.save('SmartLAP_Report_'+new Date().toISOString().slice(0,10)+'.pdf');function tm(){var s=0;for(var i=0;i<strikes.length;i++)s+=strikes[i].moisture;return s/strikes.length;}function tf(){var s=0;for(var i=0;i<strikes.length;i++)s+=strikes[i].force;return s;}function mf(){var m=0;for(var i=0;i<strikes.length;i++)if(strikes[i].force>m)m=strikes[i].force;return m;}function results_compRatio(){var rw=parseFloat(document.getElementById('inp_ref_weight').value)||0;var rd=rw>0?rw/moldVolume:0;var mdd=0;for(var i=0;i<strikes.length;i++)if(strikes[i].dryDensity>mdd)mdd=strikes[i].dryDensity;return rd>0?Math.round(mdd/rd*100*100)/100:0;}}
 function generateCompPDF(){
     if(!compState.peakStress)return;
     try{var jsPDF=window.jspdf.jsPDF;var doc=new jsPDF();
@@ -54,7 +54,7 @@ function generateCompPDF(){
     doc.text('Peak Force: '+compState.peakForce.toFixed(1)+' kN',20,64);
     doc.text('Compressive Strength: '+compState.peakStress.toFixed(1)+' MPa',20,72);
     doc.text('Status: '+(compState.peakStress>=25?'PASS':'FAIL'),20,80);
-    doc.setFontSize(8);doc.text('SmartLAP v1.0.0 — Fimto Soft',20,280);
+    doc.setFontSize(8);doc.text('SmartLab v1.3.0 — Fimto Soft',20,280);
     doc.save('Compressive_Strength_Report.pdf');}catch(e){alert('PDF error: '+e.message);}
 }
 // ================================================================
@@ -65,7 +65,7 @@ function generateSlumpPDF(){
         var jsPDF=window.jspdf.jsPDF;
         var doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
         doc.setFontSize(20);doc.setFont(undefined,'bold');
-        doc.text('SmartLAP - Slump Test Report',105,18,{align:'center'});
+        doc.text('SmartLab - Slump Test Report',105,18,{align:'center'});
         doc.setFontSize(11);doc.setFont(undefined,'normal');
         doc.text('Fimto Soft - Integrated Tech Solutions',105,26,{align:'center'});
         doc.line(15,30,195,30);
@@ -88,7 +88,7 @@ function generateSlumpPDF(){
         doc.text('Deviation: '+document.getElementById('slump-val-dev').textContent+' mm',195,y,{align:'right'});y+=5;
         doc.text('Status: '+document.getElementById('slump-val-status').textContent,195,y,{align:'right'});y+=10;
         doc.setFontSize(7);doc.setTextColor(150);
-        doc.text('SmartLAP v1.0.0 — Fimto Soft',105,285,{align:'center'});
+        doc.text('SmartLab v1.3.0 — Fimto Soft',105,285,{align:'center'});
         doc.save('Slump_Test_Report.pdf');
     }catch(e){alert('PDF error: '+e.message);}
 }
@@ -101,7 +101,7 @@ function generateMatPDF(){
         var jsPDF=window.jspdf.jsPDF;
         var doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
         doc.setFontSize(20);doc.setFont(undefined,'bold');
-        doc.text('SmartLAP - Maturity Test Report',105,18,{align:'center'});
+        doc.text('SmartLab - Maturity Test Report',105,18,{align:'center'});
         doc.setFontSize(11);doc.setFont(undefined,'normal');
         doc.text('Fimto Soft - Integrated Tech Solutions',105,26,{align:'center'});
         doc.line(15,30,195,30);
@@ -136,7 +136,7 @@ function generateMatPDF(){
         doc.text('Target: '+document.getElementById('mat_inp_target').value+' MPa',195,y,{align:'right'});y+=5;
         doc.text('Elapsed: '+last.hours+' hours',195,y,{align:'right'});
         doc.setFontSize(7);doc.setTextColor(150);
-        doc.text('SmartLAP v1.0.0 — Fimto Soft',105,285,{align:'center'});
+        doc.text('SmartLab v1.3.0 — Fimto Soft',105,285,{align:'center'});
         doc.save('Maturity_Test_Report.pdf');
     }catch(e){alert('PDF error: '+e.message);}
 }
@@ -149,7 +149,7 @@ function generateMarPDF(){
         var jsPDF=window.jspdf.jsPDF;
         var doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
         doc.setFontSize(20);doc.setFont(undefined,'bold');
-        doc.text('SmartLAP - Marshall Test Report',105,18,{align:'center'});
+        doc.text('SmartLab - Marshall Test Report',105,18,{align:'center'});
         doc.setFontSize(11);doc.setFont(undefined,'normal');
         doc.text('Fimto Soft - Integrated Tech Solutions',105,26,{align:'center'});
         doc.line(15,30,195,30);
@@ -171,7 +171,7 @@ function generateMarPDF(){
         doc.text('Flow: '+flowAtMax+' x 0.25mm',195,y,{align:'right'});y+=5;
         doc.text('Max Load: '+maxLoad.toFixed(0)+' N',195,y,{align:'right'});
         doc.setFontSize(7);doc.setTextColor(150);
-        doc.text('SmartLAP v1.0.0 — Fimto Soft',105,285,{align:'center'});
+        doc.text('SmartLab v1.3.0 — Fimto Soft',105,285,{align:'center'});
         doc.save('Marshall_Test_Report.pdf');
     }catch(e){alert('PDF error: '+e.message);}
 }
@@ -183,7 +183,7 @@ function generateBitPDF(){
         var jsPDF=window.jspdf.jsPDF;
         var doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
         doc.setFontSize(20);doc.setFont(undefined,'bold');
-        doc.text('SmartLAP - Bitumen Test Report',105,18,{align:'center'});
+        doc.text('SmartLab - Bitumen Test Report',105,18,{align:'center'});
         doc.setFontSize(11);doc.setFont(undefined,'normal');
         doc.text('Fimto Soft - Integrated Tech Solutions',105,26,{align:'center'});
         doc.line(15,30,195,30);
@@ -203,7 +203,7 @@ function generateBitPDF(){
         doc.text('Purity Index: '+document.getElementById('bit-val-purity').textContent+'/100',195,y,{align:'right'});y+=5;
         doc.text('Status: '+document.getElementById('bit-val-status').textContent,195,y,{align:'right'});
         doc.setFontSize(7);doc.setTextColor(150);
-        doc.text('SmartLAP v1.0.0 — Fimto Soft',105,285,{align:'center'});
+        doc.text('SmartLab v1.3.0 — Fimto Soft',105,285,{align:'center'});
         doc.save('Bitumen_Test_Report.pdf');
     }catch(e){alert('PDF error: '+e.message);}
 }
@@ -215,7 +215,7 @@ function generatePenPDF(){
         var jsPDF=window.jspdf.jsPDF;
         var doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
         doc.setFontSize(20);doc.setFont(undefined,'bold');
-        doc.text('SmartLAP - Penetration Test Report',105,18,{align:'center'});
+        doc.text('SmartLab - Penetration Test Report',105,18,{align:'center'});
         doc.setFontSize(11);doc.setFont(undefined,'normal');
         doc.text('Fimto Soft - Integrated Tech Solutions',105,26,{align:'center'});
         doc.line(15,30,195,30);
@@ -234,7 +234,7 @@ function generatePenPDF(){
         doc.text('Penetration: '+document.getElementById('pen-val-pen').textContent+' x 0.1mm',195,y,{align:'right'});y+=5;
         doc.text('Status: '+document.getElementById('pen-val-status').textContent,195,y,{align:'right'});
         doc.setFontSize(7);doc.setTextColor(150);
-        doc.text('SmartLAP v1.0.0 — Fimto Soft',105,285,{align:'center'});
+        doc.text('SmartLab v1.3.0 — Fimto Soft',105,285,{align:'center'});
         doc.save('Penetration_Test_Report.pdf');
     }catch(e){alert('PDF error: '+e.message);}
 }
@@ -246,7 +246,7 @@ function generateAtterbergPDF(){
         var jsPDF=window.jspdf.jsPDF;
         var doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
         doc.setFontSize(20);doc.setFont(undefined,'bold');
-        doc.text('SmartLAP - Atterberg Limits Report',105,18,{align:'center'});
+        doc.text('SmartLab - Atterberg Limits Report',105,18,{align:'center'});
         doc.setFontSize(11);doc.setFont(undefined,'normal');
         doc.text('Fimto Soft - Integrated Tech Solutions',105,26,{align:'center'});
         doc.line(15,30,195,30);
@@ -278,7 +278,7 @@ function generateAtterbergPDF(){
         doc.text('Plastic Limit (PL): '+atterbergState.pl.toFixed(1)+'%',195,y,{align:'right'});y+=5;
         doc.text('Plasticity Index (PI): '+atterbergState.pi.toFixed(1),195,y,{align:'right'});
         doc.setFontSize(7);doc.setTextColor(150);
-        doc.text('SmartLAP v1.0.0 — Fimto Soft',105,285,{align:'center'});
+        doc.text('SmartLab v1.3.0 — Fimto Soft',105,285,{align:'center'});
         doc.save('Atterberg_Limits_Report.pdf');
     }catch(e){alert('PDF error: '+e.message);}
 }
@@ -290,7 +290,7 @@ function generateSievePDF(){
         var jsPDF=window.jspdf.jsPDF;
         var doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
         doc.setFontSize(20);doc.setFont(undefined,'bold');
-        doc.text('SmartLAP - Sieve Analysis Report',105,18,{align:'center'});
+        doc.text('SmartLab - Sieve Analysis Report',105,18,{align:'center'});
         doc.setFontSize(11);doc.setFont(undefined,'normal');
         doc.text('Fimto Soft - Integrated Tech Solutions',105,26,{align:'center'});
         doc.line(15,30,195,30);
@@ -332,7 +332,7 @@ function generateSievePDF(){
             }
         }
         doc.setFontSize(7);doc.setTextColor(150);
-        doc.text('SmartLAP v1.0.0 — Fimto Soft',105,285,{align:'center'});
+        doc.text('SmartLab v1.3.0 — Fimto Soft',105,285,{align:'center'});
         doc.save('Sieve_Analysis_Report.pdf');
     }catch(e){alert('PDF error: '+e.message);}
 }
@@ -344,7 +344,7 @@ function generateDuctPDF(){
         var jsPDF=window.jspdf.jsPDF;
         var doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
         doc.setFontSize(20);doc.setFont(undefined,'bold');
-        doc.text('SmartLAP - Ductility Test Report',105,18,{align:'center'});
+        doc.text('SmartLab - Ductility Test Report',105,18,{align:'center'});
         doc.setFontSize(11);doc.setFont(undefined,'normal');
         doc.text('Fimto Soft - Integrated Tech Solutions',105,26,{align:'center'});
         doc.line(15,30,195,30);
@@ -365,7 +365,7 @@ function generateDuctPDF(){
         doc.text('Ductility: '+ext.toFixed(1)+' cm',195,y,{align:'right'});y+=5;
         doc.text('Status: '+(pass?'PASS':'FAIL'),195,y,{align:'right'});
         doc.setFontSize(7);doc.setTextColor(150);
-        doc.text('SmartLAP v1.0.0 — Fimto Soft',105,285,{align:'center'});
+        doc.text('SmartLab v1.3.0 — Fimto Soft',105,285,{align:'center'});
         doc.save('Ductility_Test_Report.pdf');
     }catch(e){alert('PDF error: '+e.message);}
 }
@@ -377,7 +377,7 @@ function generateAirPDF(){
         var jsPDF=window.jspdf.jsPDF;
         var doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
         doc.setFontSize(20);doc.setFont(undefined,'bold');
-        doc.text('SmartLAP - Air Content Test Report',105,18,{align:'center'});
+        doc.text('SmartLab - Air Content Test Report',105,18,{align:'center'});
         doc.setFontSize(11);doc.setFont(undefined,'normal');
         doc.text('Fimto Soft - Integrated Tech Solutions',105,26,{align:'center'});
         doc.line(15,30,195,30);
@@ -399,7 +399,7 @@ function generateAirPDF(){
         doc.text('Unit Weight: '+document.getElementById('air-val-uw').textContent+' kg/m3',195,y,{align:'right'});y+=5;
         doc.text('Status: '+document.getElementById('air-val-status').textContent,195,y,{align:'right'});
         doc.setFontSize(7);doc.setTextColor(150);
-        doc.text('SmartLAP v1.0.0 — Fimto Soft',105,285,{align:'center'});
+        doc.text('SmartLab v1.3.0 — Fimto Soft',105,285,{align:'center'});
         doc.save('Air_Content_Report.pdf');
     }catch(e){alert('PDF error: '+e.message);}
 }
@@ -412,7 +412,7 @@ function generateSEPDF(){
         var jsPDF=window.jspdf.jsPDF;
         var doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
         doc.setFontSize(20);doc.setFont(undefined,'bold');
-        doc.text('SmartLAP - Straightedge Test Report',105,18,{align:'center'});
+        doc.text('SmartLab - Straightedge Test Report',105,18,{align:'center'});
         doc.setFontSize(11);doc.setFont(undefined,'normal');
         doc.text('Fimto Soft - Integrated Tech Solutions',105,26,{align:'center'});
         doc.line(15,30,195,30);
@@ -444,7 +444,7 @@ function generateSEPDF(){
         doc.text('Status: '+document.getElementById('se-val-status').textContent,195,y,{align:'right'});y+=5;
         doc.text('Max Deviation: '+document.getElementById('se-val-maxdev').textContent+' mm',195,y,{align:'right'});
         doc.setFontSize(7);doc.setTextColor(150);
-        doc.text('SmartLAP v1.0.0 — Fimto Soft',105,285,{align:'center'});
+        doc.text('SmartLab v1.3.0 — Fimto Soft',105,285,{align:'center'});
         doc.save('Straightedge_Test_Report.pdf');
     }catch(e){alert('PDF error: '+e.message);}
 }

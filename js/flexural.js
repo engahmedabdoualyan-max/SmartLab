@@ -82,7 +82,7 @@ function generateFlexPDF(){
         var jsPDF=window.jspdf.jsPDF;
         var doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
         doc.setFontSize(20);doc.setFont(undefined,'bold');
-        doc.text('SmartLAP - Flexural Strength Report',105,18,{align:'center'});
+        doc.text('SmartLab - Flexural Strength Report',105,18,{align:'center'});
         doc.setFontSize(11);doc.setFont(undefined,'normal');
         doc.text('Fimto Soft - Integrated Tech Solutions',105,26,{align:'center'});
         doc.line(15,30,195,30);
@@ -100,7 +100,7 @@ function generateFlexPDF(){
         doc.text('Modulus of Rupture: '+flexState.modulus.toFixed(2)+' MPa',195,y,{align:'right'});y+=5;
         doc.text('Status: '+(flexState.modulus>=3.5?'PASS':'FAIL'),195,y,{align:'right'});
         doc.setFontSize(7);doc.setTextColor(150);
-        doc.text('SmartLAP v1.0.0 — Fimto Soft',105,285,{align:'center'});
+        doc.text('SmartLab v1.3.0 — Fimto Soft',105,285,{align:'center'});
         doc.save('Flexural_Strength_Report.pdf');
     }catch(e){alert('PDF error: '+e.message);}
 }

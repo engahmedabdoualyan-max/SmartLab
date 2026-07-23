@@ -18,6 +18,7 @@ function setLang(lang) {
     var isRtl = (lang === 'ar');
     document.documentElement.dir = isRtl ? 'rtl' : 'ltr';
     document.documentElement.lang = lang;
+    document.documentElement.setAttribute('data-dir', isRtl ? 'rtl' : 'ltr');
     document.body.setAttribute('data-dir', isRtl ? 'rtl' : 'ltr');
     var t = I18N[lang] || I18N.en;
     document.querySelectorAll('[data-i18n]').forEach(function(el) {
@@ -33,3 +34,21 @@ function setLang(lang) {
     var sel2 = document.getElementById('lang-select2');
     if (sel2) sel2.value = lang;
 }
+
+function applyDirection() {
+    var isRtl = currentLang === 'ar';
+    document.documentElement.dir = isRtl ? 'rtl' : 'ltr';
+    document.documentElement.setAttribute('data-dir', isRtl ? 'rtl' : 'ltr');
+    document.body.setAttribute('data-dir', isRtl ? 'rtl' : 'ltr');
+}
+
+var dirObserver = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+        mutation.addedNodes.forEach(function(node) {
+            if (node.nodeType === 1 && !node.hasAttribute('data-dir')) {
+                node.setAttribute('data-dir', currentLang === 'ar' ? 'rtl' : 'ltr');
+            }
+        });
+    });
+});
+dirObserver.observe(document.documentElement, { childList: true, subtree: true });

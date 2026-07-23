@@ -202,7 +202,8 @@ class DocumentationAgent {
         switch (message.type) {
             case 'generate_documentation':
                 const { testSuite, testCases } = message.payload;
-                const documentation = this.generateTestDocumentation(testSuite, testSuite, testCases);
+                const testName = testSuite;
+                const documentation = this.generateTestDocumentation(testName, testSuite, testCases);
                 const report = this.createTestSuiteReport(testSuite, documentation);
                 this.sendMessage('DocumentationAgent', message.from, 'documentation_generated', { documentation, report });
                 break;

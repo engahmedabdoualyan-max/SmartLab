@@ -186,11 +186,11 @@
 
 <!-- ============ SCREEN: AUTH ============ -->
 <div id="screen-auth" class="screen active">
-    <div class="login-page">
-        <div class="login-split">
-            <div class="login-brand">
+    <div class="login-page enhanced-login-page">
+        <div class="login-split glass-login-split">
+            <div class="login-brand enhanced-brand">
                 <div class="login-brand-content">
-                    <div class="login-logo-lg" aria-hidden="true">SL</div>
+                    <div class="enhanced-logo-lg" aria-hidden="true">SL</div>
                     <h1>SmartLAP</h1>
                     <p class="login-tagline" data-i18n="auth_subtitle">Dynamic Lab Automation System</p>
                     <div class="login-features">
@@ -206,22 +206,22 @@
                 </div>
             </div>
             <div class="login-form-side">
-                <div class="login-card fade-in">
-                    <div class="login-logo" aria-hidden="true">SL</div>
+                <div class="login-card enhanced-login-card fade-in">
+                    <div class="enhanced-logo-lg" aria-hidden="true" style="width:56px;height:56px;font-size:24px;margin:0 auto 16px;">SL</div>
                     <h2 data-i18n="welcome_back">Welcome Back</h2>
                     <p class="subtitle" data-i18n="auth_subtitle2">Sign in to access your lab</p>
-                    <div class="auth-tabs">
-                        <button class="auth-tab active" onclick="switchAuthTab('login')" data-i18n="tab_login">Login</button>
-                        <button class="auth-tab" onclick="switchAuthTab('register')" data-i18n="tab_register">Register</button>
+                    <div class="auth-tabs enhanced-auth-tabs">
+                        <button class="auth-tab enhanced-auth-tab active" onclick="switchAuthTab('login')" data-i18n="tab_login">Login</button>
+                        <button class="auth-tab enhanced-auth-tab" onclick="switchAuthTab('register')" data-i18n="tab_register">Register</button>
                     </div>
                     <div class="auth-error" id="auth-error" role="alert"></div>
                     <!-- Login Form -->
                     <div id="auth-form-login" class="auth-form" aria-label="Login form">
-                        <div class="form-field">
+                        <div class="form-field enhanced-form-field">
                             <label data-i18n="ph_email">Email</label>
                             <input type="email" id="auth-email" placeholder="engineer@company.com" data-i18n-ph="ph_email">
                         </div>
-                        <div class="form-field">
+                        <div class="form-field enhanced-form-field">
                             <label data-i18n="ph_password">Password</label>
                             <div class="input-wrapper">
                                 <input type="password" id="auth-password" placeholder="••••••••" data-i18n-ph="ph_password">
@@ -229,34 +229,34 @@
                             </div>
                         </div>
                         <div class="forgot-link"><a onclick="doForgotPassword()" data-i18n="forgot_pw">Forgot password?</a></div>
-                        <button class="btn-submit" onclick="doLogin()" id="btn-login" data-i18n="btn_login">Login</button>
+                        <button class="btn-submit btn-gradient" onclick="doLogin()" id="btn-login" data-i18n="btn_login">Login</button>
                     </div>
                     <!-- Register Form -->
                     <div id="auth-form-register" class="auth-form" style="display:none;" aria-label="Registration form">
-                        <div class="form-field">
+                        <div class="form-field enhanced-form-field">
                             <label data-i18n="ph_name">Full Name</label>
                             <input type="text" id="reg-name" placeholder="Ahmed Ali" data-i18n-ph="ph_name">
                         </div>
-                        <div class="form-field">
+                        <div class="form-field enhanced-form-field">
                             <label data-i18n="ph_email">Email</label>
                             <input type="email" id="reg-email" placeholder="engineer@company.com" data-i18n-ph="ph_email">
                         </div>
-                        <div class="form-field">
+                        <div class="form-field enhanced-form-field">
                             <label data-i18n="ph_password6">Password</label>
                             <div class="input-wrapper">
                                 <input type="password" id="reg-password" placeholder="Min 6 characters" data-i18n-ph="ph_password6">
                                 <button type="button" class="pw-toggle" onclick="togglePw('reg-password',this)" aria-label="Toggle password visibility">👁</button>
                             </div>
                         </div>
-                        <button class="btn-submit" onclick="doRegister()" id="btn-register" data-i18n="btn_register">Create Account</button>
+                        <button class="btn-submit btn-gradient-green" onclick="doRegister()" id="btn-register" data-i18n="btn_register">Create Account</button>
                     </div>
                     <div class="auth-divider"><span data-i18n="or">or</span></div>
-                    <button class="btn-google" onclick="doGoogleLogin()" id="btn-google-login">
+                    <button class="btn-google btn-3d ripple-btn" onclick="doGoogleLogin()" id="btn-google-login">
                         <svg width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
                         <span data-i18n="btn_google">Sign in with Google</span>
                         <span class="btn-spinner"></span>
                     </button>
-                    <button class="btn-guest" onclick="doGuestLogin()" data-i18n="btn_guest">Continue as Guest →</button>
+                    <button class="btn-guest btn-3d ripple-btn" onclick="doGuestLogin()" data-i18n="btn_guest">Continue as Guest →</button>
                     <div class="version-badge" style="margin-top:20px;">v1.0.0 — Fimto Soft</div>
                 </div>
             </div>
@@ -264,38 +264,11 @@
     </div>
 </div>
 
+<!-- ============ SHARED APP HEADER ============ -->
+<header id="app-header" class="app-header" role="navigation" aria-label="App header"></header>
+
 <!-- ============ SCREEN: DOMAIN SELECT ============ -->
 <div id="screen-domains" class="screen">
-    <header class="app-header" role="navigation" aria-label="Domain selection header">
-        <div class="header-right">
-            <div class="header-logo" aria-hidden="true">SL</div>
-            <span class="header-title">SmartLAP</span>
-        </div>
-        <div class="header-left">
-            <select class="lang-select" id="lang-select" onchange="setLang(this.value)" aria-label="Language">
-                <option value="en">🇬🇧 English</option>
-                <option value="ar">🇪🇬 العربية</option>
-                <option value="zh">🇨🇳 中文</option>
-                <option value="de">🇩🇪 Deutsch</option>
-                <option value="fr">🇫🇷 Français</option>
-                <option value="ja">🇯🇵 日本語</option>
-                <option value="ru">🇷🇺 Русский</option>
-            </select>
-            <div class="header-user-btn" id="user-badge" role="button" tabindex="0" aria-label="User menu" onclick="toggleUserDropdown(event)">
-                <div class="user-icon" id="user-icon-el">U</div>
-                <span class="user-name-text" id="user-name-display">User</span>
-                <span class="dd-arrow" aria-hidden="true">▼</span>
-                <div class="user-dropdown" id="user-dropdown">
-                    <div class="dd-header">
-                        <div class="dd-name" id="dd-user-name">User</div>
-                        <div class="dd-email" id="dd-user-email">—</div>
-                    </div>
-                    <button class="dd-item" onclick="showScreen('domains')"><span class="dd-icon">🏠</span> <span data-i18n="change_domain">Change Domain</span></button>
-                    <button class="dd-item danger" onclick="doSignOut()"><span class="dd-icon">🚪</span> <span data-i18n="sign_out">Sign Out</span></button>
-                </div>
-            </div>
-        </div>
-    </header>
     <main class="dashboard-content fade-in">
         <div class="domain-header">
             <h2 data-i18n="choose_domain">Choose Your Domain</h2>
@@ -407,29 +380,6 @@
 
 <!-- ============ SCREEN: AI CHAT ============ -->
 <div id="screen-chat" class="screen">
-    <header class="app-header" role="navigation" aria-label="AI chat header">
-        <div class="header-right">
-            <div class="header-logo" id="chat-avatar" style="font-size:20px;" aria-hidden="true">🤖</div>
-            <div>
-                <span class="header-title" id="chat-agent-name">Agent</span>
-                <div style="font-size:10px;color:var(--text-muted);" id="chat-agent-role"></div>
-            </div>
-        </div>
-        <div class="header-left">
-            <button onclick="showScreen('domains')" class="btn-back">← <span data-i18n="back">Back</span></button>
-            <div class="header-user-btn" role="button" tabindex="0" aria-label="User menu" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
-                <div class="user-icon" id="chat-user-icon">U</div>
-                <span class="dd-arrow" aria-hidden="true">▼</span>
-                <div class="user-dropdown" id="chat-user-dropdown">
-                    <div class="dd-header">
-                        <div class="dd-name" id="chat-dd-name">User</div>
-                        <div class="dd-email" id="chat-dd-email">—</div>
-                    </div>
-                    <button class="dd-item danger" onclick="doSignOut()"><span class="dd-icon">🚪</span> <span data-i18n="sign_out">Sign Out</span></button>
-                </div>
-            </div>
-        </div>
-    </header>
     <div style="max-width:800px;margin:20px auto;padding:0 16px;">
         <div class="chat-panel" role="region" aria-label="AI chat">
             <div class="chat-messages" id="chat-messages" aria-live="polite" aria-label="Chat messages"></div>
@@ -443,32 +393,6 @@
 
 <!-- ============ SCREEN: DASHBOARD ============ -->
 <div id="screen-dashboard" class="screen">
-    <header class="app-header" role="navigation" aria-label="Dashboard header">
-        <div class="header-right">
-            <div class="header-logo" aria-hidden="true">SL</div>
-            <span class="header-title">SmartLAP</span>
-            <span class="header-badge" id="dash-domain-name"></span>
-        </div>
-        <div class="header-left">
-            <select class="lang-select" id="lang-select2" onchange="setLang(this.value)" aria-label="Language">
-                <option value="en">🇬🇧 EN</option><option value="ar">🇪🇬 AR</option><option value="zh">🇨🇳 ZH</option>
-                <option value="de">🇩🇪 DE</option><option value="fr">🇫🇷 FR</option><option value="ja">🇯🇵 JA</option><option value="ru">🇷🇺 RU</option>
-            </select>
-            <button onclick="showScreen('domains')" class="btn-back" data-i18n="change_domain">Change Domain</button>
-            <div class="header-user-btn" role="button" tabindex="0" aria-label="User menu" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
-                <div class="user-icon" id="dash-user-icon">U</div>
-                <span class="dd-arrow" aria-hidden="true">▼</span>
-                <div class="user-dropdown" id="dash-user-dropdown">
-                    <div class="dd-header">
-                        <div class="dd-name" id="dash-dd-name">User</div>
-                        <div class="dd-email" id="dash-dd-email">—</div>
-                    </div>
-                    <button class="dd-item" onclick="showScreen('domains')"><span class="dd-icon">🏠</span> <span data-i18n="change_domain">Change Domain</span></button>
-                    <button class="dd-item danger" onclick="doSignOut()"><span class="dd-icon">🚪</span> <span data-i18n="sign_out">Sign Out</span></button>
-                </div>
-            </div>
-        </div>
-    </header>
     <main class="dashboard-content fade-in">
         <div class="domain-header"><h2 id="dash-title"></h2><p id="dash-subtitle"></p></div>
         <!-- ===== STATIC DEPARTMENT SECTIONS ===== -->
@@ -590,27 +514,6 @@
 
 <!-- ============ SCREEN: TEST (COMPACTION) ============ -->
 <div id="screen-test" class="screen">
-    <header class="app-header" role="navigation" aria-label="Compaction test header">
-        <div class="header-right">
-            <div class="header-logo" aria-hidden="true">SL</div>
-            <span class="header-title" id="test-page-title"></span>
-        </div>
-        <div class="header-left">
-            <button onclick="goBackToDashboard()" class="btn-back">→ <span data-i18n="dashboard">Dashboard</span></button>
-            <div class="header-user-btn" role="button" tabindex="0" aria-label="User menu" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
-                <div class="user-icon" id="test-user-icon">U</div>
-                <span class="dd-arrow" aria-hidden="true">▼</span>
-                <div class="user-dropdown" id="test-user-dropdown">
-                    <div class="dd-header">
-                        <div class="dd-name" id="test-dd-name">User</div>
-                        <div class="dd-email" id="test-dd-email">—</div>
-                    </div>
-                    <button class="dd-item" onclick="showScreen('domains')"><span class="dd-icon">🏠</span> <span data-i18n="change_domain">Change Domain</span></button>
-                    <button class="dd-item danger" onclick="doSignOut()"><span class="dd-icon">🚪</span> <span data-i18n="sign_out">Sign Out</span></button>
-                </div>
-            </div>
-        </div>
-    </header>
     <div class="test-layout" role="main">
         <div class="slide-up">
             <div class="panel" style="margin-bottom:20px;">

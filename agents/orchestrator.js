@@ -287,7 +287,7 @@ class SmartLAPAgentOrchestrator {
                 case 'report_generated':
                     console.log('📝 Documentation generated');
                     break;
-                case 'validation_results':
+                case 'validation_results_api':
                     console.log('🔗 API validation completed');
                     break;
                 case 'test_results':

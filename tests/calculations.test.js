@@ -132,6 +132,33 @@ function classifyAtterberg(LL, PI) {
     return 'CL';
 }
 
+// ---------- Temperature Correction ----------
+function temperatureCorrection(value, tempC, standardTemp) {
+    var corrected = value * (1 + 0.000025 * (standardTemp - tempC));
+    return Math.round(corrected * 100) / 100;
+}
+
+// ---------- Proctor Moisture-Density ----------
+function proctorMaxDryDensity(densities) {
+    if (!densities || densities.length === 0) return { maxDensity: 0, optimumMoisture: 0 };
+    var maxDensity = -Infinity;
+    var optimumMoisture = 0;
+    for (var i = 0; i < densities.length; i++) {
+        if (densities[i].dryDensity > maxDensity) {
+            maxDensity = densities[i].dryDensity;
+            optimumMoisture = densities[i].moisture;
+        }
+    }
+    return { maxDensity: maxDensity, optimumMoisture: optimumMoisture };
+}
+
+// ---------- CBR Swell ----------
+function cbrSwell(initialReading, finalReading, timeHours) {
+    var swellPercent = Math.round(((finalReading - initialReading) / initialReading) * 100 * 100) / 100;
+    var timeDays = timeHours / 24;
+    return { swellPercent: swellPercent, timeDays: timeDays };
+}
+
 // ====================================================================
 // TEST FRAMEWORK
 // ====================================================================
@@ -738,5 +765,93 @@ describe('Atterberg Limits Calculations', function () {
         assertEqual(pi, 22);
         assertEqual(plasticity, 'High Plasticity');
         assertEqual(uscs, 'CL'); // LL<=50, PI>7, PI(22) > 0.73*(42-20)=16.06
+    });
+});
+
+// ------------------------------------------------------------------
+// 7. TEMPERATURE CORRECTION
+// ------------------------------------------------------------------
+describe('Temperature Correction Calculations', function () {
+
+    it('Correct value from 25°C to standard 20°C (cooling)', function () {
+        // corrected = 100 * (1 + 0.000025 * (20 - 25))
+        // = 100 * (1 - 0.000125) = 100 * 0.999875 = 99.9875 -> 99.99
+        var result = temperatureCorrection(100, 25, 20);
+        assertClose(result, 99.99, 0.01);
+    });
+
+    it('Correct value from 20°C to standard 25°C (warming)', function () {
+        // corrected = 50 * (1 + 0.000025 * (25 - 20))
+        // = 50 * (1 + 0.000125) = 50 * 1.000125 = 50.00625 -> 50.01
+        var result = temperatureCorrection(50, 20, 25);
+        assertClose(result, 50.01, 0.01);
+    });
+
+    it('Correct value with no temperature difference', function () {
+        // corrected = 200 * (1 + 0.000025 * (25 - 25)) = 200 * 1 = 200
+        var result = temperatureCorrection(200, 25, 25);
+        assertClose(result, 200.00, 0.001);
+    });
+});
+
+// ------------------------------------------------------------------
+// 8. PROCTOR MOISTURE-DENSITY
+// ------------------------------------------------------------------
+describe('Proctor Moisture-Density', function () {
+
+    it('Find max dry density and optimum moisture from 3 points', function () {
+        var points = [
+            { moisture: 10, dryDensity: 1800 },
+            { moisture: 12, dryDensity: 1900 },
+            { moisture: 14, dryDensity: 1850 }
+        ];
+        var result = proctorMaxDryDensity(points);
+        assertClose(result.maxDensity, 1900, 0.001);
+        assertClose(result.optimumMoisture, 12, 0.001);
+    });
+
+    it('Find max dry density with first point being highest', function () {
+        var points = [
+            { moisture: 8, dryDensity: 1950 },
+            { moisture: 10, dryDensity: 1900 },
+            { moisture: 12, dryDensity: 1850 }
+        ];
+        var result = proctorMaxDryDensity(points);
+        assertClose(result.maxDensity, 1950, 0.001);
+        assertClose(result.optimumMoisture, 8, 0.001);
+    });
+
+    it('Returns zero for empty array', function () {
+        var result = proctorMaxDryDensity([]);
+        assertEqual(result.maxDensity, 0);
+        assertEqual(result.optimumMoisture, 0);
+    });
+});
+
+// ------------------------------------------------------------------
+// 9. CBR SWELL CALCULATIONS
+// ------------------------------------------------------------------
+describe('CBR Swell Calculations', function () {
+
+    it('Swell percentage and time for 4-day soak', function () {
+        // swell% = ((12.5 - 10) / 10) * 100 = 25%
+        // timeDays = 96 / 24 = 4
+        var result = cbrSwell(10, 12.5, 96);
+        assertClose(result.swellPercent, 25.00, 0.01);
+        assertClose(result.timeDays, 4, 0.001);
+    });
+
+    it('Zero swell when readings are equal', function () {
+        var result = cbrSwell(10, 10, 48);
+        assertClose(result.swellPercent, 0.00, 0.01);
+        assertClose(result.timeDays, 2, 0.001);
+    });
+
+    it('Swell percentage with typical 3-day test', function () {
+        // swell% = ((26.5 - 25) / 25) * 100 = 6%
+        // timeDays = 72 / 24 = 3
+        var result = cbrSwell(25, 26.5, 72);
+        assertClose(result.swellPercent, 6.00, 0.01);
+        assertClose(result.timeDays, 3, 0.001);
     });
 });

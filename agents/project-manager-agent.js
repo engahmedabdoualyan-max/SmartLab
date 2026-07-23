@@ -1,4 +1,5 @@
-// Project Manager Agent implementation
+const Agent = require('./agent-base');
+
 class ProjectManagerAgent extends Agent {
     constructor(name, coordinator) {
         super(name, 'project_manager', coordinator);
@@ -89,3 +90,5 @@ class ProjectManagerAgent extends Agent {
         return resolution;
     }
 }
+
+module.exports = ProjectManagerAgent;

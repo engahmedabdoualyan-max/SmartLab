@@ -1,4 +1,5 @@
-// API Integration Specialist Agent implementation
+const AssistantAgent = require('./assistant-agent-base');
+
 class APIIntegrationSpecialistAgent extends AssistantAgent {
     constructor(name, coordinator) {
         super(name, coordinator);
@@ -64,3 +65,5 @@ class APIIntegrationSpecialistAgent extends AssistantAgent {
         return syncResult;
     }
 }
+
+module.exports = APIIntegrationSpecialistAgent;

@@ -1,4 +1,5 @@
-// Lab Engineer Agent implementation
+const Agent = require('./agent-base');
+
 class LabEngineerAgent extends Agent {
     constructor(name, coordinator) {
         super(name, 'lab_engineer', coordinator);
@@ -84,3 +85,5 @@ class LabEngineerAgent extends Agent {
         return validation;
     }
 }
+
+module.exports = LabEngineerAgent;

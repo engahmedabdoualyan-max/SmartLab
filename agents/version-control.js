@@ -49,3 +49,5 @@ class VersionControlIntegration {
         };
     }
 }
+
+module.exports = VersionControlIntegration;

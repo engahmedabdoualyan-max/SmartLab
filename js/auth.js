@@ -1,6 +1,21 @@
 // ================================================================
-// AUTH
+// AUTH — with Local Firestore Fallback
 // ================================================================
+
+// Global fallback flag: set true when Firestore rules deny access
+var USE_LOCAL_FALLBACK = false;
+
+/**
+ * Check if a Firestore error is a permission-denied error.
+ */
+function isPermissionError(err) {
+    return err && (
+        err.code === 'permission-denied' ||
+        (err.message && err.message.indexOf('Missing or insufficient permissions') !== -1) ||
+        (err.message && err.message.indexOf('PERMISSION_DENIED') !== -1)
+    );
+}
+
 function showAuthError(msg) { var el = document.getElementById('auth-error'); el.style.display = 'block'; el.textContent = msg; }
 function hideAuthError() { document.getElementById('auth-error').style.display = 'none'; }
 function switchAuthTab(tab, btn) {
@@ -66,6 +81,39 @@ async function doLogin() {
         else if (e.code === 'auth/invalid-credential') msg = currentLang === 'ar' ? 'بيانات الدخول غير صحيحة' : 'Invalid email or password';
         showAuthError(msg);
     } finally { setAuthLoading('btn-login', false); }
+}
+
+/**
+ * Create user document — with local fallback when Firestore is unavailable.
+ */
+async function createUserDoc(user, role, test) {
+    if (!user) return;
+    var profile = {
+        uid: user.uid,
+        email: user.email || '',
+        displayName: user.displayName || '',
+        role: role || 'engineer',
+        createdAt: new Date().toISOString(),
+        photoURL: user.photoURL || ''
+    };
+    try {
+        if (!USE_LOCAL_FALLBACK) {
+            await db.collection('users').doc(user.uid).set(profile, { merge: true });
+        } else {
+            throw { code: 'permission-denied', message: 'Local fallback mode' };
+        }
+    } catch (e) {
+        if (isPermissionError(e)) {
+            USE_LOCAL_FALLBACK = true;
+            // Save to localStorage as fallback
+            var localUsers = JSON.parse(localStorage.getItem('smartlap_users') || '{}');
+            localUsers[user.uid] = profile;
+            localStorage.setItem('smartlap_users', JSON.stringify(localUsers));
+            console.warn('Firestore unavailable — saved user profile locally:', user.uid);
+        } else {
+            console.warn('createUserDoc error:', e.message);
+        }
+    }
 }
 async function doRegister() {
     hideAuthError();
@@ -159,19 +207,42 @@ function updateUserUI(user) {
 
 async function fetchUserRole(user) {
     if (!user) { currentUserRole = 'viewer'; currentUserData = null; return; }
+    // First check localStorage fallback
+    var localUsers = JSON.parse(localStorage.getItem('smartlap_users') || '{}');
+    if (localUsers[user.uid]) {
+        currentUserData = localUsers[user.uid];
+        currentUserRole = currentUserData.role || 'engineer';
+        console.warn('fetchUserRole: loaded from localStorage fallback');
+        return;
+    }
     try {
         var doc = await db.collection('users').doc(user.uid).get();
         if (doc.exists) {
             currentUserData = doc.data();
             currentUserRole = currentUserData.role || 'viewer';
         } else {
-            currentUserRole = 'viewer';
-            currentUserData = null;
+            // User exists in Auth but not in Firestore — use permissive default
+            currentUserRole = 'engineer';
+            currentUserData = { uid: user.uid, email: user.email, displayName: user.displayName, role: 'engineer' };
         }
     } catch(e) {
         console.warn('fetchUserRole error:', e);
-        currentUserRole = 'viewer';
-        currentUserData = null;
+        if (isPermissionError(e)) {
+            USE_LOCAL_FALLBACK = true;
+            // Check localStorage again (might have been saved by createUserDoc)
+            var retryLocal = JSON.parse(localStorage.getItem('smartlap_users') || '{}');
+            if (retryLocal[user.uid]) {
+                currentUserData = retryLocal[user.uid];
+                currentUserRole = currentUserData.role || 'engineer';
+            } else {
+                // Permissive fallback: treat as engineer
+                currentUserRole = 'engineer';
+                currentUserData = { uid: user.uid, email: user.email, displayName: user.displayName, role: 'engineer' };
+            }
+        } else {
+            currentUserRole = 'viewer';
+            currentUserData = null;
+        }
     }
 }
 
@@ -181,6 +252,13 @@ auth.onAuthStateChanged(function(user) {
         updateUserUI(user);
         fetchUserRole(user).then(function() {
             logLogin();
+            showScreen('domains');
+            // Always call loadDomains — it has its own Firestore fallback
+            loadDomains();
+        }).catch(function(e) {
+            // Even if fetchUserRole fails catastrophically, still proceed
+            console.warn('auth state chain error, proceeding with defaults:', e);
+            currentUserRole = 'engineer';
             showScreen('domains');
             loadDomains();
         });

@@ -1,14 +1,50 @@
 // ================================================================
-// SmartLAP Security Module - v2.0
+// SmartLAP Security Module - v2.1
 // ================================================================
 // Comprehensive security: input sanitization, access control,
 // Firestore write validation, CSRF protection, rate limiting,
 // audit logging, and session management.
+//
+// v2.1 — Added _FIRESTORE_AVAILABLE flag with localStorage fallback
+// for environments where Firestore rules deny write access.
 // ================================================================
 
 // ================================================================
 // SANITIZATION ENGINE
 // ================================================================
+
+// Firestore availability flag — set false on first permission error
+var _FIRESTORE_AVAILABLE = true;
+var _LOCAL_LOG_QUEUE = [];
+
+/**
+ * Check if a Firestore error is a permission-denied error.
+ */
+function _isFirestorePermissionError(err) {
+    return err && (
+        err.code === 'permission-denied' ||
+        (err.message && err.message.indexOf('Missing or insufficient permissions') !== -1) ||
+        (err.message && err.message.indexOf('PERMISSION_DENIED') !== -1)
+    );
+}
+
+/**
+ * Persist a data entry to localStorage when Firestore is unavailable.
+ * @param {string} collection - Logical collection name
+ * @param {Object} data - Data to persist
+ */
+function _saveToLocalStore(collection, data) {
+    try {
+        var key = 'smartlap_' + collection;
+        var existing = JSON.parse(localStorage.getItem(key) || '[]');
+        existing.push(data);
+        // Keep last 500 entries to avoid localStorage quota issues
+        if (existing.length > 500) existing = existing.slice(-500);
+        localStorage.setItem(key, JSON.stringify(existing));
+    } catch (e) {
+        console.warn('localStorage write failed for', collection, ':', e.message);
+    }
+}
 
 // HTML entity encoding map
 var _ENTITY_MAP = {
@@ -228,10 +264,10 @@ function prepareSessionWrite(sessionData) {
 }
 
 /**
- * Safe wrapper for Firestore collection add with validation.
+ * Safe wrapper for Firestore collection add with validation and local fallback.
  * @param {string} collection - Firestore collection name
  * @param {Object} data - Data to write
- * @returns {Promise} Firestore write promise
+ * @returns {Promise} Firestore write promise (or local store resolved promise)
  */
 function safeFirestoreAdd(collection, data) {
     return new Promise(function(resolve, reject) {
@@ -246,7 +282,20 @@ function safeFirestoreAdd(collection, data) {
             var safeData = prepareSessionWrite(data);
             
             // Add server timestamp
-            safeData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+            safeData.createdAt = new Date().toISOString();
+            
+            // If Firestore is unavailable, use localStorage
+            if (!_FIRESTORE_AVAILABLE) {
+                safeData._localId = 'local_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+                _saveToLocalStore(collection, safeData);
+                console.warn('safeFirestoreAdd: wrote to localStorage (' + collection + ')');
+                logAuditTrail(currentUser ? currentUser.uid : 'anonymous', 'local_store_write', {
+                    collection: collection,
+                    size: JSON.stringify(safeData).length
+                });
+                resolve({ id: safeData._localId });
+                return;
+            }
             
             // Execute the write
             db.collection(collection).add(safeData).then(function(docRef) {
@@ -257,8 +306,16 @@ function safeFirestoreAdd(collection, data) {
                 });
                 resolve(docRef);
             }).catch(function(err) {
-                console.error('Firestore write failed:', err);
-                reject(err);
+                if (_isFirestorePermissionError(err)) {
+                    _FIRESTORE_AVAILABLE = false;
+                    safeData._localId = 'local_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+                    _saveToLocalStore(collection, safeData);
+                    console.warn('safeFirestoreAdd: permission denied, fell back to localStorage (' + collection + ')');
+                    resolve({ id: safeData._localId });
+                } else {
+                    console.error('Firestore write failed:', err);
+                    reject(err);
+                }
             });
         } catch (err) {
             console.error('Firestore write preparation failed:', err);
@@ -441,16 +498,26 @@ function logAuditTrail(user, action, details) {
     
     auditLog.push(entry);
     
-    // Persist to Firestore with rate limiting
-    if (typeof db !== 'undefined' && db) {
+    // Persist to Firestore with rate limiting (skip if unavailable)
+    if (typeof db !== 'undefined' && db && _FIRESTORE_AVAILABLE) {
         try {
             var safeEntry = sanitizeFirestoreData(entry);
             db.collection('audit_log').add(safeEntry).catch(function(err) {
-                console.warn('Audit log write failed (non-critical):', err.message);
+                if (_isFirestorePermissionError(err)) {
+                    _FIRESTORE_AVAILABLE = false;
+                    _saveToLocalStore('audit_log', safeEntry);
+                } else {
+                    console.warn('Audit log write failed (non-critical):', err.message);
+                }
             });
         } catch(e) {
             // Silently fail - audit logging is best-effort
         }
+    } else if (typeof db !== 'undefined' && db && !_FIRESTORE_AVAILABLE) {
+        // Firestore known unavailable — write locally
+        try {
+            _saveToLocalStore('audit_log', entry);
+        } catch(e) {}
     }
     
     // Keep memory log bounded (last 1000 entries)

@@ -16,7 +16,9 @@ class Agent {
             source,
             agent: this.name
         });
-        this.coordinator.broadcastMessage(this.name, message);
+        if (this.coordinator && typeof this.coordinator.broadcastMessage === 'function') {
+            this.coordinator.broadcastMessage(this.name, message);
+        }
     }
 
     async processTask(task) {
@@ -31,3 +33,5 @@ class Agent {
         return this.coordinator.updateTaskStatus(taskId, this.name, status, result);
     }
 }
+
+module.exports = Agent;

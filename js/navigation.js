@@ -1,7 +1,87 @@
+function renderAppHeader(screen) {
+    var h = document.getElementById('app-header');
+    if (!h) { h = document.createElement('header'); h.id = 'app-header'; h.className = 'app-header'; h.setAttribute('role', 'navigation'); document.body.insertBefore(h, document.body.firstChild); }
+    var mainScreens = { domains: 1, dashboard: 1, test: 1, chat: 1 };
+    var isTest = !mainScreens[screen] && screen !== 'chat' && screen !== 'domains' && screen !== 'dashboard';
+    if (isTest) { renderTestHeader(h, screen); return; }
+    var pfx = screen === 'domains' ? '' : screen === 'dashboard' ? 'dash-' : screen === 'test' ? 'test-' : 'chat-';
+    var ddId = pfx + 'user-dropdown';
+    var iconId = pfx + 'user-icon';
+    var ddNameId = pfx + 'dd-name';
+    var ddEmailId = pfx + 'dd-email';
+    var hh = '<div class="header-right">';
+    if (screen === 'chat') {
+        hh += '<div class="header-logo" style="font-size:20px;" aria-hidden="true">\uD83E\uDD16</div>' +
+              '<div><span class="header-title" id="chat-agent-name">Agent</span><div style="font-size:10px;color:var(--text-muted);" id="chat-agent-role"></div></div>';
+    } else {
+        hh += '<div class="header-logo" aria-hidden="true">SL</div><span class="header-title">' + (screen === 'test' ? '<span id="test-page-title"></span>' : 'SmartLAP') + '</span>';
+        if (screen === 'dashboard') hh += '<span class="header-badge" id="dash-domain-name"></span>';
+    }
+    hh += '</div><div class="header-left">';
+    var themeBtn = '<button id="dark-toggle" class="dark-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">' +
+        (document.documentElement.getAttribute('data-theme') === 'dark' ? '\u2600' : '\uD83C\uDF19') + '</button>';
+    if (screen === 'domains') {
+        hh += '<select class="lang-select" id="lang-select" onchange="setLang(this.value)" aria-label="Language">' +
+              langOptions('full') + '</select>' +
+              themeBtn +
+              '<div class="header-user-btn" role="button" tabindex="0" aria-label="User menu" onclick="toggleUserDropdown(event)">' +
+              '<div class="user-icon" id="user-icon-el">U</div><span class="user-name-text" id="user-name-display">User</span><span class="dd-arrow">\u25BC</span>' +
+              headerDropdown(ddId, iconId, ddNameId, ddEmailId) + '</div>';
+    } else if (screen === 'dashboard') {
+        hh += '<select class="lang-select" id="lang-select2" onchange="setLang(this.value)" aria-label="Language">' +
+              langOptions('short') + '</select>' +
+              themeBtn +
+              '<button onclick="showScreen(\'domains\')" class="btn-back" data-i18n="change_domain">Change Domain</button>' +
+              headerDropdown(ddId, iconId, ddNameId, ddEmailId);
+    } else if (screen === 'test') {
+        hh += '<button onclick="goBackToDashboard()" class="btn-back">\u2192 <span data-i18n="dashboard">Dashboard</span></button>' +
+              themeBtn +
+              headerDropdown(ddId, iconId, ddNameId, ddEmailId);
+    } else if (screen === 'chat') {
+        hh += '<button onclick="showScreen(\'domains\')" class="btn-back">\u2190 <span data-i18n="back">Back</span></button>' +
+              themeBtn +
+              headerDropdown(ddId, iconId, ddNameId, ddEmailId);
+    }
+    hh += '</div>';
+    h.innerHTML = hh;
+    h.setAttribute('aria-label', screen + ' header');
+}
+
+function renderTestHeader(h, screen) {
+    var name = screen.replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});
+    var el = document.querySelector('#screen-' + screen + ' [data-title]');
+    if (el) name = el.getAttribute('data-title');
+    var pfx = screen.substring(0,4) + '-';
+    h.innerHTML =
+        '<div class="header-right"><div class="header-logo" aria-hidden="true">SL</div><span class="header-title">' + name + '</span></div>' +
+        '<div class="header-left">' +
+        '<button onclick="goBackToDashboard()" class="btn-back">\u2192 <span data-i18n="dashboard">Dashboard</span></button>' +
+        headerDropdown(pfx + 'user-dropdown', pfx + 'user-icon', pfx + 'dd-name', pfx + 'dd-email') +
+        '</div>';
+    h.setAttribute('aria-label', screen + ' header');
+}
+
+function langOptions(style) {
+    if (style === 'full') return '<option value="en">\uD83C\uDDEC\uD83C\uDDE7 English</option><option value="ar">\uD83C\uDDEA\uD83C\uDDEC \u0627\u0644\u0639\u0631\u0628\u064A\u0629</option><option value="zh">\uD83C\uDDE8\uD83C\uDDF3 \u4E2D\u6587</option><option value="de">\uD83C\uDDE9\uD83C\uDDEA Deutsch</option><option value="fr">\uD83C\uDDEB\uD83C\uDDF7 Fran\u00E7ais</option><option value="ja">\uD83C\uDDEF\uD83C\uDDF5 \u65E5\u672C\u8A9E</option><option value="ru">\uD83C\uDDF7\uD83C\uDDFA \u0420\u0443\u0441\u0441\u043A\u0438\u0439</option>';
+    return '<option value="en">\uD83C\uDDEC\uD83C\uDDE7 EN</option><option value="ar">\uD83C\uDDEA\uD83C\uDDEC AR</option><option value="zh">\uD83C\uDDE8\uD83C\uDDF3 ZH</option><option value="de">\uD83C\uDDE9\uD83C\uDDEA DE</option><option value="fr">\uD83C\uDDEB\uD83C\uDDF7 FR</option><option value="ja">\uD83C\uDDEF\uD83C\uDDF5 JA</option><option value="ru">\uD83C\uDDF7\uD83C\uDDFA RU</option>';
+}
+
+function headerDropdown(ddId, iconId, ddNameId, ddEmailId) {
+    return '<div class="header-user-btn" role="button" tabindex="0" aria-label="User menu" onclick="toggleUserDropdown(event)" style="margin-left:4px;">' +
+        '<div class="user-icon" id="' + iconId + '">U</div><span class="dd-arrow">\u25BC</span>' +
+        '<div class="user-dropdown" id="' + ddId + '">' +
+        '<div class="dd-header"><div class="dd-name" id="' + ddNameId + '">User</div><div class="dd-email" id="' + ddEmailId + '">\u2014</div></div>' +
+        '<button class="dd-item" onclick="showScreen(\'domains\')"><span class="dd-icon">\uD83C\uDFE0</span> <span data-i18n="change_domain">Change Domain</span></button>' +
+        '<button class="dd-item danger" onclick="doSignOut()"><span class="dd-icon">\uD83D\uDEAA</span> <span data-i18n="sign_out">Sign Out</span></button></div></div>';
+}
+
+var HAS_HEADER = { domains:1, dashboard:1, test:1, chat:1 };
+
 function showScreen(id) {
     document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
     document.getElementById('screen-' + id).classList.add('active');
     window.scrollTo(0,0);
+    if (HAS_HEADER[id]) renderAppHeader(id);
 }
 // ================================================================
 // AI TEAM
@@ -150,8 +230,84 @@ function retryChat(text) {
     sendChat();
 }
 // ================================================================
-// DOMAINS & TESTS
+// DOMAINS & TESTS — with Local Firestore Fallback
 // ================================================================
+
+// Hardcoded local domain data for when Firestore is unavailable
+var LOCAL_DOMAINS = [
+    {
+        id: 'local-soil',
+        name: 'قسم الطرق والتربة',
+        nameEn: 'Roads & Soil Department',
+        description: 'اختبارات الطرق والتربة',
+        descriptionEn: 'Roads and soil testing',
+        order: 1,
+        icon: '🛣️',
+        tests: ['compaction', 'cbr', 'straightedge', 'atterberg', 'sieve', 'specific_gravity', 'permeability', 'water_absorption', 'direct_shear']
+    },
+    {
+        id: 'local-concrete',
+        name: 'قسم الخرسانة',
+        nameEn: 'Concrete Department',
+        description: 'اختبارات الخرسانة',
+        descriptionEn: 'Concrete testing',
+        order: 2,
+        icon: '🏗️',
+        tests: ['slump', 'maturity', 'compressive', 'flexural', 'split_tensile']
+    },
+    {
+        id: 'local-asphalt',
+        name: 'قسم الأسفلت',
+        nameEn: 'Asphalt Department',
+        description: 'اختبارات الأسفلت',
+        descriptionEn: 'Asphalt testing',
+        order: 3,
+        icon: '🛤️',
+        tests: ['marshall', 'bitumen', 'penetration', 'ductility', 'softening_point', 'viscosity']
+    }
+];
+
+/**
+ * Load domains from local hardcoded data (Firestore fallback).
+ */
+function loadLocalDomains() {
+    var c = document.getElementById('domains-list');
+    if (!c) return;
+    c.textContent = '';
+    var isArabic = currentLang === 'ar';
+    LOCAL_DOMAINS.forEach(function(d) {
+        var domainName = isArabic ? d.name : (d.nameEn || d.name);
+        var domainDesc = isArabic ? d.description : (d.descriptionEn || d.description);
+        var card = document.createElement('a');
+        card.href = '#';
+        card.className = 'domain-card';
+        card.setAttribute('tabindex', '0');
+        card.setAttribute('role', 'button');
+        card.setAttribute('aria-label', domainName);
+        card.onclick = function(e) {
+            e.preventDefault();
+            selectDomain(d);
+        };
+        var iconDiv = document.createElement('div');
+        iconDiv.className = 'domain-icon';
+        iconDiv.setAttribute('aria-hidden', 'true');
+        iconDiv.textContent = d.icon || '🔬';
+        var infoDiv = document.createElement('div');
+        infoDiv.className = 'domain-info';
+        var h3 = document.createElement('h3');
+        h3.textContent = domainName;
+        var pDesc = document.createElement('p');
+        pDesc.textContent = domainDesc;
+        infoDiv.appendChild(h3);
+        infoDiv.appendChild(pDesc);
+        card.appendChild(iconDiv);
+        card.appendChild(infoDiv);
+        c.appendChild(card);
+    });
+    loadAITeam();
+    loadStats();
+}
+
 var TEST_DEFS = {
   compaction:    { name:'Compaction (Proctor)',         icon:'⚡' },
   cbr:           { name:'CBR',                          icon:'📊' },
@@ -188,7 +344,18 @@ async function loadDomains() {
     safeSetText(c,'Loading...');
     try {
         var snap = await db.collection('domains').get();
-        if (snap.empty) { await seedDomains(); return loadDomains(); }
+        if (snap.empty) {
+            // Try seeding first, fall back to local if that fails
+            try {
+                await seedDomains();
+                return loadDomains();
+            } catch (seedErr) {
+                console.warn('seedDomains failed, using local fallback:', seedErr.message);
+                if (typeof USE_LOCAL_FALLBACK !== 'undefined') USE_LOCAL_FALLBACK = true;
+                loadLocalDomains();
+                return;
+            }
+        }
         if(c)c.textContent='';
         var domains=[];snap.forEach(function(doc){var d=doc.data();d.id=doc.id;domains.push(d);});domains.sort(function(a,b){return (a.order||0)-(b.order||0);});
         var icons = { 'طرق':'🛣️', 'خرسانة':'🏗️', 'أسفلت':'🛤️', 'Roads':'🛣️', 'Concrete':'🏗️', 'Asphalt':'🛤️', '道路':'🛣️', '混凝土':'🏗️', '沥青':'🛤️', 'Straßen':'🛣️', 'Beton':'🏗️', 'Asphalt':'🛤️' };
@@ -206,10 +373,20 @@ async function loadDomains() {
         });
         loadAITeam();
         loadStats();
-    } catch(e) { if(c)safeSetText(c,'Error: '+sanitizeInput(e.message)); }
+    } catch(e) {
+        console.warn('loadDomains Firestore error, using local fallback:', e.message);
+        if (typeof USE_LOCAL_FALLBACK !== 'undefined') USE_LOCAL_FALLBACK = true;
+        loadLocalDomains();
+    }
 }
 
 async function seedDomains() {
+    // If in fallback mode, skip Firestore entirely
+    if (typeof USE_LOCAL_FALLBACK !== 'undefined' && USE_LOCAL_FALLBACK) {
+        console.warn('seedDomains: skipping Firestore seed in fallback mode');
+        loadLocalDomains();
+        return;
+    }
     var batch = db.batch();
     [{name:'قسم الطرق والتربة',description:'اختبارات الطرق والتربة',order:1},{name:'قسم الخرسانة',description:'اختبارات الخرسانة',order:2},{name:'قسم الأسفلت',description:'اختبارات الأسفلت',order:3}].forEach(function(d){batch.set(db.collection('domains').doc(),d);});
     await batch.commit();
@@ -1065,4 +1242,48 @@ function showDynamicAIPredictions() {
     }
 
     showToast('AI analysis complete', 'success');
+}
+
+function toggleDarkMode() {
+    var theme = document.documentElement.getAttribute('data-theme');
+    var next = theme === 'dark' ? '' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('smartlap-theme', next || 'light');
+    var btn = document.getElementById('dark-toggle');
+    if (btn) btn.textContent = next === 'dark' ? '\u2600' : '\uD83C\uDF19';
+}
+
+(function() {
+    if (localStorage.getItem('smartlap-theme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+})();
+
+function exportToExcel(testName, data) {
+    if (!data || data.length === 0) {
+        showToast('No data to export', 'warning');
+        return;
+    }
+    var headers = Object.keys(data[0]);
+    var csv = '\uFEFF';
+    csv += headers.join(',') + '\n';
+    for (var i = 0; i < data.length; i++) {
+        var row = [];
+        for (var j = 0; j < headers.length; j++) {
+            var val = data[i][headers[j]];
+            var str = val != null ? String(val) : '';
+            if (str.indexOf(',') !== -1 || str.indexOf('"') !== -1 || str.indexOf('\n') !== -1) {
+                str = '"' + str.replace(/"/g, '""') + '"';
+            }
+            row.push(str);
+        }
+        csv += row.join(',') + '\n';
+    }
+    var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    var link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = testName.replace(/[^a-zA-Z0-9_\-]/g, '_') + '_' + new Date().toISOString().slice(0, 10) + '.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+    showToast('CSV exported: ' + link.download, 'success');
 }

@@ -1,4 +1,5 @@
-// Developer Agent implementation
+const Agent = require('./agent-base');
+
 class DeveloperAgent extends Agent {
     constructor(name, coordinator) {
         super(name, 'developer', coordinator);
@@ -91,3 +92,5 @@ class DeveloperAgent extends Agent {
         return testCases;
     }
 }
+
+module.exports = DeveloperAgent;

@@ -1,4 +1,5 @@
-// Documentation Specialist Agent implementation
+const AssistantAgent = require('./assistant-agent-base');
+
 class DocumentationSpecialistAgent extends AssistantAgent {
     constructor(name, coordinator) {
         super(name, coordinator);
@@ -68,3 +69,5 @@ class DocumentationSpecialistAgent extends AssistantAgent {
         return apiDoc;
     }
 }
+
+module.exports = DocumentationSpecialistAgent;

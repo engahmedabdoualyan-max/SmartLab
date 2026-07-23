@@ -45,8 +45,31 @@ class SmartLAPAgentSystem {
     }
     
     createTask(name, agent, priority = 'medium', deadline = null) {
+        // Support both (name, agent, priority, deadline) and (taskObject) signatures
+        if (typeof name === 'object' && name !== null) {
+            const taskObj = name;
+            const task = {
+                id: this.generateTaskId(),
+                title: taskObj.title || taskObj.name || 'Unnamed Task',
+                name: taskObj.title || taskObj.name || 'Unnamed Task',
+                agent: taskObj.assignedBy || taskObj.agent || 'unassigned',
+                priority: taskObj.priority || 'medium',
+                deadline: taskObj.deadline || null,
+                status: 'pending',
+                createdAt: new Date().toISOString(),
+                dependencies: taskObj.dependencies || [],
+                result: null,
+                assignedTo: taskObj.assignedTo || taskObj.agent || taskObj.assignedBy || 'unassigned',
+                type: taskObj.type || 'general',
+                description: taskObj.description || ''
+            };
+            this.tasks.set(task.id, task);
+            console.log(`📝 Task created: ${task.name} (priority: ${task.priority})`);
+            return task;
+        }
         const task = {
             id: this.generateTaskId(),
+            title: name,
             name,
             agent,
             priority,
@@ -66,15 +89,62 @@ class SmartLAPAgentSystem {
         return 'task_' + Math.random().toString(36).substr(2, 9);
     }
     
-    updateTaskStatus(taskId, status, result = null) {
+    updateTaskStatus(taskId, agentName, status, result = null) {
         if (this.tasks.has(taskId)) {
             const task = this.tasks.get(taskId);
+            const oldStatus = task.status;
             task.status = status;
-            task.completedAt = new Date().toISOString();
-            task.result = result;
+            if (status === 'completed') {
+                task.completedAt = new Date().toISOString();
+            }
+            if (result !== null) {
+                task.result = result;
+            }
             this.tasks.set(taskId, task);
             console.log(`📊 Task status: ${taskId} → ${status}`);
         }
+    }
+
+    assignTask(task, agentName) {
+        const agentKey = typeof agentName === 'string' ? agentName : (agentName.name || agentName);
+        if (this.agents instanceof Map) {
+            if (!this.agents.has(agentKey)) {
+                console.log(`⚠️ Agent ${agentKey} not found`);
+                return false;
+            }
+        }
+        if (task && task.id && this.tasks.has(task.id)) {
+            const t = this.tasks.get(task.id);
+            t.assignedTo = agentKey;
+            t.status = 'assigned';
+            this.tasks.set(task.id, t);
+            console.log(`📋 Task ${task.id} assigned to ${agentKey}`);
+            return true;
+        }
+        return false;
+    }
+
+    getAgentStatus() {
+        const statusList = [];
+        if (this.agents instanceof Map) {
+            this.agents.forEach((agent, name) => {
+                statusList.push({
+                    name: name,
+                    role: agent.role || 'unknown',
+                    status: agent.status || 'idle',
+                    taskCount: agent.tasks ? agent.tasks.length : 0
+                });
+            });
+        }
+        return statusList;
+    }
+
+    getTaskBoard() {
+        const board = {};
+        this.tasks.forEach((task, id) => {
+            board[id] = task;
+        });
+        return board;
     }
     
     getStatus() {

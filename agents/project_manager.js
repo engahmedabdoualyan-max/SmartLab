@@ -179,7 +179,7 @@ class ProjectManagerAgent {
                 return {
                     agentPerformance: this.teamStatus,
                     taskCompletionTimes: this.getTaskCompletionTimes(),
-                    bottlenecks: this.identify bottlenecks()
+                    bottlenecks: this.identifyBottlenecks()
                 };
             
             case 'status':

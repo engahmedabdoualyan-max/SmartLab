@@ -1,4 +1,5 @@
-// CI/CD Specialist Agent implementation
+const AssistantAgent = require('./assistant-agent-base');
+
 class CICDSpecialistAgent extends AssistantAgent {
     constructor(name, coordinator) {
         super(name, coordinator);
@@ -78,3 +79,5 @@ class CICDSpecialistAgent extends AssistantAgent {
         return automation;
     }
 }
+
+module.exports = CICDSpecialistAgent;

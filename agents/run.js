@@ -1,13 +1,13 @@
 // Example runner script for the multi-agent system
-const AgentCoordinator = require('./agents/coordinator.js');
-const DeveloperAgent = require('./agents/developer-agent.js');
-const LabEngineerAgent = require('./agents/lab-engineer-agent.js');
-const ProjectManagerAgent = require('./agents/project-manager-agent.js');
-const DocumentationSpecialistAgent = require('./agents/documentation-specialist.js');
-const APIIntegrationSpecialistAgent = require('./agents/api-integration-specialist.js');
-const CIDS SpecialistAgent = require('./agents/ci-cd-specialist.js');
-const UnifiedTestingInterface = require('./agents/unified-interface.js');
-const VersionControlIntegration = require('./agents/version-control.js');
+const AgentCoordinator = require('./coordinator.js');
+const DeveloperAgent = require('./developer-agent.js');
+const LabEngineerAgent = require('./lab-engineer-agent.js');
+const ProjectManagerAgent = require('./project-manager-agent.js');
+const DocumentationSpecialistAgent = require('./documentation-specialist.js');
+const APIIntegrationSpecialistAgent = require('./api-integration-specialist.js');
+const CICDSpecialistAgent = require('./ci-cd-specialist.js');
+const UnifiedTestingInterface = require('./unified-interface.js');
+const VersionControlIntegration = require('./version-control.js');
 
 async function runMultiAgentSystem() {
     console.log('🚀 SmartLAP Multi-Agent System Initialization');
@@ -30,7 +30,7 @@ async function runMultiAgentSystem() {
     const assistants = [
         new DocumentationSpecialistAgent('doc-spec-001', coordinator),
         new APIIntegrationSpecialistAgent('api-specialist-001', coordinator),
-        new CIDS SpecialistAgent('ci-cd-specialist-001', coordinator)
+        new CICDSpecialistAgent('ci-cd-specialist-001', coordinator)
     ];
 
     developers.forEach(agent => coordinator.registerAgent(agent));

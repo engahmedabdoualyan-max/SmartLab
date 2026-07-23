@@ -709,6 +709,84 @@ function classifyAtterberg(LL, PI) {
     }
 }
 
+// ---------- TEMPERATURE CORRECTION ----------
+
+/**
+ * Correct a measured value to standard temperature
+ * Formula: corrected = value × (1 + 0.000025 × (standardTemp - tempC))
+ * @param {number} value - Measured value
+ * @param {number} tempC - Actual test temperature in °C
+ * @param {number} standardTemp - Standard temperature in °C
+ * @returns {number} Temperature-corrected value, rounded to 2 decimals
+ */
+function temperatureCorrection(value, tempC, standardTemp) {
+    if (typeof value !== 'number' || typeof tempC !== 'number' || typeof standardTemp !== 'number') {
+        throw new Error('Invalid input: All parameters must be numbers');
+    }
+
+    const corrected = value * (1 + 0.000025 * (standardTemp - tempC));
+    return Math.round(corrected * 100) / 100;
+}
+
+// ---------- PROCTOR MOISTURE-DENSITY ----------
+
+/**
+ * Find maximum dry density and corresponding optimum moisture from an array of density points
+ * @param {Array<Object>} densities - Array of {moisture, dryDensity} objects
+ * @returns {Object} {maxDensity: number, optimumMoisture: number}
+ */
+function proctorMaxDryDensity(densities) {
+    if (!Array.isArray(densities)) {
+        throw new Error('Invalid input: Densities must be an array');
+    }
+    if (densities.length === 0) {
+        return { maxDensity: 0, optimumMoisture: 0 };
+    }
+
+    let maxDensity = -Infinity;
+    let optimumMoisture = 0;
+
+    for (let i = 0; i < densities.length; i++) {
+        const point = densities[i];
+        if (typeof point.dryDensity !== 'number' || typeof point.moisture !== 'number') {
+            throw new Error('Invalid input: Each point must have numeric dryDensity and moisture');
+        }
+        if (point.dryDensity > maxDensity) {
+            maxDensity = point.dryDensity;
+            optimumMoisture = point.moisture;
+        }
+    }
+
+    return { maxDensity, optimumMoisture };
+}
+
+// ---------- CBR SWELL ----------
+
+/**
+ * Calculate CBR swell percentage and time in days
+ * Formula: swell% = ((finalReading - initialReading) / initialReading) × 100
+ * @param {number} initialReading - Initial dial reading
+ * @param {number} finalReading - Final dial reading
+ * @param {number} timeHours - Elapsed time in hours
+ * @returns {Object} {swellPercent: number, timeDays: number}
+ */
+function cbrSwell(initialReading, finalReading, timeHours) {
+    if (typeof initialReading !== 'number' || typeof finalReading !== 'number' || typeof timeHours !== 'number') {
+        throw new Error('Invalid input: All parameters must be numbers');
+    }
+    if (initialReading <= 0) {
+        throw new Error('Invalid input: Initial reading must be > 0');
+    }
+    if (timeHours < 0) {
+        throw new Error('Invalid input: Time must be ≥ 0');
+    }
+
+    const swellPercent = Math.round(((finalReading - initialReading) / initialReading) * 100 * 100) / 100;
+    const timeDays = timeHours / 24;
+
+    return { swellPercent, timeDays };
+}
+
 /**
  * Create a strike object for use in test calculations
  * @param {number} index - Strike number
@@ -760,7 +838,10 @@ function exportCalculations() {
         calcPI,
         classifyPlasticity,
         classifyAtterberg,
-        createStrike
+        createStrike,
+        temperatureCorrection,
+        proctorMaxDryDensity,
+        cbrSwell
     };
 }
 

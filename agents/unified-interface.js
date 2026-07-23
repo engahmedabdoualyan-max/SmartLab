@@ -43,3 +43,5 @@ class UnifiedTestingInterface {
         };
     }
 }
+
+module.exports = UnifiedTestingInterface;

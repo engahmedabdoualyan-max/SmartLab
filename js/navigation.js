@@ -1293,3 +1293,219 @@ function exportToExcel(testName, data) {
     URL.revokeObjectURL(link.href);
     showToast('CSV exported: ' + link.download, 'success');
 }
+
+// ===== TEST INFO DATA =====
+var TEST_INFO = {
+  compaction: {
+    standard:'ASTM D698 / D1557',
+    equipment:['Proctor mold (944 cm³ or 2124 cm³)','Hammer (2.5 kg or 4.5 kg)','Balance (0.1 g sensitivity)','Oven (110 ± 5°C)','Sieve No. 4','Mixing tools','Moisture cans'],
+    procedure:['Prepare soil sample and adjust moisture content','Compact soil in 3 layers with specified blows per layer','Trim excess soil and weigh mold + compacted soil','Extract sample and measure moisture content','Repeat for 4-5 moisture points','Plot dry density vs moisture content curve'],
+    duration:'~2 hours per point (full curve: 8-10 hours)',
+    theory_en:'Compaction is the process of densifying soil by reducing air voids through mechanical energy. The Proctor test determines the maximum dry density (MDD) and optimum moisture content (OMC) for a given compactive effort. The standard Proctor uses a 2.5 kg hammer falling 305 mm with 25 blows per layer, while the modified Proctor uses a 4.5 kg hammer falling 457 mm with 25 blows per layer.',
+    theory_ar:'الدمك هو عملية زيادة كثافة التربة بتقليل الفراغات الهوائية باستخدام طاقة ميكانيكية. اختبار بروكتور يحدد أقصى كثافة جافة (MDD) والمحتوى الرطوبي الأمثل (OMC) لجهد دمك معين.'
+  },
+  cbr: {
+    standard:'ASTM D1883',
+    equipment:['CBR mold (152 mm dia)','Surcharge weights (4.5 kg)','Penetration piston (49.6 mm dia)','Loading frame with proving ring','Dial gauge (0.01 mm)','Soaking tank','Swelling gauge'],
+    procedure:['Compact soil in CBR mold at OMC','Apply surcharge weights','Soak in water for 4 days (if required)','Measure swelling','Mount mold on loading frame','Apply penetration at 1.27 mm/min','Record load at 2.5 mm and 5.0 mm penetration'],
+    duration:'~1 hour (unsoaked) or 4 days (soaked)',
+    theory_en:'The California Bearing Ratio (CBR) measures the bearing capacity of soil subgrade and base courses. It is the ratio of the force required to penetrate a soil mass with a standard piston to the force required for an equal penetration in a standard crushed stone material. CBR = (Test Load / Standard Load) × 100.',
+    theory_ar:'نسبة كاليفورنيا للحمل (CBR) تقيس قدرة تحمل تربة الطبقة الأساسية والطبقات التحتية.'
+  },
+  straightedge: {
+    standard:'ASTM E1155 / AASHTO',
+    equipment:['4 m straightedge','Taper gauge (wedge)','Measuring tape','Level'],
+    procedure:['Place straightedge on surface','Measure gap under straightedge with taper gauge','Record maximum deviation','Repeat at specified intervals','Calculate average irregularity'],
+    duration:'~30 min per section',
+    theory_en:'The straightedge test measures surface evenness of concrete floors and pavements. The maximum gap between the straightedge and the surface determines the irregularity index.',
+    theory_ar:'اختبار الاستقامة لقياس تسوية أسطح الخرسانة والأرضيات.'
+  },
+  slump: {
+    standard:'ASTM C143',
+    equipment:['Slump cone (300 mm height)','Tamping rod (16 mm dia, 600 mm long)','Measuring tape','Base plate','Scoop'],
+    procedure:['Moisten cone and base plate','Fill cone in 3 layers, rod 25 times each','Level the top','Remove cone carefully in 5 ± 2 seconds','Measure slump as vertical drop','Record slump in mm'],
+    duration:'~10 min',
+    theory_en:'The slump test measures the consistency of fresh concrete. The difference between the height of the mold and the height of the concrete after subsidence is the slump value. Higher slump indicates more workable concrete.',
+    theory_ar:'اختبار الهبوط لقياس قابلية تشغيل الخرسانة الطازجة.'
+  },
+  maturity: {
+    standard:'ASTM C1074',
+    equipment:['Temperature sensor / data logger','Maturity meter','Thermocouple wires','Compression machine (for correlation)'],
+    procedure:['Embed temperature sensor in concrete','Record temperature over time','Calculate Nurse-Saul maturity: M = Σ(T - T₀) × Δt','Calculate Arrhenius maturity if needed','Correlate maturity with compressive strength'],
+    duration:'Continuous monitoring (1-28 days)',
+    theory_en:'Concrete maturity is a method to estimate in-place concrete strength based on temperature history. The Nurse-Saul method uses a linear relationship: M = Σ(T - T₀) × Δt, where T₀ = -10°C. The Arrhenius method accounts for temperature sensitivity of cement hydration.',
+    theory_ar:'نضج الخرسانة طريقة لتقدير مقاومة الخرسانة في الموقع بناءً على تاريخ درجة الحرارة.'
+  },
+  marshall: {
+    standard:'ASTM D6927',
+    equipment:['Marshall compaction hammer','Marshall stability apparatus','Mold (101.6 mm dia)','Water bath (60°C)','Flow meter','Balance','Oven'],
+    procedure:['Prepare asphalt mix at specified temperature','Compact specimen with 50 or 75 blows per side','Cool to room temperature','Heat in water bath at 60°C for 30-40 min','Load at 50 mm/min until failure','Record stability (kN) and flow (mm)'],
+    duration:'~2 hours per specimen',
+    theory_en:'The Marshall test determines the stability and flow of asphalt concrete specimens. Stability is the maximum load resistance, and flow is the vertical deformation at failure. Used for mix design and quality control.',
+    theory_ar:'اختبار مارشال لتحديد ثباتية وانسيابية خلطات الأسفلت.'
+  },
+  bitumen: {
+    standard:'ASTM D2172',
+    equipment:['Solvent (trichloroethylene or equivalent)','Filter paper','Balance','Oven','Centrifuge (optional)'],
+    procedure:['Weigh bituminous mixture sample','Dissolve binder in solvent','Separate aggregate by filtration or centrifuge','Dry and weigh aggregate','Calculate bitumen content by difference'],
+    duration:'~1-2 hours',
+    theory_en:'The bitumen content test determines the percentage of asphalt binder in a mix. The binder is dissolved using a solvent, and the remaining aggregate is weighed to calculate binder content by difference.',
+    theory_ar:'اختبار تحديد نسبة البيتومين في الخلطات الأسفلتية.'
+  },
+  penetration: {
+    standard:'ASTM D5',
+    equipment:['Penetrometer','Standard needle (100 g)','Timer','Sample container','Water bath (25°C)'],
+    procedure:['Heat bitumen and pour into sample container','Cool to room temperature','Condition in water bath at 25°C for 1 hour','Place under penetrometer','Release needle for 5 seconds','Read penetration depth (0.1 mm units)'],
+    duration:'~2 hours',
+    theory_en:'The penetration test measures the hardness of bitumen by determining the depth a standard needle penetrates under specified conditions. Penetration grade (e.g., 60/70) classifies bitumen for different applications.',
+    theory_ar:'اختبار الاختراق لقياس صلابة البيتومين.'
+  },
+  ductility: {
+    standard:'ASTM D113',
+    equipment:['Ductility mold (briquette)','Ductility testing machine','Water bath (25°C)'],
+    procedure:['Pour bitumen into briquette mold','Cool and trim excess','Condition in water bath at 25°C','Place in ductility machine','Pull at 5 cm/min','Record distance at break (cm)'],
+    duration:'~1 hour',
+    theory_en:'The ductility test measures the cohesive properties of bitumen by stretching a briquette specimen at a specified speed and temperature. The distance at which the thread breaks indicates ductility.',
+    theory_ar:'اختبار المطاوعة لقياس خاصية التماسك للبيتومين.'
+  },
+  softening_point: {
+    standard:'ASTM D36',
+    equipment:['Ring and Ball apparatus','Thermometer','Glycerol bath','Steel balls (3.5 mm)','Hot plate'],
+    procedure:['Prepare bitumen specimen in brass rings','Place rings in apparatus with steel balls','Heat bath at 5°C/min','Record temperature when ball touches bottom plate','Report as softening point (°C)'],
+    duration:'~30 min',
+    theory_en:'The ring and ball softening point test determines the temperature at which bitumen reaches a specified softness. A steel ball placed on a bitumen disc causes the disc to sag and touch a base plate at the softening point temperature.',
+    theory_ar:'اختبار نقطة التليين (الحلقة والكرة) لتحديد درجة حرارة تليين البيتومين.'
+  },
+  viscosity: {
+    standard:'ASTM D4402',
+    equipment:['Rotational viscometer','Thermocouple','Heating unit','Spindle','Sample chamber'],
+    procedure:['Heat bitumen to test temperature','Place sample in viscometer chamber','Insert spindle','Apply torque','Record viscosity at specified shear rate','Repeat at different temperatures if needed'],
+    duration:'~30 min per temperature',
+    theory_en:'Viscosity measures the resistance of bitumen to flow. The rotational viscometer measures torque at controlled speed and temperature. Viscosity-temperature curves are used to determine mixing and compaction temperatures.',
+    theory_ar:'اللزوجة تقيس مقاومة البيتومين للجريان.'
+  },
+  atterberg: {
+    standard:'ASTM D4318',
+    equipment:['Liquid limit device (Casagrande)','Grooving tool','Moisture cans','Balance','Oven','Glass plate','Plastic limit rolling thread'],
+    procedure:['Prepare soil sample passing No. 40 sieve','Mix with water to form paste','Place in liquid limit device','Cut groove and drop cup 25 times','Measure moisture content','Roll thread for plastic limit','Calculate PI = LL - PL'],
+    duration:'~2 hours',
+    theory_en:'Atterberg limits define the critical water contents of fine-grained soils. The Liquid Limit (LL) is where soil transitions from plastic to liquid state. The Plastic Limit (PL) is where soil becomes non-plastic. Plasticity Index (PI = LL - PL) indicates soil plasticity.',
+    theory_ar:'حدود أتربرغ تحدد محتويات الماء الحرجة للتربة الناعمة.'
+  },
+  sieve: {
+    standard:'ASTM D6913 / D422',
+    equipment:['Sieve stack (various sizes)','Mechanical shaker','Balance (0.1 g)','Oven'],
+    procedure:['Dry soil sample in oven','Weigh total sample','Arrange sieve stack in descending order','Place sample on top sieve','Shake for 10-15 minutes','Weigh material retained on each sieve','Calculate % passing and % retained'],
+    duration:'~1 hour',
+    theory_en:'Sieve analysis determines the particle size distribution of soil. The cumulative percentage passing each sieve is plotted on a semi-log graph. Key parameters: D10, D30, D60. Cu = D60/D10, Cc = D30²/(D60×D10).',
+    theory_ar:'التحليل الحجمي لتوزيع أحجام حبيبات التربة.'
+  },
+  compressive: {
+    standard:'ASTM C39',
+    equipment:['Compression testing machine','Cylinder mold (150×300 mm)','Capping apparatus','Measuring calipers'],
+    procedure:['Prepare concrete cylinders','Cure for specified period (7, 14, 28 days)','Cap ends with sulfur or neoprene','Place in compression machine','Load at 0.25 ± 0.05 MPa/s','Record maximum load','Calculate stress = Load / Area'],
+    duration:'~10 min per specimen (plus curing)',
+    theory_en:'Compressive strength is the ability of concrete to resist axial loads. f_c = P/A, where P is the maximum load and A is the cross-sectional area. Strength depends on water-cement ratio, curing, age, and aggregate quality.',
+    theory_ar:'مقاومة الانضغاط هي قدرة الخرسانة على مقاومة الأحمال المحورية.'
+  },
+  air: {
+    standard:'ASTM C231',
+    equipment:['Air content meter (pressure type)','Strike-off bar','Measuring vessel','Rubber mallet','Trowel'],
+    procedure:['Fill measure with fresh concrete in 3 layers','Rod each layer 25 times','Strike off and clean','Seal air meter chamber','Apply pressure and read air content %','Release pressure and verify'],
+    duration:'~15 min',
+    theory_en:'The pressure method measures air content in fresh concrete. Boyle\'s Law is applied: increasing pressure reduces air volume proportionally. Air content affects durability, especially freeze-thaw resistance.',
+    theory_ar:'نسبة الهواء في الخرسانة الطازجة بطريقة الضغط.'
+  },
+  flexural: {
+    standard:'ASTM C78',
+    equipment:['Flexural testing machine','Third-point loading apparatus','Beam molds (150×150×500 mm)','Deflection gauge'],
+    procedure:['Prepare concrete beam specimen','Cure for 28 days','Position beam on supports','Apply load at third points','Record maximum load','Calculate modulus of rupture R = PL/(bd²)'],
+    duration:'~15 min per specimen',
+    theory_en:'The flexural strength (modulus of rupture) measures the tensile strength of concrete in bending. R = PL/(bd²) for third-point loading. Used for pavement and structural design.',
+    theory_ar:'مقاومة الانثناء (معامل التمزق) تقيس مقاومة الخرسانة للشد في الانحناء.'
+  },
+  split_tensile: {
+    standard:'ASTM C496',
+    equipment:['Compression testing machine','Cylinder mold','Bearing strips (plywood)','Measuring tape'],
+    procedure:['Prepare concrete cylinder','Place cylinder horizontally in machine','Apply load along diameter at 0.7-1.4 MPa/min','Record maximum load','Calculate T = 2P/(πLD)'],
+    duration:'~10 min per specimen',
+    theory_en:'The split tensile test measures the tensile strength of concrete by applying a diametral compressive load. T = 2P/(πLD). Values are typically 8-14% of compressive strength.',
+    theory_ar:'اختبار الشد الانشعابي لقياس مقاومة الخرسانة للشد.'
+  },
+  permeability: {
+    standard:'ASTM D2434',
+    equipment:['Permeameter','Standpipe','Timer','Graduated cylinder','Thermometer'],
+    procedure:['Compact soil in permeameter','Saturate specimen with water','Apply constant head (constant head test)','Measure flow rate Q over time','Measure head difference h','Calculate k = QL/(Aht)'],
+    duration:'~1-2 hours',
+    theory_en:'Permeability (hydraulic conductivity) measures the ease of water flow through soil. k = QL/(Aht) for constant head test. Falling head: k = (aL)/(At) × ln(h₁/h₂). Fine-grained soils have lower k values.',
+    theory_ar:'النفاذية تقيس سهولة جريان الماء في التربة.'
+  },
+  specific_gravity: {
+    standard:'ASTM D854',
+    equipment:['Pycnometer (volumetric flask)','Balance (0.001 g)','Vacuum pump','Water bath','Oven'],
+    procedure:['Dry soil sample','Weigh empty pycnometer','Add dry soil and weigh','Add water and de-air','Fill to calibration mark','Weigh pycnometer + soil + water','Calculate Gs = Ws/(Ws + Wpw - Wpsw)'],
+    duration:'~1 hour',
+    theory_en:'Specific gravity (Gs) is the ratio of the weight of soil solids to the weight of an equal volume of water. Used to calculate void ratio, porosity, and saturation. Gs = Ws/(Ws + Wpw - Wpsw).',
+    theory_ar:'الوزن النوعي لحبيبات التربة.'
+  },
+  water_absorption: {
+    standard:'ASTM C642',
+    equipment:['Balance (0.1 g)','Oven (110 ± 5°C)','Water tank','Wire basket'],
+    procedure:['Dry specimen to constant weight (Wdry)','Immerse in water for 24 hours','Surface dry with cloth (Wsat)','Weigh saturated specimen','Calculate absorption% = (Wsat-Wdry)/Wdry × 100'],
+    duration:'~24 hours',
+    theory_en:'Water absorption measures the porosity of aggregates or concrete. The percentage of water absorbed relative to dry weight indicates the material\'s permeability and durability potential.',
+    theory_ar:'امتصاص الماء يقيس مسامية الركام أو الخرسانة.'
+  },
+  direct_shear: {
+    standard:'ASTM D3080',
+    equipment:['Direct shear apparatus','Shear box (60×60 mm)','Porous stones','Dial gauges','Weight hanger'],
+    procedure:['Prepare soil specimen in shear box','Apply normal stress','Saturate specimen if needed','Apply shear at constant strain rate (0.5 mm/min)','Record shear force vs displacement','Repeat at 3 normal stresses','Plot Mohr-Coulomb failure envelope'],
+    duration:'~1 hour per specimen (3 tests minimum)',
+    theory_en:'The direct shear test determines shear strength parameters: cohesion (c) and friction angle (φ). τ = c + σ tan(φ). Three or more specimens at different normal stresses define the failure envelope.',
+    theory_ar:'اختبار القص المباشر لتحديد معاملات مقاومة القص (التماسك وزاوية الاحتكاك).'
+  }
+};
+
+function showExperiment(type) {
+    var t = I18N[currentLang] || I18N.en;
+    var info = TEST_INFO[type];
+    if (!info) { showToast('Info not available for ' + type, 'warning'); return; }
+    var isAr = currentLang === 'ar';
+    var testName = t['test_' + type] || type;
+    document.getElementById('modal-experiment-title').textContent = testName + ' — ' + (isAr ? 'شرح التجربة' : 'Experiment Procedure');
+    var body = document.getElementById('modal-experiment-body');
+    body.innerHTML =
+        '<div class="exp-section">' +
+            '<h4>' + (isAr ? '📋 الغرض من التجربة' : '📋 Objective') + '</h4>' +
+            '<p>' + (isAr ? info.theory_ar : info.theory_en) + '</p>' +
+        '</div>' +
+        '<div class="exp-section">' +
+            '<h4>' + (isAr ? '🔧 خطوات العمل' : '🔧 Procedure') + '</h4>' +
+            '<ul>' + info.procedure.map(function(s) { return '<li>' + s + '</li>'; }).join('') + '</ul>' +
+        '</div>' +
+        '<div class="exp-section">' +
+            '<h4>' + (isAr ? '⏱ المدة المتوقعة' : '⏱ Duration') + '</h4>' +
+            '<p>' + info.duration + '</p>' +
+        '</div>';
+    document.getElementById('modal-experiment').classList.add('show');
+}
+
+function showTechDetails(type) {
+    var t = I18N[currentLang] || I18N.en;
+    var info = TEST_INFO[type];
+    if (!info) { showToast('Details not available for ' + type, 'warning'); return; }
+    var isAr = currentLang === 'ar';
+    var testName = t['test_' + type] || type;
+    document.getElementById('modal-techdetails-title').textContent = testName + ' — ' + (isAr ? 'تفاصيل فنية' : 'Technical Details');
+    var body = document.getElementById('modal-techdetails-body');
+    body.innerHTML =
+        '<dl class="tech-grid">' +
+            '<dt>' + (isAr ? 'المواصفة القياسية' : 'Standard') + '</dt><dd>' + info.standard + '</dd>' +
+            '<dt>' + (isAr ? 'المدة المتوقعة' : 'Duration') + '</dt><dd>' + info.duration + '</dd>' +
+        '</dl>' +
+        '<div class="exp-section">' +
+            '<h4>' + (isAr ? '⚙️ الأجهزة والمعدات' : '⚙️ Equipment') + '</h4>' +
+            '<ul>' + info.equipment.map(function(s) { return '<li>' + s + '</li>'; }).join('') + '</ul>' +
+        '</div>';
+    document.getElementById('modal-techdetails').classList.add('show');
+}

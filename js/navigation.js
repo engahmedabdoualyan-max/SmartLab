@@ -1476,16 +1476,26 @@ function showExperiment(type) {
     var body = document.getElementById('modal-experiment-body');
     body.innerHTML =
         '<div class="exp-section">' +
-            '<h4>' + (isAr ? '📋 الغرض من التجربة' : '📋 Objective') + '</h4>' +
+            '<h4>' + (isAr ? '🎯 الهدف من التجربة' : '🎯 Objective') + '</h4>' +
             '<p>' + (isAr ? info.theory_ar : info.theory_en) + '</p>' +
         '</div>' +
         '<div class="exp-section">' +
-            '<h4>' + (isAr ? '🔧 خطوات العمل' : '🔧 Procedure') + '</h4>' +
-            '<ul>' + info.procedure.map(function(s) { return '<li>' + s + '</li>'; }).join('') + '</ul>' +
+            '<h4>' + (isAr ? '📋 المواصفة القياسية' : '📋 Standard') + '</h4>' +
+            '<p style="font-weight:700;color:var(--accent);">' + info.standard + '</p>' +
         '</div>' +
         '<div class="exp-section">' +
-            '<h4>' + (isAr ? '⏱ المدة المتوقعة' : '⏱ Duration') + '</h4>' +
+            '<h4>' + (isAr ? '🔧 خطوات العمل بالتفصيل' : '🔧 Detailed Procedure') + '</h4>' +
+            '<ol>' + info.procedure.map(function(s) { return '<li>' + s + '</li>'; }).join('') + '</ol>' +
+        '</div>' +
+        '<div class="exp-section">' +
+            '<h4>' + (isAr ? '⏱ الوقت المستغرق' : '⏱ Duration') + '</h4>' +
             '<p>' + info.duration + '</p>' +
+        '</div>' +
+        '<div class="exp-section" style="background:var(--surface-alt);border-radius:8px;padding:12px;margin-top:8px;">' +
+            '<h4>' + (isAr ? '💡 ملاحظات هامة' : '💡 Important Notes') + '</h4>' +
+            '<p style="font-size:12px;color:var(--text-muted);">' + (isAr ?
+                'تأكد من معايرة الأجهزة قبل البدء. سجل جميع القراءات في دفتر الملاحظات. اتبع إرشادات السلامة المهنية.',
+                'Ensure all equipment is calibrated before starting. Record all readings in the lab notebook. Follow all safety guidelines.') + '</p>' +
         '</div>';
     document.getElementById('modal-experiment').classList.add('show');
 }
@@ -1500,12 +1510,16 @@ function showTechDetails(type) {
     var body = document.getElementById('modal-techdetails-body');
     body.innerHTML =
         '<dl class="tech-grid">' +
-            '<dt>' + (isAr ? 'المواصفة القياسية' : 'Standard') + '</dt><dd>' + info.standard + '</dd>' +
-            '<dt>' + (isAr ? 'المدة المتوقعة' : 'Duration') + '</dt><dd>' + info.duration + '</dd>' +
+            '<dt>' + (isAr ? '📏 المواصفة' : '📏 Standard') + '</dt><dd>' + info.standard + '</dd>' +
+            '<dt>' + (isAr ? '⏱ المدة' : '⏱ Duration') + '</dt><dd>' + info.duration + '</dd>' +
         '</dl>' +
         '<div class="exp-section">' +
-            '<h4>' + (isAr ? '⚙️ الأجهزة والمعدات' : '⚙️ Equipment') + '</h4>' +
+            '<h4>' + (isAr ? '⚙️ الأجهزة والمعدات المطلوبة' : '⚙️ Required Equipment') + '</h4>' +
             '<ul>' + info.equipment.map(function(s) { return '<li>' + s + '</li>'; }).join('') + '</ul>' +
+        '</div>' +
+        '<div class="exp-section">' +
+            '<h4>' + (isAr ? '🔬 المبدأ العلمي' : '🔬 Scientific Principle') + '</h4>' +
+            '<p>' + (isAr ? info.theory_ar : info.theory_en) + '</p>' +
         '</div>';
     document.getElementById('modal-techdetails').classList.add('show');
 }

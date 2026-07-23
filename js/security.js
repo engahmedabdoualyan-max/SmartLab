@@ -469,6 +469,25 @@ function getRecentAuditLog(limit) {
 }
 
 /**
+ * Log a successful login event to the audit trail.
+ */
+function logLogin() {
+    logAuditTrail(currentUser ? currentUser.uid : 'anonymous', 'login', {
+        method: currentUser && currentUser.isAnonymous ? 'anonymous' : 'email',
+        timestamp: new Date().toISOString()
+    });
+}
+
+/**
+ * Log a logout event to the audit trail.
+ */
+function logLogout() {
+    logAuditTrail(currentUser ? currentUser.uid : 'anonymous', 'logout', {
+        timestamp: new Date().toISOString()
+    });
+}
+
+/**
  * Enable or disable audit logging.
  * @param {boolean} enabled - Whether logging is enabled
  */

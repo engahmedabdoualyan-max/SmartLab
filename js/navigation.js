@@ -334,7 +334,9 @@ var TEST_DEFS = {
 
 function openStaticTest(type, name) {
   var def = TEST_DEFS[type] || { name: name || type };
-  var test = { id: type + '-static', type: type, name: def.name };
+  var t = I18N[currentLang] || I18N.en;
+  var displayName = t['test_' + type] || def.name || name || type;
+  var test = { id: type + '-static', type: type, name: displayName, nameEn: def.name };
   currentTest = test;
   openTest(test);
 }
@@ -388,24 +390,27 @@ async function seedDomains() {
         return;
     }
     var batch = db.batch();
-    [{name:'قسم الطرق والتربة',description:'اختبارات الطرق والتربة',order:1},{name:'قسم الخرسانة',description:'اختبارات الخرسانة',order:2},{name:'قسم الأسفلت',description:'اختبارات الأسفلت',order:3}].forEach(function(d){batch.set(db.collection('domains').doc(),d);});
+    [{name:'قسم الطرق والتربة',nameEn:'Roads & Soil',description:'اختبارات الطرق والتربة',descriptionEn:'Roads and soil testing',order:1,icon:'🛣️'},{name:'قسم الخرسانة',nameEn:'Concrete',description:'اختبارات الخرسانة',descriptionEn:'Concrete testing',order:2,icon:'🏗️'},{name:'قسم الأسفلت',nameEn:'Asphalt',description:'اختبارات الأسفلت',descriptionEn:'Asphalt testing',order:3,icon:'🛤️'}].forEach(function(d){batch.set(db.collection('domains').doc(),d);});
     await batch.commit();
     var tb = db.batch();
     var ds = await db.collection('domains').where('name','==','قسم الطرق والتربة').get();
-if(!ds.empty){var did=ds.docs[0].id;tb.set(db.collection('tests').doc(),{name:'اختبار الدمك',domainId:did,order:1,type:'compaction',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'اختبار تحديد الرطوبة',domainId:did,order:2,type:'moisture',config:{inputs:[{name:'وزن_الأرض',label:'وزن العينة الرطبة (كغ)',type:'number'},{name:'وزن_الجافة',label:'وزن العينة الجافة (كغ)',type:'number'}]}});tb.set(db.collection('tests').doc(),{name:'اختبار نسبة الحمل (CBR)',domainId:did,order:3,type:'cbr',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'اختبار استقامة الطرق (Straightedge)',domainId:did,order:4,type:'straightedge',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'حدود أتربرغ (Atterberg Limits)',domainId:did,order:5,type:'atterberg',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'التحاليل الحجمية (Sieve Analysis)',domainId:did,order:6,type:'sieve',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'اختبار القص المباشر (Direct Shear)',domainId:did,order:7,type:'direct_shear',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'اختبار النفاذية (Permeability)',domainId:did,order:8,type:'permeability',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'الوزن النوعي (Specific Gravity)',domainId:did,order:9,type:'specific_gravity',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'امتصاص الماء (Water Absorption)',domainId:did,order:10,type:'water_absorption',config:{inputs:[]}});}
+if(!ds.empty){var did=ds.docs[0].id;tb.set(db.collection('tests').doc(),{name:'اختبار الدمك',nameEn:'Compaction (Proctor)',domainId:did,order:1,type:'compaction',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'اختبار تحديد الرطوبة',nameEn:'Moisture Test',domainId:did,order:2,type:'moisture',config:{inputs:[{name:'وزن_الأرض',label:'وزن العينة الرطبة (كغ)',type:'number'},{name:'وزن_الجافة',label:'وزن العينة الجافة (كغ)',type:'number'}]}});tb.set(db.collection('tests').doc(),{name:'اختبار نسبة الحمل (CBR)',nameEn:'CBR',domainId:did,order:3,type:'cbr',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'اختبار استقامة الطرق (Straightedge)',nameEn:'Straightedge',domainId:did,order:4,type:'straightedge',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'حدود أتربرغ (Atterberg Limits)',nameEn:'Atterberg Limits',domainId:did,order:5,type:'atterberg',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'التحاليل الحجمية (Sieve Analysis)',nameEn:'Sieve Analysis',domainId:did,order:6,type:'sieve',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'اختبار القص المباشر (Direct Shear)',nameEn:'Direct Shear',domainId:did,order:7,type:'direct_shear',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'اختبار النفاذية (Permeability)',nameEn:'Permeability',domainId:did,order:8,type:'permeability',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'الوزن النوعي (Specific Gravity)',nameEn:'Specific Gravity',domainId:did,order:9,type:'specific_gravity',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'امتصاص الماء (Water Absorption)',nameEn:'Water Absorption',domainId:did,order:10,type:'water_absorption',config:{inputs:[]}});}
     var d2=await db.collection('domains').where('name','==','قسم الخرسانة').get();
-    if(!d2.empty){var cid=d2.docs[0].id;tb.set(db.collection('tests').doc(),{name:'اختبار الانضباط (Slump)',domainId:cid,order:1,type:'slump',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'نضج الخرسانة (Maturity)',domainId:cid,order:2,type:'maturity',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'الشد الانضغاطي (Compressive Strength)',domainId:cid,order:3,type:'compressive',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'نسبة الهواء (Air Content)',domainId:cid,order:4,type:'air',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'قوة الانثناء (Flexural Strength)',domainId:cid,order:5,type:'flexural',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'الشد الانشعابي (Split Tensile)',domainId:cid,order:6,type:'split_tensile',config:{inputs:[]}});}
+    if(!d2.empty){var cid=d2.docs[0].id;tb.set(db.collection('tests').doc(),{name:'اختبار الانضباط (Slump)',nameEn:'Slump Test',domainId:cid,order:1,type:'slump',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'نضج الخرسانة (Maturity)',nameEn:'Concrete Maturity',domainId:cid,order:2,type:'maturity',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'الشد الانضغاطي (Compressive Strength)',nameEn:'Compressive Strength',domainId:cid,order:3,type:'compressive',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'نسبة الهواء (Air Content)',nameEn:'Air Content',domainId:cid,order:4,type:'air',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'قوة الانثناء (Flexural Strength)',nameEn:'Flexural Strength',domainId:cid,order:5,type:'flexural',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'الشد الانشعابي (Split Tensile)',nameEn:'Split Tensile',domainId:cid,order:6,type:'split_tensile',config:{inputs:[]}});}
     var d3=await db.collection('domains').where('name','==','قسم الأسفلت').get();
-    if(!d3.empty){var aid=d3.docs[0].id;tb.set(db.collection('tests').doc(),{name:'اختبار مارشال الرقمي (Marshall)',domainId:aid,order:1,type:'marshall',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'_photo-Tester للбитومين',domainId:aid,order:2,type:'bitumen',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'اختبار الانساب (Penetration)',domainId:aid,order:3,type:'penetration',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'اختبار المطاوعة (Ductility)',domainId:aid,order:4,type:'ductility',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'نقطة التليين (Softening Point)',domainId:aid,order:5,type:'softening_point',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'اللزوجة (Viscosity)',domainId:aid,order:6,type:'viscosity',config:{inputs:[]}});}
+    if(!d3.empty){var aid=d3.docs[0].id;tb.set(db.collection('tests').doc(),{name:'اختبار مارشال الرقمي (Marshall)',nameEn:'Marshall Test',domainId:aid,order:1,type:'marshall',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'_photo-Tester للбитومين',nameEn:'Bitumen Photo-Tester',domainId:aid,order:2,type:'bitumen',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'اختبار الانساب (Penetration)',nameEn:'Penetration',domainId:aid,order:3,type:'penetration',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'اختبار المطاوعة (Ductility)',nameEn:'Ductility',domainId:aid,order:4,type:'ductility',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'نقطة التليين (Softening Point)',nameEn:'Softening Point',domainId:aid,order:5,type:'softening_point',config:{inputs:[]}});tb.set(db.collection('tests').doc(),{name:'اللزوجة (Viscosity)',nameEn:'Viscosity',domainId:aid,order:6,type:'viscosity',config:{inputs:[]}});}
     await tb.commit();
 }
 
 function selectDomain(domain) {
   currentDomain = domain;
   showScreen('dashboard');
-  document.getElementById('dash-domain-name').textContent = domain.name;
-  document.getElementById('dash-title').textContent = domain.name;
-  document.getElementById('dash-subtitle').textContent = domain.description;
+  var t = I18N[currentLang] || I18N.en;
+  var dn = t['domain_' + domain.id] || domain.nameEn || domain.name;
+  var dd = t['domain_' + domain.id + '_desc'] || domain.descriptionEn || domain.description;
+  document.getElementById('dash-domain-name').textContent = dn;
+  document.getElementById('dash-title').textContent = dn;
+  document.getElementById('dash-subtitle').textContent = dd;
   // Hide all department sections first
   var sections = document.querySelectorAll('.dept-section');
   for (var i = 0; i < sections.length; i++) {
@@ -456,7 +461,8 @@ function openTest(test){
   // Default: compaction test screen
   strikes = []; isTesting = false; currentSessionId = null;
   showScreen('test');
-  document.getElementById('test-page-title').textContent = test.name;
+  var t = I18N[currentLang] || I18N.en;
+  document.getElementById('test-page-title').textContent = t['test_' + test.type] || test.nameEn || test.name;
   document.getElementById('results-panel').style.display = 'none';
   document.getElementById('btn-pdf').style.display = 'none';
   document.getElementById('chart-box').style.display = 'none';

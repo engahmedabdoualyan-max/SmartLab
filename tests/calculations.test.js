@@ -462,3 +462,119 @@ describe('CBR Swell Calculations', function () {
         assertClose(result.timeDays, 3, 0.001);
     });
 });
+
+// ------------------------------------------------------------------
+// 10. COV (COEFFICIENT OF VARIATION)
+// ------------------------------------------------------------------
+describe('COV Calculations', function () {
+    it('COV of identical values is 0', function () {
+        assertClose(calc.calcCOV([30,30,30]), 0, 0.001);
+    });
+    it('COV of sample concrete strengths', function () {
+        var cov = calc.calcCOV([32.1, 30.5, 28.9, 31.2, 29.8]);
+        assertClose(cov, 4.05, 0.01);
+    });
+    it('Classify COV — excellent', function () {
+        assertEqual(calc.classifyCOV(4.0), 'Excellent');
+    });
+    it('Classify COV — good', function () {
+        assertEqual(calc.classifyCOV(8.5), 'Good');
+    });
+    it('Classify COV — poor', function () {
+        assertEqual(calc.classifyCOV(16.0), 'Poor');
+    });
+    it('COV with single value returns 0', function () {
+        assertEqual(calc.calcCOV([30]), 0);
+    });
+    it('COV with empty array returns 0', function () {
+        assertEqual(calc.calcCOV([]), 0);
+    });
+});
+
+// ------------------------------------------------------------------
+// 11. L/D CORRECTION (ASTM C39)
+// ------------------------------------------------------------------
+describe('L/D Correction ASTM C39', function () {
+    it('Standard 2:1 cylinder (150×300mm) gives 1.0', function () {
+        assertEqual(calc.calcLDCorrection(300, 150), 1.0);
+    });
+    it('L/D=1.5 gives 0.96', function () {
+        assertEqual(calc.calcLDCorrection(150, 100), 0.96);
+    });
+    it('L/D=1.25 gives 0.93', function () {
+        assertEqual(calc.calcLDCorrection(125, 100), 0.93);
+    });
+    it('L/D=1.0 gives 0.87', function () {
+        assertEqual(calc.calcLDCorrection(100, 100), 0.87);
+    });
+    it('Corrected strength calculation', function () {
+        var corrected = calc.calcCorrectedStrength(35.0, 100, 100);
+        assertClose(corrected, 30.45, 0.01);
+    });
+});
+
+// ------------------------------------------------------------------
+// 12. FAILURE MODE CLASSIFICATION
+// ------------------------------------------------------------------
+describe('Failure Mode Classification', function () {
+    it('Describes cone failure', function () {
+        assertEqual(calc.describeFailureMode('cone'), 'Cone — Typical cone-shaped fracture (Type 1)');
+    });
+    it('Describes end failure', function () {
+        assertEqual(calc.describeFailureMode('end'), 'End — Irregular end failure (no valid result)');
+    });
+});
+
+// ------------------------------------------------------------------
+// 13. MARSHALL VOLUMETRICS
+// ------------------------------------------------------------------
+describe('Marshall Volumetric Properties', function () {
+    it('Va = (1 - Gmb/Gmm) × 100', function () {
+        assertClose(calc.calcVa(2.340, 2.450), 4.49, 0.01);
+    });
+    it('Va returns 0 when Gmb > Gmm', function () {
+        assertEqual(calc.calcVa(2.500, 2.400), 0);
+    });
+    it('VMA calculation', function () {
+        var vma = calc.calcVMA(2.340, 2.650, 95.5);
+        assertClose(vma, 15.67, 0.01);
+    });
+    it('VFA calculation', function () {
+        assertClose(calc.calcVFA(15.67, 4.49), 71.35, 0.01);
+    });
+    it('VFA returns 0 when VMA is 0', function () {
+        assertEqual(calc.calcVFA(0, 4), 0);
+    });
+});
+
+// ------------------------------------------------------------------
+// 14. CONTROL CHART / CAPABILITY INDICES
+// ------------------------------------------------------------------
+describe('Control Chart Calculations', function () {
+    it('UCL = mean + 3×std', function () {
+        assertClose(calc.calcUCL(30, 2), 36, 0.001);
+    });
+    it('LCL = mean - 3×std', function () {
+        assertClose(calc.calcLCL(30, 2), 24, 0.001);
+    });
+    it('LCL with custom k', function () {
+        assertClose(calc.calcLCL(30, 2, 2), 26, 0.001);
+    });
+    it('LCL does not go negative', function () {
+        assertEqual(calc.calcLCL(5, 3), 0);
+    });
+    it('Cp calculation', function () {
+        assertClose(calc.calcCp(40, 20, 2.5), 1.333, 0.01);
+    });
+    it('Cpk calculation', function () {
+        var cpk = calc.calcCpk(32, 2.5, 40, 20);
+        assertClose(cpk, 1.067, 0.01);
+    });
+    it('CUSUM calculation', function () {
+        var result = calc.calcCUSUM([30, 31, 29, 32, 28], 30);
+        assertEqual(result.length, 5);
+        assertClose(result[0], 0, 0.001);
+        assertClose(result[1], 1, 0.001);
+        assertClose(result[2], 0, 0.001);
+    });
+});

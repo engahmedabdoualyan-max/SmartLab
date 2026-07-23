@@ -785,6 +785,252 @@ function classifyAtterberg(LL, PI) {
     }
 }
 
+// ---------- COEFFICIENT OF VARIATION (COV) ----------
+
+/**
+ * Calculate Coefficient of Variation (COV) for a set of values.
+ * COV = (std / mean) × 100
+ * @param {number[]} values - Array of numeric results
+ * @returns {number} COV as percentage, or 0 if insufficient data
+ */
+function calcCOV(values) {
+    if (!Array.isArray(values)) {
+        throw new Error('Invalid input: values must be an array');
+    }
+    if (values.length < 2) return 0;
+    for (var i = 0; i < values.length; i++) {
+        if (typeof values[i] !== 'number') {
+            throw new Error('Invalid input: all values must be numbers');
+        }
+    }
+    var sum = 0, n = values.length;
+    for (var j = 0; j < n; j++) sum += values[j];
+    var mean = sum / n;
+    var sqDiff = 0;
+    for (var k = 0; k < n; k++) sqDiff += (values[k] - mean) * (values[k] - mean);
+    var std = Math.sqrt(sqDiff / (n - 1));
+    if (mean === 0) return 0;
+    return (std / mean) * 100;
+}
+
+/**
+ * Classify production quality based on COV per ACI 214
+ * @param {number} cov - Coefficient of Variation (%)
+ * @returns {string} Classification ('Excellent', 'Very Good', 'Good', 'Fair', 'Poor')
+ */
+function classifyCOV(cov) {
+    if (typeof cov !== 'number' || cov < 0) {
+        throw new Error('Invalid input: COV must be a non-negative number');
+    }
+    if (cov <= 5) return 'Excellent';
+    if (cov <= 7) return 'Very Good';
+    if (cov <= 10) return 'Good';
+    if (cov <= 15) return 'Fair';
+    return 'Poor';
+}
+
+// ---------- L/D CORRECTION (ASTM C39) ----------
+
+/**
+ * ASTM C39 L/D correction factor for non-standard cylinder specimens.
+ * @param {number} L - Actual length/height in mm
+ * @param {number} D - Actual diameter in mm
+ * @returns {number} Correction factor (1.0 if L/D ≥ 1.75)
+ */
+function calcLDCorrection(L, D) {
+    if (typeof L !== 'number' || typeof D !== 'number') {
+        throw new Error('Invalid input: L and D must be numbers');
+    }
+    if (L <= 0 || D <= 0) {
+        throw new Error('Invalid input: L and D must be > 0');
+    }
+    var ratio = L / D;
+    if (ratio >= 1.75) return 1.0;
+    if (ratio >= 1.50) return 0.96;
+    if (ratio >= 1.25) return 0.93;
+    if (ratio >= 1.00) return 0.87;
+    return 0.82;
+}
+
+/**
+ * Apply L/D correction to compressive strength per ASTM C39
+ * @param {number} strength - Measured compressive strength in MPa
+ * @param {number} L - Actual specimen length in mm
+ * @param {number} D - Actual specimen diameter in mm
+ * @returns {number} Corrected compressive strength in MPa
+ */
+function calcCorrectedStrength(strength, L, D) {
+    if (typeof strength !== 'number') {
+        throw new Error('Invalid input: strength must be a number');
+    }
+    return strength * calcLDCorrection(L, D);
+}
+
+/**
+ * Describe a concrete failure mode per ASTM C39
+ * @param {string} mode - Failure mode code ('cone', 'cone_shear', 'shear', 'split', 'columnar', 'end')
+ * @returns {string} Human-readable description
+ */
+function describeFailureMode(mode) {
+    switch (mode) {
+        case 'cone': return 'Cone — Typical cone-shaped fracture (Type 1)';
+        case 'cone_shear': return 'Cone & Shear — Cone on one end, shear through body (Type 2)';
+        case 'shear': return 'Shear — Diagonal shear fracture through body (Type 3)';
+        case 'split': return 'Split — Vertical splitting into columns (Type 4)';
+        case 'columnar': return 'Columnar — Columnar vertical cracking (Type 5)';
+        case 'end': return 'End — Irregular end failure (no valid result)';
+        default: return mode || 'Not specified';
+    }
+}
+
+// ---------- MARSHALL VOLUMETRIC PROPERTIES ----------
+
+/**
+ * Calculate air voids (Va) in compacted asphalt mix
+ * Va = (1 - Gmb / Gmm) × 100
+ * @param {number} Gmb - Bulk specific gravity of compacted mix
+ * @param {number} Gmm - Maximum theoretical specific gravity
+ * @returns {number} Air voids as percentage (%)
+ */
+function calcVa(Gmb, Gmm) {
+    if (typeof Gmb !== 'number' || typeof Gmm !== 'number') {
+        throw new Error('Invalid input: Gmb and Gmm must be numbers');
+    }
+    if (Gmb <= 0 || Gmm <= 0) {
+        throw new Error('Invalid input: Gmb and Gmm must be > 0');
+    }
+    if (Gmb > Gmm) return 0;
+    return (1 - Gmb / Gmm) * 100;
+}
+
+/**
+ * Calculate Voids in Mineral Aggregate (VMA)
+ * VMA = (1 - (Gmb × Ps) / Gsb) × 100
+ * @param {number} Gmb - Bulk specific gravity of compacted mix
+ * @param {number} Gsb - Bulk specific gravity of aggregate
+ * @param {number} Ps - Aggregate content as % of mix (100 - binder%)
+ * @returns {number} VMA as percentage (%)
+ */
+function calcVMA(Gmb, Gsb, Ps) {
+    if (typeof Gmb !== 'number' || typeof Gsb !== 'number' || typeof Ps !== 'number') {
+        throw new Error('Invalid input: All parameters must be numbers');
+    }
+    if (Gmb <= 0 || Gsb <= 0 || Ps <= 0) {
+        throw new Error('Invalid input: All values must be > 0');
+    }
+    if (Ps > 100) Ps = 100;
+    return (1 - (Gmb * Ps) / (Gsb * 100)) * 100;
+}
+
+/**
+ * Calculate Voids Filled with Asphalt (VFA)
+ * VFA = (VMA - Va) / VMA × 100
+ * @param {number} VMA - Voids in mineral aggregate (%)
+ * @param {number} Va - Air voids (%)
+ * @returns {number} VFA as percentage (%)
+ */
+function calcVFA(VMA, Va) {
+    if (typeof VMA !== 'number' || typeof Va !== 'number') {
+        throw new Error('Invalid input: VMA and Va must be numbers');
+    }
+    if (VMA <= 0) return 0;
+    if (Va > VMA) return 100;
+    return ((VMA - Va) / VMA) * 100;
+}
+
+// ---------- CONTROL CHART / CAPABILITY INDICES ----------
+
+/**
+ * Calculate Upper Control Limit
+ * UCL = mean + k × std
+ * @param {number} mean - Mean of the process
+ * @param {number} std - Standard deviation
+ * @param {number} k - Number of sigma (default 3)
+ * @returns {number} Upper control limit
+ */
+function calcUCL(mean, std, k) {
+    if (typeof mean !== 'number' || typeof std !== 'number') {
+        throw new Error('Invalid input: mean and std must be numbers');
+    }
+    if (k === undefined) k = 3;
+    return mean + k * std;
+}
+
+/**
+ * Calculate Lower Control Limit
+ * LCL = max(0, mean - k × std)
+ * @param {number} mean - Mean of the process
+ * @param {number} std - Standard deviation
+ * @param {number} k - Number of sigma (default 3)
+ * @returns {number} Lower control limit
+ */
+function calcLCL(mean, std, k) {
+    if (typeof mean !== 'number' || typeof std !== 'number') {
+        throw new Error('Invalid input: mean and std must be numbers');
+    }
+    if (k === undefined) k = 3;
+    return Math.max(0, mean - k * std);
+}
+
+/**
+ * Calculate Process Capability Index Cp
+ * Cp = (USL - LSL) / (6 × σ)
+ * @param {number} usl - Upper specification limit
+ * @param {number} lsl - Lower specification limit
+ * @param {number} std - Process standard deviation
+ * @returns {number} Cp value
+ */
+function calcCp(usl, lsl, std) {
+    if (typeof usl !== 'number' || typeof lsl !== 'number' || typeof std !== 'number') {
+        throw new Error('Invalid input: all parameters must be numbers');
+    }
+    if (std <= 0) return 0;
+    if (usl <= lsl) return 0;
+    return (usl - lsl) / (6 * std);
+}
+
+/**
+ * Calculate Process Capability Index Cpk
+ * Cpk = min((mean - LSL)/(3σ), (USL - mean)/(3σ))
+ * @param {number} mean - Process mean
+ * @param {number} std - Process standard deviation
+ * @param {number} usl - Upper specification limit
+ * @param {number} lsl - Lower specification limit
+ * @returns {number} Cpk value
+ */
+function calcCpk(mean, std, usl, lsl) {
+    if (typeof mean !== 'number' || typeof std !== 'number' || typeof usl !== 'number' || typeof lsl !== 'number') {
+        throw new Error('Invalid input: all parameters must be numbers');
+    }
+    if (std <= 0) return 0;
+    return Math.min((mean - lsl) / (3 * std), (usl - mean) / (3 * std));
+}
+
+/**
+ * Calculate CUSUM (Cumulative Sum) array
+ * @param {number[]} values - Array of observed values
+ * @param {number} target - Target mean value
+ * @returns {number[]} Array of cumulative deviations
+ */
+function calcCUSUM(values, target) {
+    if (!Array.isArray(values)) {
+        throw new Error('Invalid input: values must be an array');
+    }
+    if (typeof target !== 'number') {
+        throw new Error('Invalid input: target must be a number');
+    }
+    var cusum = [];
+    var sum = 0;
+    for (var i = 0; i < values.length; i++) {
+        if (typeof values[i] !== 'number') {
+            throw new Error('Invalid input: all values must be numbers');
+        }
+        sum += values[i] - target;
+        cusum.push(sum);
+    }
+    return cusum;
+}
+
 // ---------- TEMPERATURE CORRECTION ----------
 
 /**
@@ -918,7 +1164,20 @@ function exportCalculations() {
         createStrike,
         temperatureCorrection,
         proctorMaxDryDensity,
-        cbrSwell
+        cbrSwell,
+        calcCOV,
+        classifyCOV,
+        calcLDCorrection,
+        calcCorrectedStrength,
+        describeFailureMode,
+        calcVa,
+        calcVMA,
+        calcVFA,
+        calcUCL,
+        calcLCL,
+        calcCp,
+        calcCpk,
+        calcCUSUM
     };
 }
 

@@ -472,6 +472,8 @@ function openTest(test){
   if (test.type === 'bitumen') { openBit(test); return; }
   if (test.type === 'penetration') { openPen(test); return; }
   if (test.type === 'straightedge') { openSE(test); return; }
+  if (test.type === 'mixdesign') { openMixDesign(test); return; }
+  if (test.type === 'controlcharts') { openControlCharts(test); return; }
   // Default: compaction test screen
   strikes = []; isTesting = false; currentSessionId = null;
   showScreen('test');

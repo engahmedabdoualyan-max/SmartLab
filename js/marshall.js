@@ -1,6 +1,3 @@
-// ================================================================
-// DIGITAL MARSHALL TEST
-// ================================================================
 var marData=[],marIsTesting=false;
 
 function openMar(test){
@@ -15,6 +12,7 @@ function openMar(test){
     document.getElementById('mar-val-stab').textContent='--';
     document.getElementById('mar-val-maxload').textContent='--';
     document.getElementById('mar-val-disp').textContent='--';
+    document.getElementById('mar-vol-panel').style.display='none';
     drawMarChart();
 }
 function startMarshallTest(){
@@ -24,6 +22,7 @@ function startMarshallTest(){
     document.getElementById('mar-btn-start').style.display='none';
     document.getElementById('mar-btn-stop').style.display='flex';
     document.getElementById('mar-results-panel').style.display='none';
+    document.getElementById('mar-vol-panel').style.display='none';
     logTestStarted('marshall',currentTest?currentTest.id:'');
     drawMarChart();
     if(conn==='demo'){
@@ -84,6 +83,30 @@ function showMarResults(){
     var ht=parseFloat(document.getElementById('mar_inp_height').value)||63.5;
     var area=Math.PI*Math.pow(dia/2,2);
     var stabilityPSI=stab/area;
+
+    // Volumetric properties
+    var Gmm=parseFloat(document.getElementById('mar_inp_gmm').value);
+    var Gsb=parseFloat(document.getElementById('mar_inp_gsb').value);
+    var binderPct=parseFloat(document.getElementById('mar_inp_binder').value);
+    var va='--',vma='--',vfa='--';
+    if(Gmm>0&&Gsb>0){
+        var GmbVal=stab/(area*ht*0.001);
+        if(!isNaN(GmbVal)&&GmbVal>0){
+            va=calcVa(GmbVal,Gmm).toFixed(1)+'%';
+            var Ps=100-(binderPct||5);
+            vma=calcVMA(GmbVal,Gsb,Ps).toFixed(1)+'%';
+            var vmaNum=parseFloat(vma);
+            var vaNum=parseFloat(va);
+            if(!isNaN(vmaNum)&&!isNaN(vaNum)&&vmaNum>0){
+                vfa=calcVFA(vmaNum,vaNum).toFixed(1)+'%';
+            }
+        }
+    }
+    document.getElementById('mar-vol-panel').style.display='block';
+    document.getElementById('mar-vol-va').textContent=va;
+    document.getElementById('mar-vol-vma').textContent=vma;
+    document.getElementById('mar-vol-vfa').textContent=vfa;
+
     document.getElementById('mar-results-panel').style.display='block';
     var marHtml=safeResultStatus(pass,pass?'PASS':'FAIL')+
         safeResultRow('Stability',stab+' N')+
@@ -93,7 +116,7 @@ function showMarResults(){
         safeResultRow('Diameter',dia+' mm')+
         safeResultRow('Height',ht+' mm');
     safeSetHTML('mar-results-body',marHtml);
-    rateLimitedFirestoreWrite('sessions',{testId:currentTest.id,domainId:currentDomain?currentDomain.id:'',domainName:currentDomain?currentDomain.name:'',testName:currentTest.name,results:{stability:stab,flow:flowAtMax,max_load:maxLoad,stability_psi:stabilityPSI,diameter:dia,height:ht,status:pass?'PASS':'FAIL'},userId:currentUser?currentUser.uid:'guest'}).catch(function(err){console.error('showMarResults save error:',err);});
+    rateLimitedFirestoreWrite('sessions',{testId:currentTest.id,domainId:currentDomain?currentDomain.id:'',domainName:currentDomain?currentDomain.name:'',testName:currentTest.name,results:{stability:stab,flow:flowAtMax,max_load:maxLoad,stability_psi:stabilityPSI,diameter:dia,height:ht,va:va,vma:vma,vfa:vfa,status:pass?'PASS':'FAIL'},userId:currentUser?currentUser.uid:'guest'}).catch(function(err){console.error('showMarResults save error:',err);});
 }
 function onMarConnTypeChange(){
     var sel=document.getElementById('mar-com-port-select').value;

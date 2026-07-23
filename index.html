@@ -27,6 +27,9 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <style>
+        .browser-warning{background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:10px 16px;font-size:12px;color:var(--warning);margin-bottom:16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+        .browser-warning .bw-close{background:none;border:none;color:var(--warning);font-size:16px;cursor:pointer;padding:0 4px;margin-left:auto;}
+        .browser-warn-btn{padding:4px 10px;border-radius:6px;background:rgba(245,158,11,0.2);color:var(--warning);border:1px solid rgba(245,158,11,0.4);font-size:11px;cursor:pointer;font-family:'Cairo',sans-serif;}
         .auth-tabs{display:flex;gap:0;margin-bottom:20px;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.1);}
         .auth-tab{flex:1;padding:10px;border:none;background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.5);font-family:'Cairo',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;}
         .auth-tab.active{background:var(--accent);color:white;}
@@ -270,6 +273,11 @@
 <!-- ============ SCREEN: DOMAIN SELECT ============ -->
 <div id="screen-domains" class="screen">
     <main class="dashboard-content fade-in">
+        <div id="browser-warning" class="browser-warning" style="display:none;">
+            <span>⚠️ <strong>Hardware Mode</strong> requires <strong>Chrome</strong> or <strong>Edge</strong> (Web Serial API). Firefox and Safari do not support direct hardware connection.</span>
+            <span style="font-size:10px;opacity:0.7;">Use Demo or Manual mode for compatibility.</span>
+            <button class="bw-close" onclick="this.parentElement.style.display='none'" aria-label="Dismiss">✕</button>
+        </div>
         <div class="domain-header">
             <h2 data-i18n="choose_domain">Choose Your Domain</h2>
             <p data-i18n="choose_domain_sub">Select a department to access its tests and tools</p>
@@ -434,6 +442,12 @@
             <p>Split tensile strength — Brazilian test method for concrete</p>
             <div class="card-footer"><div class="card-actions"><button class="card-btn" onclick="showExperiment('split_tensile');event.stopPropagation();return false;" title="شرح">📖</button><button class="card-btn" onclick="showTechDetails('split_tensile');event.stopPropagation();return false;" title="تفاصيل">🔬</button><span class="card-tag">Manual</span></div></div>
           </a>
+          <a href="#" class="test-card slide-up" tabindex="0" role="button" aria-label="Mix Design" onclick="openStaticTest('mixdesign');return false;">
+            <div class="test-card-icon" aria-hidden="true">🧮</div>
+            <h3>Mix Design (ACI 211)</h3>
+            <p>Concrete mix proportioning — absolute volume method</p>
+            <div class="card-footer"><div class="card-actions"><span class="card-tag">Calculator</span></div></div>
+          </a>
           <!-- ===== DYNAMIC TEST ENGINE CARD ===== -->
           <a href="#" class="test-card slide-up" tabindex="0" role="button" aria-label="Dynamic Test Engine" onclick="openDynamicTest();return false;">
             <div class="test-card-icon" aria-hidden="true">⚙️</div>
@@ -441,6 +455,12 @@
             <p>Create custom test parameters, define equations, and run with Manual or Hardware mode</p>
             <div class="card-footer"><div class="card-actions"><span class="card-tag">Dynamic</span></div></div>
             <div class="mode-badge-bottom">Manual / Hardware</div>
+          </a>
+          <a href="#" class="test-card slide-up" tabindex="0" role="button" aria-label="Control Charts" onclick="openStaticTest('controlcharts');return false;">
+            <div class="test-card-icon" aria-hidden="true">📊</div>
+            <h3>Control Charts (CUSUM)</h3>
+            <p>Moving Average & CUSUM control charts — ACI 214 quality monitoring</p>
+            <div class="card-footer"><div class="card-actions"><span class="card-tag">QC</span></div></div>
           </a>
         </div>
         <!-- Soil/Roads Section -->
@@ -1692,6 +1712,14 @@
                 </div>
             </div>
             <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">⚗️</div><h3>Volumetric Properties</h3></div>
+                <div class="panel-body">
+                    <div class="form-group"><label>G<sub>mm</sub> (Max Theoretical SG)</label><input type="number" id="mar_inp_gmm" step="any" placeholder="e.g. 2.450"></div>
+                    <div class="form-group"><label>G<sub>sb</sub> (Bulk Aggregate SG)</label><input type="number" id="mar_inp_gsb" step="any" placeholder="e.g. 2.650"></div>
+                    <div class="form-group"><label>Binder Content (%)</label><input type="number" id="mar_inp_binder" step="any" placeholder="e.g. 5.0"></div>
+                </div>
+            </div>
+            <div class="panel" style="margin-bottom:20px;">
                 <div class="panel-header"><div class="panel-header-icon green" aria-hidden="true">🔌</div><h3 data-i18n="hardware">Hardware Connection</h3></div>
                 <div class="panel-body">
                     <div class="form-group"><label data-i18n="connection">Connection</label>
@@ -1720,6 +1748,17 @@
                         <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:8px;">STABILITY vs FLOW CURVE</div>
                         <canvas id="mar-chart" width="360" height="180" style="width:100%;max-width:360px;"></canvas>
                     </div>
+                </div>
+            </div>
+            <div class="panel" id="mar-vol-panel" style="display:none;margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">⚗️</div><h3>Volumetric Properties</h3></div>
+                <div class="panel-body">
+                    <div class="data-readings" aria-live="polite">
+                        <div class="reading-card"><div class="reading-label">Air Voids (V<sub>a</sub>)</div><div class="reading-value" id="mar-vol-va" style="color:var(--accent);">--</div></div>
+                        <div class="reading-card"><div class="reading-label">VMA</div><div class="reading-value" id="mar-vol-vma" style="color:var(--warning);">--</div></div>
+                        <div class="reading-card"><div class="reading-label">VFA</div><div class="reading-value" id="mar-vol-vfa" style="color:var(--success);">--</div></div>
+                    </div>
+                    <div style="font-size:10px;color:var(--text-muted);margin-top:6px;text-align:center;">V<sub>a</sub> = (1 - G<sub>mb</sub>/G<sub>mm</sub>) × 100 &nbsp;·&nbsp; VMA = (1 - (G<sub>mb</sub>×P<sub>s</sub>)/G<sub>sb</sub>) × 100 &nbsp;·&nbsp; VFA = (VMA - V<sub>a</sub>)/VMA × 100</div>
                 </div>
             </div>
             <div class="panel" id="mar-results-panel" style="display:none;margin-bottom:20px;">
@@ -2154,13 +2193,31 @@
                 <div class="panel-body">
                     <div class="form-group"><label>Sample ID</label><input type="text" id="comp-sample-id" placeholder="CS-001"></div>
                     <div class="form-group"><label>Specimen Type</label>
-                        <select id="comp-specimen-type"><option value="cylinder">Cylinder (150×300mm)</option><option value="cube">Cube (150mm)</option><option value="cylinder100">Cylinder (100×200mm)</option><option value="cube100">Cube (100mm)</option></select>
+                        <select id="comp-specimen-type" onchange="onCompSpecimenChange()"><option value="cylinder">Cylinder (150×300mm)</option><option value="cube">Cube (150mm)</option><option value="cylinder100">Cylinder (100×200mm)</option><option value="cube100">Cube (100mm)</option></select>
                     </div>
+                    <div class="form-group"><label>Actual Diameter (mm)</label><input type="number" id="comp-actual-dia" step="any" value="150" onchange="checkCompLDCorrection()"></div>
+                    <div class="form-group"><label>Actual Height (mm)</label><input type="number" id="comp-actual-height" step="any" value="300" onchange="checkCompLDCorrection()"></div>
+                    <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;" id="comp-ld-info">L/D = 2.00 — No correction needed (ASTM C39)</div>
                     <div class="form-group"><label>Age (days)</label>
                         <select id="comp-age"><option value="1">1 Day</option><option value="3">3 Days</option><option value="7">7 Days</option><option value="14">14 Days</option><option value="28" selected>28 Days</option><option value="56">56 Days</option><option value="90">90 Days</option></select>
                     </div>
+                    <div class="form-group"><label>Failure Mode</label>
+                        <select id="comp-failure-mode">
+                            <option value="">-- Select --</option>
+                            <option value="cone">Cone (Type 1) — Typical cone</option>
+                            <option value="cone_shear">Cone & Shear (Type 2)</option>
+                            <option value="shear">Shear (Type 3) — Diagonal</option>
+                            <option value="split">Split (Type 4) — Vertical</option>
+                            <option value="columnar">Columnar (Type 5)</option>
+                            <option value="end">End — Invalid / Irregular</option>
+                        </select>
+                    </div>
                     <div class="form-group"><label>Agency / Standard</label>
                         <select id="comp-agency"><option value="ASTM">ASTM C39</option><option value="AASHTO">AASHTO T22</option><option value="BS">BS EN 12390-3</option></select>
+                    </div>
+                    <div style="margin-top:12px;">
+                        <button onclick="addCompResult()" class="btn-secondary" style="font-size:12px;padding:6px 12px;">+ Add to Batch</button>
+                        <span style="font-size:11px;color:var(--text-muted);margin-left:8px;" id="comp-batch-count">0 specimens</span>
                     </div>
                 </div>
             </div>
@@ -2203,6 +2260,15 @@
             <div class="panel" id="comp-results-panel" style="display:none;margin-bottom:20px;">
                 <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">📊</div><h3>Results</h3></div>
                 <div class="panel-body"><div id="comp-results-body"></div>
+                    <div id="comp-batch-stats" style="margin-top:12px;padding:10px;background:var(--surface-alt);border-radius:8px;display:none;">
+                        <div style="font-size:12px;font-weight:700;margin-bottom:6px;">📊 Batch Statistics (COV per ACI 214)</div>
+                        <div style="font-size:12px;display:flex;gap:16px;flex-wrap:wrap;">
+                            <span>Mean: <strong id="comp-batch-mean">--</strong> MPa</span>
+                            <span>Std Dev: <strong id="comp-batch-std">--</strong> MPa</span>
+                            <span>COV: <strong id="comp-batch-cov">--</strong>%</span>
+                            <span>Classification: <strong id="comp-batch-class">--</strong></span>
+                        </div>
+                    </div>
                     <div style="margin-top:16px;display:flex;gap:12px;">
                         <button onclick="generateCompPDF()" class="btn-primary">📄 Download PDF</button>
                         <button onclick="showMLPrediction('compressive')" class="btn-secondary">🧠 AI Predictions</button>
@@ -2557,6 +2623,149 @@
     </div>
 </div>
 
+<!-- ============ SCREEN: MIX DESIGN (ACI 211) ============ -->
+<div id="screen-mixdesign" class="screen">
+    <header class="app-header" role="navigation" aria-label="Page header">
+        <div class="header-right">
+            <div class="header-logo">SL</div>
+            <span class="header-title">Mix Design — ACI 211.1</span>
+        </div>
+        <div class="header-left">
+            <button onclick="goBackToDashboard()" class="btn-back">→ <span data-i18n="dashboard">Dashboard</span></button>
+            <div class="header-user-btn" role="button" tabindex="0" aria-label="User menu" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
+                <div class="user-icon" id="md-user-icon">U</div>
+                <span class="dd-arrow" aria-hidden="true">▼</span>
+                <div class="user-dropdown" id="md-user-dropdown">
+                    <div class="dd-header"><div class="dd-name" id="md-dd-name">User</div><div class="dd-email" id="md-dd-email">—</div></div>
+                    <button class="dd-item" onclick="showScreen('domains')"><span class="dd-icon">🏠</span> Change Domain</button>
+                    <button class="dd-item danger" onclick="doSignOut()"><span class="dd-icon">🚪</span> Sign Out</button>
+                </div>
+            </div>
+        </div>
+    </header>
+    <div class="test-layout" role="main">
+        <div class="slide-up">
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon blue" aria-hidden="true">📝</div><h3>Mix Parameters</h3></div>
+                <div class="panel-body">
+                    <div class="form-group"><label>Sample ID</label><input type="text" id="md-sample-id" placeholder="MD-001"></div>
+                    <div class="form-group"><label>Target Strength f'c (MPa)</label><input type="number" id="md-fc" value="25" step="0.5" min="1"></div>
+                    <div class="form-group"><label>Standard Deviation (MPa, optional)</label><input type="number" id="md-std-dev" step="0.1" min="0" placeholder="Leave empty if unknown"></div>
+                    <div class="form-group"><label>Slump (mm)</label>
+                        <select id="md-slump"><option value="25-50">25 — 50 mm</option><option value="75-100" selected>75 — 100 mm</option><option value="100-150">100 — 150 mm</option></select>
+                    </div>
+                    <div class="form-group"><label>Max Aggregate Size (mm)</label>
+                        <select id="md-max-agg"><option value="9.5">9.5 mm</option><option value="12.5">12.5 mm</option><option value="19" selected>19 mm</option><option value="25">25 mm</option><option value="37.5">37.5 mm</option><option value="50">50 mm</option><option value="75">75 mm</option></select>
+                    </div>
+                    <div class="form-group"><label>Fine Aggregate Fineness Modulus (FM)</label><input type="number" id="md-fm" value="2.6" step="0.1" min="2.0" max="3.2"></div>
+                    <div class="form-group"><label>Dry-Rodded Coarse Agg Weight (kg/m³)</label><input type="number" id="md-drw" value="1600" step="10" min="1200" max="2000"></div>
+                    <div class="form-group"><label>Exposure Condition</label>
+                        <select id="md-exposure"><option value="mild" selected>Mild</option><option value="moderate">Moderate</option><option value="severe">Severe</option></select>
+                    </div>
+                </div>
+            </div>
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon green" aria-hidden="true">⚖️</div><h3>Material Properties</h3></div>
+                <div class="panel-body">
+                    <div class="form-group"><label>Cement Specific Gravity</label><input type="number" id="md-cement-sg" value="3.15" step="0.01" min="2.0" max="4.0"></div>
+                    <div class="form-group"><label>Coarse Aggregate Specific Gravity</label><input type="number" id="md-coarse-sg" value="2.68" step="0.01" min="1.5" max="3.5"></div>
+                    <div class="form-group"><label>Fine Aggregate Specific Gravity</label><input type="number" id="md-fine-sg" value="2.64" step="0.01" min="1.5" max="3.5"></div>
+                    <div class="form-group"><label>Water Specific Gravity</label><input type="number" id="md-water-sg" value="1.0" step="0.01" min="0.5" max="2.0"></div>
+                    <div class="form-group"><label>Total Volume (m³)</label><input type="number" id="md-total-vol" value="1.0" step="0.1" min="0.1"></div>
+                </div>
+            </div>
+            <div style="margin-bottom:20px;">
+                <button onclick="calcMixDesignFromUI()" class="btn-primary" style="width:100%;">🧮 Calculate Mix Design</button>
+            </div>
+        </div>
+        <div class="slide-up" style="animation-delay:0.15s;">
+            <div class="panel" id="md-results-panel" style="display:none;margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">📊</div><h3>Mix Design Results</h3></div>
+                <div class="panel-body">
+                    <div id="md-results-body"></div>
+                    <div style="margin-top:16px;">
+                        <h4 style="font-size:12px;margin-bottom:8px;color:var(--text-muted);">Batch Weights (per m³)</h4>
+                        <div id="md-batch-body"></div>
+                    </div>
+                    <div style="margin-top:16px;">
+                        <h4 style="font-size:12px;margin-bottom:8px;color:var(--text-muted);">Material Proportion Chart</h4>
+                        <canvas id="md-chart" width="400" height="200" style="width:100%;height:auto;max-width:400px;background:var(--bg-card);border-radius:8px;"></canvas>
+                    </div>
+                    <div style="margin-top:16px;display:flex;gap:12px;">
+                        <button onclick="generateMixPDF()" class="btn-primary" style="flex:1;">📄 Download PDF</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ SCREEN: CONTROL CHARTS ============ -->
+<div id="screen-controlcharts" class="screen">
+    <header class="app-header" role="navigation" aria-label="Page header">
+        <div class="header-right">
+            <div class="header-logo">SL</div>
+            <span class="header-title">Control Charts — CUSUM & Moving Average</span>
+        </div>
+        <div class="header-left">
+            <button onclick="goBackToDashboard()" class="btn-back">→ <span data-i18n="dashboard">Dashboard</span></button>
+            <div class="header-user-btn" role="button" tabindex="0" aria-label="User menu" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
+                <div class="user-icon" id="cc-user-icon">U</div>
+                <span class="dd-arrow" aria-hidden="true">▼</span>
+                <div class="user-dropdown" id="cc-user-dropdown">
+                    <div class="dd-header"><div class="dd-name" id="cc-dd-name">User</div><div class="dd-email" id="cc-dd-email">—</div></div>
+                    <button class="dd-item" onclick="showScreen('domains')"><span class="dd-icon">🏠</span> Change Domain</button>
+                    <button class="dd-item danger" onclick="doSignOut()"><span class="dd-icon">🚪</span> Sign Out</button>
+                </div>
+            </div>
+        </div>
+    </header>
+    <div class="test-layout" role="main">
+        <div class="slide-up" style="max-width:800px;">
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon blue" aria-hidden="true">📊</div><h3>Quality Control Charts</h3></div>
+                <div class="panel-body">
+                    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+                        <select id="cc-test-type" style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:'Cairo',sans-serif;">
+                            <option value="compressive">Compressive Strength</option>
+                            <option value="slump">Slump</option>
+                            <option value="maturity">Maturity Index</option>
+                            <option value="marshall">Marshall Stability</option>
+                        </select>
+                        <select id="cc-limit" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:'Cairo',sans-serif;">
+                            <option value="10">Last 10</option>
+                            <option value="20" selected>Last 20</option>
+                            <option value="50">Last 50</option>
+                        </select>
+                        <button onclick="loadCCData()" class="btn-primary" style="font-size:12px;">🔄 Load</button>
+                    </div>
+                    <div style="display:flex;gap:8px;margin-bottom:16px;">
+                        <button onclick="switchCCChart('moving_avg')" id="cc-btn-ma" class="btn-secondary" style="flex:1;font-size:12px;padding:8px;">📈 Moving Average</button>
+                        <button onclick="switchCCChart('cusum')" id="cc-btn-cusum" class="btn-secondary" style="flex:1;font-size:12px;padding:8px;">📉 CUSUM</button>
+                    </div>
+                    <canvas id="cc-chart" width="600" height="280" style="width:100%;max-width:600px;height:auto;background:var(--bg-card);border-radius:8px;"></canvas>
+                </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+                <div class="panel">
+                    <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">📊</div><h3>Statistics</h3></div>
+                    <div class="panel-body" id="cc-stats-body">
+                        <div class="stats-empty"><div class="stats-empty-icon">📊</div>No data loaded</div>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-header"><div class="panel-header-icon green" aria-hidden="true">📋</div><h3>Data Table</h3></div>
+                    <div class="panel-body" style="max-height:260px;overflow-y:auto;">
+                        <div id="cc-data-body">
+                            <div class="stats-empty"><div class="stats-empty-icon">📋</div>No data loaded</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- ============ FOOTER ============ -->
 <footer class="site-footer" role="contentinfo">
     <div class="footer-top">
@@ -2583,11 +2792,32 @@
 <script src="js/maturity.js"></script>
 <script src="js/marshall.js"></script>
 <script src="js/bitumen.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+  if(!navigator.serial){
+    var bw=document.getElementById('browser-warning');
+    if(bw)bw.style.display='flex';
+  }
+  document.querySelectorAll('select[id$="-conn"],select[id$="-port-select"]').forEach(function(sel){
+    var titleText='';
+    var val=sel.value;
+    if(val==='usb'||val==='browser-serial')titleText='USB/Serial \u2014 Requires Chrome or Edge (Web Serial API)';
+    else if(val==='lan')titleText='LAN / Network connection';
+    else if(val==='bluetooth')titleText='Bluetooth \u2014 Experimental, limited browser support';
+    else if(val==='manual')titleText='Manual data entry \u2014 compatible with all browsers';
+    else if(val==='demo')titleText='Demo mode \u2014 simulated data, no hardware needed';
+    else titleText='Select a connection mode';
+    sel.setAttribute('title',titleText);
+  });
+});
+</script>
 <script src="js/penetration.js"></script>
 <script src="js/direct_shear.js"></script>
 <script src="js/atterberg.js"></script>
 <script src="js/sieve.js"></script>
 <script src="js/compressive.js"></script>
+<script src="js/mixdesign.js"></script>
+<script src="js/controlcharts.js"></script>
 <script src="js/ductility.js"></script>
 <script src="js/air.js"></script>
 <script src="js/permeability.js"></script>

@@ -3,14 +3,14 @@
 // ================================================================
 
 // This module contains all the mathematical calculation functions used throughout
-the SmartLAP application. These are pure functions designed to be predictable,
-testable, and reusable across the entire application.
-
-Each function includes:
-- Type checking for inputs
-- Default values for optional parameters
-- Proper error handling
-- Comprehensive test coverage
+// the SmartLAP application. These are pure functions designed to be predictable,
+// testable, and reusable across the entire application.
+// 
+// Each function includes:
+// - Type checking for inputs
+// - Default values for optional parameters
+// - Proper error handling
+// - Comprehensive test coverage
 // ================================================================
 
 // ---------- CORE MATHEMATICAL UTILITIES ----------

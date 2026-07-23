@@ -743,6 +743,177 @@ body[data-dir="rtl"] .ai-card:hover .chat-indicator .arrow { transform: translat
 }
 #com-port-select option { padding: 8px; font-size: 13px; }
 
+/* ===== DYNAMIC TEST ENGINE ===== */
+.dynamic-admin-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px 16px;
+}
+.dyn-param-row {
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    margin-bottom: 10px;
+    animation: slideUp 0.25s ease-out;
+}
+.dyn-param-fields {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+.dyn-param-fields input,
+.dyn-param-fields select {
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 12px;
+    background: var(--surface);
+    color: var(--text);
+}
+.dyn-param-fields input:focus,
+.dyn-param-fields select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.dyn-param-remove {
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 6px;
+    background: rgba(239,68,68,0.1);
+    color: var(--danger);
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+.dyn-param-remove:hover {
+    background: rgba(239,68,68,0.2);
+}
+.dyn-equation-wrapper {
+    position: relative;
+}
+.dyn-equation-input {
+    width: 100%;
+    padding: 14px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    background: var(--surface-alt);
+    color: var(--text);
+    resize: vertical;
+    direction: ltr;
+    text-align: left;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.dyn-equation-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.dyn-equation-input::placeholder {
+    color: var(--text-light);
+    font-size: 12px;
+}
+.dyn-equation-hint {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    padding: 6px 10px;
+    background: rgba(59,130,246,0.06);
+    border-radius: 6px;
+    border: 1px dashed var(--border);
+}
+.dyn-validation-pass {
+    background: rgba(16,185,129,0.1);
+    border: 1px solid rgba(16,185,129,0.3);
+    color: var(--success);
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+}
+.dyn-validation-fail {
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.3);
+    color: var(--danger);
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+}
+.dyn-connection-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: var(--surface-alt);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+}
+.dyn-conn-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.dyn-conn-indicator.online {
+    background: var(--success);
+    box-shadow: 0 0 8px rgba(16,185,129,0.4);
+}
+.dyn-conn-indicator.offline {
+    background: var(--danger);
+}
+.dyn-conn-indicator.demo {
+    background: var(--warning);
+    animation: pulse 1.5s infinite;
+}
+#dyn-conn-text {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    flex: 1;
+}
+.mode-badge-bottom {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: linear-gradient(135deg, var(--accent), #2563eb);
+    color: white;
+    padding: 3px 10px;
+    border-radius: 8px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.3);
+}
+body[data-dir="ltr"] .mode-badge-bottom {
+    right: auto;
+    left: 8px;
+}
+@media (max-width: 768px) {
+    .dynamic-admin-layout {
+        grid-template-columns: 1fr;
+    }
+    .dyn-param-fields {
+        flex-direction: column;
+        gap: 6px;
+    }
+    .dyn-param-fields input,
+    .dyn-param-fields select {
+        width: 100%;
+    }
+}
+
 /* ===== ANIMATIONS ===== */
 .fade-in { animation: fadeIn 0.5s ease-out; }
 @keyframes fadeIn { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }

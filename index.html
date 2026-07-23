@@ -476,6 +476,14 @@
             <p>Split tensile strength — Brazilian test method for concrete</p>
             <div class="card-footer"><span class="card-tag">Manual</span><div class="card-arrow" aria-hidden="true">←</div></div>
           </a>
+          <!-- ===== DYNAMIC TEST ENGINE CARD ===== -->
+          <a href="#" class="test-card slide-up" tabindex="0" role="button" aria-label="Dynamic Test Engine" onclick="openDynamicTest();return false;">
+            <div class="test-card-icon" aria-hidden="true">⚙️</div>
+            <h3>🧪 Dynamic Test Engine</h3>
+            <p>Create custom test parameters, define equations, and run with Manual or Hardware mode</p>
+            <div class="card-footer"><span class="card-tag">Dynamic</span><div class="card-arrow" aria-hidden="true">←</div></div>
+            <div class="mode-badge-bottom">Manual / Hardware</div>
+          </a>
         </div>
         <!-- Soil/Roads Section -->
         <div id="dept-soil" class="dept-section tests-grid" style="display:none;">
@@ -2271,6 +2279,201 @@
     </div>
 </div>
 
+<!-- ============ SCREEN: DYNAMIC TEST ENGINE - ADMIN ============ -->
+<div id="screen-dynamic-admin" class="screen">
+    <header class="app-header" role="navigation" aria-label="Dynamic Test Admin">
+        <div class="header-right">
+            <div class="header-logo" aria-hidden="true">SL</div>
+            <span class="header-title">🧪 Dynamic Test Engine — Admin</span>
+        </div>
+        <div class="header-left">
+            <button onclick="goBackToDashboard()" class="btn-back">→ <span data-i18n="dashboard">Dashboard</span></button>
+            <div class="header-user-btn" role="button" tabindex="0" aria-label="User menu" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
+                <div class="user-icon" id="dyn-admin-user-icon">U</div>
+                <span class="dd-arrow" aria-hidden="true">▼</span>
+                <div class="user-dropdown" id="dyn-admin-user-dropdown">
+                    <div class="dd-header"><div class="dd-name" id="dyn-admin-dd-name">User</div><div class="dd-email" id="dyn-admin-dd-email">—</div></div>
+                    <button class="dd-item" onclick="showScreen('domains')"><span class="dd-icon">🏠</span> <span data-i18n="change_domain">Change Domain</span></button>
+                    <button class="dd-item danger" onclick="doSignOut()"><span class="dd-icon">🚪</span> <span data-i18n="sign_out">Sign Out</span></button>
+                </div>
+            </div>
+        </div>
+    </header>
+    <div class="dynamic-admin-layout" role="main">
+        <!-- LEFT PANEL: Parameter Inputs -->
+        <div class="slide-up">
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon blue" aria-hidden="true">📝</div><h3>Test Parameters</h3></div>
+                <div class="panel-body">
+                    <div class="form-group">
+                        <label>Test Name</label>
+                        <input type="text" id="dyn-test-name" placeholder="e.g. Custom Compression Test">
+                    </div>
+                    <div id="dyn-params-container">
+                        <!-- Dynamic parameters will be added here -->
+                        <div class="dyn-param-row" data-index="0">
+                            <div class="dyn-param-fields">
+                                <input type="text" class="dyn-param-name" placeholder="Parameter name (e.g. Load)" style="flex:2;">
+                                <select class="dyn-param-type" style="flex:1;">
+                                    <option value="Numeric">Numeric</option>
+                                    <option value="Text">Text</option>
+                                    <option value="SensorInput">Sensor Input</option>
+                                </select>
+                                <input type="text" class="dyn-param-unit" placeholder="Unit (e.g. kN)" style="flex:1;">
+                                <button class="dyn-param-remove" onclick="removeDynamicParam(this)" title="Remove parameter" style="flex:0;">✕</button>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="addDynamicParam()" class="btn-secondary" style="margin-top:12px;width:100%;">➕ Add Parameter</button>
+                </div>
+            </div>
+        </div>
+        <!-- RIGHT PANEL: Equation & Settings -->
+        <div class="slide-up" style="animation-delay:0.15s;">
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon orange" aria-hidden="true">📐</div><h3>Custom Equation</h3></div>
+                <div class="panel-body">
+                    <div class="form-group">
+                        <label>Result Formula</label>
+                        <div class="dyn-equation-wrapper">
+                            <textarea id="dyn-equation" class="dyn-equation-input" placeholder="Enter formula using parameter names, e.g.: (Load * 1000) / (Area * pi / 4)" rows="4"></textarea>
+                            <div class="dyn-equation-hint">Use parameter names as variables. Supports: + - * / ^ ( )</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Result Label</label>
+                        <input type="text" id="dyn-result-label" placeholder="e.g. Custom Strength (MPa)">
+                    </div>
+                    <div class="form-group">
+                        <label>Default Mode</label>
+                        <select id="dyn-default-mode">
+                            <option value="ManualMode">✏️ Manual Mode</option>
+                            <option value="HardwareIoTMode">🔌 Hardware IoT Mode</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Hardware Sensor ID (for IoT mode)</label>
+                        <input type="text" id="dyn-sensor-id" placeholder="e.g. HX711_1">
+                    </div>
+                    <div style="display:flex;gap:12px;margin-top:20px;">
+                        <button onclick="validateDynamicEquation()" class="btn-secondary" style="flex:1;">✅ Validate Equation</button>
+                        <button onclick="saveDynamicTest()" class="btn-primary" style="flex:1;">💾 Save & Launch</button>
+                    </div>
+                    <div id="dyn-validation-result" style="margin-top:12px;font-size:12px;display:none;"></div>
+                </div>
+            </div>
+            <!-- Recent Saved Tests -->
+            <div class="panel">
+                <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">📂</div><h3>Saved Test Definitions</h3></div>
+                <div class="panel-body" style="padding:0;">
+                    <table class="history-table"><thead><tr><th>Test Name</th><th>Formula</th><th>Mode</th><th>Action</th></tr></thead>
+                    <tbody id="dyn-saved-tests-body"><tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:24px;">No saved tests yet. Create one above.</td></tr></tbody></table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ SCREEN: DYNAMIC TEST ENGINE - EXECUTION ============ -->
+<div id="screen-dynamic-exec" class="screen">
+    <header class="app-header" role="navigation" aria-label="Dynamic Test Execution">
+        <div class="header-right">
+            <div class="header-logo" aria-hidden="true">SL</div>
+            <span class="header-title" id="dyn-exec-title">🧪 Dynamic Test — Execution</span>
+        </div>
+        <div class="header-left">
+            <button onclick="goBackToDashboard()" class="btn-back">→ <span data-i18n="dashboard">Dashboard</span></button>
+            <div class="header-user-btn" role="button" tabindex="0" aria-label="User menu" onclick="toggleUserDropdown(event)" style="margin-left:4px;">
+                <div class="user-icon" id="dyn-exec-user-icon">U</div>
+                <span class="dd-arrow" aria-hidden="true">▼</span>
+                <div class="user-dropdown" id="dyn-exec-user-dropdown">
+                    <div class="dd-header"><div class="dd-name" id="dyn-exec-dd-name">User</div><div class="dd-email" id="dyn-exec-dd-email">—</div></div>
+                    <button class="dd-item" onclick="showScreen('domains')"><span class="dd-icon">🏠</span> <span data-i18n="change_domain">Change Domain</span></button>
+                    <button class="dd-item danger" onclick="doSignOut()"><span class="dd-icon">🚪</span> <span data-i18n="sign_out">Sign Out</span></button>
+                </div>
+            </div>
+        </div>
+    </header>
+    <div class="test-layout" role="main">
+        <div class="slide-up">
+            <!-- Connection Status Banner -->
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon green" aria-hidden="true">🔌</div><h3>Connection</h3></div>
+                <div class="panel-body">
+                    <div class="dyn-connection-banner" id="dyn-conn-banner">
+                        <div class="dyn-conn-indicator offline" id="dyn-conn-dot"></div>
+                        <span id="dyn-conn-text">Manual Mode — Enter values below</span>
+                        <button class="btn-secondary" style="width:auto;padding:6px 14px;font-size:11px;margin-right:auto;" onclick="toggleDynamicMode()" id="dyn-mode-toggle">🔁 Switch to Hardware</button>
+                    </div>
+                    <div class="form-group" style="margin-top:12px;">
+                        <label>Connection Type</label>
+                        <select id="dyn-conn-select" onchange="onDynamicConnChange()">
+                            <option value="manual">✏️ Manual Mode</option>
+                            <option value="browser-serial">🔌 USB / Serial</option>
+                            <option value="lan">🌐 LAN / Network</option>
+                            <option value="bluetooth">📡 Bluetooth</option>
+                            <option value="demo">🧪 Demo Mode</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <!-- Parameter Inputs (Manual Mode) -->
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon blue" aria-hidden="true">📝</div><h3 id="dyn-exec-params-title">Input Parameters</h3></div>
+                <div class="panel-body" id="dyn-exec-params-body">
+                    <p style="font-size:12px;color:var(--text-muted);text-align:center;padding:20px;">No parameters defined. Please configure the test first.</p>
+                </div>
+            </div>
+            <!-- Action Buttons -->
+            <div style="display:flex;gap:12px;margin-bottom:20px;">
+                <button onclick="startDynamicExecution()" id="dyn-btn-start" class="btn-primary" style="flex:1;">▶ Start</button>
+                <button onclick="stopDynamicExecution()" id="dyn-btn-stop" class="btn-secondary" style="flex:1;display:none;">⏹ Stop</button>
+            </div>
+        </div>
+        <div class="slide-up" style="animation-delay:0.15s;">
+            <!-- Live Results: Digital Gauge Cards -->
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon orange" aria-hidden="true">📡</div><h3>Live Result</h3>
+                    <div class="live-indicator" id="dyn-live-indicator" style="display:none;"><div class="live-dot"></div> LIVE</div>
+                </div>
+                <div class="panel-body">
+                    <div id="dyn-demo-banner" class="demo-banner" role="status" style="display:none;">⚠️ Demo mode — simulated data</div>
+                    <div class="data-readings" id="dyn-live-results">
+                        <div class="reading-card" id="dyn-result-card">
+                            <div class="reading-label" id="dyn-result-label-display">Result</div>
+                            <div class="reading-value" id="dyn-result-value" style="font-size:28px;">--</div>
+                            <div class="reading-unit" id="dyn-result-unit"></div>
+                        </div>
+                    </div>
+                    <!-- Manual Override Button -->
+                    <div style="margin-top:12px;">
+                        <button onclick="overrideToManual()" class="btn-secondary" id="dyn-override-btn" style="display:none;">✏️ Override to Manual Input</button>
+                    </div>
+                </div>
+            </div>
+            <!-- Readings Log -->
+            <div class="panel" style="margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon blue" aria-hidden="true">📋</div><h3>Readings Log</h3></div>
+                <div class="panel-body strike-log" style="padding:0;">
+                    <table><thead><tr><th>#</th><th>Values</th><th>Result</th><th>Mode</th><th>Time</th></tr></thead>
+                    <tbody id="dyn-log-body"><tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px;">Start test to see data</td></tr></tbody></table>
+                </div>
+            </div>
+            <!-- Results Panel -->
+            <div class="panel" id="dyn-results-panel" style="display:none;margin-bottom:20px;">
+                <div class="panel-header"><div class="panel-header-icon purple" aria-hidden="true">📊</div><h3>Results Summary</h3></div>
+                <div class="panel-body">
+                    <div id="dyn-results-body"></div>
+                    <div style="margin-top:16px;display:flex;gap:12px;">
+                        <button onclick="generateDynamicPDF()" class="btn-primary" style="flex:1;">📄 Download PDF</button>
+                        <button onclick="showDynamicAIPredictions()" class="btn-secondary" style="flex:1;">🧠 AI Predictions</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- ============ SCREEN: AIR CONTENT ============ -->
 <div id="screen-air" class="screen">
     <header class="app-header" role="navigation" aria-label="Page header">
@@ -2365,6 +2568,7 @@
 <script src="js/navigation.js"></script>
 <script src="js/serial.js"></script>
 <script src="js/compaction.js"></script>
+<script src="js/dynamic_test_engine.js"></script>
 <script src="js/cbr.js"></script>
 <script src="js/straightedge.js"></script>
 <script src="js/slump.js"></script>

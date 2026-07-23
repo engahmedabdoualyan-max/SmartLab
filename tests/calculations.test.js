@@ -112,6 +112,33 @@ describe('CBR Calculations', function () {
         assertClose(r2, 34.07, 0.01);
         assertClose(final, 34.07, 0.01);
     });
+    it('calcCBRFinal corrects curve and interpolates (ASTM D1883)', function () {
+        var readings = [
+            { penetration: 0.5, load: 600 },
+            { penetration: 1.0, load: 1600 },
+            { penetration: 1.5, load: 2800 },
+            { penetration: 2.0, load: 4200 },
+            { penetration: 2.5, load: 5800 },
+            { penetration: 3.0, load: 7000 },
+            { penetration: 3.5, load: 7900 },
+            { penetration: 4.0, load: 8600 },
+            { penetration: 4.5, load: 9100 },
+            { penetration: 5.0, load: 9400 }
+        ];
+        var result = calc.calcCBRFinal(readings);
+        assertTrue(result.cbr > 0, 'CBR should be positive');
+        assertTrue(result.cbr25 > 0, 'CBR at 2.5mm should be positive');
+        assertTrue(result.cbr50 > 0, 'CBR at 5.0mm should be positive');
+        assertEqual(result.cbr, Math.max(result.cbr25, result.cbr50), 'Final CBR should be max of 2.5mm and 5.0mm');
+    });
+    it('calcCBRFinal throws for insufficient readings', function () {
+        try { calc.calcCBRFinal([{ penetration: 1, load: 100 }]); assertTrue(false); }
+        catch (e) { assertTrue(e.message.indexOf('Invalid') >= 0); }
+    });
+    it('calcCBRFinal throws when readings do not span 2.5mm', function () {
+        try { calc.calcCBRFinal([{ penetration: 0.1, load: 10 }, { penetration: 0.2, load: 20 }]); assertTrue(false); }
+        catch (e) { assertTrue(e.message.indexOf('Cannot') >= 0 || e.message.indexOf('do not span') >= 0); }
+    });
 });
 
 // ------------------------------------------------------------------

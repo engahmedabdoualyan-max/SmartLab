@@ -317,6 +317,71 @@ function calcCBR(penetration, load, stdLoad25 = 13240, stdLoad50 = 19960) {
 }
 
 /**
+ * Calculate final CBR result per ASTM D1883 from full load-penetration curve.
+ * Corrects for initial curvature, interpolates loads at 2.5mm and 5.0mm,
+ * and returns the higher CBR ratio.
+ * @param {Array<{penetration:number, load:number}>} readings - Array of ordered (penetration, load) pairs
+ * @param {number} stdLoad25 - Standard load at 2.5mm (default: 13240 N)
+ * @param {number} stdLoad50 - Standard load at 5.0mm (default: 19960 N)
+ * @returns {{cbr:number, cbr25:number, cbr50:number, corrected:Array}} Final result object
+ */
+function calcCBRFinal(readings, stdLoad25, stdLoad50) {
+    if (!Array.isArray(readings) || readings.length < 2) {
+        throw new Error('Invalid input: readings must be an array with at least 2 points');
+    }
+    stdLoad25 = stdLoad25 || 13240;
+    stdLoad50 = stdLoad50 || 19960;
+
+    // Sort by penetration
+    var sorted = readings.slice().sort(function(a, b) { return a.penetration - b.penetration; });
+
+    // Correct for initial curvature (ASTM D1883 §5.2):
+    // Extend the steepest portion back to zero and subtract the intercept
+    var intercept = 0;
+    var maxSlope = 0;
+    for (var i = 1; i < sorted.length; i++) {
+        var slope = (sorted[i].load - sorted[i - 1].load) / (sorted[i].penetration - sorted[i - 1].penetration);
+        if (slope > maxSlope) {
+            maxSlope = slope;
+            intercept = sorted[i - 1].load - slope * sorted[i - 1].penetration;
+        }
+    }
+    if (intercept > 0) {
+        sorted = sorted.map(function(p) {
+            return { penetration: p.penetration, load: Math.max(0, p.load - intercept) };
+        });
+    }
+
+    // Interpolate corrected load at exactly 2.5mm and 5.0mm
+    function interpolate(target) {
+        if (sorted.length === 0 || target < sorted[0].penetration || target > sorted[sorted.length - 1].penetration) {
+            return null;
+        }
+        for (var i = 0; i < sorted.length - 1; i++) {
+            var a = sorted[i], b = sorted[i + 1];
+            if (a.penetration <= target && b.penetration >= target) {
+                var frac = (target - a.penetration) / (b.penetration - a.penetration);
+                return a.load + frac * (b.load - a.load);
+            }
+        }
+        return null;
+    }
+
+    var load25 = interpolate(2.5);
+    var load50 = interpolate(5.0);
+
+    if (load25 === null && load50 === null) {
+        throw new Error('Cannot compute CBR: readings do not span 2.5mm or 5.0mm');
+    }
+
+    var cbr25Val = load25 !== null ? (load25 / stdLoad25) * 100 : 0;
+    var cbr50Val = load50 !== null ? (load50 / stdLoad50) * 100 : 0;
+    var finalCBR = Math.max(cbr25Val, cbr50Val);
+
+    return { cbr: finalCBR, cbr25: cbr25Val, cbr50: cbr50Val, corrected: sorted };
+}
+
+/**
  * Calculate CBR pressure from test load and piston area
  * Formula: P = (Load / Area) × 1000
  * @param {number} load - Test load in Newtons (N)
@@ -834,6 +899,7 @@ function exportCalculations() {
         calcCompactWeight,
         calcCBR,
         calcCBRPressure,
+        calcCBRFinal,
         calcCBRFinalResult,
         calcNurseSaulMaturity,
         calcArrheniusMaturity,

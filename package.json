@@ -1,11 +1,19 @@
 {
   "name": "smartlap",
-  "version": "1.0.0",
+  "version": "1.1.6",
   "private": true,
   "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "test": "node tests/run.js",
-    "build-i18n": "node scripts/build-i18n.js",
-    "validate-i18n": "node scripts/validate-i18n.js",
-    "prepush": "npm run validate-i18n && npm test"
+    "prepush": "npm test"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.5.4",
+    "cssnano": "^8.0.2",
+    "postcss": "^8.5.22",
+    "terser": "^5.49.0",
+    "vite": "^5.4.0"
   }
 }

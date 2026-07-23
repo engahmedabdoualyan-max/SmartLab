@@ -2,15 +2,17 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const crypto = require('crypto');
+const cookieParser = require('cookie-parser');
 const calc = require('../js/calculations.js');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 let rateLimit;
-try { rateLimit = require('express-rate-limit'); } catch(e) { rateLimit = null; }
+try { rateLimit = require('express-rate-limit'); } catch(e) { console.error('express-rate-limit not available — rate limiting disabled'); rateLimit = null; }
 
 app.use(helmet());
+app.use(cookieParser());
 app.use(cors({
     origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['http://localhost:3000', 'http://localhost:5000', 'http://127.0.0.1:5500'],
     methods: ['GET', 'POST'],
@@ -71,11 +73,6 @@ app.get('/health', (req, res) => {
     res.json({ status: 'ok', version: '1.1.0' });
 });
 
-// GET /endpoints
-app.get('/endpoints', (req, res) => {
-    res.json({ endpoints });
-});
-
 // --- Compaction Module ---
 addRoute('post', '/api/compaction/calculate', calc.calcWetDensity, ['force', 'moldVolume', 'gravity'], 'Calculate wet density from force, mold volume, and gravity');
 addRoute('post', '/api/compaction/dry-density', calc.calcDryDensity, ['wetDensity', 'moisture'], 'Calculate dry density from wet density and moisture content');
@@ -91,6 +88,7 @@ addRoute('post', '/api/compaction/compact-weight', calc.calcCompactWeight, ['str
 addRoute('post', '/api/cbr/calculate', calc.calcCBR, ['penetration', 'load', 'stdLoad25', 'stdLoad50'], 'Calculate CBR value from penetration depth and load');
 addRoute('post', '/api/cbr/pressure', calc.calcCBRPressure, ['load', 'pistonArea'], 'Calculate CBR pressure from load and piston area');
 addRoute('post', '/api/cbr/final-result', calc.calcCBRFinalResult, ['cbrAt25', 'cbrAt50'], 'Calculate final CBR as max of 2.5mm and 5.0mm values');
+addRoute('post', '/api/cbr/curve-final', calc.calcCBRFinal, ['readings', 'stdLoad25', 'stdLoad50'], 'Calculate final CBR from full load-penetration curve (ASTM D1883)');
 
 // --- Maturity Module ---
 addRoute('post', '/api/maturity/nurse-saul', calc.calcNurseSaulMaturity, ['temperatures', 't0', 'dt'], 'Calculate concrete maturity using Nurse-Saul method');

@@ -196,10 +196,16 @@ async function sendChat() {
     document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
 
     try {
-        var GEMINI_API_KEY = (typeof SmartLAP_CONFIG !== 'undefined') 
+        var GEMINI_API_KEY = (typeof SmartLAP_CONFIG !== 'undefined' && SmartLAP_CONFIG.gemini && SmartLAP_CONFIG.gemini.apiKey) 
             ? SmartLAP_CONFIG.gemini.apiKey 
-            : 'AIzaSyDDr7EQ95hLdecc1BDIZIFhmmmVMLArBsU';
-        var GEMINI_MODEL = (typeof SmartLAP_CONFIG !== 'undefined') 
+            : null;
+        if (!GEMINI_API_KEY) {
+            document.getElementById('typing-indicator').remove();
+            var msg = currentLang === 'ar' ? 'خدمة الذكاء الاصطناعي غير مهيأة — أضف مفتاح API في الإعدادات' : 'AI service not configured — add an API key in settings';
+            addChatMsg('ai', msg);
+            return;
+        }
+        var GEMINI_MODEL = (typeof SmartLAP_CONFIG !== 'undefined' && SmartLAP_CONFIG.gemini && SmartLAP_CONFIG.gemini.model) 
             ? SmartLAP_CONFIG.gemini.model 
             : 'gemini-2.0-flash';
         var response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + GEMINI_MODEL + ':generateContent?key=' + GEMINI_API_KEY, {

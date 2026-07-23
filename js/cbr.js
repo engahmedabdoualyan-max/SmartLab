@@ -185,7 +185,7 @@ function calculateCBRResults(){
         if(Math.abs(cbrReadings[i].penetration-2.5)<0.6)cbrAt25=cbrReadings[i].cbr;
         if(Math.abs(cbrReadings[i].penetration-5)<0.6)cbrAt50=cbrReadings[i].cbr;
     }
-    var finalCBR=typeof calcCBRFinalResult==='function'?calcCBRFinalResult(cbrAt25,cbrAt50).cbr:(cbrAt50>cbrAt25?cbrAt50:cbrAt25);
+    var finalCBR=typeof calcCBRFinalResult==='function'?calcCBRFinalResult(cbrAt25,cbrAt50):(cbrAt50>cbrAt25?cbrAt50:cbrAt25);
     var passed=finalCBR>=3;
     var results={
         cbr_value:finalCBR,

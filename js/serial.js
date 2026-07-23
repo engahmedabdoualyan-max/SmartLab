@@ -104,6 +104,14 @@ async function connectBluetooth() {
         });
         txt.textContent = currentLang === 'ar' ? 'جاري الاتصال...' : 'Connecting...';
         var server = await btDevice.gatt.connect();
+        btDevice.addEventListener('gattserverdisconnected',function(){
+            serialLog('Bluetooth: device disconnected','rx');
+            var txt=document.getElementById('bt-status-text');
+            if(txt)txt.textContent=currentLang==='ar'?'انقطع الاتصال':'Disconnected';
+            var dot=document.getElementById('bt-dot');
+            if(dot)dot.className='status-dot disconnected';
+            if(typeof showToast==='function')showToast(currentLang==='ar'?'انقطع اتصال البلوتوث':'Bluetooth disconnected','error');
+        });
         var service = await server.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb');
         btCharacteristic = await service.getCharacteristic('0000ffe1-0000-1000-8000-00805f9b34fb');
         await btCharacteristic.startNotifications();
@@ -166,35 +174,48 @@ async function startSerialStream(){
   serialKeepReading=true;
   var decoder=new TextDecoder();
   var buffer='';
-  while(serialPort.readable&&serialKeepReading){
+  serialReader=serialPort.readable.getReader();
+  while(serialKeepReading){
     try{
-      serialReader=serialPort.readable.getReader();
-      while(serialKeepReading){
-        var{value,done}=await serialReader.read();
-        if(done)break;
-        buffer+=decoder.decode(value,{stream:true});
-        var lines=buffer.split('\n');
-        buffer=lines.pop();
-        for(var i=0;i<lines.length;i++){
-          var line=lines[i].trim();
-          if(line)handleSerialLine(line);
-        }
+      var{value,done}=await serialReader.read();
+      if(done)break;
+      buffer+=decoder.decode(value,{stream:true});
+      var lines=buffer.split('\n');
+      buffer=lines.pop();
+      for(var i=0;i<lines.length;i++){
+        var line=lines[i].trim();
+        if(line)handleSerialLine(line);
       }
     }catch(e){
-      if(serialKeepReading)serialLog('Error: '+e.message,'rx');
-    }finally{
-      try{if(serialReader)serialReader.releaseLock();}catch(e){console.error('Serial reader release error:',e);}
+      serialLog('Connection lost: '+e.message,'rx');
+      stopTest();
+      break;
     }
   }
+  try{if(serialReader){serialReader.releaseLock();serialReader=null;}}catch(e){}
 }
 
 function handleSerialLine(line){
+  var statusMatch=line.match(/^SmartLAP:\w+/);
+  if(statusMatch){
+    serialLog('\u2190 '+line,'rx');
+    var status=statusMatch[0];
+    if(status==='SmartLAP:READY'||status==='SmartLAP:STARTED'||status==='SmartLAP:STOPPED'){
+      serialLog('Firmware status: '+status,'rx');
+    }
+    return;
+  }
   var parts=line.split(',');
-  if(parts.length<2)return;
+  if(parts.length<2){serialLog('Unknown data: '+line,'rx');return;}
   var v1=parseFloat(parts[0]);
   var v2=parseFloat(parts[1]);
-  if(currentTest&&currentTest.type==='penetration'){processPenSerial(v1);}
-  else if(currentTest&&currentTest.type==='direct_shear'){var v3=parts.length>=3?parseFloat(parts[2]):0;processDSReading(v1,v2,v3);}
+  if(isNaN(v1)||isNaN(v2)){serialLog('Invalid data: '+line,'rx');return;}
+  if(!currentTest){serialLog('No active test — ignoring data','rx');return;}
+  if(currentTest.type==='penetration'){processPenSerial(v1);}
+  else if(currentTest.type==='direct_shear'){var v3=parts.length>=3?parseFloat(parts[2]):0;processDSReading(v1,v2,v3);}
+  else if(currentTest.type==='slump'){processSlumpSerial(v1);}
+  else if(currentTest.type==='maturity'){processMatSerial(v1);}
+  else if(currentTest.type==='bitumen'){processBitSerial(v1,v2,parts.length>=3?parseFloat(parts[2]):0);}
   else{processStrike(v1,v2);}
 }
 
@@ -267,4 +288,12 @@ function stopAllConnections() {
     if (btDevice && btDevice.gatt.connected) { try { btDevice.gatt.disconnect(); } catch(e){console.error('BT disconnect error:',e);} }
     btDevice = null; btCharacteristic = null;
 }
+
+window.addEventListener('smartlap:hardware-unfrozen',function(evt){
+    var msg=evt.detail&&evt.detail.message?evt.detail.message:'الرجاء إعادة الاتصال بالأجهزة';
+    serialLog('\u26A0\uFE0F '+msg,'rx');
+    if(typeof showToast==='function')showToast(msg,'warning');
+    var connSel=document.querySelector('select[id$="-conn"],select[id$="-port-select"],select[id$="conn-select"]');
+    if(connSel)connSel.focus();
+});
 

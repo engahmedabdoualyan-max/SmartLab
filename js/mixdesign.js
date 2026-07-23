@@ -154,25 +154,27 @@ function displayMixResults(r) {
     var panel = document.getElementById('md-results-panel');
     panel.style.display = 'block';
 
+    var t = I18N[currentLang] || I18N.en;
+
     var html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">';
-    html += '<div style="background:var(--surface-alt);border-radius:8px;padding:12px;text-align:center;"><div style="font-size:10px;color:var(--text-muted);">Required Avg Strength f\'cr</div><div style="font-size:22px;font-weight:700;color:var(--accent);">' + r.fcr + ' MPa</div></div>';
-    html += '<div style="background:var(--surface-alt);border-radius:8px;padding:12px;text-align:center;"><div style="font-size:10px;color:var(--text-muted);">w/c Ratio</div><div style="font-size:22px;font-weight:700;color:var(--accent);">' + r.wcRatio + '</div></div>';
+    html += '<div style="background:var(--surface-alt);border-radius:8px;padding:12px;text-align:center;"><div style="font-size:10px;color:var(--text-muted);" data-i18n="md_fcr">' + t.md_fcr + '</div><div style="font-size:22px;font-weight:700;color:var(--accent);">' + r.fcr + ' MPa</div></div>';
+    html += '<div style="background:var(--surface-alt);border-radius:8px;padding:12px;text-align:center;"><div style="font-size:10px;color:var(--text-muted);" data-i18n="md_wc_ratio">' + t.md_wc_ratio + '</div><div style="font-size:22px;font-weight:700;color:var(--accent);">' + r.wcRatio + '</div></div>';
     html += '</div>';
 
-    html += safeResultRow('Water Content', r.waterContent + ' kg/m³');
-    html += safeResultRow('Air Content', r.airContent + ' %');
-    html += safeResultRow('Cement Content', r.cementContent + ' kg/m³');
-    html += safeResultRow('Coarse Aggregate', r.coarseAgg + ' kg/m³');
-    html += safeResultRow('Fine Aggregate', r.fineAgg + ' kg/m³');
-    html += safeResultRow('Unit Weight', r.unitWeight + ' kg/m³');
+    html += safeResultRow(t.md_water_content, r.waterContent + ' kg/m³');
+    html += safeResultRow(t.md_air_content, r.airContent + ' %');
+    html += safeResultRow(t.md_cement_content, r.cementContent + ' kg/m³');
+    html += safeResultRow(t.md_coarse_agg, r.coarseAgg + ' kg/m³');
+    html += safeResultRow(t.md_fine_agg, r.fineAgg + ' kg/m³');
+    html += safeResultRow(t.md_unit_weight, r.unitWeight + ' kg/m³');
     safeSetHTML('md-results-body', html);
 
     var bw = r.batchWeights;
-    var bhtml = '<div class="result-row"><span class="result-label">Cement</span><span class="result-value">' + bw.cement + ' kg</span></div>';
-    bhtml += '<div class="result-row"><span class="result-label">Water</span><span class="result-value">' + bw.water + ' kg</span></div>';
-    bhtml += '<div class="result-row"><span class="result-label">Coarse Aggregate</span><span class="result-value">' + bw.coarse + ' kg</span></div>';
-    bhtml += '<div class="result-row"><span class="result-label">Fine Aggregate</span><span class="result-value">' + bw.fine + ' kg</span></div>';
-    bhtml += '<div class="result-row"><span class="result-label">Air Content</span><span class="result-value">' + bw.air + ' %</span></div>';
+    var bhtml = '<div class="result-row"><span class="result-label" data-i18n="md_cement">' + t.md_cement + '</span><span class="result-value">' + bw.cement + ' kg</span></div>';
+    bhtml += '<div class="result-row"><span class="result-label" data-i18n="md_water">' + t.md_water + '</span><span class="result-value">' + bw.water + ' kg</span></div>';
+    bhtml += '<div class="result-row"><span class="result-label" data-i18n="md_coarse">' + t.md_coarse + '</span><span class="result-value">' + bw.coarse + ' kg</span></div>';
+    bhtml += '<div class="result-row"><span class="result-label" data-i18n="md_fine">' + t.md_fine + '</span><span class="result-value">' + bw.fine + ' kg</span></div>';
+    bhtml += '<div class="result-row"><span class="result-label" data-i18n="md_air_volume">' + t.md_air_volume + '</span><span class="result-value">' + bw.air + ' %</span></div>';
     safeSetHTML('md-batch-body', bhtml);
 
     drawMixChart(r);
@@ -185,12 +187,13 @@ function drawMixChart(r) {
     var ctx = canvas.getContext('2d');
     var w = canvas.width, h = canvas.height;
     ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = '#f8fafc';
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--bg-card').trim() || '#f8fafc';
     ctx.fillRect(0, 0, w, h);
 
+    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     var labels = ['Cement', 'Water', 'Coarse', 'Fine'];
     var values = [r.batchWeights.cement, r.batchWeights.water, r.batchWeights.coarse, r.batchWeights.fine];
-    var colors = ['#3b82f6', '#10b981', '#f59e0b', '#94a3b8'];
+    var colors = isDark ? ['#60a5fa', '#34d399', '#fbbf24', '#cbd5e1'] : ['#3b82f6', '#10b981', '#f59e0b', '#94a3b8'];
     var maxVal = Math.max.apply(null, values) * 1.2 || 100;
     var gap = (w - 80) / labels.length;
     var barW = gap * 0.6;
@@ -200,11 +203,11 @@ function drawMixChart(r) {
         var bh = (values[i] / maxVal) * (h - 50);
         ctx.fillStyle = colors[i];
         ctx.fillRect(x, h - 30 - bh, barW, bh);
-        ctx.fillStyle = '#334155';
+        ctx.fillStyle = isDark ? '#e2e8f0' : '#334155';
         ctx.font = '10px sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText(labels[i], x + barW / 2, h - 10);
-        ctx.fillStyle = '#64748b';
+        ctx.fillStyle = isDark ? '#94a3b8' : '#64748b';
         ctx.font = '9px sans-serif';
         ctx.fillText(values[i].toFixed(0), x + barW / 2, h - 36 - bh);
     }

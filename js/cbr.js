@@ -141,7 +141,7 @@ function drawCBRChart(){
     var ctx=canvas.getContext('2d');
     var W=canvas.width,H=canvas.height;
     ctx.clearRect(0,0,W,H);
-    ctx.fillStyle='#f8fafc';ctx.fillRect(0,0,W,H);
+    ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--bg-card').trim()||'#f8fafc';ctx.fillRect(0,0,W,H);
     ctx.strokeStyle='#e2e8f0';ctx.lineWidth=1;
     var pad={l:50,r:20,t:20,b:35};
     var gw=W-pad.l-pad.r,gh=H-pad.t-pad.b;

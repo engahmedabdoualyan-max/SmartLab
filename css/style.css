@@ -89,7 +89,14 @@
 [data-theme="dark"] .login-card h2 { color: white; }
 [data-theme="dark"] .login-card .subtitle { color: rgba(255,255,255,0.45); }
 [data-theme="dark"] .login-brand { background: linear-gradient(135deg, rgba(59,130,246,0.15) 0%, rgba(16,185,129,0.08) 100%); border-right-color: rgba(255,255,255,0.08); }
-[data-theme="dark"] .login-form-side { background: rgba(255,255,255,0.03); }
+  [data-theme="dark"] .login-form-side { background: rgba(255,255,255,0.03); }
+  [data-theme="dark"] #screen-mixdesign .form-group input,
+  [data-theme="dark"] #screen-mixdesign .form-group select,
+  [data-theme="dark"] #screen-controlcharts .form-group input,
+  [data-theme="dark"] #screen-controlcharts .form-group select { background: var(--surface); border-color: var(--border); color: var(--text); }
+  [data-theme="dark"] .result-row { border-bottom-color: var(--border); }
+  [data-theme="dark"] .result-label { color: var(--text-muted); }
+  [data-theme="dark"] .result-value { color: var(--text); }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -958,23 +965,6 @@ body[data-dir="rtl"] .ai-card:hover .chat-indicator .arrow { transform: translat
     font-weight: 600;
     color: var(--text);
     flex: 1;
-}
-.mode-badge-bottom {
-    position: absolute;
-    bottom: 8px;
-    right: 8px;
-    background: linear-gradient(135deg, var(--accent), #2563eb);
-    color: white;
-    padding: 3px 10px;
-    border-radius: 8px;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.3px;
-    box-shadow: 0 2px 8px rgba(59,130,246,0.3);
-}
-body[data-dir="ltr"] .mode-badge-bottom {
-    right: auto;
-    left: 8px;
 }
 @media (max-width: 768px) {
     .dynamic-admin-layout {

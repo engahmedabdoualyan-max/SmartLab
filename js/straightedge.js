@@ -92,7 +92,7 @@ function processSEReading(position,irregularity,inclination){
 function drawSEChart(){
     var canvas=document.getElementById('se-chart');if(!canvas)return;
     var ctx=canvas.getContext('2d');var W=canvas.width,H=canvas.height;
-    ctx.clearRect(0,0,W,H);ctx.fillStyle='#f8fafc';ctx.fillRect(0,0,W,H);
+    ctx.clearRect(0,0,W,H);ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--bg-card').trim()||'#f8fafc';ctx.fillRect(0,0,W,H);
     var pad={l:50,r:20,t:20,b:30};var gw=W-pad.l-pad.r,gh=H-pad.t-pad.b;
     ctx.beginPath();ctx.moveTo(pad.l,pad.t);ctx.lineTo(pad.l,H-pad.b);ctx.lineTo(W-pad.r,H-pad.b);ctx.stroke();
     if(seReadings.length<2)return;

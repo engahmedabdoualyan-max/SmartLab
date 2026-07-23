@@ -3,15 +3,10 @@ var permState = { isRunning: false, readings: [] };
 function openPermeability(test) {
   currentTest = test;
   showScreen('permeability');
-  document.getElementById('perm-page-title').textContent = test.name;
   document.getElementById('perm-btn-start').style.display = 'flex';
   document.getElementById('perm-btn-stop').style.display = 'none';
   document.getElementById('perm-results-panel').style.display = 'none';
   document.getElementById('perm-demo-banner').style.display = 'none';
-  var chartFill = document.getElementById('perm-chart-fill');
-  if (chartFill) chartFill.style.strokeDashoffset = '264';
-  var readingsEl = document.getElementById('perm-readings');
-  if (readingsEl) readingsEl.innerHTML = '';
 }
 
 function startPermeabilityTest() {
@@ -43,11 +38,11 @@ function runPermeabilityDemo() {
     var pressure = Math.random() * 2 + 1;
     var flowRate = pressure * 0.5;
     permState.readings.push({pressure: pressure, flowRate: flowRate});
+    var headEl = document.getElementById('perm-val-head');
+    if (headEl) headEl.textContent = pressure.toFixed(2);
+    var qEl = document.getElementById('perm-val-Q');
+    if (qEl) qEl.textContent = flowRate.toFixed(3);
     updatePermeabilityTable(permState.readings.length);
-    var pctComplete = ((i + 1) / totalReadings) * 100;
-    var fill = 264 * (1 - pctComplete / 100);
-    var gaugeFill = document.getElementById('perm-gauge-fill');
-    if (gaugeFill) gaugeFill.setAttribute('stroke-dashoffset', fill);
     i++;
     if (i < totalReadings) setTimeout(demoStep, 1500);
     else stopPermeabilityTest();
@@ -56,21 +51,20 @@ function runPermeabilityDemo() {
 }
 
 function processPermeabilityReading(pressure, flowRate) {
-  var valueEl = document.getElementById('perm-value');
-  if (valueEl) valueEl.textContent = pressure.toFixed(2);
+  var headEl = document.getElementById('perm-val-head');
+  if (headEl) headEl.textContent = pressure.toFixed(2);
+  var qEl = document.getElementById('perm-val-Q');
+  if (qEl) qEl.textContent = flowRate.toFixed(3);
   permState.readings.push({pressure: pressure, flowRate: flowRate});
 }
 
 function updatePermeabilityTable(count) {
-  var tbody = document.getElementById('perm-table-body');
-  if (!tbody) return;
-  var row = tbody.insertRow();
-  var cell1 = row.insertCell(0);
-  var cell2 = row.insertCell(1);
-  var cell3 = row.insertCell(2);
-  cell1.textContent = count;
-  cell2.textContent = (Math.random() * 2).toFixed(2);
-  cell3.textContent = (Math.random() * 10).toFixed(1);
+  var r = permState.readings;
+  if (r.length === 0) return;
+  var latest = r[r.length - 1];
+  var k = latest.pressure > 0 ? (latest.flowRate / latest.pressure) * 100 : 0;
+  var kEl = document.getElementById('perm-val-K');
+  if (kEl) kEl.textContent = k.toFixed(2);
 }
 
 function calculatePermeabilityResults() {

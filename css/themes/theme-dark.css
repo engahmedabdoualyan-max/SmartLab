@@ -1,0 +1,204 @@
+/**
+ * SmartLab Theme: Dark Mode
+ * Direction: Left-to-Right (English)
+ * Minimalist dark theme inspired by clean UI with subtle bright elements
+ */
+:root {
+    /* Dark Palette */
+    --primary: #e2e8f0;
+    --primary-light: #cbd5e1;
+    --accent: #60a5fa;
+    --accent-hover: #93c5fd;
+    --accent-glow: rgba(96, 165, 250, 0.3);
+    --success: #4ade80;
+    --danger: #f87171;
+    --warning: #fbbf24;
+    --surface: #0f172a;
+    --surface-alt: #1e293b;
+    --border: #334155;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --text-light: #64748b;
+    --radius: 14px;
+    --radius-sm: 9px;
+    --radius-lg: 22px;
+    --bg-card: #1e293b;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    --shadow-lg: 0 10px 40px rgba(0,0,0,0.5);
+    --shadow-glow: 0 0 30px rgba(96, 165, 250, 0.2);
+}
+
+/* Clean dark logo with subtle glow */
+.logo-dark {
+    background: linear-gradient(135deg, rgba(96,165,250,0.15), rgba(139,92,246,0.15));
+    border: 2px solid var(--accent);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-glow);
+    backdrop-filter: blur(12px);
+}
+
+/* Dark glass panels with subtle effects */
+.panel-dark {
+    background: rgba(30, 41, 59, 0.7);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(96,165,250,0.2);
+    border-radius: var(--radius);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+}
+
+.panel-dark:hover {
+    box-shadow: 0 8px 32px rgba(96,165,250,0.15);
+    border-color: rgba(96,165,250,0.4);
+}
+
+/* Dark cards with improved contrast */
+.card-dark {
+    background: var(--bg-card);
+    border-left: 4px solid var(--accent);
+    border-radius: var(--radius-sm);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+}
+
+.card-dark:hover {
+    box-shadow: var(--shadow);
+}
+
+/* Dark button styling */
+.btn-dark {
+    background: var(--surface);
+    border: 2px solid var(--accent);
+    border-radius: var(--radius-sm);
+    padding: 12px 24px;
+    color: var(--text);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-dark::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(96,165,250,0.1), transparent);
+    transition: 0.5s;
+}
+
+.btn-dark:hover::before {
+    left: 100%;
+}
+
+.btn-dark:hover {
+    background: var(--surface-alt);
+    box-shadow: 0 4px 12px rgba(96,165,250,0.2);
+}
+
+/* Dark status indicators */
+.status-dot-dark {
+    width: 14px; height: 14px;
+    border-radius: var(--radius-full);
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent);
+}
+
+/* Dark table styling */
+.table-dark {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+}
+
+.table-dark th {
+    background: var(--surface-alt);
+    color: var(--accent);
+    font-weight: 600;
+    padding: 14px 18px;
+    border-bottom: 2px solid var(--accent);
+}
+
+.table-dark td {
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+}
+
+.table-dark tr:hover td {
+    background: var(--surface);
+}
+
+/* Dark typography */
+.heading-dark {
+    color: var(--text);
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    font-family: 'Segoe UI', 'Cairo', sans-serif;
+}
+
+/* Dark progress indicators */
+.progress-dark {
+    background: var(--surface);
+    border-radius: var(--radius-full);
+    height: 8px;
+    overflow: hidden;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.progress-fill-dark {
+    background: linear-gradient(90deg, var(--accent), var(--success));
+    height: 100%;
+    border-radius: var(--radius-full);
+    box-shadow: 0 0 10px var(--accent);
+}
+
+/* Clean dark scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--surface);
+    border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: var(--radius-full);
+    box-shadow: 0 0 8px var(--accent);
+}
+
+/* RTL support for English */
+[data-dir="ltr"] {
+    direction: ltr;
+    text-align: left;
+}
+
+/* Dark theme specific enhancement */
+[data-theme="dark"] {
+    --primary: #e2e8f0;
+    --text: #e2e8f0;
+    --bg-card: #1e293b;
+}
+
+/* Dark glass enhancement */
+.glass-dark {
+    background: rgba(30, 41, 59, 0.8);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(96,165,250,0.15);
+    border-radius: var(--radius);
+}
+
+/* Logo reference: clean dark with subtle glow */
+.logo-dark-glow {
+    background: linear-gradient(135deg, rgba(96,165,250,0.2), rgba(139,92,246,0.2));
+    border: 2px solid var(--accent);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 0 30px rgba(96,165,250,0.15);
+    backdrop-filter: blur(12px);
+}

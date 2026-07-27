@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Soil Classification</title>
+    <link rel="icon" href="../favicon.ico">
+    <link rel="stylesheet" href="design-common.css">
+    <style>
+        :root { --accent-page: #fb923c; }
+        body { color-scheme: dark; }
+        .design-icon { background: rgba(251,146,60,0.1); border-color: rgba(251,146,60,0.4); }
+        .back-btn { background: rgba(251,146,60,0.1); border-color: rgba(251,146,60,0.2); }
+        .back-btn:hover { background: rgba(251,146,60,0.2); }
+        .notes-section { background: rgba(251,146,60,0.04); border-color: rgba(251,146,60,0.1); }
+        .band-btn { background: rgba(251,146,60,0.1); border-color: rgba(251,146,60,0.2); color: var(--accent-orange); }
+        .band-btn:hover, .band-btn.active { background: rgba(251,146,60,0.2); border-color: var(--accent-orange); }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    <div class="page">
+        <nav class="breadcrumb">
+            <a href="../soil.html">Soil & Roads</a>
+            <span>/</span>
+            <a href="design-pavement.html">Design Tools</a>
+            <span>/</span>
+            <span>Classification</span>
+        </nav>
+        <h1 class="page-title">Soil <span>Classification</span></h1>
+        <p class="page-sub">USCS (ASTM D2487) & AASHTO (M 145) Classification — Enter gradation & Atterberg limits, get group symbol, name, and engineering properties</p>
+
+        <section class="design-section">
+            <div class="design-header">
+                <div class="design-icon">🏷️</div>
+                <div>
+                    <div class="design-title">Soil Classifier</div>
+                    <div class="design-desc">Unified Soil Classification System (USCS) and AASHTO M 145. Input sieve analysis and Atterberg limits for instant classification with engineering correlations.</div>
+                </div>
+            </div>
+
+            <div class="tab-row">
+                <button class="tab-btn active" onclick="switchTab('uscs', this)">USCS</button>
+                <button class="tab-btn" onclick="switchTab('aashto', this)">AASHTO</button>
+                <button class="tab-btn" onclick="switchTab('comparison', this)">Comparison</button>
+                <button class="tab-btn" onclick="switchTab('properties', this)">Properties</button>
+            </div>
+
+            <!-- TAB 1: USCS -->
+            <div class="tab-panel active" id="panel-uscs">
+                <div class="two-col">
+                    <div class="sidebar">
+                        <div class="sidebar-title">📊 Sieve Analysis</div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">3" (75 mm)</label>
+                            <input type="number" class="sidebar-input" id="s3in" value="100" step="0.1"><span class="unit">% passing</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">2" (50 mm)</label>
+                            <input type="number" class="sidebar-input" id="s2in" value="100" step="0.1"><span class="unit">% passing</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">1.5" (37.5 mm)</label>
+                            <input type="number" class="sidebar-input" id="s1.5in" value="100" step="0.1"><span class="unit">% passing</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">1" (25 mm)</label>
+                            <input type="number" class="sidebar-input" id="s1in" value="100" step="0.1"><span class="unit">% passing</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">3/4" (19 mm)</label>
+                            <input type="number" class="sidebar-input" id="s34in" value="95" step="0.1"><span class="unit">% passing</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">3/8" (9.5 mm)</label>
+                            <input type="number" class="sidebar-input" id="s38in" value="85" step="0.1"><span class="unit">% passing</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">#4 (4.75 mm)</label>
+                            <input type="number" class="sidebar-input" id="s4" value="70" step="0.1"><span class="unit">% passing</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">#10 (2 mm)</label>
+                            <input type="number" class="sidebar-input" id="s10" value="55" step="0.1"><span class="unit">% passing</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">#40 (0.425 mm)</label>
+                            <input type="number" class="sidebar-input" id="s40" value="35" step="0.1"><span class="unit">% passing</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">#200 (0.075 mm)</label>
+                            <input type="number" class="sidebar-input" id="s200" value="15" step="0.1"><span class="unit">% passing</span>
+                        </div>
+
+                        <div class="sidebar-title" style="margin-top:24px;">🧪 Atterberg Limits</div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Liquid Limit (LL)</label>
+                            <input type="number" class="sidebar-input" id="ll" value="30" step="1"><span class="unit">%</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Plastic Limit (PL)</label>
+                            <input type="number" class="sidebar-input" id="pl" value="18" step="1"><span class="unit">%</span>
+                        </div>
+
+                        <button class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="classifyUSCS()">🏷️ Classify USCS</button>
+                    </div>
+
+                    <div>
+                        <div id="uscsResult" style="display:none;">
+                            <h3 style="color:var(--accent-orange);margin-bottom:16px;">🏷️ USCS Classification Result</h3>
+                            <div class="result-grid">
+                                <div class="result-card" style="grid-column:1/-1;background:linear-gradient(135deg,rgba(251,146,60,0.15),rgba(251,146,60,0.05));border-color:var(--accent-orange);">
+                                    <div class="result-icon" style="font-size:36px;">🏷️</div>
+                                    <div class="result-label" style="font-size:14px;">Group Symbol</div>
+                                    <div class="result-value" id="uscsSymbol" style="font-size:48px;">--</div>
+                                    <div class="result-label" style="font-size:14px;margin-top:8px;">Group Name</div>
+                                    <div class="result-value" id="uscsName" style="font-size:20px;font-weight:500;">--</div>
+                                </div>
+                                <div class="result-card"><div class="result-icon">📏</div><div class="result-label">% Gravel</div><div class="result-value" id="uscsGravel">--%</div></div>
+                                <div class="result-card"><div class="result-icon">🏖️</div><div class="result-label">% Sand</div><div class="result-value" id="uscsSand">--%</div></div>
+                                <div class="result-card"><div class="result-icon">💧</div><div class="result-label">% Fines</div><div class="result-value" id="uscsFines">--%</div></div>
+                                <div class="result-card"><div class="result-icon">📐</div><div class="result-label">Cu</div><div class="result-value" id="uscsCu">--</div></div>
+                                <div class="result-card"><div class="result-icon">📐</div><div class="result-label">Cc</div><div class="result-value" id="uscsCc">--</div></div>
+                                <div class="result-card"><div class="result-icon">🔴</div><div class="result-label">LL</div><div class="result-value" id="uscsLl">--</div></div>
+                                <div class="result-card"><div class="result-icon">🔵</div><div class="result-label">PL</div><div class="result-value" id="uscsPl">--</div></div>
+                                <div class="result-card"><div class="result-icon">🟣</div><div class="result-label">PI</div><div class="result-value" id="uscsPi">--</div></div>
+                            </div>
+
+                            <div class="chart-section" style="margin-top:24px;">
+                                <div class="chart-title">📈 Gradation Curve</div>
+                                <canvas class="chart-canvas" id="gradChart"></canvas>
+                            </div>
+
+                            <div class="spec-grid" style="margin-top:24px;">
+                                <div class="spec-item">
+                                    <div class="spec-title">🏗️ Typical Engineering Properties</div>
+                                    <div class="spec-desc" id="uscsProps"></div>
+                                </div>
+                                <div class="spec-item">
+                                    <div class="spec-title">✅ Suitability</div>
+                                    <div class="spec-desc" id="uscsSuit"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="uscsPlaceholder" style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+                            <div style="font-size:48px;margin-bottom:16px;">🏷️</div>
+                            <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Enter Gradation & Atterberg</div>
+                            <div style="font-size:13px;max-width:400px;">Input sieve analysis and LL/PL, then click <strong>Classify USCS</strong>.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: AASHTO -->
+            <div class="tab-panel" id="panel-aashto">
+                <div class="two-col">
+                    <div class="sidebar">
+                        <div class="sidebar-title">📊 AASHTO M 145 Inputs</div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">% Passing #10 (2 mm)</label>
+                            <input type="number" class="sidebar-input" id="aa10" value="55" step="0.1"><span class="unit">%</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">% Passing #40 (0.425 mm)</label>
+                            <input type="number" class="sidebar-input" id="aa40" value="35" step="0.1"><span class="unit">%</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">% Passing #200 (0.075 mm)</label>
+                            <input type="number" class="sidebar-input" id="aa200" value="15" step="0.1"><span class="unit">%</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Liquid Limit (LL)</label>
+                            <input type="number" class="sidebar-input" id="aaLL" value="30" step="1"><span class="unit">%</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Plasticity Index (PI)</label>
+                            <input type="number" class="sidebar-input" id="aaPI" value="12" step="1"><span class="unit">%</span>
+                        </div>
+                        <button class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="classifyAASHTO()">🏷️ Classify AASHTO</button>
+                    </div>
+
+                    <div>
+                        <div id="aashtoResult" style="display:none;">
+                            <h3 style="color:var(--accent-orange);margin-bottom:16px;">🏷️ AASHTO Classification Result</h3>
+                            <div class="result-grid">
+                                <div class="result-card" style="grid-column:1/-1;background:linear-gradient(135deg,rgba(251,146,60,0.15),rgba(251,146,60,0.05));border-color:var(--accent-orange);">
+                                    <div class="result-icon" style="font-size:36px;">🏷️</div>
+                                    <div class="result-label" style="font-size:14px;">Group</div>
+                                    <div class="result-value" id="aaGroup" style="font-size:48px;">--</div>
+                                    <div class="result-label" style="font-size:14px;margin-top:8px;">Group Index</div>
+                                    <div class="result-value" id="aaGI" style="font-size:28px;">--</div>
+                                </div>
+                                <div class="result-card"><div class="result-icon">📏</div><div class="result-label">% Gravel</div><div class="result-value" id="aaGravel">--%</div></div>
+                                <div class="result-card"><div class="result-icon">🏖️</div><div class="result-label">% Sand</div><div class="result-value" id="aaSand">--%</div></div>
+                                <div class="result-card"><div class="result-icon">💧</div><div class="result-label">% Silt/Clay</div><div class="result-value" id="aaSiltClay">--%</div></div>
+                            </div>
+
+                            <div class="spec-grid" style="margin-top:24px;">
+                                <div class="spec-item">
+                                    <div class="spec-title">📋 AASHTO Group Descriptions</div>
+                                    <div class="spec-desc" id="aaDesc"></div>
+                                </div>
+                                <div class="spec-item">
+                                    <div class="spec-title">🛣️ Pavement Suitability</div>
+                                    <div class="spec-desc" id="aaSuit"></div>
+                                </div>
+                                <div class="spec-item">
+                                    <div class="spec-title">📐 GI Formula</div>
+                                    <div class="spec-desc">GI = (F-35)[0.2+0.005(LL-40)] + 0.01(F-15)(PI-10) where F=% passing #200. GI ≥ 0. Higher = poorer subgrade.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="aashtoPlaceholder" style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+                            <div style="font-size:48px;margin-bottom:16px;">🏷️</div>
+                            <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Enter AASHTO Parameters</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: COMPARISON -->
+            <div class="tab-panel" id="panel-comparison">
+                <h3 style="color:var(--accent-orange);margin-bottom:16px;">⚖️ USCS ↔ AASHTO Comparison</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>USCS Group</th>
+                                <th>USCS Name</th>
+                                <th>AASHTO Group</th>
+                                <th>Typical GI</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody id="compTable"></tbody>
+                    </table>
+                </div>
+
+                <div class="formula-section" style="margin-top:24px;">
+                    <div class="formula-title">🔄 Key Differences</div>
+                    <div class="code-block">
+USCS (ASTM D2487):
+- Based on particle size distribution AND plasticity
+- 15 groups: GW, GP, GM, GC, SW, SP, SM, SC, ML, CL, OL, MH, CH, OH, Pt
+- Well-graded vs poorly-graded distinction for coarse soils
+- Plasticity chart (A-line) for fine soils
+
+AASHTO M 145:
+- Developed for highway subgrade evaluation
+- 7 main groups: A-1 through A-7 (+ A-8 for peat)
+- Subgroups: a (granular) vs b (silt-clay)
+- Group Index (GI) quantifies quality within group
+- GI = 0 = best, GI > 20 = very poor
+
+Correlation Rules (approximate):
+- GW/GP → A-1-a / A-1-b
+- GM/GC → A-2-4 / A-2-5 / A-2-6 / A-2-7
+- SW/SP → A-3 / A-1-b
+- SM/SC → A-2-4 / A-2-6
+- ML/CL → A-4 / A-6
+- MH/CH → A-5 / A-7
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: PROPERTIES -->
+            <div class="tab-panel" id="panel-properties">
+                <h3 style="color:var(--accent-orange);margin-bottom:16px;">📐 Engineering Properties by Classification</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Group</th>
+                                <th>Permeability</th>
+                                <th>Compressibility</th>
+                                <th>Shear Strength</th>
+                                <th>Compaction</th>
+                                <th>CBR Range</th>
+                                <th>Subgrade Rating</th>
+                            </tr>
+                        </thead>
+                        <tbody id="propsTable"></tbody>
+                    </table>
+                </div>
+
+                <div class="chart-section" style="margin-top:24px;">
+                    <div class="chart-title">📊 Plasticity Chart (A-Line)</div>
+                    <canvas class="chart-canvas" id="plasticityChart"></canvas>
+                </div>
+
+                <div class="formula-section" style="margin-top:16px;">
+                    <div class="formula-title">📐 Key Equations</div>
+                    <div class="code-block">
+Coefficient of Uniformity: Cu = D₆₀ / D₁₀
+Coefficient of Curvature: Cc = (D₃₀)² / (D₁₀ × D₆₀)
+
+Well-graded gravel (GW): Cu ≥ 4 AND 1 ≤ Cc ≤ 3
+Well-graded sand (SW): Cu ≥ 6 AND 1 ≤ Cc ≤ 3
+
+A-Line: PI = 0.73 × (LL - 20)
+Above A-line: Clay (C) | Below A-line: Silt (M) or Organic (O)
+
+Group Index (AASHTO):
+GI = (F-35)[0.2+0.005(LL-40)] + 0.01(F-15)(PI-10)
+F = % passing #200 sieve (0-100)
+LL = Liquid Limit, PI = Plasticity Index
+GI ≥ 0 (negative set to 0)
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <a href="../soil.html" class="back-btn">← Back to Soil & Roads</a>
+    </div>
+    <div id="footer-placeholder"></div>
+    <script src="../components.js"></script>
+    <script>
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('panel-' + tabId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        // USCS Classification
+        function classifyUSCS() {
+            const s = {
+                s3in: parseFloat(document.getElementById('s3in').value),
+                s2in: parseFloat(document.getElementById('s2in').value),
+                s1.5in: parseFloat(document.getElementById('s1.5in').value),
+                s1in: parseFloat(document.getElementById('s1in').value),
+                s34in: parseFloat(document.getElementById('s34in').value),
+                s38in: parseFloat(document.getElementById('s38in').value),
+                s4: parseFloat(document.getElementById('s4').value),
+                s10: parseFloat(document.getElementById('s10').value),
+                s40: parseFloat(document.getElementById('s40').value),
+                s200: parseFloat(document.getElementById('s200').value),
+            };
+            const LL = parseFloat(document.getElementById('ll').value);
+            const PL = parseFloat(document.getElementById('pl').value);
+            const PI = LL - PL;
+
+            // Percentages
+            const gravel = 100 - s.s4;
+            const sand = s.s4 - s.s200;
+            const fines = s.s200;
+
+            // Cu, Cc
+            const d10 = estimateD(10, s);
+            const d30 = estimateD(30, s);
+            const d60 = estimateD(60, s);
+            const Cu = d10 > 0 ? (d60 / d10).toFixed(2) : '—';
+            const Cc = (d10 > 0 && d60 > 0) ? ((d30 * d30) / (d10 * d60)).toFixed(2) : '—';
+
+            // USCS Classification Logic
+            let symbol = '', name = '';
+
+            if (fines <= 5) {
+                // Coarse-grained with <5% fines
+                if (gravel >= 50) {
+                    // Gravelly
+                    if (Cu !== '—' && Cu >= 4 && Cc !== '—' && Cc >= 1 && Cc <= 3) {
+                        symbol = 'GW'; name = 'Well-graded gravel';
+                    } else {
+                        symbol = 'GP'; name = 'Poorly-graded gravel';
+                    }
+                } else {
+                    // Sandy
+                    if (Cu !== '—' && Cu >= 6 && Cc !== '—' && Cc >= 1 && Cc <= 3) {
+                        symbol = 'SW'; name = 'Well-graded sand';
+                    } else {
+                        symbol = 'SP'; name = 'Poorly-graded sand';
+                    }
+                }
+            } else if (fines >= 50) {
+                // Fine-grained
+                if (PI >= 0.73 * (LL - 20)) {
+                    // Above A-line (Clay)
+                    if (LL < 50) { symbol = 'CL'; name = 'Lean clay'; }
+                    else { symbol = 'CH'; name = 'Fat clay'; }
+                } else {
+                    // Below A-line (Silt/Organic)
+                    if (LL < 50) { symbol = 'ML'; name = 'Silt'; }
+                    else { symbol = 'MH'; name = 'Elastic silt'; }
+                }
+                // Organic check (simplified)
+                if (LL > 50 && PI < 4) { symbol = 'OH'; name = 'Organic clay/silt'; }
+            } else {
+                // 5-50% fines: Dual symbol
+                const coarse = gravel >= sand ? 'G' : 'S';
+                const fine = PI >= 0.73 * (LL - 20) ? 'C' : 'M';
+                symbol = coarse + fine;
+                name = (coarse === 'G' ? 'Gravel' : 'Sand') + ' with ' + (fine === 'C' ? 'clay' : 'silt');
+            }
+
+            // Display
+            document.getElementById('uscsSymbol').textContent = symbol;
+            document.getElementById('uscsName').textContent = name;
+            document.getElementById('uscsGravel').textContent = gravel.toFixed(1);
+            document.getElementById('uscsSand').textContent = sand.toFixed(1);
+            document.getElementById('uscsFines').textContent = fines.toFixed(1);
+            document.getElementById('uscsCu').textContent = Cu;
+            document.getElementById('uscsCc').textContent = Cc;
+            document.getElementById('uscsLl').textContent = LL;
+            document.getElementById('uscsPl').textContent = PL;
+            document.getElementById('uscsPi').textContent = PI;
+
+            // Properties
+            const props = getUSCSProps(symbol);
+            document.getElementById('uscsProps').textContent = props.eng;
+            document.getElementById('uscsSuit').textContent = props.suit;
+
+            // Draw gradation chart
+            drawGradationChart(s);
+
+            document.getElementById('uscsPlaceholder').style.display = 'none';
+            document.getElementById('uscsResult').style.display = 'block';
+        }
+
+        function estimateD(percent, s) {
+            // Linear interpolation between sieve sizes
+            const sieves = [
+                {p: s.s3in, size: 75},
+                {p: s.s2in, size: 50},
+                {p: s.s1.5in, size: 37.5},
+                {p: s.s1in, size: 25},
+                {p: s.s34in, size: 19},
+                {p: s.s38in, size: 9.5},
+                {p: s.s4, size: 4.75},
+                {p: s.s10, size: 2},
+                {p: s.s40, size: 0.425},
+                {p: s.s200, size: 0.075}
+            ];
+            for (let i = 0; i < sieves.length - 1; i++) {
+                if (sieves[i].p >= percent && sieves[i+1].p <= percent) {
+                    const ratio = (percent - sieves[i+1].p) / (sieves[i].p - sieves[i+1].p);
+                    return sieves[i+1].size + ratio * (sieves[i].size - sieves[i+1].size);
+                }
+            }
+            return 0;
+        }
+
+        function drawGradationChart(s) {
+            const canvas = document.getElementById('gradChart');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 300;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const sieves = [
+                {label: '3"', size: 75, p: s.s3in},
+                {label: '2"', size: 50, p: s.s2in},
+                {label: '1.5"', size: 37.5, p: s['s1.5in']},
+                {label: '1"', size: 25, p: s.s1in},
+                {label: '3/4"', size: 19, p: s.s34in},
+                {label: '3/8"', size: 9.5, p: s.s38in},
+                {label: '#4', size: 4.75, p: s.s4},
+                {label: '#10', size: 2, p: s.s10},
+                {label: '#40', size: 0.425, p: s.s40},
+                {label: '#200', size: 0.075, p: s.s200}
+            ];
+
+            const padding = 60;
+            const w = canvas.width - 2 * padding;
+            const h = canvas.height - 2 * padding;
+
+            // Log scale for size
+            const maxSize = 75;
+            const minSize = 0.075;
+
+            // Grid
+            ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 5; i++) {
+                const y = padding + (i/5)*h;
+                ctx.beginPath(); ctx.moveTo(padding, y); ctx.lineTo(canvas.width-padding, y); ctx.stroke();
+                ctx.fillStyle = 'var(--text-muted)'; ctx.font = '11px monospace';
+                ctx.fillText((100*(1-i/5)).toFixed(0)+'%', 10, y+4);
+            }
+            const sizeLabels = [75, 25, 9.5, 2, 0.425, 0.075];
+            sizeLabels.forEach((sz, i) => {
+                const x = padding + (Math.log10(maxSize/sz) / Math.log10(maxSize/minSize)) * w;
+                ctx.beginPath(); ctx.moveTo(x, padding); ctx.lineTo(x, canvas.height-padding); ctx.stroke();
+                ctx.fillStyle = 'var(--text-muted)'; ctx.font = '10px monospace';
+                ctx.fillText(sz + (sz>=1?'mm':'mm'), x-10, canvas.height-padding+18);
+            });
+
+            // Curve
+            ctx.strokeStyle = 'var(--accent-orange)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            sieves.forEach((sv, i) => {
+                const x = padding + (Math.log10(maxSize/sv.size) / Math.log10(maxSize/minSize)) * w;
+                const y = canvas.height - padding - (sv.p/100)*h;
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+
+            // Points
+            ctx.fillStyle = 'var(--accent-orange)';
+            sieves.forEach(sv => {
+                const x = padding + (Math.log10(maxSize/sv.size) / Math.log10(maxSize/minSize)) * w;
+                const y = canvas.height - padding - (sv.p/100)*h;
+                ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI*2); ctx.fill();
+            });
+        }
+
+        function getUSCSProps(sym) {
+            const db = {
+                'GW': {eng: 'Excellent drainage, high permeability (10⁻²-10⁻⁴ cm/s). Low compressibility. High shear strength (φ=38-45°). Excellent compaction. CBR 40-80. Excellent subgrade/base.', suit: '✅ Excellent for base/subbase, drainage layers, backfill. Easy to compact.'},
+                'GP': {eng: 'Good drainage, high permeability. Low compressibility. Good shear strength. Good compaction. CBR 30-60. Good subgrade.', suit: '✅ Good for drainage, filter layers. May segregate during placement.'},
+                'GM': {eng: 'Fair drainage, permeability 10⁻⁴-10⁻⁶ cm/s. Low-medium compressibility. Good shear strength. Fair compaction. CBR 20-40.', suit: '⚠️ Suitable for subbase with proper compaction. Frost susceptible if fines > 12%.'},
+                'GC': {eng: 'Low permeability (10⁻⁶-10⁻⁷ cm/s). Low compressibility. High shear strength. Good compaction. CBR 20-40.', suit: '⚠️ Good for subbase, impermeable layers. Clay fines may swell.'},
+                'SW': {eng: 'Excellent drainage, high permeability. Low compressibility. High shear strength. Excellent compaction. CBR 20-40.', suit: '✅ Excellent for base, backfill, filter layers. Easy to compact.'},
+                'SP': {eng: 'Good drainage, high permeability. Low compressibility. Good shear strength. Good compaction. CBR 10-30.', suit: '✅ Good for drainage, backfill. May be difficult to compact uniformly.'},
+                'SM': {eng: 'Fair drainage, permeability 10⁻⁴-10⁻⁶. Low-medium compressibility. Good shear strength. Fair compaction. CBR 10-30.', suit: '⚠️ Suitable for subbase. Frost susceptible. Control fines content.'},
+                'SC': {eng: 'Low permeability (10⁻⁶-10⁻⁷). Low compressibility. High shear strength. Good compaction. CBR 10-30.', suit: '⚠️ Good for subbase, clay liners. Swell potential with high PI.'},
+                'ML': {eng: 'Low permeability (10⁻⁵-10⁻⁷). Medium compressibility. Medium shear strength. Fair compaction. CBR 5-20.', suit: '⚠️ Poor subgrade. Frost susceptible. Requires drainage. Preload may be needed.'},
+                'CL': {eng: 'Very low permeability (10⁻⁷-10⁻⁹). Medium compressibility. Medium-high shear strength. Good compaction. CBR 5-15.', suit: '⚠️ Fair to poor subgrade. Low to medium swell. Compact at or above optimum.'},
+                'MH': {eng: 'Low permeability (10⁻⁶-10⁻⁸). High compressibility. Low-medium shear strength. Difficult compaction. CBR 3-10.', suit: '❌ Poor subgrade. High settlement. Avoid if possible. Preload required.'},
+                'CH': {eng: 'Very low permeability (10⁻⁸-10⁻¹⁰). High compressibility. Medium shear strength. Difficult compaction. CBR 3-10.', suit: '❌ Poor subgrade. High swell/shrinkage. Requires moisture control.'},
+                'OL': {eng: 'Variable permeability. High compressibility. Low shear strength. Poor compaction. CBR 2-8.', suit: '❌ Very poor. Remove and replace or stabilize.'},
+                'OH': {eng: 'Low permeability. Very high compressibility. Low shear strength. Very difficult compaction. CBR 1-5.', suit: '❌ Unsuitable. Remove or deep stabilization.'},
+                'Pt': {eng: 'Highly organic. Very high compressibility. Very low strength. Unsuitable.', suit: '❌ Remove entirely. Not for engineering use.'}
+            };
+            return db[sym] || {eng: 'Properties depend on specific gradation and plasticity.', suit: 'Evaluate based on test results.'};
+        }
+
+        // AASHTO Classification
+        function classifyAASHTO() {
+            const f10 = parseFloat(document.getElementById('aa10').value);
+            const f40 = parseFloat(document.getElementById('aa40').value);
+            const f200 = parseFloat(document.getElementById('aa200').value);
+            const LL = parseFloat(document.getElementById('aaLL').value);
+            const PI = parseFloat(document.getElementById('aaPI').value);
+
+            // AASHTO M 145 Logic
+            let group = '', desc = '';
+            let GI = 0;
+
+            const gravel = 100 - f10; // simplified
+            const sand = f10 - f200;
+            const fines = f200;
+
+            // Group determination
+            if (f200 <= 35 && f40 <= 25 && f10 <= 50) {
+                // Granular (A-1, A-3)
+                if (f200 <= 15 && PI <= 6) {
+                    if (f10 <= 30 && f40 <= 10 && f200 <= 5) { group = 'A-1-a'; desc = 'Stone fragments, gravel and sand'; }
+                    else { group = 'A-1-b'; desc = 'Gravel and sand'; }
+                } else if (f200 <= 25 && f40 <= 10 && f10 <= 35 && PI <= 10) { group = 'A-3'; desc = 'Fine sand'; }
+                else { group = 'A-2-4'; desc = 'Silty gravel/sand'; }
+            } else {
+                // Silt-clay (A-4 through A-7)
+                if (LL <= 40 && PI <= 10) { group = 'A-4'; desc = 'Silty soils'; }
+                else if (LL <= 40 && PI >= 11) { group = 'A-6'; desc = 'Clayey soils'; }
+                else if (LL >= 41 && PI <= 10) { group = 'A-5'; desc = 'Elastic silts'; }
+                else { group = 'A-7'; desc = 'Elastic clays'; }
+            }
+
+            // Group Index
+            const F = f200;
+            GI = (F - 35) * (0.2 + 0.005 * (LL - 40)) + 0.01 * (F - 15) * (PI - 10);
+            GI = Math.max(0, GI);
+
+            // Display
+            document.getElementById('aaGroup').textContent = group;
+            document.getElementById('aaGI').textContent = GI.toFixed(1);
+            document.getElementById('aaGravel').textContent = gravel.toFixed(1);
+            document.getElementById('aaSand').textContent = sand.toFixed(1);
+            document.getElementById('aaSiltClay').textContent = fines.toFixed(1);
+
+            // Description
+            const descMap = {
+                'A-1-a': 'Stone fragments, gravel and sand. Excellent subgrade.',
+                'A-1-b': 'Gravel and sand. Excellent subgrade.',
+                'A-3': 'Fine sand. Good subgrade.',
+                'A-2-4': 'Silty gravel/sand. Good to fair subgrade.',
+                'A-2-5': 'Silty gravel/sand. Fair subgrade.',
+                'A-2-6': 'Clayey gravel/sand. Fair to poor subgrade.',
+                'A-2-7': 'Clayey gravel/sand. Poor subgrade.',
+                'A-4': 'Silty soils. Fair to poor subgrade.',
+                'A-5': 'Elastic silts. Poor subgrade.',
+                'A-6': 'Clayey soils. Poor subgrade.',
+                'A-7': 'Elastic clays. Very poor subgrade.'
+            };
+            document.getElementById('aaDesc').textContent = descMap[group] || desc;
+            document.getElementById('aaSuit').textContent = GI <= 5 ? '✅ Good subgrade (GI ≤ 5)' : GI <= 10 ? '⚠ Fair subgrade (GI 6-10)' : GI <= 15 ? '⚠ Poor subgrade (GI 11-15)' : '❌ Very poor subgrade (GI > 15)';
+
+            document.getElementById('aashtoPlaceholder').style.display = 'none';
+            document.getElementById('aashtoResult').style.display = 'block';
+        }
+
+        // Comparison table
+        function buildComparison() {
+            const compData = [
+                ['GW', 'Well-graded gravel', 'A-1-a', '0', 'Excellent base material'],
+                ['GP', 'Poorly-graded gravel', 'A-1-a', '0', 'Good base, may segregate'],
+                ['GM', 'Silty gravel', 'A-2-4', '1-4', 'Fair subbase, frost susceptible'],
+                ['GC', 'Clayey gravel', 'A-2-6', '4-8', 'Good subbase, low permeability'],
+                ['SW', 'Well-graded sand', 'A-1-b / A-3', '0', 'Excellent base/backfill'],
+                ['SP', 'Poorly-graded sand', 'A-3 / A-1-b', '0', 'Good drainage layer'],
+                ['SM', 'Silty sand', 'A-2-4 / A-2-5', '1-4', 'Fair subbase, frost susceptible'],
+                ['SC', 'Clayey sand', 'A-2-6 / A-2-7', '4-10', 'Good subbase, low perm'],
+                ['ML', 'Silt (low plasticity)', 'A-4', '3-8', 'Fair to poor subgrade'],
+                ['CL', 'Lean clay', 'A-6', '6-12', 'Poor subgrade, low swell'],
+                ['MH', 'Elastic silt', 'A-5', '8-15', 'Poor subgrade, high compress'],
+                ['CH', 'Fat clay', 'A-7', '10-20', 'Very poor subgrade, high swell'],
+                ['OL/OH', 'Organic silt/clay', 'A-8', '20+', 'Unsuitable, remove']
+            ];
+
+            const tbody = document.getElementById('compTable');
+            tbody.innerHTML = '';
+            compData.forEach(row => {
+                tbody.innerHTML += `<tr>
+                    <td><strong>${row[0]}</strong></td>
+                    <td>${row[1]}</td>
+                    <td style="text-align:center"><strong>${row[2]}</strong></td>
+                    <td style="text-align:center">${row[3]}</td>
+                    <td>${row[4]}</td>
+                </tr>`;
+            });
+        }
+
+        // Properties table
+        function buildPropsTable() {
+            const props = [
+                ['GW/GP', 'High (10⁻²-10⁻⁴)', 'Very Low', 'High (φ=38-45°)', 'Easy, well-graded', '40-80', 'Excellent'],
+                ['GM/GC', 'Low-Med (10⁻⁴-10⁻⁷)', 'Low', 'High (φ=34-40°)', 'Good', '20-40', 'Good'],
+                ['SW/SP', 'High (10⁻²-10⁻⁴)', 'Very Low', 'High (φ=36-42°)', 'Good, uniform', '20-40', 'Good-Excellent'],
+                ['SM/SC', 'Low-Med (10⁻⁴-10⁻⁷)', 'Low-Med', 'Med-High (φ=32-38°)', 'Fair-Good', '10-30', 'Fair-Good'],
+                ['ML', 'Low (10⁻⁵-10⁻⁷)', 'Medium', 'Medium (φ=28-32°)', 'Fair', '5-20', 'Fair-Poor'],
+                ['CL', 'Very Low (10⁻⁷-10⁻⁹)', 'Medium', 'Med-High (φ=26-30°)', 'Good', '5-15', 'Fair-Poor'],
+                ['MH', 'Low (10⁻⁶-10⁻⁸)', 'High', 'Low-Med (φ=22-28°)', 'Difficult', '3-10', 'Poor'],
+                ['CH', 'Very Low (10⁻⁸-10⁻¹⁰)', 'High', 'Medium (φ=18-26°)', 'Difficult', '3-10', 'Poor-Very Poor'],
+                ['OL/OH', 'Variable', 'Very High', 'Very Low', 'Very Difficult', '1-5', 'Unsuitable']
+            ];
+
+            const tbody = document.getElementById('propsTable');
+            tbody.innerHTML = '';
+            props.forEach(row => {
+                tbody.innerHTML += `<tr>
+                    <td><strong>${row[0]}</strong></td>
+                    <td>${row[1]}</td>
+                    <td>${row[2]}</td>
+                    <td>${row[3]}</td>
+                    <td>${row[4]}</td>
+                    <td style="text-align:center">${row[5]}</td>
+                    <td>${row[6]}</td>
+                </tr>`;
+            });
+        }
+
+        // Plasticity chart
+        function drawPlasticityChart() {
+            const canvas = document.getElementById('plasticityChart');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 300;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const padding = 60;
+            const w = canvas.width - 2 * padding;
+            const h = canvas.height - 2 * padding;
+            const maxLL = 100, maxPI = 60;
+
+            // Grid
+            ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+            for (let i = 0; i <= 5; i++) {
+                const x = padding + (i/5)*w;
+                const y = padding + (i/5)*h;
+                ctx.beginPath(); ctx.moveTo(x, padding); ctx.lineTo(x, canvas.height-padding); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(padding, y); ctx.lineTo(canvas.width-padding, y); ctx.stroke();
+                ctx.fillStyle = 'var(--text-muted)'; ctx.font = '11px monospace';
+                ctx.fillText((i*20).toString(), x-8, canvas.height-padding+18);
+                ctx.fillText((60-i*12).toString(), 10, y+4);
+            }
+
+            // A-Line: PI = 0.73(LL-20)
+            ctx.strokeStyle = 'var(--accent-orange)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5,5]);
+            ctx.beginPath();
+            ctx.moveTo(padding, canvas.height - padding - (0.73*(0-20)/maxPI)*h);
+            ctx.lineTo(canvas.width-padding, canvas.height - padding - (0.73*(100-20)/maxPI)*h);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.fillStyle = 'var(--accent-orange)'; ctx.font = '11px monospace';
+            ctx.fillText('A-Line', canvas.width-padding-40, canvas.height-padding-(0.73*80/maxPI)*h-5);
+
+            // U-Line: PI = 0.9(LL-8)
+            ctx.strokeStyle = 'var(--accent-red)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([3,3]);
+            ctx.beginPath();
+            ctx.moveTo(padding, canvas.height - padding - (0.9*(0-8)/maxPI)*h);
+            ctx.lineTo(canvas.width-padding, canvas.height - padding - (0.9*(100-8)/maxPI)*h);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Zones
+            const zones = [
+                {x: padding+10, y: padding+10, text: 'CH', color: 'var(--accent-red)'},
+                {x: padding+10, y: canvas.height-padding-30, text: 'CL', color: 'var(--accent-amber)'},
+                {x: canvas.width-padding-40, y: padding+10, text: 'MH', color: 'var(--accent-cyan)'},
+                {x: canvas.width-padding-40, y: canvas.height-padding-30, text: 'ML', color: 'var(--accent-emerald)'}
+            ];
+            zones.forEach(z => {
+                ctx.fillStyle = z.color; ctx.font = 'bold 14px sans-serif';
+                ctx.fillText(z.text, z.x, z.y);
+            });
+
+            // Plot current sample if classified
+            const LL = parseFloat(document.getElementById('ll').value) || 30;
+            const PL = parseFloat(document.getElementById('pl').value) || 18;
+            const PI = LL - PL;
+            if (LL > 0 && PI >= 0) {
+                const x = padding + (LL/maxLL)*w;
+                const y = canvas.height - padding - (PI/maxPI)*h;
+                ctx.fillStyle = 'var(--accent-gold)';
+                ctx.beginPath(); ctx.arc(x, y, 8, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = '#000'; ctx.font = '10px monospace';
+                ctx.fillText(`LL=${LL}, PI=${PI}`, x+10, y-10);
+            }
+        }
+
+        buildComparison();
+        buildPropsTable();
+        drawPlasticityChart();
+    </script>
+</body>
+</html>

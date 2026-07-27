@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Batch Weights Calculator</title>
+    <link rel="icon" href="../favicon.ico">
+    <link rel="stylesheet" href="design-common.css">
+    <style>
+        :root { --accent-page: #f87171; }
+        body { color-scheme: dark; }
+        .design-icon { background: rgba(248,113,113,0.1); border-color: rgba(248,113,113,0.4); }
+        .back-btn { background: rgba(248,113,113,0.1); border-color: rgba(248,113,113,0.2); }
+        .back-btn:hover { background: rgba(248,113,113,0.2); }
+        .notes-section { background: rgba(248,113,113,0.04); border-color: rgba(248,113,113,0.1); }
+        .band-btn { background: rgba(248,113,113,0.1); border-color: rgba(248,113,113,0.2); color: var(--accent-red); }
+        .band-btn:hover, .band-btn.active { background: rgba(248,113,113,0.2); border-color: var(--accent-red); }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    <div class="page">
+        <nav class="breadcrumb">
+            <a href="../concrete.html">Concrete Testing</a>
+            <span>/</span>
+            <a href="design-break.html">Design Tools</a>
+            <span>/</span>
+            <span>Batch Weights</span>
+        </nav>
+        <h1 class="page-title">Batch <span>Weights</span></h1>
+        <p class="page-sub">Calculate plant batch weights from mix design per m³ or yd³ — Account for aggregate moisture, absorption, and admixture volumes per ASTM C94 / NRMCA</p>
+
+        <section class="design-section">
+            <div class="design-header">
+                <div class="design-icon">⚖️</div>
+                <div>
+                    <div class="design-title">Batch Weights Calculator</div>
+                    <div class="design-desc">Convert SSD mix design to batch weights (oven-dry or SSD). Adjust for aggregate moisture, admixtures, and yield. Generate plant-ready batch tickets.</div>
+                </div>
+            </div>
+
+            <div class="tab-row">
+                <button class="tab-btn active" onclick="switchTab('calculator', this)">Calculator</button>
+                <button class="tab-btn" onclick="switchTab('moisture', this)">Moisture Adjust</button>
+                <button class="tab-btn" onclick="switchTab('ticket', this)">Batch Ticket</button>
+                <button class="tab-btn" onclick="switchTab('standards', this)">Standards</button>
+            </div>
+
+            <!-- TAB 1: CALCULATOR -->
+            <div class="tab-panel active" id="panel-calculator">
+                <div class="two-col">
+                    <div class="sidebar">
+                        <div class="sidebar-title">📐 Mix Design (SSD Basis)</div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Unit System</label>
+                            <select class="sidebar-input" id="batchUnits">
+                                <option value="metric">Metric (kg/m³)</option>
+                                <option value="imperial">Imperial (lb/yd³)</option>
+                            </select>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Cement</label>
+                            <input type="number" class="sidebar-input" id="mdCement" value="350" step="1"><span class="unit">kg/m³</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Fly Ash / Slag</label>
+                            <input type="number" class="sidebar-input" id="mdScm" value="50" step="1"><span class="unit">kg/m³</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Water (free)</label>
+                            <input type="number" class="sidebar-input" id="mdWater" value="165" step="1"><span class="unit">kg/m³</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Coarse Aggregate (SSD)</label>
+                            <input type="number" class="sidebar-input" id="mdCaSsd" value="1050" step="1"><span class="unit">kg/m³</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Fine Aggregate (SSD)</label>
+                            <input type="number" class="sidebar-input" id="mdFaSsd" value="750" step="1"><span class="unit">kg/m³</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Air Content</label>
+                            <input type="number" class="sidebar-input" id="mdAir" value="2.0" step="0.1"><span class="unit">%</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Admixtures (total)</label>
+                            <input type="number" class="sidebar-input" id="mdAdmix" value="3.5" step="0.1"><span class="unit">L/m³</span>
+                        </div>
+                        <button class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="calcBatchWeights()">⚖️ Calculate Batch</button>
+                    </div>
+
+                    <div>
+                        <div id="batchResults" style="display:none;">
+                            <h3 style="color:var(--accent-red);margin-bottom:16px;">📋 Batch Weights Summary</h3>
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Component</th>
+                                            <th style="text-align:right">SSD Design</th>
+                                            <th style="text-align:right">Oven-Dry Batch</th>
+                                            <th style="text-align:right">Wet Batch (with moisture)</th>
+                                            <th style="text-align:center">Moisture Adj.</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="batchTable"></tbody>
+                                </table>
+                            </div>
+
+                            <div class="result-grid" style="margin-top:16px;">
+                                <div class="result-card"><div class="result-icon">⚖️</div><div class="result-label">Total Batch Weight</div><div class="result-value" id="rTotalBatch">--</div></div>
+                                <div class="result-card"><div class="result-icon">💧</div><div class="result-label">Free Water in Batch</div><div class="result-value" id="rFreeWater">--</div></div>
+                                <div class="result-card"><div class="result-icon">📦</div><div class="result-label">Yield</div><div class="result-value" id="rYield">--</div></div>
+                                <div class="result-card"><div class="result-icon">💰</div><div class="result-label">Cementitious Factor</div><div class="result-value" id="rCemFactor">--</div></div>
+                            </div>
+                        </div>
+
+                        <div id="batchPlaceholder" style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+                            <div style="font-size:48px;margin-bottom:16px;">⚖️</div>
+                            <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Enter Mix Design</div>
+                            <div style="font-size:13px;max-width:400px;">Input SSD mix proportions above, then click <strong>Calculate Batch</strong>.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: MOISTURE ADJUSTMENT -->
+            <div class="tab-panel" id="panel-moisture">
+                <h3 style="color:var(--accent-red);margin-bottom:16px;">💧 Aggregate Moisture Correction</h3>
+                <div class="two-col">
+                    <div class="sidebar">
+                        <div class="sidebar-title">🏗️ Aggregate Properties</div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Coarse Agg Absorption</label>
+                            <input type="number" class="sidebar-input" id="caAbsorp" value="0.8" step="0.1"><span class="unit">%</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Coarse Agg Total Moisture</label>
+                            <input type="number" class="sidebar-input" id="caMoist" value="1.5" step="0.1"><span class="unit">%</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Fine Agg Absorption</label>
+                            <input type="number" class="sidebar-input" id="faAbsorp" value="1.2" step="0.1"><span class="unit">%</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Fine Agg Total Moisture</label>
+                            <input type="number" class="sidebar-input" id="faMoist" value="3.0" step="0.1"><span class="unit">%</span>
+                        </div>
+                        <button class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="calcMoistureAdj()">💧 Calculate Adjustments</button>
+                    </div>
+
+                    <div>
+                        <div id="moistureResults" style="display:none;">
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Aggregate</th>
+                                            <th style="text-align:right">SSD Design (kg)</th>
+                                            <th style="text-align:right">Oven-Dry (kg)</th>
+                                            <th style="text-align:right">Free Water (kg)</th>
+                                            <th style="text-align:right">Wet Batch (kg)</th>
+                                            <th style="text-align:center">Absorbed (kg)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="moistureTable"></tbody>
+                                </table>
+                            </div>
+
+                            <div class="result-grid" style="margin-top:16px;">
+                                <div class="result-card"><div class="result-icon">💧</div><div class="result-label">Total Free Water</div><div class="result-value" id="rTotalFree">--</div></div>
+                                <div class="result-card"><div class="result-icon">📉</div><div class="result-label">Water Reduction</div><div class="result-value" id="rWaterRed">--</div></div>
+                                <div class="result-card"><div class="result-icon">📈</div><div class="result-label">Batch Weight Increase</div><div class="result-value" id="rBatchInc">--</div></div>
+                            </div>
+                        </div>
+
+                        <div id="moisturePlaceholder" style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+                            <div style="font-size:48px;margin-bottom:16px;">💧</div>
+                            <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Enter Aggregate Moisture</div>
+                            <div style="font-size:13px;max-width:400px;">Input absorption and total moisture from plant tests. Click <strong>Calculate</strong> for batch adjustments.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="formula-section" style="margin-top:24px;">
+                    <div class="formula-title">📐 Moisture Correction Formulas</div>
+                    <div class="code-block">
+Oven-Dry Weight = SSD Weight / (1 + Absorption%)
+Free Water = Oven-Dry Weight × (Total Moisture% - Absorption%)
+Wet Batch Weight = Oven-Dry Weight + Free Water
+= SSD Weight × (1 + Total Moisture%) / (1 + Absorption%)
+
+Batch Water = Design Free Water - Total Free Water from Aggregates
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: BATCH TICKET -->
+            <div class="tab-panel" id="panel-ticket">
+                <h3 style="color:var(--accent-red);margin-bottom:16px;">🎫 Plant Batch Ticket Generator</h3>
+                <div class="two-col">
+                    <div class="sidebar">
+                        <div class="sidebar-title">🏭 Plant & Load Info</div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Plant Name</label>
+                            <input type="text" class="sidebar-input" id="plantName" value="Central Batch Plant #1">
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Mix Design ID</label>
+                            <input type="text" class="sidebar-input" id="ticketMixId" value="MD-2024-0042-35MPa">
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Load Size</label>
+                            <input type="number" class="sidebar-input" id="loadSize" value="8" step="0.5"><span class="unit">m³</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Truck Number</label>
+                            <input type="text" class="sidebar-input" id="truckNum" value="TRK-042">
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Driver's Name</label>
+                            <input type="text" class="sidebar-input" id="driverName" value="Ahmed Hassan">
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Delivery Address</label>
+                            <input type="text" class="sidebar-input" id="deliveryAddr" value="Project Alpha - Foundation Grid A1">
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Slump at Plant</label>
+                            <input type="number" class="sidebar-input" id="slumpPlant" value="160" step="5"><span class="unit">mm</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Air at Plant</label>
+                            <input type="number" class="sidebar-input" id="airPlant" value="2.2" step="0.1"><span class="unit">%</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Concrete Temp</label>
+                            <input type="number" class="sidebar-input" id="concTemp" value="24" step="1"><span class="unit">°C</span>
+                        </div>
+                        <button class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="generateTicket()">🎫 Generate Ticket</button>
+                    </div>
+
+                    <div>
+                        <div id="ticketOutput" style="display:none;">
+                            <div class="code-block" id="ticketText" style="font-family:monospace;font-size:12px;white-space:pre;background:rgba(15,23,42,0.6);border:1px solid var(--border-glass);"></div>
+                            <button class="btn btn-gold" onclick="printTicket()" style="margin-top:16px;">🖨️ Print Ticket</button>
+                        </div>
+                        <div id="ticketPlaceholder" style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+                            <div style="font-size:48px;margin-bottom:16px;">🎫</div>
+                            <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Complete Load Info</div>
+                            <div style="font-size:13px;max-width:400px;">Fill in plant and delivery details, then click <strong>Generate Ticket</strong>.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: STANDARDS -->
+            <div class="tab-panel" id="panel-standards">
+                <h3 style="color:var(--accent-red);margin-bottom:16px;">📚 Batching Standards Reference</h3>
+                <div class="spec-grid">
+                    <div class="spec-item">
+                        <div class="spec-title">ASTM C94 / C94M</div>
+                        <div class="spec-desc">Ready-Mixed Concrete. Batching tolerances: Cement ±1%, Aggregates ±2%, Water ±1%, Admixtures ±3%. Slump, air, temperature at discharge. Delivery time limits (90 min / 300 rev).</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">NRMCA QC Manual</div>
+                        <div class="spec-desc">National Ready Mixed Concrete Association Quality Control Manual. Plant certification, mixer calibration, moisture probes, batch recording, delivery tickets.</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">ASTM C138</div>
+                        <div class="spec-desc">Density (Unit Weight), Yield, and Air Content (Gravimetric). Verify yield matches design. Calculate actual w/c from batch weights.</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">ASTM C566</div>
+                        <div class="spec-desc">Total Moisture Content of Aggregate by Drying. Required for moisture correction. Sample at batching, dry to constant mass.</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">ASTM C70 / C127 / C128</div>
+                        <div class="spec-desc">Aggregate Specific Gravity & Absorption (Coarse C127, Fine C128). Surface moisture (C70). Required for SSD to oven-dry conversion.</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">EN 206 / BS 8500</div>
+                        <div class="spec-desc">European standard. Conformity criteria, assessment of compressive strength, identity testing, factory production control.</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">ECP 203 / ECP 204</div>
+                        <div class="spec-desc">Egyptian concrete production & QC. Local batching tolerances, cement certification, aggregate source approval, admixture approved list.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <a href="../concrete.html" class="back-btn">← Back to Concrete Testing</a>
+    </div>
+    <div id="footer-placeholder"></div>
+    <script src="../components.js"></script>
+    <script>
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('panel-' + tabId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        function calcBatchWeights() {
+            const isMetric = document.getElementById('batchUnits').value === 'metric';
+            const cement = parseFloat(document.getElementById('mdCement').value);
+            const scm = parseFloat(document.getElementById('mdScm').value);
+            const water = parseFloat(document.getElementById('mdWater').value);
+            const caSsd = parseFloat(document.getElementById('mdCaSsd').value);
+            const faSsd = parseFloat(document.getElementById('mdFaSsd').value);
+            const air = parseFloat(document.getElementById('mdAir').value);
+            const admix = parseFloat(document.getElementById('mdAdmix').value);
+
+            // Oven-dry weights (assuming absorption will be added in moisture tab)
+            // For now, show SSD as batch weight, moisture tab will adjust
+            const totalCem = cement + scm;
+            const totalSsd = cement + scm + water + caSsd + faSsd + (admix * (isMetric ? 1 : 1)); // L ≈ kg for water-based
+            const yieldVol = 1.0; // m³ or yd³
+
+            // Volume check
+            const cementSg = 3.15;
+            const scmSg = 2.60;
+            const caSg = 2.70;
+            const faSg = 2.65;
+            const waterSg = 1.00;
+            const airVol = air / 100;
+
+            const cementVol = cement / (cementSg * (isMetric ? 1000 : 62.4));
+            const scmVol = scm / (scmSg * (isMetric ? 1000 : 62.4));
+            const waterVol = water / (waterSg * (isMetric ? 1000 : 62.4));
+            const caVol = caSsd / (caSg * (isMetric ? 1000 : 62.4));
+            const faVol = faSsd / (faSg * (isMetric ? 1000 : 62.4));
+            const totalVol = cementVol + scmVol + waterVol + caVol + faVol + airVol;
+            const yield = totalVol * (isMetric ? 1 : 27); // m³ or ft³ per batch
+
+            const unit = isMetric ? 'kg/m³' : 'lb/yd³';
+            const unitVol = isMetric ? 'm³' : 'yd³';
+
+            // Table
+            const tbody = document.getElementById('batchTable');
+            tbody.innerHTML = `
+                <tr><td>Cement</td><td style="text-align:right">${cement.toFixed(0)}</td><td style="text-align:right">${cement.toFixed(0)}</td><td style="text-align:right">${cement.toFixed(0)}</td><td style="text-align:center">—</td></tr>
+                <tr><td>Fly Ash / Slag</td><td style="text-align:right">${scm.toFixed(0)}</td><td style="text-align:right">${scm.toFixed(0)}</td><td style="text-align:right">${scm.toFixed(0)}</td><td style="text-align:center">—</td></tr>
+                <tr><td>Water (free)</td><td style="text-align:right">${water.toFixed(0)}</td><td style="text-align:right">${water.toFixed(0)}</td><td style="text-align:right">${water.toFixed(0)}</td><td style="text-align:center">—</td></tr>
+                <tr><td>Coarse Aggregate</td><td style="text-align:right">${caSsd.toFixed(0)}</td><td style="text-align:right">${caSsd.toFixed(0)}</td><td style="text-align:right" id="caWet">${caSsd.toFixed(0)}</td><td style="text-align:center" id="caAdj">—</td></tr>
+                <tr><td>Fine Aggregate</td><td style="text-align:right">${faSsd.toFixed(0)}</td><td style="text-align:right">${faSsd.toFixed(0)}</td><td style="text-align:right" id="faWet">${faSsd.toFixed(0)}</td><td style="text-align:center" id="faAdj">—</td></tr>
+                <tr><td>Air (${air}%)</td><td style="text-align:right">—</td><td style="text-align:right">—</td><td style="text-align:right">—</td><td style="text-align:center">—</td></tr>
+                <tr><td>Admixtures</td><td style="text-align:right">${admix.toFixed(1)}</td><td style="text-align:right">${admix.toFixed(1)}</td><td style="text-align:right">${admix.toFixed(1)}</td><td style="text-align:center">—</td></tr>
+                <tr style="font-weight:700;border-top:2px solid var(--accent-red);">
+                    <td>TOTAL</td>
+                    <td style="text-align:right">${totalSsd.toFixed(0)}</td>
+                    <td style="text-align:right" id="totalOven">${totalSsd.toFixed(0)}</td>
+                    <td style="text-align:right" id="totalWet">${totalSsd.toFixed(0)}</td>
+                    <td style="text-align:center">—</td>
+                </tr>
+            `;
+
+            document.getElementById('rTotalBatch').textContent = totalSsd.toFixed(0) + ' ' + unit;
+            document.getElementById('rFreeWater').textContent = water.toFixed(0) + ' ' + unit;
+            document.getElementById('rYield').textContent = yield.toFixed(3) + ' ' + unitVol;
+            document.getElementById('rCemFactor').textContent = (totalCem / water).toFixed(2);
+
+            document.getElementById('batchPlaceholder').style.display = 'none';
+            document.getElementById('batchResults').style.display = 'block';
+        }
+
+        function calcMoistureAdj() {
+            const caAbs = parseFloat(document.getElementById('caAbsorp').value) / 100;
+            const caMoist = parseFloat(document.getElementById('caMoist').value) / 100;
+            const faAbs = parseFloat(document.getElementById('faAbsorp').value) / 100;
+            const faMoist = parseFloat(document.getElementById('faMoist').value) / 100;
+
+            // Get SSD weights from design tab (or use defaults)
+            const caSsd = parseFloat(document.getElementById('mdCaSsd').value) || 1050;
+            const faSsd = parseFloat(document.getElementById('mdFaSsd').value) || 750;
+            const designWater = parseFloat(document.getElementById('mdWater').value) || 165;
+
+            // Oven-dry
+            const caOd = caSsd / (1 + caAbs);
+            const faOd = faSsd / (1 + faAbs);
+
+            // Free water
+            const caFree = caOd * (caMoist - caAbs);
+            const faFree = faOd * (faMoist - faAbs);
+            const totalFree = caFree + faFree;
+
+            // Wet batch weights
+            const caWet = caOd + caFree;
+            const faWet = faOd + faFree;
+
+            // Absorbed water
+            const caAbsWt = caOd * caAbs;
+            const faAbsWt = faOd * faAbs;
+
+            // Adjusted batch water
+            const batchWater = designWater - totalFree;
+
+            // Table
+            const tbody = document.getElementById('moistureTable');
+            tbody.innerHTML = `
+                <tr>
+                    <td>Coarse Aggregate</td>
+                    <td style="text-align:right">${caSsd.toFixed(0)}</td>
+                    <td style="text-align:right">${caOd.toFixed(0)}</td>
+                    <td style="text-align:right">${caFree.toFixed(1)}</td>
+                    <td style="text-align:right">${caWet.toFixed(0)}</td>
+                    <td style="text-align:center">${caAbsWt.toFixed(1)}</td>
+                </tr>
+                <tr>
+                    <td>Fine Aggregate</td>
+                    <td style="text-align:right">${faSsd.toFixed(0)}</td>
+                    <td style="text-align:right">${faOd.toFixed(0)}</td>
+                    <td style="text-align:right">${faFree.toFixed(1)}</td>
+                    <td style="text-align:right">${faWet.toFixed(0)}</td>
+                    <td style="text-align:center">${faAbsWt.toFixed(1)}</td>
+                </tr>
+                <tr style="font-weight:700;border-top:2px solid var(--accent-red);">
+                    <td>TOTAL</td>
+                    <td style="text-align:right">${(caSsd+faSsd).toFixed(0)}</td>
+                    <td style="text-align:right">${(caOd+faOd).toFixed(0)}</td>
+                    <td style="text-align:right">${totalFree.toFixed(1)}</td>
+                    <td style="text-align:right">${(caWet+faWet).toFixed(0)}</td>
+                    <td style="text-align:center">${(caAbsWt+faAbsWt).toFixed(1)}</td>
+                </tr>
+            `;
+
+            document.getElementById('rTotalFree').textContent = totalFree.toFixed(1) + ' kg/m³';
+            document.getElementById('rWaterRed').textContent = batchWater.toFixed(0) + ' kg/m³';
+            document.getElementById('rBatchInc').textContent = ((caWet+faWet) - (caSsd+faSsd)).toFixed(0) + ' kg/m³';
+
+            // Update batch calculator wet weights
+            document.getElementById('caWet').textContent = caWet.toFixed(0);
+            document.getElementById('faWet').textContent = faWet.toFixed(0);
+            document.getElementById('caAdj').textContent = (caWet - caSsd).toFixed(0);
+            document.getElementById('faAdj').textContent = (faWet - faSsd).toFixed(0);
+            document.getElementById('totalOven').textContent = (caOd+faOd+caSsd+faSsd).toFixed(0); // approximate
+            document.getElementById('totalWet').textContent = (caWet+faWet+caSsd+faSsd).toFixed(0); // approximate
+
+            document.getElementById('moisturePlaceholder').style.display = 'none';
+            document.getElementById('moistureResults').style.display = 'block';
+        }
+
+        function generateTicket() {
+            const ticket = `
+╔═══════════════════════════════════════════════════════════════╗
+║                    BATCH TICKET                                ║
+║              smartLAB Concrete Batching System                 ║
+╠═══════════════════════════════════════════════════════════════╣
+║ Plant: ${document.getElementById('plantName').value.padEnd(50)} ║
+║ Mix Design: ${document.getElementById('ticketMixId').value.padEnd(43)} ║
+║ Load Size: ${document.getElementById('loadSize').value} m³                                    ║
+║ Truck: ${document.getElementId('truckNum').value.padEnd(48)} ║
+║ Driver: ${document.getElementById('driverName').value.padEnd(47)} ║
+║ Delivery: ${document.getElementById('deliveryAddr').value.padEnd(43)} ║
+╠═══════════════════════════════════════════════════════════════╣
+║ MIX PROPORTIONS (per m³)                                       ║
+║ Cement:      ${document.getElementById('mdCement').value.padStart(4)} kg    Fly Ash/Slag: ${document.getElementById('mdScm').value.padStart(4)} kg          ║
+║ Water:       ${document.getElementById('mdWater').value.padStart(4)} kg    Coarse Agg:   ${document.getElementById('mdCaSsd').value.padStart(4)} kg          ║
+║ Fine Agg:    ${document.getElementById('mdFaSsd').value.padStart(4)} kg    Air:          ${document.getElementById('mdAir').value.padStart(4)} %              ║
+║ Admixtures:  ${document.getElementById('mdAdmix').value.padStart(4)} L                                                          ║
+╠═══════════════════════════════════════════════════════════════╣
+║ BATCH WEIGHTS (Total Load)                                     ║
+║ Cement:      ${(document.getElementById('mdCement').value * document.getElementById('loadSize').value).toFixed(0).padStart(4)} kg                                        ║
+║ Fly Ash:     ${(document.getElementById('mdScm').value * document.getElementById('loadSize').value).toFixed(0).padStart(4)} kg                                        ║
+║ Water:       ${(document.getElementById('mdWater').value * document.getElementById('loadSize').value).toFixed(0).padStart(4)} kg                                        ║
+║ Coarse Agg:  ${(document.getElementById('mdCaSsd').value * document.getElementById('loadSize').value).toFixed(0).padStart(4)} kg                                        ║
+║ Fine Agg:    ${(document.getElementById('mdFaSsd').value * document.getElementById('loadSize').value).toFixed(0).padStart(4)} kg                                        ║
+║ Admixtures:  ${(document.getElementById('mdAdmix').value * document.getElementById('loadSize').value).toFixed(1).padStart(4)} L                                        ║
+╠═══════════════════════════════════════════════════════════════╣
+║ QC AT PLANT                                                      ║
+║ Slump: ${document.getElementById('slumpPlant').value} mm    Air: ${document.getElementById('airPlant').value}%    Temp: ${document.getElementById('concTemp').value}°C                      ║
+╠═══════════════════════════════════════════════════════════════╣
+║ Time Batched: ${new Date().toLocaleTimeString()}    Ticket: ${Date.now().toString(36).toUpperCase()}                    ║
+║ ☑ Slump Verified    ☑ Air Verified    ☑ Temp Verified          ║
+╚═══════════════════════════════════════════════════════════════╝
+            `.trim();
+            document.getElementById('ticketText').textContent = ticket;
+            document.getElementById('ticketPlaceholder').style.display = 'none';
+            document.getElementById('ticketOutput').style.display = 'block';
+        }
+
+        function printTicket() {
+            window.print();
+        }
+    </script>
+</body>
+</html>

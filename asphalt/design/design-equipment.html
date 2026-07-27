@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Equipment Layout</title>
+    <link rel="icon" href="../favicon.ico">
+    <link rel="stylesheet" href="design-common.css">
+    <style>
+        :root { --accent-page: #3b82f6; }
+        .breadcrumb a, .page-title span, .design-title, .design-icon,
+        .back-btn, .back-btn:hover, .notes-title, .notes-list li::before,
+        .comp-title, .band-btn, .band-btn:hover, .band-btn.active,
+        .criteria-name, .pg-grade, .aging-title, .climate-name,
+        .chart-title, .formula-title, .layout-title, .equip-name { color: var(--accent-page); }
+        .design-icon { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.4); }
+        .back-btn { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.2); }
+        .back-btn:hover { background: rgba(59,130,246,0.2); }
+        .notes-section { background: rgba(59,130,246,0.04); border-color: rgba(59,130,246,0.1); }
+        .mix-component, .criteria-card, .pg-card, .aging-card, .equip-card, .spec-item { background: rgba(59,130,246,0.05); border-color: rgba(59,130,246,0.1); }
+        .criteria-card:hover, .pg-card:hover, .equip-card:hover { border-color: rgba(59,130,246,0.3); }
+        .band-btn, .band-btn { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.2); color: var(--accent-page); }
+        .band-btn:hover, .band-btn.active { background: rgba(59,130,246,0.2); border-color: var(--accent-page); }
+        .mix-table th, .band-table th, .traffic-table th { color: var(--accent-page); }
+        .chart-section, .formula-section, .climate-map, .layout-section { background: rgba(59,130,246,0.04); border-color: rgba(59,130,246,0.1); }
+        .criteria-name, .aging-title { border-color: rgba(59,130,246,0.15); }
+    </style>
+
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="page">
+        <nav class="breadcrumb">
+            <a href="../asphalt.html">Asphalt & Marshall</a>
+            <span>/</span>
+            <span>Equipment Layout</span>
+        </nav>
+        <h1 class="page-title">Equipment <span>Layout</span></h1>
+        <p class="page-sub">Marshall testing equipment configuration and laboratory setup per ASTM D6927</p>
+
+        <div class="design-section">
+            <div class="design-header">
+                <div class="design-icon">🏗️</div>
+                <div>
+                    <div class="design-title">Marshall Test Equipment</div>
+                    <p class="design-desc">Complete loading, compaction, and conditioning setup</p>
+                </div>
+            </div>
+
+            <div class="equip-grid">
+                <div class="equip-card">
+                    <div class="equip-icon">🔨</div>
+                    <div class="equip-name">Marshall Compactor</div>
+                    <div class="equip-specs">
+                        <span>Type:</span> Mechanical (rotating base)<br>
+                        <span>Hammer:</span> 4536 g (10 lbs)<br>
+                        <span>Drop:</span> 457 mm (18 in)<br>
+                        <span>Blows:</span> 75 per side<br>
+                        <span>Base Rotation:</span> 30 rpm
+                    </div>
+                </div>
+                <div class="equip-card">
+                    <div class="equip-icon">🏋️</div>
+                    <div class="equip-name">Loading Frame</div>
+                    <div class="equip-specs">
+                        <span>Capacity:</span> 50 kN (11,250 lbf)<br>
+                        <span>Rate:</span> 50.8 mm/min (2 in/min)<br>
+                        <span>Accuracy:</span> ±1% of reading<br>
+                        <span>Display:</span> Digital load cell<br>
+                        <span>Data:</span> PC interface (USB)
+                    </div>
+                </div>
+                <div class="equip-card">
+                    <div class="equip-icon">📏</div>
+                    <div class="equip-name">Flow Meter</div>
+                    <div class="equip-specs">
+                        <span>Range:</span> 0-15 mm (0-60 units)<br>
+                        <span>Resolution:</span> 0.25 mm (1 unit)<br>
+                        <span>Type:</span> Dial or digital<br>
+                        <span>Mount:</span> On breaking head<br>
+                        <span>Zero:</span> Auto-tare function
+                    </div>
+                </div>
+                <div class="equip-card">
+                    <div class="equip-icon">🌡️</div>
+                    <div class="equip-name">Water Bath</div>
+                    <div class="equip-specs">
+                        <span>Temp:</span> 60°C ± 1°C (140°F ± 1.8°F)<br>
+                        <span>Capacity:</span> 6-12 specimens<br>
+                        <span>Circulation:</span> Forced convection<br>
+                        <span>Timer:</span> 30-40 min soak<br>
+                        <span>Material:</span> Stainless steel
+                    </div>
+                </div>
+                <div class="equip-card">
+                    <div class="equip-icon">📦</div>
+                    <div class="equip-name">Specimen Extruder</div>
+                    <div class="equip-specs">
+                        <span>Type:</span> Hydraulic or mechanical<br>
+                        <span>Force:</span> Up to 50 kN<br>
+                        <span>Speed:</span> Adjustable<br>
+                        <span>Mold:</span> 101.6 mm ID<br>
+                        <span>Safety:</span> Guard interlock
+                    </div>
+                </div>
+                <div class="equip-card">
+                    <div class="equip-icon">⚖️</div>
+                    <div class="equip-name">Ancillary Equipment</div>
+                    <div class="equip-specs">
+                        <span>Molds:</span> 101.6 mm × 75 mm<br>
+                        <span>Scales:</span> 5 kg × 0.1 g<br>
+                        <span>Thermometers:</span> 0-200°C range<br>
+                        <span>Calipers:</span> Digital, 0.01 mm<br>
+                        <span>Oven:</span> Forced draft, 150°C
+                    </div>
+                </div>
+            </div>
+
+            <div class="layout-section">
+                <div class="layout-title">Laboratory Layout Recommendations</div>
+                <div class="layout-desc">
+                    ▸ Compaction area: Isolated vibration zone, level concrete floor<br>
+                    ▸ Conditioning bath: Adjacent to loading frame, minimal transport distance<br>
+                    ▸ Sample prep: Clean area with mixer, oven, scales within 5m<br>
+                    ▸ Data station: PC with test software, UPS backup<br>
+                    ▸ Safety: Emergency stops on all powered equipment, PPE stations<br>
+                    ▸ Calibration: Annual NIST-traceable for load cell, flow meter, thermometers
+                </div>
+            </div>
+
+            <a href="../asphalt.html" class="back-btn">← Back to Asphalt & Marshall</a>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+    <script src="../../components.js"></script>
+</body>
+</html>

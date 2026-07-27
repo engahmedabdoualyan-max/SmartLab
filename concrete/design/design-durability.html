@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Durability Design</title>
+    <link rel="icon" href="../favicon.ico">
+    <link rel="stylesheet" href="design-common.css">
+    <style>
+        :root { --accent-page: #f87171; }
+        body { color-scheme: dark; }
+        .design-icon { background: rgba(248,113,113,0.1); border-color: rgba(248,113,113,0.4); }
+        .back-btn { background: rgba(248,113,113,0.1); border-color: rgba(248,113,113,0.2); }
+        .back-btn:hover { background: rgba(248,113,113,0.2); }
+        .notes-section { background: rgba(248,113,113,0.04); border-color: rgba(248,113,113,0.1); }
+        .band-btn { background: rgba(248,113,113,0.1); border-color: rgba(248,113,113,0.2); color: var(--accent-red); }
+        .band-btn:hover, .band-btn.active { background: rgba(248,113,113,0.2); border-color: var(--accent-red); }
+        .criteria-name, .aging-title { border-color: rgba(248,113,113,0.15); }
+        .chart-section, .formula-section { background: rgba(248,113,113,0.04); border-color: rgba(248,113,113,0.1); }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    <div class="page">
+        <nav class="breadcrumb">
+            <a href="../concrete.html">Concrete Testing</a>
+            <span>/</span>
+            <a href="design-break.html">Design Tools</a>
+            <span>/</span>
+            <span>Durability Design</span>
+        </nav>
+        <h1 class="page-title">Durability <span>Design</span></h1>
+        <p class="page-sub">ACI 318 exposure classes, w/c limits, cover requirements, and service life prediction per fib Model Code / ACI 201 / EN 206</p>
+
+        <section class="design-section">
+            <div class="design-header">
+                <div class="design-icon">🛡️</div>
+                <div>
+                    <div class="design-title">Durability Design Calculator</div>
+                    <div class="design-desc">Select exposure conditions, get required w/c, cement content, cover depth, and air content. Calculate service life for chloride ingress, carbonation, freeze-thaw, and sulfate attack.</div>
+                </div>
+            </div>
+
+            <div class="tab-row">
+                <button class="tab-btn active" onclick="switchTab('exposure', this)">Exposure Classes</button>
+                <button class="tab-btn" onclick="switchTab('requirements', this)">Requirements</button>
+                <button class="tab-btn" onclick="switchTab('servicelife', this)">Service Life</button>
+                <button class="tab-btn" onclick="switchTab('standards', this)">Standards</button>
+            </div>
+
+            <!-- TAB 1: EXPOSURE CLASSES -->
+            <div class="tab-panel active" id="panel-exposure">
+                <h3 style="color:var(--accent-red);margin-bottom:16px;">🏷️ ACI 318 Exposure Class Selector</h3>
+                <div class="spec-grid" style="margin-top:16px;">
+                    <div class="spec-item">
+                        <div class="spec-title">🧊 F — Freezing & Thawing</div>
+                        <div class="spec-desc">
+                            <strong>F0:</strong> Not exposed to freezing-and-thawing cycles.<br>
+                            <strong>F1:</strong> Exposed to freezing-and-thawing, occasional water.<br>
+                            <strong>F2:</strong> Exposed to freezing-and-thawing, continuous water.<br>
+                            <strong>F3:</strong> Exposed to freezing-and-thawing, continuous water + deicers.
+                        </div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">🧂 S — Sulfate</div>
+                        <div class="spec-desc">
+                            <strong>S0:</strong> Water-soluble sulfate in soil < 0.10% or water < 150 ppm.<br>
+                            <strong>S1:</strong> Soil 0.10-0.20% or water 150-1,500 ppm.<br>
+                            <strong>S2:</strong> Soil 0.20-2.00% or water 1,500-10,000 ppm.<br>
+                            <strong>S3:</strong> Soil > 2.00% or water > 10,000 ppm.
+                        </div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">⚡ C — Corrosion Protection</div>
+                        <div class="spec-desc">
+                            <strong>C0:</strong> Dry, protected from moisture.<br>
+                            <strong>C1:</strong> Moist, not exposed to external chlorides.<br>
+                            <strong>C2:</strong> Moist, exposed to external chlorides (deicing salts, seawater, spray).
+                        </div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">💧 W — Water Contact</div>
+                        <div class="spec-desc">
+                            <strong>W0:</strong> Not in contact with water.<br>
+                            <strong>W1:</strong> In contact with water (tanks, pipes, marine structures).
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-grid" style="margin-top:24px;">
+                    <div class="form-field" style="grid-column:1/-1;">
+                        <label>Select Exposure Classes for Your Project</label>
+                        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;">
+                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" id="expF0" onchange="updateExposure()"> F0 (No F/T)</label>
+                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" id="expF1" onchange="updateExposure()"> F1 (Occasional)</label>
+                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" id="expF2" checked onchange="updateExposure()"> F2 (Continuous)</label>
+                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" id="expF3" onchange="updateExposure()"> F3 (Deicers)</label>
+                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" id="expS0" onchange="updateExposure()"> S0 (Low Sulfate)</label>
+                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" id="expS1" checked onchange="updateExposure()"> S1 (Moderate)</label>
+                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" id="expS2" onchange="updateExposure()"> S2 (Severe)</label>
+                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" id="expS3" onchange="updateExposure()"> S3 (Very Severe)</label>
+                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" id="expC0" onchange="updateExposure()"> C0 (Dry)</label>
+                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" id="expC1" checked onchange="updateExposure()"> C1 (Moist)</label>
+                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" id="expC2" onchange="updateExposure()"> C2 (Chlorides)</label>
+                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" id="expW0" checked onchange="updateExposure()"> W0 (Dry)</label>
+                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" id="expW1" onchange="updateExposure()"> W1 (Water Contact)</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-grid" style="margin-top:16px;">
+                    <div class="form-field">
+                        <label>Structure Type</label>
+                        <select class="sidebar-input" id="structType">
+                            <option value="building">Buildings (ACI 318)</option>
+                            <option value="bridge">Bridges (AASHTO LRFD)</option>
+                            <option value="marine">Marine / Offshore</option>
+                            <option value="tank">Water Tanks</option>
+                            <option value="pavement">Pavements / Slabs</option>
+                            <option value="mass">Mass Concrete</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label>Design Life</label>
+                        <input type="number" class="sidebar-input" id="designLife" value="50" step="5"><span class="unit">years</span>
+                    </div>
+                    <div class="form-field">
+                        <label>Climate Zone</label>
+                        <select class="sidebar-input" id="climateZone">
+                            <option value="temperate">Temperate (4 seasons)</option>
+                            <option value="tropical">Tropical / Subtropical</option>
+                            <option value="arid">Arid / Desert</option>
+                            <option value="arctic">Cold / Arctic</option>
+                            <option value="marine">Marine / Coastal</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="criteria-grid" style="margin-top:24px;" id="exposureResults">
+                    <!-- Filled by JS -->
+                </div>
+            </div>
+
+            <!-- TAB 2: REQUIREMENTS -->
+            <div class="tab-panel" id="panel-requirements">
+                <h3 style="color:var(--accent-red);margin-bottom:16px;">📋 ACI 318 Durability Requirements</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Exposure</th>
+                                <th>Max w/c</th>
+                                <th>Min f'c (MPa)</th>
+                                <th>Air Content</th>
+                                <th>Min Cement (kg/m³)</th>
+                                <th>Cover (mm)</th>
+                                <th>Special</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reqTable">
+                            <!-- Filled by JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="criteria-grid" style="margin-top:24px;" id="customReq">
+                    <!-- Filled by JS -->
+                </div>
+
+                <div class="notes-section">
+                    <div class="notes-title">📝 Notes</div>
+                    <ul class="notes-list">
+                        <li>Values per ACI 318-19 Table 188.8.13152. Adjust for local codes (BS 8500, EN 206, ECP 203).</li>
+                        <li>For seawater exposure (C2 + W1), use Type II/V cement + SCM (slag/fly ash) + w/c ≤ 0.40.</li>
+                        <li>Mass concrete: max temperature differential ≤ 20°C, use low-heat cement, cooling pipes.</li>
+                        <li>For sulfate soils (S2/S3), use Type V cement or Type II + slag/fly ash, w/c ≤ 0.45.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- TAB 3: SERVICE LIFE -->
+            <div class="tab-panel" id="panel-servicelife">
+                <h3 style="color:var(--accent-red);margin-bottom:16px;">⏳ Service Life Prediction</h3>
+                <div class="two-col">
+                    <div class="sidebar">
+                        <div class="sidebar-title">🔬 Service Life Models</div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Degradation Mechanism</label>
+                            <select class="sidebar-input" id="degMech">
+                                <option value="chloride">Chloride Ingress (Fick's 2nd Law)</option>
+                                <option value="carbonation">Carbonation (Square Root Law)</option>
+                                <option value="freeze-thaw">Freeze-Thaw (Powers Model)</option>
+                                <option value="sulfate">Sulfate Attack (Ettringite)</option>
+                                <option value="alkali">Alkali-Silica Reaction (ASR)</option>
+                            </select>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Cover Depth</label>
+                            <input type="number" class="sidebar-input" id="coverDepth" value="50" step="5"><span class="unit">mm</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">w/c Ratio</label>
+                            <input type="number" class="sidebar-input" id="slWc" value="0.40" step="0.01"><span class="unit">—</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Cement Type</label>
+                            <select class="sidebar-input" id="slCement">
+                                <option value="OPC">Type I (OPC)</option>
+                                <option value="FA20">20% Fly Ash</option>
+                                <option value="FA30">30% Fly Ash</option>
+                                <option value="SLAG50">50% Slag</option>
+                                <option value="SF8">8% Silica Fume</option>
+                                <option value="Ternary">Ternary Blend</option>
+                            </select>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Surface Chloride (Cl⁻)</label>
+                            <input type="number" class="sidebar-input" id="surfChloride" value="1.5" step="0.1"><span class="unit">% by cement</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Critical Chloride Threshold</label>
+                            <input type="number" class="sidebar-input" id="critChloride" value="0.4" step="0.05"><span class="unit">% by cement</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Diffusion Coeff (D₀)</label>
+                            <input type="number" class="sidebar-input" id="diffCoeff" value="4.5" step="0.5"><span class="unit">×10⁻¹² m²/s</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Age Factor (m)</label>
+                            <input type="number" class="sidebar-input" id="ageFactor" value="0.3" step="0.05"><span class="unit">—</span>
+                        </div>
+                        <button class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="calcServiceLife()">⏳ Calculate</button>
+                    </div>
+
+                    <div>
+                        <div id="slResults" style="display:none;">
+                            <div class="result-grid">
+                                <div class="result-card">
+                                    <div class="result-icon">⏳</div>
+                                    <div class="result-label">Time to Initiation</div>
+                                    <div class="result-value" id="rInitTime">--</div>
+                                </div>
+                                <div class="result-card">
+                                    <div class="result-icon">📊</div>
+                                    <div class="result-label">Service Life</div>
+                                    <div class="result-value" id="rServLife">--</div>
+                                </div>
+                                <div class="result-card">
+                                    <div class="result-icon">📉</div>
+                                    <div class="result-label">Residual Life (at 50 yr)</div>
+                                    <div class="result-value" id="rResLife">--</div>
+                                </div>
+                                <div class="result-card">
+                                    <div class="result-icon">💰</div>
+                                    <div class="result-label">Maintenance Cost Index</div>
+                                    <div class="result-value" id="rMaintCost">--</div>
+                                </div>
+                            </div>
+
+                            <div class="chart-section" style="margin-top:24px;">
+                                <div class="chart-title">📈 Chloride Profile / Carbonation Depth</div>
+                                <canvas class="chart-canvas" id="slChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div id="slPlaceholder" style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+                            <div style="font-size:48px;margin-bottom:16px;">⏳</div>
+                            <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Configure Parameters</div>
+                            <div style="font-size:13px;max-width:400px;">Select degradation mechanism and enter concrete properties, then click <strong>Calculate</strong>.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: STANDARDS -->
+            <div class="tab-panel" id="panel-standards">
+                <h3 style="color:var(--accent-red);margin-bottom:16px;">📚 Durability Standards Reference</h3>
+                <div class="spec-grid">
+                    <div class="spec-item">
+                        <div class="spec-title">ACI 318-19 Ch. 19</div>
+                        <div class="spec-desc">US structural concrete code. Exposure classes F/S/C/W. w/c limits, f'c minimums, air content, cover tables.</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">ACI 201.2R</div>
+                        <div class="spec-desc">Guide to Durable Concrete. Detailed mechanisms, material selection, mixture proportioning for durability.</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">ACI 222R</div>
+                        <div class="spec-desc">Corrosion of Metals in Concrete. Chloride thresholds, corrosion inhibitors, cathodic protection, epoxy-coated rebar.</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">EN 206 / BS 8500</div>
+                        <div class="spec-desc">European standard. Exposure classes XC (carbonation), XD (chlorides), XS (seawater), XF (freeze-thaw), XA (chemical).</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">fib Model Code 2010</div>
+                        <div class="spec-desc">International framework. Service life design, probabilistic methods, performance-based specifications.</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">ECP 203 / ECP 204</div>
+                        <div class="spec-desc">Egyptian codes. Durability requirements for local materials, climate, and groundwater conditions.</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">ASTM C1202</div>
+                        <div class="spec-desc">Rapid Chloride Permeability Test (RCPT). Charge passed (coulombs) correlates to permeability class.</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">NT BUILD 492</div>
+                        <div class="spec-desc">Nordic test for chloride migration coefficient (D₀). Used for service life modeling input.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <a href="../concrete.html" class="back-btn">← Back to Concrete Testing</a>
+    </div>
+    <div id="footer-placeholder"></div>
+    <script src="../components.js"></script>
+    <script>
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('panel-' + tabId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        function updateExposure() {
+            const req = {};
+            const checks = ['F0','F1','F2','F3','S0','S1','S2','S3','C0','C1','C2','W0','W1'];
+            checks.forEach(c => { req[c] = document.getElementById('exp'+c).checked; });
+
+            // Determine governing exposure (most severe)
+            let fClass = req.F3 ? 'F3' : req.F2 ? 'F2' : req.F1 ? 'F1' : 'F0';
+            let sClass = req.S3 ? 'S3' : req.S2 ? 'S2' : req.S1 ? 'S1' : 'S0';
+            let cClass = req.C2 ? 'C2' : req.C1 ? 'C1' : 'C0';
+            let wClass = req.W1 ? 'W1' : 'W0';
+
+            // ACI 318 Table 19.3.2.1 requirements
+            const requirements = {
+                F0: { wc: '—', fc: '—', air: '—' },
+                F1: { wc: 0.45, fc: 30, air: '4.5%' },
+                F2: { wc: 0.45, fc: 30, air: '5.5%' },
+                F3: { wc: 0.42, fc: 30, air: '5.5%' },
+                S0: { wc: '—', fc: '—', cement: 'Type I' },
+                S1: { wc: 0.50, fc: 28, cement: 'Type II' },
+                S2: { wc: 0.45, fc: 30, cement: 'Type V' },
+                S3: { wc: 0.40, fc: 30, cement: 'Type V + Pozzolan' },
+                C0: { wc: '—', fc: '—', cover: 'per 20.6' },
+                C1: { wc: '—', fc: '—', cover: 'per 20.6' },
+                C2: { wc: 0.40, fc: 30, cover: '+10mm' },
+                W0: { wc: '—', fc: '—' },
+                W1: { wc: 0.50, fc: 28 }
+            };
+
+            // Governing (most restrictive) values
+            let govWc = 0.50, govFc = 25, govAir = '0%', govCement = 'Type I', govCover = 'per 20.6';
+            ['F','S','C','W'].forEach(prefix => {
+                const cls = eval(prefix+'Class');
+                if (requirements[cls]) {
+                    const r = requirements[cls];
+                    if (r.wc !== '—' && r.wc < govWc) govWc = r.wc;
+                    if (r.fc !== '—' && r.fc > govFc) govFc = r.fc;
+                    if (r.air !== '—') govAir = r.air;
+                    if (r.cement) govCement = r.cement;
+                    if (r.cover) govCover = r.cover;
+                }
+            });
+
+            // Cover per ACI 318 Table 20.6.1.3.1
+            const coverTable = {
+                'C0': { 'W0': 20, 'W1': 30 },
+                'C1': { 'W0': 25, 'W1': 40 },
+                'C2': { 'W0': 40, 'W1': 50 }
+            };
+            govCover = coverTable[cClass][wClass] || 20;
+
+            // Add 10mm for F2/F3 or S2/S3
+            if (fClass === 'F2' || fClass === 'F3' || sClass === 'S2' || sClass === 'S3') govCover += 10;
+
+            // Min cement content (approx)
+            let minCement = 300;
+            if (govWc <= 0.40) minCement = 380;
+            else if (govWc <= 0.45) minCement = 340;
+
+            // Display
+            const grid = document.getElementById('exposureResults');
+            grid.innerHTML = `
+                <div class="criteria-card">
+                    <div class="criteria-name">Governing w/c Ratio</div>
+                    <div class="criteria-value">${govWc.toFixed(2)}<span class="criteria-unit">max</span></div>
+                </div>
+                <div class="criteria-card">
+                    <div class="criteria-name">Min f'c</div>
+                    <div class="criteria-value">${govFc}<span class="criteria-unit">MPa</span></div>
+                </div>
+                <div class="criteria-card">
+                    <div class="criteria-name">Air Content</div>
+                    <div class="criteria-value">${govAir}<span class="criteria-unit">target</span></div>
+                </div>
+                <div class="criteria-card">
+                    <div class="criteria-name">Cement Type</div>
+                    <div class="criteria-value" style="font-size:18px;">${govCement}</div>
+                </div>
+                <div class="criteria-card">
+                    <div class="criteria-name">Min Cement Content</div>
+                    <div class="criteria-value">${minCement}<span class="criteria-unit">kg/m³</span></div>
+                </div>
+                <div class="criteria-card">
+                    <div class="criteria-name">Clear Cover</div>
+                    <div class="criteria-value">${govCover}<span class="criteria-unit">mm</span></div>
+                </div>
+                <div class="criteria-card">
+                    <div class="criteria-name">Exposure Classes</div>
+                    <div class="criteria-value" style="font-size:14px;font-weight:500;">${fClass}, ${sClass}, ${cClass}, ${wClass}</div>
+                </div>
+            `;
+
+            // Requirements table
+            const tbody = document.getElementById('reqTable');
+            tbody.innerHTML = '';
+            Object.entries(requirements).forEach(([exp, r]) => {
+                const isGov = (exp === fClass || exp === sClass || exp === cClass || exp === wClass);
+                tbody.innerHTML += `
+                    <tr class="${isGov ? 'highlight' : ''}">
+                        <td><strong>${exp}</strong></td>
+                        <td>${r.wc !== '—' ? r.wc : 'N/A'}</td>
+                        <td>${r.fc !== '—' ? r.fc : 'N/A'}</td>
+                        <td>${r.air !== '—' ? r.air : 'N/A'}</td>
+                        <td>${r.cement || '—'}</td>
+                        <td>${r.cover || '—'}</td>
+                        <td>${isGov ? '<span class="badge" style="background:var(--accent-red);">GOVERNS</span>' : ''}</td>
+                    </tr>
+                `;
+            });
+
+            // Custom requirements
+            const custom = document.getElementById('customReq');
+            custom.innerHTML = `
+                <div class="criteria-card">
+                    <div class="criteria-name">Recommended Mix Design</div>
+                    <div class="criteria-value" style="font-size:16px;">w/c = ${govWc.toFixed(2)} | f'c ≥ ${govFc} MPa | ${govCement} | Cover = ${govCover} mm</div>
+                </div>
+                <div class="criteria-card">
+                    <div class="criteria-name">Admixtures Required</div>
+                    <div class="criteria-value" style="font-size:16px;">${govAir !== '0%' ? 'Air-Entraining Agent' : 'None'} | Water Reducer (to achieve w/c) | ${cClass==='C2' ? 'Corrosion Inhibitor' : ''} | ${sClass==='S2'||sClass==='S3' ? 'Sulfate-Resistant Cement' : ''}</div>
+                </div>
+                <div class="criteria-card">
+                    <div class="criteria-name">Testing Requirements</div>
+                    <div class="criteria-value" style="font-size:16px;">${fClass!=='F0' ? 'Air Content (ASTM C231), Freeze-Thaw (ASTM C666)' : ''} ${sClass!=='S0' ? 'Sulfate Resistance (ASTM C1012)' : ''} ${cClass==='C2' ? 'Chloride Permeability (ASTM C1202), Half-Cell Potential' : ''}</div>
+                </div>
+            `;
+        }
+
+        function calcServiceLife() {
+            const mech = document.getElementById('degMech').value;
+            const cover = parseFloat(document.getElementById('coverDepth').value) / 1000; // m
+            const wc = parseFloat(document.getElementById('slWc').value);
+            const cement = document.getElementById('slCement').value;
+            const Cs = parseFloat(document.getElementById('surfChloride').value) / 100;
+            const Ccrit = parseFloat(document.getElementById('critChloride').value) / 100;
+            const D0 = parseFloat(document.getElementById('diffCoeff').value) * 1e-12;
+            const m = parseFloat(document.getElementById('ageFactor').value);
+
+            let result = {};
+
+            if (mech === 'chloride') {
+                // Fick's 2nd Law: C(x,t) = Cs * erfc(x / 2√(Dt))
+                // Time to reach Ccrit at cover depth
+                // erfc(z) = Ccrit/Cs => z = erfcinv(Ccrit/Cs)
+                // t = x² / (4 * D * z²)
+                // D(t) = D0 * (t0/t)^m, ref age t0 = 28 days
+                const ratio = Ccrit / Cs;
+                if (ratio >= 1) {
+                    result.initTime = Infinity;
+                    result.servLife = 'Never reaches threshold';
+                } else {
+                    // Approximate erfcinv
+                    const z = Math.sqrt(-Math.log(ratio)); // rough approximation
+                    const t0 = 28 * 24 * 3600; // seconds
+                    // Solve iteratively: t = x² / (4 * D0 * (t0/t)^m * z²)
+                    let t = 365 * 24 * 3600; // initial guess 1 year
+                    for (let i = 0; i < 20; i++) {
+                        const Dt = D0 * Math.pow(t0 / t, m);
+                        const newT = cover * cover / (4 * Dt * z * z);
+                        if (Math.abs(newT - t) / t < 0.001) break;
+                        t = newT;
+                    }
+                    const years = t / (365 * 24 * 3600);
+                    result.initTime = years;
+                    result.servLife = years + 6; // + propagation (6-10 years typical)
+                    result.residual = Math.max(0, result.servLife - 50);
+                }
+            } else if (mech === 'carbonation') {
+                // Carbonation: x = k * sqrt(t)
+                // k depends on w/c, cement, RH
+                let k;
+                if (cement === 'OPC') k = 1.5 + wc * 2;
+                else if (cement.includes('FA')) k = 2.0 + wc * 2.5;
+                else if (cement.includes('SLAG')) k = 1.8 + wc * 2;
+                else if (cement.includes('SF')) k = 0.8 + wc * 1.5;
+                else k = 1.2 + wc * 1.8;
+                // RH factor (assume 65% outdoor)
+                k *= 1.2;
+                const years = Math.pow(cover * 1000 / k, 2);
+                result.initTime = years;
+                result.servLife = years + 10;
+                result.residual = Math.max(0, result.servLife - 50);
+            } else {
+                result.initTime = 'N/A';
+                result.servLife = 'N/A';
+                result.residual = 'N/A';
+            }
+
+            document.getElementById('rInitTime').textContent = typeof result.initTime === 'number' ? result.initTime.toFixed(1) + ' years' : result.initTime;
+            document.getElementById('rServLife').textContent = typeof result.servLife === 'number' ? result.servLife.toFixed(1) + ' years' : result.servLife;
+            document.getElementById('rResLife').textContent = typeof result.residual === 'number' ? result.residual.toFixed(1) + ' years' : result.residual;
+            document.getElementById('rMaintCost').textContent = typeof result.servLife === 'number' ? (50 / result.servLife * 100).toFixed(0) + '%' : '—';
+
+            document.getElementById('slPlaceholder').style.display = 'none';
+            document.getElementById('slResults').style.display = 'block';
+
+            drawServiceLifeChart(mech, cover, result);
+        }
+
+        function drawServiceLifeChart(mech, cover, result) {
+            const canvas = document.getElementById('slChart');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 300;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const maxAge = typeof result.servLife === 'number' ? result.servLife * 1.2 : 100;
+            const maxDepth = cover * 1000 * 1.5; // mm
+            const padding = 60;
+            const w = canvas.width - 2 * padding;
+            const h = canvas.height - 2 * padding;
+
+            // Grid
+            ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+            for (let i = 0; i <= 5; i++) {
+                const y = padding + (i/5)*h;
+                ctx.beginPath(); ctx.moveTo(padding, y); ctx.lineTo(canvas.width-padding, y); ctx.stroke();
+                ctx.fillStyle = 'var(--text-muted)'; ctx.font = '11px monospace';
+                ctx.fillText((maxDepth*(1-i/5)).toFixed(0)+'mm', 10, y+4);
+            }
+            for (let i = 0; i <= 5; i++) {
+                const x = padding + (i/5)*w;
+                ctx.beginPath(); ctx.moveTo(x, padding); ctx.lineTo(x, canvas.height-padding); ctx.stroke();
+                ctx.fillStyle = 'var(--text-muted)'; ctx.font = '11px monospace';
+                ctx.fillText((maxAge*i/5).toFixed(0)+' yr', x-15, canvas.height-padding+20);
+            }
+
+            // Curve
+            ctx.strokeStyle = 'var(--accent-red)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            for (let yr = 0; yr <= maxAge; yr += maxAge/100) {
+                let depth;
+                if (mech === 'chloride') {
+                    // Simplified: x ~ sqrt(t)
+                    depth = Math.min(cover*1000, 15 * Math.sqrt(yr)); // mm
+                } else if (mech === 'carbonation') {
+                    depth = Math.min(cover*1000, 2.5 * Math.sqrt(yr)); // mm
+                } else {
+                    depth = Math.min(cover*1000, 10 * Math.sqrt(yr));
+                }
+                const x = padding + (yr/maxAge)*w;
+                const y = canvas.height - padding - (depth/maxDepth)*h;
+                if (yr === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+
+            // Cover line
+            const cy = canvas.height - padding - (cover*1000/maxDepth)*h;
+            ctx.strokeStyle = 'var(--accent-gold)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5,5]);
+            ctx.beginPath(); ctx.moveTo(padding, cy); ctx.lineTo(canvas.width-padding, cy); ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.fillStyle = 'var(--accent-gold)'; ctx.font = '11px monospace';
+            ctx.fillText(`Cover = ${cover*1000}mm`, padding+10, cy-5);
+
+            // Initiation point
+            if (typeof result.initTime === 'number') {
+                const ix = padding + (result.initTime/maxAge)*w;
+                ctx.fillStyle = 'var(--accent-red)';
+                ctx.beginPath(); ctx.arc(ix, cy, 5, 0, Math.PI*2); ctx.fill();
+                ctx.fillText(`Initiation: ${result.initTime.toFixed(1)} yr`, ix+10, cy-10);
+            }
+        }
+
+        // Initialize
+        updateExposure();
+    </script>
+</body>
+</html>

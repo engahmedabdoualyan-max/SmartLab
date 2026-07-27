@@ -1,0 +1,95 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "index.html",
+      "use": "@vercel/static",\n      "name": "smartLAB Login"
+    },
+    {
+      "src": "asphalt/asphalt.html",
+      "use": "@vercel/static",
+      "name": "Asphalt Testing"
+    },
+    {
+      "src": "concrete/concrete.html",
+      "use": "@vercel/static",
+      "name": "Concrete Testing"
+    },
+    {
+      "src": "soil/soil.html",
+      "use": "@vercel/static",
+      "name": "Soil Testing"
+    },
+    {
+      "src": "dashboard/qr-tracking.html",
+      "use": "@vercel/static",
+      "name": "QR Tracking"
+    },
+    {
+      "src": "dashboard/lab-stats.html",
+      "use": "@vercel/static",
+      "name": "Lab Statistics"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)\.html",
+      "dest": "/$1.html"
+    },
+    {
+      "src": "/static/(.*)",
+      "dest": "/static/$1"
+    },
+    {
+      "src": "/(.*)\.css",
+      "dest": "/$1.css"
+    },
+    {
+      "src": "/(.*)\.js",
+      "dest": "/$1.js"
+    },
+    {
+      "src": "/(.*)\\.(png|jpg|svg|ico|webp)$",
+      "dest": "/$1.$2"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "(.*)\\.html$",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    }
+  ],
+  "build": {
+    "envVars": {
+      "NODE_ENV", "VERCEL_DEFAULT_REGION"
+    },
+    "outputDirectory": "dist"
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "http://localhost:3000/api/$1"
+    }
+  ]
+}

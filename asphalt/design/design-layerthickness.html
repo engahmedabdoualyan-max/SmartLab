@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Asphalt Layer Thickness Design</title>
+    <link rel="icon" href="../favicon.ico">
+    <link rel="stylesheet" href="design-common.css">
+    <style>
+        :root { --accent-page: #f59e0b; }
+        body { color-scheme: dark; }
+        .breadcrumb a, .page-title span { color: var(--accent-page); }
+
+        .layer-cross { position: relative; width: 100%; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-glass); }
+        .layer-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; font-size: 12px; font-weight: 600; color: #fff; transition: all 0.4s ease; position: relative; overflow: hidden; }
+        .layer-bar .layer-name { z-index: 1; }
+        .layer-bar .layer-thick { z-index: 1; font-family: 'SF Mono', monospace; font-size: 13px; background: rgba(0,0,0,0.3); padding: 2px 10px; border-radius: 4px; }
+        .layer-bar .layer-note { z-index: 1; font-size: 10px; font-weight: 400; opacity: 0.8; }
+
+        .input-card { background: rgba(15,23,42,0.5); border: 1px solid var(--border-glass); border-radius: var(--radius-md); padding: 16px; }
+        .input-card h4 { font-size: 13px; font-weight: 600; color: var(--accent-page); margin-bottom: 12px; }
+        .input-row { display: flex; flex-direction: column; gap: 10px; }
+        .input-field label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
+        .input-field select, .input-field input { width: 100%; padding: 9px 12px; background: rgba(15,23,42,0.7); border: 1px solid var(--border-glass); border-radius: var(--radius-sm); color: var(--text-primary); font-size: 12px; outline: none; font-family: inherit; color-scheme: dark; }
+        .input-field select option { background: #1e293b; }
+        .input-field select:focus, .input-field input:focus { border-color: var(--accent-page); }
+
+        .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .summary-card { background: rgba(15,23,42,0.5); border: 1px solid var(--border-glass); border-radius: var(--radius-sm); padding: 14px; text-align: center; }
+        .summary-card .s-label { font-size: 10px; color: var(--text-muted); margin-bottom: 6px; }
+        .summary-card .s-value { font-size: 22px; font-weight: 700; font-family: 'SF Mono', monospace; }
+        .summary-card .s-unit { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+        .ref-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        .ref-table th { padding: 8px 10px; text-align: left; color: var(--accent-page); font-weight: 600; border-bottom: 2px solid var(--border-glass); font-size: 11px; }
+        .ref-table td { padding: 7px 10px; border-bottom: 1px solid rgba(255,255,255,0.04); color: var(--text-secondary); }
+        .ref-table tr:hover td { background: rgba(245,158,11,0.04); }
+        .ref-table .highlight-row td { background: rgba(245,158,11,0.08); color: var(--accent-page); font-weight: 600; }
+
+        @media (max-width: 768px) {
+            .summary-grid { grid-template-columns: repeat(2, 1fr); }
+            .two-col { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 480px) {
+            .summary-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="page">
+        <nav class="breadcrumb">
+            <a href="../asphalt.html">Asphalt & Marshall</a>
+            <span>/</span>
+            <a href="design-guideline.html">Design Guidelines</a>
+            <span>/</span>
+            <span>Layer Thickness Design</span>
+        </nav>
+        <h1 class="page-title">Asphalt Layer <span>Thickness Design</span></h1>
+        <p class="page-sub">Determine optimal asphalt pavement layer thicknesses based on traffic loading, subgrade strength, and design code requirements per AASHTO 1993 / ECP 104</p>
+
+        <div class="two-col">
+            <!-- INPUT PANEL -->
+            <div style="display:flex;flex-direction:column;gap:16px;">
+                <div class="input-card">
+                    <h4>🚗 Traffic Loading</h4>
+                    <div class="input-row">
+                        <div class="input-field">
+                            <label>Design Traffic (ESALs)</label>
+                            <select id="esalInput" onchange="recalc()">
+                                <option value="light">&lt; 10⁴ — Light (Local roads)</option>
+                                <option value="medium-light" selected>10⁴ – 10⁵ — Medium-Light (Arterial)</option>
+                                <option value="medium">10⁵ – 10⁶ — Medium (Collectors)</option>
+                                <option value="medium-heavy">10⁶ – 3×10⁶ — Medium-Heavy</option>
+                                <option value="heavy">3×10⁶ – 10⁷ — Heavy (Highways)</option>
+                                <option value="very-heavy">10⁷ – 3×10⁷ — Very Heavy</option>
+                                <option value="extreme">&gt; 3×10⁷ — Extreme (Airport)</option>
+                            </select>
+                        </div>
+                        <div class="input-field">
+                            <label>Design Life (years)</label>
+                            <select id="designLife" onchange="recalc()">
+                                <option value="10">10 Years</option>
+                                <option value="15">15 Years</option>
+                                <option value="20" selected>20 Years</option>
+                                <option value="25">25 Years</option>
+                                <option value="30">30 Years</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-card">
+                    <h4>🏗️ Subgrade & Environment</h4>
+                    <div class="input-row">
+                        <div class="input-field">
+                            <label>Subgrade CBR (%)</label>
+                            <select id="subgradeCBR" onchange="recalc()">
+                                <option value="2">CBR 2 — Very Weak (Clay)</option>
+                                <option value="3">CBR 3 — Weak</option>
+                                <option value="5" selected>CBR 5 — Moderate</option>
+                                <option value="7">CBR 7 — Fair</option>
+                                <option value="10">CBR 10 — Good</option>
+                                <option value="15">CBR 15 — Strong</option>
+                                <option value="20">CBR 20 — Very Strong (Granular)</option>
+                                <option value="30">CBR 30+ — Excellent</option>
+                            </select>
+                        </div>
+                        <div class="input-field">
+                            <label>Climate Zone</label>
+                            <select id="climateZone" onchange="recalc()">
+                                <option value="arid">Arid (Desert)</option>
+                                <option value="semi-arid">Semi-Arid</option>
+                                <option value="temperate" selected>Temperate</option>
+                                <option value="wet">Wet / Tropical</option>
+                                <option value="cold">Cold / Freeze-Thaw</option>
+                            </select>
+                        </div>
+                        <div class="input-field">
+                            <label>Water Table Depth</label>
+                            <select id="waterTable" onchange="recalc()">
+                                <option value="deep">Deep (&gt; 2m)</option>
+                                <option value="moderate" selected>Moderate (1-2m)</option>
+                                <option value="shallow">Shallow (&lt; 1m)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-card">
+                    <h4>📐 Pavement Structure Options</h4>
+                    <div class="input-row">
+                        <div class="input-field">
+                            <label>Number of Asphalt Layers</label>
+                            <select id="numLayers" onchange="recalc()">
+                                <option value="2">2 Layers (Surface + Base)</option>
+                                <option value="3" selected>3 Layers (Surface + Binder + Base)</option>
+                                <option value="4">4 Layers (with Levelling Course)</option>
+                            </select>
+                        </div>
+                        <div class="input-field">
+                            <label>Base Course Type</label>
+                            <select id="baseType" onchange="recalc()">
+                                <option value="asphalt" selected>Full-Depth Asphalt</option>
+                                <option value="composite">Composite (Asphalt + Granular)</option>
+                                <option value="granular">Granular Base + Thin Asphalt</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RESULTS PANEL -->
+            <div style="display:flex;flex-direction:column;gap:16px;">
+                <!-- Summary Stats -->
+                <div class="summary-grid">
+                    <div class="summary-card">
+                        <div class="s-label">Total Asphalt</div>
+                        <div class="s-value" id="totalAsphalt" style="color:var(--accent-page);">--</div>
+                        <div class="s-unit">mm</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="s-label">Total Pavement</div>
+                        <div class="s-value" id="totalPavement" style="color:var(--accent-emerald);">--</div>
+                        <div class="s-unit">mm</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="s-label">Asphalt Ratio</div>
+                        <div class="s-value" id="asphaltRatio" style="color:var(--accent-blue);">--</div>
+                        <div class="s-unit">% of total</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="s-label">Design Code</div>
+                        <div class="s-value" id="designCodeRef" style="color:var(--accent-gold);font-size:13px;">AASHTO</div>
+                        <div class="s-unit">1993 Guide</div>
+                    </div>
+                </div>
+
+                <!-- Cross-Section Visual -->
+                <div class="input-card">
+                    <h4>🧱 Pavement Cross-Section</h4>
+                    <div class="layer-cross" id="crossSection"></div>
+                </div>
+
+                <!-- Layer Details Table -->
+                <div class="input-card">
+                    <h4>📋 Layer Details</h4>
+                    <div class="table-container">
+                        <table class="ref-table" id="layerTable">
+                            <thead>
+                                <tr>
+                                    <th>Layer</th>
+                                    <th>Thickness (mm)</th>
+                                    <th>Material</th>
+                                    <th>Grade / Type</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody id="layerTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Assistant -->
+                <div class="input-card" id="assistantCard" style="display:none;">
+                    <h4>🤖 Thickness Design Assistant</h4>
+                    <div id="assistantContent"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reference Table -->
+        <section class="section" style="margin-top: 24px;">
+            <div class="section-header">
+                <div class="section-title">📊 AASHTO 1993 Recommended Thickness Ranges</div>
+            </div>
+            <div class="table-container">
+                <table class="ref-table">
+                    <thead>
+                        <tr>
+                            <th>Traffic Level</th>
+                            <th>ESALs</th>
+                            <th>Wearing (mm)</th>
+                            <th>Binder (mm)</th>
+                            <th>Asphalt Base (mm)</th>
+                            <th>Granular Base (mm)</th>
+                            <th>Subbase (mm)</th>
+                            <th>Total (mm)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Light</td><td>&lt; 10⁴</td><td>40–50</td><td>—</td><td>100–150</td><td>150–200</td><td>150–200</td><td>440–600</td>
+                        </tr>
+                        <tr>
+                            <td>Medium-Light</td><td>10⁴–10⁵</td><td>50</td><td>50–60</td><td>120–180</td><td>200–250</td><td>150–200</td><td>570–740</td>
+                        </tr>
+                        <tr class="highlight-row">
+                            <td>Medium</td><td>10⁵–10⁶</td><td>50</td><td>60–75</td><td>150–200</td><td>200–250</td><td>150–200</td><td>610–775</td>
+                        </tr>
+                        <tr>
+                            <td>Medium-Heavy</td><td>10⁶–3×10⁶</td><td>50</td><td>60–75</td><td>180–230</td><td>200–300</td><td>150–200</td><td>640–855</td>
+                        </tr>
+                        <tr>
+                            <td>Heavy</td><td>3×10⁶–10⁷</td><td>50</td><td>75–90</td><td>200–260</td><td>250–300</td><td>150–200</td><td>725–900</td>
+                        </tr>
+                        <tr>
+                            <td>Very Heavy</td><td>10⁷–3×10⁷</td><td>50</td><td>75–100</td><td>230–300</td><td>250–300</td><td>200–250</td><td>805–1000</td>
+                        </tr>
+                        <tr>
+                            <td>Extreme</td><td>&gt; 3×10⁷</td><td>50–75</td><td>75–100</td><td>250–350</td><td>300+</td><td>200–300</td><td>875–1125</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <a href="../asphalt.html" class="btn btn-secondary" style="margin-top: 16px;">← Back to Asphalt & Marshall</a>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="../../components.js"></script>
+    <script>
+        const TRAFFIC_DATA = {
+            light:         { label: 'Light',          esals: '< 10⁴',     wear: [40,50],  bind: [0,0],    base: [100,150], gbase: [150,200], sub: [150,200] },
+            'medium-light':{ label: 'Medium-Light',   esals: '10⁴–10⁵',   wear: [50,50],  bind: [50,60],  base: [120,180], gbase: [200,250], sub: [150,200] },
+            medium:        { label: 'Medium',         esals: '10⁵–10⁶',   wear: [50,50],  bind: [60,75],  base: [150,200], gbase: [200,250], sub: [150,200] },
+            'medium-heavy':{ label: 'Medium-Heavy',   esals: '10⁶–3×10⁶', wear: [50,50],  bind: [60,75],  base: [180,230], gbase: [200,300], sub: [150,200] },
+            heavy:         { label: 'Heavy',          esals: '3×10⁶–10⁷', wear: [50,50],  bind: [75,90],  base: [200,260], gbase: [250,300], sub: [150,200] },
+            'very-heavy':  { label: 'Very Heavy',     esals: '10⁷–3×10⁷', wear: [50,50],  bind: [75,100], base: [230,300], gbase: [250,300], sub: [200,250] },
+            extreme:       { label: 'Extreme',        esals: '> 3×10⁷',   wear: [50,75],  bind: [75,100], base: [250,350], gbase: [300,350], sub: [200,300] }
+        };
+
+        const CBR_FACTORS = { 2: 1.30, 3: 1.20, 5: 1.00, 7: 0.90, 10: 0.82, 15: 0.75, 20: 0.70, 30: 0.65 };
+        const CLIMATE_FACTORS = { 'arid': 0.92, 'semi-arid': 0.95, 'temperate': 1.00, 'wet': 1.08, 'cold': 1.12 };
+        const WATER_FACTORS = { deep: 1.00, moderate: 1.05, shallow: 1.15 };
+
+        const LAYER_COLORS = {
+            surface: '#f59e0b',
+            binder: '#f97316',
+            base: '#ef4444',
+            gbase: '#64748b',
+            subbase: '#94a3b8',
+            subgrade: '#475569'
+        };
+
+        function recalc() {
+            const traffic = document.getElementById('esalInput').value;
+            const life = parseInt(document.getElementById('designLife').value);
+            const cbr = parseInt(document.getElementById('subgradeCBR').value);
+            const climate = document.getElementById('climateZone').value;
+            const water = document.getElementById('waterTable').value;
+            const numLayers = parseInt(document.getElementById('numLayers').value);
+            const baseType = document.getElementById('baseType').value;
+
+            const td = TRAFFIC_DATA[traffic];
+            const cbrF = CBR_FACTORS[cbr] || 1.0;
+            const climF = CLIMATE_FACTORS[climate] || 1.0;
+            const waterF = WATER_FACTORS[water] || 1.0;
+            const lifeF = 1 + (life - 20) * 0.015;
+
+            const totalFactor = cbrF * climF * waterF * lifeF;
+
+            let wear = Math.round((td.wear[0] + td.wear[1]) / 2 / 5) * 5;
+            let bind = numLayers >= 3 ? Math.round((td.bind[0] + td.bind[1]) / 2 / 5) * 5 : 0;
+            let abase = Math.round((td.base[0] + td.base[1]) / 2 / 5) * 5;
+            let gbase = baseType !== 'asphalt' ? Math.round((td.gbase[0] + td.gbase[1]) / 2 / 10) * 10 : 0;
+            let subbase = Math.round((td.sub[0] + td.sub[1]) / 2 / 10) * 10;
+
+            if (numLayers === 2) { bind = 0; abase = Math.round(abase * 1.3 / 10) * 10; }
+            if (numLayers === 4) { abase = Math.round(abase * 0.7 / 5) * 5; }
+
+            wear = Math.max(40, Math.round(wear * totalFactor / 5) * 5);
+            bind = Math.max(numLayers >= 3 ? 50 : 0, Math.round(bind * totalFactor / 5) * 5);
+            abase = Math.max(80, Math.round(abase * totalFactor / 10) * 10);
+            gbase = Math.max(0, Math.round(gbase * totalFactor / 10) * 10);
+            subbase = Math.max(0, Math.round(subbase * totalFactor / 10) * 10);
+
+            if (baseType === 'granular') { abase = 0; gbase = Math.max(250, gbase); bind = Math.round(bind * 1.1 / 5) * 5; }
+            if (baseType === 'composite' && gbase === 0) gbase = 200;
+
+            const totalAsphalt = wear + bind + abase;
+            const totalPavement = totalAsphalt + gbase + subbase;
+            const ratio = totalPavement > 0 ? ((totalAsphalt / totalPavement) * 100).toFixed(0) : 0;
+
+            document.getElementById('totalAsphalt').textContent = totalAsphalt;
+            document.getElementById('totalPavement').textContent = totalPavement;
+            document.getElementById('asphaltRatio').textContent = ratio;
+
+            renderCrossSection(wear, bind, abase, gbase, subbase, numLayers);
+            renderLayerTable(wear, bind, abase, gbase, subbase, numLayers, baseType, traffic, cbr, climate);
+            renderAssistant(wear, bind, abase, gbase, subbase, totalAsphalt, totalPavement, traffic, cbr, climate, water, baseType, td);
+        }
+
+        function renderCrossSection(wear, bind, abase, gbase, subbase, numLayers) {
+            const layers = [];
+            layers.push({ name: 'Wearing Course', thick: wear, color: LAYER_COLORS.surface, note: 'Surface' });
+            if (numLayers >= 3 && bind > 0) layers.push({ name: 'Binder Course', thick: bind, color: LAYER_COLORS.binder, note: 'Intermediate' });
+            if (abase > 0) layers.push({ name: 'Asphalt Base', thick: abase, color: LAYER_COLORS.base, note: 'Structural' });
+            if (gbase > 0) layers.push({ name: 'Granular Base', thick: gbase, color: LAYER_COLORS.gbase, note: 'Aggregate' });
+            if (subbase > 0) layers.push({ name: 'Subbase', thick: subbase, color: LAYER_COLORS.subbase, note: 'Foundation' });
+            layers.push({ name: 'Subgrade', thick: null, color: LAYER_COLORS.subgrade, note: 'Natural Ground' });
+
+            const maxH = 350;
+            const totalWithSub = layers.filter(l => l.thick !== null).reduce((s, l) => s + l.thick, 0);
+            const scale = totalWithSub > 0 ? maxH / totalWithSub : 1;
+
+            document.getElementById('crossSection').innerHTML = layers.map(l => {
+                if (l.thick === null) {
+                    return `<div class="layer-bar" style="background:${l.color};min-height:30px;flex-direction:column;align-items:flex-start;padding:6px 16px;">
+                        <span class="layer-name">${l.name}</span>
+                        <span class="layer-note">Infinite depth</span>
+                    </div>`;
+                }
+                const h = Math.max(28, Math.round(l.thick * scale));
+                return `<div class="layer-bar" style="background:${l.color};height:${h}px;">
+                    <div style="display:flex;flex-direction:column;">
+                        <span class="layer-name">${l.name}</span>
+                        <span class="layer-note">${l.note}</span>
+                    </div>
+                    <span class="layer-thick">${l.thick} mm</span>
+                </div>`;
+            }).join('');
+        }
+
+        function renderLayerTable(wear, bind, abase, gbase, subbase, numLayers, baseType, traffic, cbr, climate) {
+            const rows = [];
+            rows.push({ layer: 'Wearing Course (Surface)', thick: wear, material: 'Dense-Graded HMA', grade: 'PG 64-22 / ECP Class D', note: 'Marshall 75 blows, NMAS 12.5mm' });
+            if (numLayers >= 3 && bind > 0) rows.push({ layer: 'Binder Course', thick: bind, material: 'Dense-Graded HMA', grade: 'PG 64-22 / ECP Class B', note: 'Marshall 75 blows, NMAS 19mm' });
+            if (abase > 0) rows.push({ layer: 'Asphalt Base Course', thick: abase, material: baseType === 'asphalt' ? 'Full-Depth HMA' : 'HMA', grade: 'PG 58-28 / ECP Class C', note: 'Marshall 75 blows, NMAS 25mm' });
+            if (gbase > 0) rows.push({ layer: 'Granular Base', thick: gbase, material: 'Crushed Stone', grade: 'AASHTO #57 / #67', note: 'CBR ≥ 80, LA ≤ 30%' });
+            if (subbase > 0) rows.push({ layer: 'Subbase', thick: subbase, material: 'Select Granular Fill', grade: 'AASHTO #2 / #4', note: 'CBR ≥ 30' });
+
+            document.getElementById('layerTableBody').innerHTML = rows.map(r =>
+                `<tr><td style="font-weight:600;color:var(--text-primary)">${r.layer}</td><td style="font-family:'SF Mono',monospace;font-weight:600;color:var(--accent-page)">${r.thick}</td><td>${r.material}</td><td style="font-size:10px">${r.grade}</td><td style="font-size:10px;color:var(--text-muted)">${r.note}</td></tr>`
+            ).join('');
+        }
+
+        function renderAssistant(wear, bind, abase, gbase, subbase, totalAsphalt, totalPavement, traffic, cbr, climate, water, baseType, td) {
+            const card = document.getElementById('assistantCard');
+            card.style.display = '';
+            const el = document.getElementById('assistantContent');
+
+            const checks = [];
+
+            const cbrOk = cbr >= 5;
+            checks.push({ ok: cbrOk, label: 'Subgrade Strength', detail: `CBR ${cbr}% — ${cbrOk ? 'Adequate for standard design' : 'Weak: consider stabilization (lime/cement)'}`, code: cbrOk ? 'AASHTO 1993 ✓' : 'AASHTO 1993 ⚠' });
+
+            const totalAsphaltOk = totalAsphalt >= 100 && totalAsphalt <= 500;
+            checks.push({ ok: totalAsphaltOk, label: 'Total Asphalt Thickness', detail: `${totalAsphalt} mm — Typical range: 100–450 mm`, code: 'AASHTO/ECP' });
+
+            const wearOk = wear >= 40 && wear <= 75;
+            checks.push({ ok: wearOk, label: 'Wearing Course', detail: `${wear} mm — Min 40mm, Max 75mm for surface`, code: 'ECP 104' });
+
+            const ratio = totalPavement > 0 ? (totalAsphalt / totalPavement) * 100 : 0;
+            const ratioOk = ratio >= 25 && ratio <= 75;
+            checks.push({ ok: ratioOk, label: 'Asphalt/Pavement Ratio', detail: `${ratio.toFixed(0)}% — Recommended 30–65% for structural adequacy`, code: 'Shell Method' });
+
+            const cbrAdj = cbr < 3;
+            if (cbrAdj) checks.push({ ok: false, label: 'Subgrade Treatment', detail: 'CBR < 3 — Lime/cement stabilization required before paving', code: 'ECP 104 / AASHTO' });
+
+            const wetAdj = water === 'shallow';
+            if (wetAdj) checks.push({ ok: false, label: 'Drainage', detail: 'Shallow water table — add drainage layer or increase subbase', code: 'AASHTO 1993' });
+
+            const freezeAdj = climate === 'cold';
+            if (freezeAdj) checks.push({ ok: false, label: 'Frost Protection', detail: 'Freeze-thaw zone — subbase must extend below frost depth (600-900mm)', code: 'AASHTO 1993' });
+
+            const allPass = checks.every(c => c.ok);
+
+            el.innerHTML = `
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+                    ${checks.map(c => `
+                        <div style="background:rgba(15,23,42,0.4);border:1px solid ${c.ok ? 'rgba(16,185,129,0.3)' : 'rgba(245,158,11,0.3)'};padding:10px;border-radius:6px;">
+                            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+                                <span>${c.ok ? '✅' : '⚠️'}</span>
+                                <span style="font-weight:600;color:${c.ok ? 'var(--accent-emerald)' : 'var(--accent-page)'};font-size:11px;">${c.label}</span>
+                            </div>
+                            <div style="font-size:10px;color:var(--text-dim);">${c.detail}</div>
+                            <div style="font-size:9px;color:var(--text-muted);font-family:monospace;margin-top:2px;">${c.code}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);padding:12px;border-radius:6px;">
+                    <div style="font-weight:700;color:var(--accent-page);margin-bottom:4px;font-size:13px;">
+                        ${allPass ? '✓ THICKNESS DESIGN ACCEPTABLE' : '⚠ REVIEW RECOMMENDATIONS ABOVE'}
+                    </div>
+                    <div style="font-size:11px;color:var(--text-dim);line-height:1.6;">
+                        Recommended pavement structure: <strong>${wear}${bind > 0 ? ' + ' + bind : ''} + ${abase} = ${totalAsphalt} mm</strong> asphalt over <strong>${gbase > 0 ? gbase + ' mm granular base + ' : ''}${subbase} mm subbase</strong> on CBR ${cbr}% subgrade.
+                        ${cbr < 3 ? '<br><strong>⚠ Critical:</strong> Subgrade requires stabilization before construction.' : ''}
+                        ${traffic === 'extreme' ? '<br><strong>Note:</strong> For airport/heavy traffic, consider perpetual pavement design (200+ mm HMA).' : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        document.addEventListener('DOMContentLoaded', recalc);
+    </script>
+</body>
+</html>

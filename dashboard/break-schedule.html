@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Break Schedule Generator</title>
+    <link rel="icon" href="../favicon.ico">
+    <link rel="stylesheet" href="dashboard-common.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    <div class="page">
+        <nav class="breadcrumb">
+            <a href="../index.html">Home</a>
+            <span>/</span>
+            <a href="index.html">Dashboard</a>
+            <span>/</span>
+            <span>Schedule</span>
+        </nav>
+        <h1 class="page-title">Break <span>Schedule</span></h1>
+        <p class="page-sub">Plan and manage curing schedules, test dates, and lab availability</p>
+
+        <div class="two-col">
+            <div class="sidebar">
+                <div class="sidebar-title">⚙ Schedule Settings</div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Project Name</label>
+                    <input type="text" class="sidebar-input" id="schedProject" value="Foundation Pour">
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Mix ID</label>
+                    <input type="text" class="sidebar-input" id="schedMixId" value="MD-2024-0042">
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Specified f'c</label>
+                    <input type="number" class="sidebar-input" id="schedFc" value="35" step="1"><span class="unit">MPa</span>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Cement Type</label>
+                    <select class="sidebar-input" id="schedCement">
+                        <option value="I">Type I (OPC)</option>
+                        <option value="II">Type II</option>
+                        <option value="III">Type III (HE)</option>
+                    </select>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Test Ages (days)</label>
+                    <input type="text" class="sidebar-input" id="schedAges" value="1, 3, 7, 14, 28, 56">
+                </div>
+                <button class="btn btn-primary" onclick="generateSchedule()">📅 Generate Schedule</button>
+            </div>
+
+            <div>
+                <h3 style="color:var(--accent-purple);margin-bottom:16px;">📋 Test Schedule</h3>
+                <div id="scheduleDays" style="max-height:400px;overflow-y:auto;">
+                    <!-- Generated schedule days -->
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-section" style="margin-top:32px;">
+            <div class="chart-title">📈 Strength Development Timeline</div>
+            <div class="chart-canvas" style="height:250px;background:rgba(0,0,0,0.2);border-radius:var(--radius-sm);">
+                <canvas id="scheduleChart"></canvas>
+            </div>
+        </div>
+
+        <a href="lab-stats.html" class="back-link">← Back to Dashboard</a>
+    </div>
+    <div id="footer-placeholder"></div>
+    <script src="../components.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        function generateSchedule() {
+            const ages = document.getElementById('schedAges').value.split(',').map(a => parseInt(a.trim())).sort((a,b) => a-b);
+            const fc = parseFloat(document.getElementById('schedFc').value);
+            const container = document.getElementById('scheduleDays');
+            container.innerHTML = '';
+            
+            const today = new Date();
+            ages.forEach(age => {
+                const testDate = new Date(today);
+                testDate.setDate(today.getDate() + age);
+                const dateStr = testDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                const estStrength = (fc * age / (0.7 + 0.2 * age)).toFixed(1);
+                
+                const day = document.createElement('div');
+                day.className = 'schedule-day';
+                day.innerHTML = `
+                    <strong>Day ${age}</strong> - ${dateStr}<br>
+                    <span style="color:var(--accent-gold);">Est. strength: ${estStrength} MPa</span>
+                `;
+                container.appendChild(day);
+            });
+            
+            drawScheduleChart(ages, ages.map(a => fc * a / (0.7 + 0.2 * a)));
+        }
+        
+        function drawScheduleChart(ages, strengths) {
+            const ctx = document.getElementById('scheduleChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ages.map(a => 'Day ' + a),
+                    datasets: [{
+                        label: 'Strength',
+                        data: strengths,
+                        borderColor: '#a855f7',
+                        backgroundColor: 'rgba(168,85,247,0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+        
+        document.addEventListener('DOMContentLoaded', generateSchedule);
+    </script>
+</body>
+</html>

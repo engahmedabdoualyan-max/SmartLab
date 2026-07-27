@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Strength vs Age Prediction</title>
+    <link rel="icon" href="../favicon.ico">
+    <link rel="stylesheet" href="design-common.css">
+    <style>
+        :root { --accent-page: #f87171; }
+        body { color-scheme: dark; }
+        .design-icon { background: rgba(248,113,113,0.1); border-color: rgba(248,113,113,0.4); }
+        .back-btn { background: rgba(248,113,113,0.1); border-color: rgba(248,113,113,0.2); }
+        .back-btn:hover { background: rgba(248,113,113,0.2); }
+        .notes-section { background: rgba(248,113,113,0.04); border-color: rgba(248,113,113,0.1); }
+        .band-btn { background: rgba(248,113,113,0.1); border-color: rgba(248,113,113,0.2); color: var(--accent-red); }
+        .band-btn:hover, .band-btn.active { background: rgba(248,113,113,0.2); border-color: var(--accent-red); }
+        .criteria-name, .aging-title { border-color: rgba(248,113,113,0.15); }
+        .chart-section, .formula-section { background: rgba(248,113,113,0.04); border-color: rgba(248,113,113,0.1); }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    <div class="page">
+        <nav class="breadcrumb">
+            <a href="../concrete.html">Concrete Testing</a>
+            <span>/</span>
+            <a href="design-break.html">Design Tools</a>
+            <span>/</span>
+            <span>Strength vs Age</span>
+        </nav>
+        <h1 class="page-title">Strength <span>vs Age</span></h1>
+        <p class="page-sub">Predict concrete strength development over time using ACI 209, CEB-FIP, and maturity methods. Optimize formwork removal, post-tensioning, and opening to traffic.</p>
+
+        <section class="design-section">
+            <div class="design-header">
+                <div class="design-icon">📈</div>
+                <div>
+                    <div class="design-title">Strength Development Predictor</div>
+                    <div class="design-desc">Model compressive strength growth from 1 day to 365+ days. Compare prediction methods and plan construction schedule.</div>
+                </div>
+            </div>
+
+            <div class="tab-row">
+                <button class="tab-btn active" onclick="switchTab('predictor', this)">Predictor</button>
+                <button class="tab-btn" onclick="switchTab('maturity', this)">Maturity Method</button>
+                <button class="tab-btn" onclick="switchTab('models', this)">Models</button>
+                <button class="tab-btn" onclick="switchTab('applications', this)">Applications</button>
+            </div>
+
+            <!-- TAB 1: PREDICTOR -->
+            <div class="tab-panel active" id="panel-predictor">
+                <div class="two-col">
+                    <div class="sidebar">
+                        <div class="sidebar-title">🔧 Mix Parameters</div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Model</label>
+                            <select class="sidebar-input" id="modelSelect">
+                                <option value="ACI209">ACI 209R-92</option>
+                                <option value="CEBFIP">CEB-FIP MC2010</option>
+                                <option value="GL2000">GL2000</option>
+                                <option value="BS8500">BS 8500 / EN 206</option>
+                                <option value="ECP203">ECP 203 Annex</option>
+                            </select>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">28-Day Strength f'c</label>
+                            <input type="number" class="sidebar-input" id="fc28" value="35" step="1" min="15" max="80"><span class="unit">MPa</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Cement Type</label>
+                            <select class="sidebar-input" id="strCementType">
+                                <option value="I">Type I (OPC)</option>
+                                <option value="II">Type II (MS)</option>
+                                <option value="III">Type III (HE)</option>
+                                <option value="IP">Type IP (Pozzolan)</option>
+                                <option value="IS">Type IS (Slag)</option>
+                            </select>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">SCM Type</label>
+                            <select class="sidebar-input" id="strScmType">
+                                <option value="none">None</option>
+                                <option value="flyash">Fly Ash (F)</option>
+                                <option value="flyashC">Fly Ash (C)</option>
+                                <option value="slag">GGBFS (Slag)</option>
+                                <option value="silica">Silica Fume</option>
+                            </select>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">SCM Replacement %</label>
+                            <input type="number" class="sidebar-input" id="strScmPct" value="0" step="5" min="0" max="50"><span class="unit">%</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">w/c Ratio</label>
+                            <input type="number" class="sidebar-input" id="wcRatio" value="0.45" step="0.01" min="0.25" max="0.70"><span class="unit">—</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Curing Temp</label>
+                            <input type="number" class="sidebar-input" id="cureTemp" value="20" step="1" min="5" max="40"><span class="unit">°C</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Curing Type</label>
+                            <select class="sidebar-input" id="cureType">
+                                <option value="standard">Standard (Moist, 20°C)</option>
+                                <option value="steam">Steam Curing</option>
+                                <option value="field">Field (Variable)</option>
+                                <option value="adiabatic">Adiabatic (Mass)</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="predictStrength()">📈 Predict</button>
+                    </div>
+
+                    <div>
+                        <div id="predictorResults" style="display:none;">
+                            <div class="result-grid">
+                                <div class="result-card">
+                                    <div class="result-icon">🏗️</div>
+                                    <div class="result-label">1 Day</div>
+                                    <div class="result-value" id="r1d">--</div>
+                                </div>
+                                <div class="result-card">
+                                    <div class="result-icon">📅</div>
+                                    <div class="result-label">3 Days</div>
+                                    <div class="result-value" id="r3d">--</div>
+                                </div>
+                                <div class="result-card">
+                                    <div class="result-icon">📅</div>
+                                    <div class="result-label">7 Days</div>
+                                    <div class="result-value" id="r7d">--</div>
+                                </div>
+                                <div class="result-card">
+                                    <div class="result-icon">✅</div>
+                                    <div class="result-label">28 Days</div>
+                                    <div class="result-value" id="r28d">--</div>
+                                </div>
+                                <div class="result-card">
+                                    <div class="result-icon">📅</div>
+                                    <div class="result-label">56 Days</div>
+                                    <div class="result-value" id="r56d">--</div>
+                                </div>
+                                <div class="result-card">
+                                    <div class="result-icon">📅</div>
+                                    <div class="result-label">90 Days</div>
+                                    <div class="result-value" id="r90d">--</div>
+                                </div>
+                            </div>
+
+                            <div class="chart-section" style="margin-top:24px;">
+                                <div class="chart-title">📊 Strength Development Curve</div>
+                                <canvas class="chart-canvas" id="strengthCurve"></canvas>
+                            </div>
+
+                            <div class="table-container" style="margin-top:24px;">
+                                <table>
+                                    <thead><tr><th>Age</th><th style="text-align:right">Strength (MPa)</th><th style="text-align:right">% of f'c</th><th>Milestone</th></tr></thead>
+                                    <tbody id="strengthTable"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div id="predictorPlaceholder" style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+                            <div style="font-size:48px;margin-bottom:16px;">📈</div>
+                            <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Configure Mix & Predict</div>
+                            <div style="font-size:13px;max-width:400px;">Enter parameters in sidebar and click <strong>Predict</strong> to generate strength curve.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: MATURITY METHOD -->
+            <div class="tab-panel" id="panel-maturity">
+                <div class="two-col">
+                    <div class="sidebar">
+                        <div class="sidebar-title">🌡️ Maturity Setup</div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Method</label>
+                            <select class="sidebar-input" id="maturityMethod">
+                                <option value="nurse">Nurse-Saul (TTF)</option>
+                                <option value="arrhenius">Arrhenius (Equivalent Age)</option>
+                            </select>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Datum Temp (Nurse-Saul)</label>
+                            <input type="number" class="sidebar-input" id="datumTemp" value="-10" step="1"><span class="unit">°C</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Activation Energy (Arrhenius)</label>
+                            <input type="number" class="sidebar-input" id="actEnergy" value="33500" step="1000"><span class="unit">J/mol</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Reference Temp</label>
+                            <input type="number" class="sidebar-input" id="refTemp" value="20" step="1"><span class="unit">°C</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Target Maturity</label>
+                            <input type="number" class="sidebar-input" id="targetMaturity" value="600" step="10"><span class="unit">°C-hrs</span>
+                        </div>
+                        <button class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="calcMaturity()">Calculate</button>
+                    </div>
+                    <div>
+                        <div class="chart-section">
+                            <div class="chart-title">🌡️ Temperature History & Maturity Accumulation</div>
+                            <canvas class="chart-canvas" id="maturityChart"></canvas>
+                        </div>
+                        <div class="result-grid" style="margin-top:16px;">
+                            <div class="result-card"><div class="result-icon">🌡️</div><div class="result-label">Current Maturity</div><div class="result-value" id="rCurrentMat">-- °C-hrs</div></div>
+                            <div class="result-card"><div class="result-icon">⏱️</div><div class="result-label">Time to Target</div><div class="result-value" id="rTimeTarget">-- hrs</div></div>
+                            <div class="result-card"><div class="result-icon">🌡️</div><div class="result-label">Est. Strength</div><div class="result-value" id="rMatStrength">-- MPa</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: MODELS -->
+            <div class="tab-panel" id="panel-models">
+                <div class="spec-grid">
+                    <div class="spec-item">
+                        <div class="spec-title">ACI 209R-92</div>
+                        <div class="spec-desc">f(t) = f₂₈ × (t / (α + βt)) where α, β depend on cement type. Most widely used in North America. Good for moist-cured standard concrete.</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">CEB-FIP Model Code 2010</div>
+                        <div class="spec-desc">f(t) = f₂₈ × exp(s × (1 - √(28/t))). s = coefficient (0.20-0.38) based on cement class. European standard, more accurate for SCMs.</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">GL2000</div>
+                        <div class="spec-desc">Global model calibrated on worldwide database. f(t) = f₂₈ × (t / (a + bt)). Accounts for w/c, cement type, SCM, curing. Most comprehensive.</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">BS 8500 / EN 206</div>
+                        <div class="spec-desc">Uses strength classes (C20/25, C30/37, etc.). 2-day, 7-day, 28-day relationships per cement strength class (32.5R, 42.5R, 52.5R).</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">ECP 203 (Egypt)</div>
+                        <div class="spec-desc">Egyptian code annex. Similar to ACI 209 but calibrated for local cements (CEM I 42.5N, CEM II/B-M) and hot climate curing.</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">Maturity Method (ASTM C1074)</div>
+                        <div class="spec-desc">Nurse-Saul: M = Σ(T - T₀)Δt. Arrhenius: tₑ = Σexp(-E/R(1/T - 1/Tᵣ))Δt. Requires calibration curves for each mix.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: APPLICATIONS -->
+            <div class="tab-panel" id="panel-applications">
+                <div class="criteria-grid">
+                    <div class="criteria-card">
+                        <div class="criteria-name">🏗️ Formwork Stripping</div>
+                        <div class="criteria-value" id="appFormwork">--</div>
+                        <div class="criteria-unit">MPa (typically ≥ 10-15 MPa or 50-70% f'c)</div>
+                    </div>
+                    <div class="criteria-card">
+                        <div class="criteria-name">⛓️ Post-Tensioning</div>
+                        <div class="criteria-value" id="appPT">--</div>
+                        <div class="criteria-unit">MPa (typically ≥ 20-25 MPa or 75-85% f'c)</div>
+                    </div>
+                    <div class="criteria-card">
+                        <div class="criteria-name">🚗 Opening to Traffic</div>
+                        <div class="criteria-value" id="appTraffic">--</div>
+                        <div class="criteria-unit">MPa (typically ≥ 25-30 MPa or 85% f'c)</div>
+                    </div>
+                    <div class="criteria-card">
+                        <div class="criteria-name">❄️ Cold Weather Protection</div>
+                        <div class="criteria-value" id="appCold">--</div>
+                        <div class="criteria-unit">MPa (typically ≥ 5 MPa before freeze)</div>
+                    </div>
+                    <div class="criteria-card">
+                        <div class="criteria-name">🏢 Shoring/Reshoring</div>
+                        <div class="criteria-value" id="appShore">--</div>
+                        <div class="criteria-unit">MPa (per ACI 347 / structural analysis)</div>
+                    </div>
+                    <div class="criteria-card">
+                        <div class="criteria-name">🔬 Core Correlation</div>
+                        <div class="criteria-value" id="appCore">--</div>
+                        <div class="criteria-unit">Factor (typically 0.85-0.95 for standard cure)</div>
+                    </div>
+                </div>
+                <div class="spec-grid" style="margin-top:24px;">
+                    <div class="spec-item">
+                        <div class="spec-title">📋 ACI 318 / ACI 347 Guidelines</div>
+                        <div class="spec-desc">Formwork removal: Walls/columns 24-48 hrs, slabs/beams 7-14 days. Post-tension: f'ci ≥ 0.75f'c. Shoring: structural analysis required.</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">📋 AASHTO / Bridge Specs</div>
+                        <div class="spec-desc">Deck forms: 14-21 days or f'c ≥ 30 MPa. PT ducts: f'ci ≥ 28 MPa. Cold weather: min 5 MPa before freeze exposure.</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">📋 Precast/Prestressed (PCI)</div>
+                        <div class="spec-desc">Detensioning: f'ci ≥ 20-28 MPa. Shipping: f'c ≥ 35 MPa or 28 days. Use maturity for accelerated schedules.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <a href="../concrete.html" class="back-btn">← Back to Concrete Testing</a>
+    </div>
+    <div id="footer-placeholder"></div>
+    <script src="../components.js"></script>
+    <script>
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('panel-' + tabId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        function predictStrength() {
+            const fc28 = parseFloat(document.getElementById('fc28').value);
+            const model = document.getElementById('modelSelect').value;
+            const cementType = document.getElementById('strCementType').value;
+            const scmType = document.getElementById('strScmType').value;
+            const scmPct = parseFloat(document.getElementById('strScmPct').value) / 100;
+            const wc = parseFloat(document.getElementById('wcRatio').value);
+            const cureTemp = parseFloat(document.getElementById('cureTemp').value);
+            const cureType = document.getElementById('cureType').value;
+
+            // Model coefficients
+            let alpha, beta, s;
+            if (model === 'ACI209') {
+                // ACI 209: f(t) = fc28 * t / (alpha + beta * t)
+                if (cementType === 'III') { alpha = 0.70; beta = 0.98; }
+                else if (cementType === 'II') { alpha = 0.70; beta = 0.98; }
+                else { alpha = 0.70; beta = 0.98; }
+                if (scmType === 'flyash') { alpha = 1.20; beta = 0.85; }
+                else if (scmType === 'slag') { alpha = 1.50; beta = 0.80; }
+                else if (scmType === 'silica') { alpha = 0.50; beta = 1.10; }
+            } else if (model === 'CEBFIP') {
+                // CEB-FIP: f(t) = fc28 * exp(s * (1 - sqrt(28/t)))
+                if (cementType === 'III') s = 0.38;
+                else if (cementType === 'I') s = 0.25;
+                else s = 0.30;
+                if (scmType === 'flyash') s = 0.20;
+                else if (scmType === 'slag') s = 0.20;
+                else if (scmType === 'silica') s = 0.35;
+            } else if (model === 'GL2000') {
+                // Simplified GL2000
+                alpha = 0.50 + 0.2 * scmPct;
+                beta = 1.00 - 0.15 * scmPct;
+            } else if (model === 'BS8500') {
+                // BS 8500 based on cement strength class
+                alpha = 0.60; beta = 1.00;
+            } else {
+                // ECP 203
+                alpha = 0.75; beta = 0.95;
+            }
+
+            // Temperature correction (Arrhenius approx)
+            const tempFactor = Math.exp(4000 * (1/293 - 1/(273 + cureTemp)));
+
+            // Curing type factor
+            let cureFactor = 1.0;
+            if (cureType === 'steam') cureFactor = 1.15;
+            else if (cureType === 'field') cureFactor = 0.90;
+            else if (cureType === 'adiabatic') cureFactor = 1.05;
+
+            const ages = [1, 2, 3, 4, 5, 7, 14, 21, 28, 56, 90, 180, 365];
+            const strengths = ages.map(t => {
+                let f;
+                if (model === 'ACI209' || model === 'GL2000' || model === 'BS8500' || model === 'ECP203') {
+                    f = fc28 * (t / (alpha + beta * t));
+                } else {
+                    f = fc28 * Math.exp(s * (1 - Math.sqrt(28 / t)));
+                }
+                // Apply corrections
+                f *= tempFactor * cureFactor;
+                // w/c correction (approx)
+                f *= (0.45 / wc) ** 0.5;
+                return Math.min(f, fc28 * 1.25); // Cap at 125%
+            });
+
+            // Display key ages
+            const keyAges = { 1: 'r1d', 3: 'r3d', 7: 'r7d', 28: 'r28d', 56: 'r56d', 90: 'r90d' };
+            Object.entries(keyAges).forEach(([age, id]) => {
+                const idx = ages.indexOf(parseInt(age));
+                if (idx >= 0) document.getElementById(id).textContent = strengths[idx].toFixed(1) + ' MPa';
+            });
+
+            // Table
+            const tbody = document.getElementById('strengthTable');
+            tbody.innerHTML = '';
+            ages.forEach((age, i) => {
+                const pct = (strengths[i] / fc28 * 100).toFixed(0);
+                let milestone = '';
+                if (age === 1) milestone = 'Early age';
+                else if (age === 3) milestone = 'Formwork (walls)';
+                else if (age === 7) milestone = 'Formwork (slabs) / 70% f\'c';
+                else if (age === 14) milestone = 'Reshoring check';
+                else if (age === 28) milestone = 'Design strength ✓';
+                else if (age === 56) milestone = 'Long-term / PT';
+                else if (age === 90) milestone = 'Durability / 90%+';
+                else if (age >= 180) milestone = 'Service life';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>Day ${age}</strong></td>
+                        <td style="text-align:right">${strengths[i].toFixed(1)}</td>
+                        <td style="text-align:right">${pct}%</td>
+                        <td>${milestone}</td>
+                    </tr>
+                `;
+            });
+
+            // Chart
+            drawStrengthChart(ages, strengths, fc28);
+
+            document.getElementById('predictorPlaceholder').style.display = 'none';
+            document.getElementById('predictorResults').style.display = 'block';
+        }
+
+        function drawStrengthChart(ages, strengths, fc28) {
+            const canvas = document.getElementById('strengthCurve');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 300;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const maxAge = 365;
+            const maxStr = fc28 * 1.25;
+            const padding = 60;
+            const w = canvas.width - 2 * padding;
+            const h = canvas.height - 2 * padding;
+
+            // Grid
+            ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 6; i++) {
+                const y = padding + (i/6)*h;
+                ctx.beginPath(); ctx.moveTo(padding, y); ctx.lineTo(canvas.width-padding, y); ctx.stroke();
+                ctx.fillStyle = 'var(--text-muted)'; ctx.font = '11px monospace';
+                ctx.fillText((maxStr*(1-i/6)).toFixed(0), 10, y+4);
+            }
+            for (let i = 0; i <= 6; i++) {
+                const x = padding + (i/6)*w;
+                ctx.beginPath(); ctx.moveTo(x, padding); ctx.lineTo(x, canvas.height-padding); ctx.stroke();
+                ctx.fillStyle = 'var(--text-muted)'; ctx.font = '11px monospace';
+                ctx.fillText((maxAge*i/6).toFixed(0), x-15, canvas.height-padding+20);
+            }
+
+            // Curve
+            ctx.strokeStyle = 'var(--accent-red)';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ages.forEach((age, i) => {
+                const x = padding + (age/maxAge)*w;
+                const y = canvas.height - padding - (strengths[i]/maxStr)*h;
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+
+            // Points
+            ctx.fillStyle = 'var(--accent-red)';
+            ages.forEach((age, i) => {
+                const x = padding + (age/maxAge)*w;
+                const y = canvas.height - padding - (strengths[i]/maxStr)*h;
+                ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI*2); ctx.fill();
+            });
+
+            // Target line
+            const ty = canvas.height - padding - (fc28/maxStr)*h;
+            ctx.strokeStyle = 'var(--accent-gold)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5,5]);
+            ctx.beginPath(); ctx.moveTo(padding, ty); ctx.lineTo(canvas.width-padding, ty); ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.fillStyle = 'var(--accent-gold)'; ctx.font = '11px monospace';
+            ctx.fillText(`f'c = ${fc28} MPa`, padding + 10, ty - 5);
+        }
+
+        function calcMaturity() {
+            // Simplified maturity calculation
+            const method = document.getElementById('maturityMethod').value;
+            const datum = parseFloat(document.getElementById('datumTemp').value);
+            const Ea = parseFloat(document.getElementById('actEnergy').value);
+            const Tr = parseFloat(document.getElementById('refTemp').value);
+            const target = parseFloat(document.getElementById('targetMaturity').value);
+
+            // Simulate temperature history (typical pour)
+            const hours = 72;
+            const temps = [];
+            for (let h = 0; h < hours; h++) {
+                // Exothermic curve: peak at 12-18 hrs
+                const peak = 20 + 25 * Math.exp(-((h-15)/10)**2);
+                const ambient = 20 + 5 * Math.sin(h * Math.PI / 12);
+                temps.push(peak + ambient * 0.1);
+            }
+
+            let maturity = 0;
+            if (method === 'nurse') {
+                temps.forEach(T => { if (T > datum) maturity += (T - datum); });
+            } else {
+                const R = 8.314;
+                temps.forEach(T => {
+                    const Tk = T + 273.15;
+                    const Trk = Tr + 273.15;
+                    maturity += Math.exp(-Ea/R * (1/Tk - 1/Trk));
+                });
+                maturity *= 3600; // convert to equivalent hours at Tr
+            }
+
+            document.getElementById('rCurrentMat').textContent = maturity.toFixed(0);
+            document.getElementById('rTimeTarget').textContent = (target / (maturity/hours)).toFixed(1);
+            document.getElementById('rMatStrength').textContent = (35 * Math.min(1, maturity/target)).toFixed(1);
+
+            // Draw chart
+            drawMaturityChart(temps, method, datum, Ea, Tr);
+        }
+
+        function drawMaturityChart(temps, method, datum, Ea, Tr) {
+            const canvas = document.getElementById('maturityChart');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 300;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const hours = temps.length;
+            const padding = 60;
+            const w = canvas.width - 2 * padding;
+            const h = canvas.height - 2 * padding;
+            const maxT = Math.max(...temps) + 5;
+
+            // Grid
+            ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+            for (let i = 0; i <= 5; i++) {
+                const y = padding + (i/5)*h;
+                ctx.beginPath(); ctx.moveTo(padding, y); ctx.lineTo(canvas.width-padding, y); ctx.stroke();
+                ctx.fillStyle = 'var(--text-muted)'; ctx.font = '11px monospace';
+                ctx.fillText((maxT*(1-i/5)).toFixed(0)+'°C', 10, y+4);
+            }
+            for (let i = 0; i <= 6; i++) {
+                const x = padding + (i/6)*w;
+                ctx.beginPath(); ctx.moveTo(x, padding); ctx.lineTo(x, canvas.height-padding); ctx.stroke();
+            }
+
+            // Temperature curve
+            ctx.strokeStyle = 'var(--accent-cyan)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            temps.forEach((T, i) => {
+                const x = padding + (i/hours)*w;
+                const y = canvas.height - padding - (T/maxT)*h;
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+
+            // Maturity accumulation (secondary axis)
+            let cum = 0;
+            const maturities = temps.map(T => {
+                if (method === 'nurse') cum += Math.max(0, T - datum);
+                else cum += Math.exp(-Ea/8.314 * (1/(T+273.15) - 1/(Tr+273.15)));
+                return cum;
+            });
+            const maxM = Math.max(...maturities);
+
+            ctx.strokeStyle = 'var(--accent-gold)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            maturities.forEach((M, i) => {
+                const x = padding + (i/hours)*w;
+                const y = canvas.height - padding - (M/maxM)*h;
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+        }
+    </script>
+</body>
+</html>

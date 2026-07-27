@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Grain Size Distribution (Sieve Analysis)</title>
+    <link rel="icon" href="../favicon.ico">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <link rel="stylesheet" href="test-common.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="page">
+        <a href="../soil.html" class="back-link">
+            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            <span data-i18n="Back to Tests">Back to Tests</span>
+        </a>
+
+        <h1 class="page-title" id="testTitle"><span data-i18n="Test Environment">Test Environment</span></h1>
+        <p class="page-sub" id="testSub">Grain Size Distribution</p>
+
+        <!-- Test Level selector -->
+        <div class="level-top" id="levelTopBar">
+            <span class="lt-label">&#x1F3C6; <span data-i18n="Test Level">Test Level</span></span>
+            <div class="lt-btns" id="testLevelSelectTop">
+                <button class="lt-btn active" data-level="quick">&#x26A1; <span data-i18n="Quick">Quick</span><span class="lt-sub" data-i18n="On-site check">On-site check</span></button>
+                <button class="lt-btn" data-level="unofficial">&#x1F3ED; <span data-i18n="Unofficial">Unofficial</span><span class="lt-sub" data-i18n="Factory lab">Factory lab</span></button>
+                <button class="lt-btn" data-level="certified">&#x1F512; <span data-i18n="Certified">Certified</span><span class="lt-sub" data-i18n="Full accreditation">Full accreditation</span></button>
+            </div>
+            <span class="lt-info" id="levelInfo">40% <span data-i18n="credibility">credibility</span></span>
+        </div>
+
+        <!-- BILLBOARD: animated step showcase -->
+        <div class="billboard" id="billboard">
+            <div class="bb-inner">
+                <div class="bb-icon" id="bbIcon">&#x1F3D7;</div>
+                <div class="bb-body">
+                    <div class="bb-step-label" id="bbStepLabel">STEP 1/3</div>
+                    <div class="bb-title" id="bbTitle"></div>
+                    <div class="bb-desc" id="bbDesc">Follow the steps below to complete your test</div>
+                    <div class="bb-dots" id="bbDots">
+                        <span class="bb-dot active" data-slide="0"></span>
+                        <span class="bb-dot" data-slide="1"></span>
+                        <span class="bb-dot" data-slide="2"></span>
+                    </div>
+                </div>
+                <div class="bb-nav">
+                    <button id="bbPrev">&#x276E;</button>
+                    <button id="bbNext">&#x276F;</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 1. SAMPLE PREPARATION ===== -->
+        <div class="section">
+            <div class="section-title"><span class="st-icon">&#x1F517;</span> <span data-i18n="Sample Preparation">Sample Preparation</span></div>
+
+            <div class="hw-grid">
+                <button class="hw-card active" data-sample="soil-0-30" data-samplesize="30">
+                    <div class="hw-icon">&#x1F5C3;</div>
+                    <div class="hw-name">Dry Soil 30g</div>
+                    <div class="hw-desc">Standard reference</div>
+                </button>
+                <button class="hw-card" data-sample="soil-0-50" data-samplesize="50">
+                    <div class="hw-icon">&#x1F5C4;</div>
+                    <div class="hw-name">Dry Soil 50g</div>
+                    <div class="hw-desc">Heavier sample</div>
+                </button>
+                <button class="hw-card" data-sample="soil-0-75" data-samplesize="75">
+                    <div class="hw-icon">&#x1F5C5;</div>
+                    <div class="hw-name">Dry Soil 75g</div>
+                    <div class="hw-desc">Maximum standard</div>
+                </button>
+            </div>
+
+            <div class="sample-display">
+                <div class="sample-box" id="sampleDisplay">
+                    <div class="sample-container">
+                        <div class="soil-sample" id="soilSample"></div>
+                    </div>
+                    <div class="sample-info">
+                        <div class="si-row">
+                            <div class="si-label">Sample ID:</div>
+                            <div class="si-value" id="sampleId">SOIL-001</div>
+                        </div>
+                        <div class="si-row">
+                            <div class="si-label">Sample Weight:</div>
+                            <div class="si-value" id="sampleWeight">30g</div>
+                        </div>
+                        <div class="si-row">
+                            <div class="si-label">Test Type:</div>
+                            <div class="si-value" id="testType">Dry Sample</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="test-config">
+                    <div class="config-section">
+                        <div class="config-title">Sieve Analysis Configuration</div>
+                        <div class="config-fields">
+                            <div class="field-group">
+                                <label class="field-label">Sieve Size #1</label>
+                                <select class="field-input" id="sieve1">
+                                    <option value="25" selected>25 mm</option>
+                                    <option value="19">19 mm</option>
+                                    <option value="12.5">12.5 mm</option>
+                                    <option value="9.5">9.5 mm</option>
+                                    <option value="4.75">4.75 mm</option>
+                                    <option value="2">2 mm</option>
+                                    <option value="0.6">0.6 mm</option>
+                                    <option value="0.3">0.3 mm</option>
+                                    <option value="0.15">0.15 mm</option>
+                                    <option value="0.075">0.075 mm</option>
+                                </select>
+                            </div>
+                            <div class="field-group">
+                                <label class="field-label">Sieve Size #2</label>
+                                <select class="field-input" id="sieve2">
+                                    <option value="25">25 mm</option>
+                                    <option value="19" selected>19 mm</option>
+                                    <option value="12.5">12.5 mm</option>
+                                    <option value="9.5">9.5 mm</option>
+                                    <option value="4.75">4.75 mm</option>
+                                    <option value="2">2 mm</option>
+                                    <option value="0.6">0.6 mm</option>
+                                    <option value="0.3">0.3 mm</option>
+                                    <option value="0.15">0.15 mm</option>
+                                    <option value="0.075">0.075 mm</option>
+                                </select>
+                            </div>
+                            <div class="field-group">
+                                <label class="field-label">Sieve Size #3</label>
+                                <select class="field-input" id="sieve3">
+                                    <option value="25">25 mm</option>
+                                    <option value="19">19 mm</option>
+                                    <option value="12.5" selected>12.5 mm</option>
+                                    <option value="9.5">9.5 mm</option>
+                                    <option value="4.75">4.75 mm</option>
+                                    <option value="2">2 mm</option>
+                                    <option value="0.6">0.6 mm</option>
+                                    <option value="0.3">0.3 mm</option>
+                                    <option value="0.15">0.15 mm</option>
+                                    <option value="0.075">0.075 mm</option>
+                                </select>
+                            </div>
+                            <div class="field-group">
+                                <label class="field-label">Number of Sieves</label>
+                                <input type="number" class="field-input" id="numSieves" value="10" min="8" max="20">
+                            </div>
+                            <div class="field-group">
+                                <label class="field-label">Roter Time (min)</label>
+                                <input type="number" class="field-input" id="roterTime" value="15" min="5" max="60">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 2. SIEVE ANALYSIS ===== -->
+        <div class="section">
+            <div class="section-title"><span class="st-icon">&#x2692;</span> <span data-i18n="Sieve Analysis">Sieve Analysis</span></div>
+
+            <div class="sieve-grid" id="sieveGrid">
+                <!-- Will be populated by JS -->
+            </div>
+
+            <div class="result-display" id="grainResult">
+                <div class="result-header">Analysis Results</div>
+                <div class="result-table-container">
+                    <table class="result-table">
+                        <thead>
+                            <tr>
+                                <th>Sieve Size</th>
+                                <th>Retained (g)</th>
+                                <th>% Retained</th>
+                                <th>Cumulative %</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultBody">
+                            <tr>
+                                <td>25 mm</td>
+                                <td class="editable" data-value="0">0.00</td>
+                                <td class="editable" data-value="0">0.0</td>
+                                <td class="editable" data-value="0">0.0</td>
+                            </tr>
+                            <tr>
+                                <td>19 mm</td>
+                                <td class="editable" data-value="0">0.00</td>
+                                <td class="editable" data-value="0">0.0</td>
+                                <td class="editable" data-value="0">0.0</td>
+                            </tr>
+                            <tr>
+                                <td>12.5 mm</td>
+                                <td class="editable" data-value="0">0.00</td>
+                                <td class="editable" data-value="0">0.0</td>
+                                <td class="editable" data-value="0">0.0</td>
+                            </tr>
+                            <tr>
+                                <td>9.5 mm</td>
+                                <td class="editable" data-value="0">0.00</td>
+                                <td class="editable" data-value="0">0.0</td>
+                                <td class="editable" data-value="0">0.0</td>
+                            </tr>
+                            <tr>
+                                <td>4.75 mm</td>
+                                <td class="editable" data-value="0">0.00</td>
+                                <td class="editable" data-value="0">0.0</td>
+                                <td class="editable" data-value="0">0.0</td>
+                            </tr>
+                            <tr>
+                                <td>2 mm</td>
+                                <td class="editable" data-value="0">0.00</td>
+                                <td class="editable" data-value="0">0.0</td>
+                                <td class="editable" data-value="0">0.0</td>
+                            </tr>
+                            <tr>
+                                <td>0.6 mm</td>
+                                <td class="editable" data-value="0">0.00</td>
+                                <td class="editable" data-value="0">0.0</td>
+                                <td class="editable" data-value="0">0.0</td>
+                            </tr>
+                            <tr>
+                                <td>0.3 mm</td>
+                                <td class="editable" data-value="0">0.00</td>
+                                <td class="editable" data-value="0">0.0</td>
+                                <td class="editable" data-value="0">0.0</td>
+                            </tr>
+                            <tr>
+                                <td>0.15 mm</td>
+                                <td class="editable" data-value="0">0.00</td>
+                                <td class="editable" data-value="0">0.0</td>
+                                <td class="editable" data-value="0">0.0</td>
+                            </tr>
+                            <tr>
+                                <td>0.075 mm</td>
+                                <td class="editable" data-value="0">0.00</td>
+                                <td class="editable" data-value="0">0.0</td>
+                                <td class="editable" data-value="0">0.0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="summary-section">
+                    <div class="summary-title">Analysis Summary</div>
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <div class="summary-label">D10 (mm)</div>
+                            <div class="summary-value" id="d10Value">-</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-label">D30 (mm)</div>
+                            <div class="summary-value" id="d30Value">-</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-label">D60 (mm)</div>
+                            <div class="summary-value" id="d60Value">-</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-label">Cu</div>
+                            <div class="summary-value" id="cuValue">-</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-label">Cc</div>
+                            <div class="summary-value" id="ccValue">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-section">
+                <button class="btn btn-primary" id="runAnalysisBtn">🔄 Run Analysis</button>
+                <button class="btn btn-secondary" id="downloadReportBtn">📥 Download Report</button>
+                <button class="btn btn-primary" id="scanQRBtn">📷 Scan Sample</button>
+            </div>
+        </div>
+
+        <!-- ===== 3. RESULTS & REPORT ===== -->
+        <div class="section">
+            <div class="section-title"><span class="st-icon">📋</span> <span data-i18n="Results & Report">Results & Report</span></div>
+
+            <div class="report-preview" id="reportPreview">
+                <div class="report-title">Generated Report</div>
+                <div class="report-content" id="reportContent">
+                    <div class="report-header">
+                        <div class="report-logo">smartLAB</div>
+                        <div class="report-info">
+                            <div><strong>Test Type:</strong> Grain Size Distribution (Sieve Analysis)</div>
+                            <div><strong>Sample ID:</strong> <span id="previewSampleId">SOIL-001</span></div>
+                            <div><strong>Date:</strong> <span id="previewDate">2024-01-27</span></div>
+                            <div><strong>Tester:</strong> <span id="previewTester">Lab Technician</span></div>
+                        </div>
+                    </div>
+
+                    <div class="report-summary">
+                        <div class="summary-line"><strong>Test Level:</strong> <span id="previewLevel">Quick</span></div>
+                        <div class="summary-line"><strong>Sample Weight:</strong> <span id="previewWeight">30g</span></div>
+                        <div class="summary-line"><strong>Sieve Time:</strong> <span id="previewTime">15 min</span></div>
+                    </div>
+
+                    <div class="report-analysis">
+                        <div class="analysis-title">Key Parameters</div>
+                        <div class="analysis-grid">
+                            <div class="analysis-item">
+                                <div class="analysis-label">D10</div>
+                                <div class="analysis-value" id="reportD10">-</div>
+                            </div>
+                            <div class="analysis-item">
+                                <div class="analysis-label">D30</div>
+                                <div class="analysis-value" id="reportD30">-</div>
+                            </div>
+                            <div class="analysis-item">
+                                <div class="label">D60</div>
+                                <div class="analysis-value" id="reportD60">-</div>
+                            </div>
+                            <div class="analysis-item">
+                                <div class="label">Cu</div>
+                                <div class="analysis-value" id="reportCu">-</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-conclusion">
+                        <div class="conclusion-title">Conclusion</div>
+                        <div class="conclusion-text" id="reportConclusion">Analysis pending...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="report-actions">
+                <button class="btn btn-primary" id="saveReportBtn">💾 Save Report</button>
+                <button class="btn btn-secondary" id="printReportBtn">🖨️ Print Report</button>
+                <button class="btn btn-primary" id="exportExcelBtn">📊 Export Excel</button>
+            </div>
+        </div>
+    </main>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="../components.js"></script>
+    <script>
+        // ===== GLOBAL VARIABLES =====
+        var currentTestLevel = 'quick';
+        var currentSample = 'soil-0-30';
+        var currentSampleSize = 30;
+        var analysisData = {};
+        var translationData = {};
+        var lang = localStorage.getItem('smartlab_lang') || 'en';
+
+        // ===== TEST LEVELS CONFIGURATION =====
+        var testLevels = {
+            quick: { credibility: 40, icon: '⚡', color: '#10b981' },
+            unofficial: { credibility: 60, icon: '📜', color: '#fbbf24' },
+            certified: { credibility: 80, icon: '🔒', color: '#3b82f6' }
+        };
+
+        // ===== SAMPLES CONFIGURATION =====
+        var samples = {
+            'soil-0-30': { size: 30, type: 'Dry', icon: '🌾' },
+            'soil-0-50': { size: 50, type: 'Heavy Dry', icon: '🌾' },
+            'soil-0-75': { size: 75, type: 'Maximum', icon: '🌾' }
+        };
+
+        // ===== INITIALIZATION =====
+        document.addEventListener('DOMContentLoaded', function() {
+            initTest();
+            loadTranslations();
+            setupEventListeners();
+        });
+
+        function initTest() {
+            // Update UI for current level
+            updateLevelDisplay();
+            updateSampleDisplay();
+            updateSieveGrid();
+            updateBillboard();
+
+            // Set current language
+            document.documentElement.lang = lang;
+            if (lang === 'ar') {
+                document.body.classList.add('rtl');
+            } else {
+                document.body.classList.remove('rtl');
+            }
+        }
+
+        function loadTranslations() {
+            translationData = {
+                'en': {
+                    'Test Environment': 'Test Environment',
+                    'Grain Size Distribution': 'Grain Size Distribution',
+                    'Sample Preparation': 'Sample Preparation',
+                    'Sieve Analysis': 'Sieve Analysis',
+                    'Results & Report': 'Results & Report',
+                    'Connection': 'Connection',
+                    'Hardware Check': 'Hardware Check',
+                    'Hardware ID': 'Hardware ID',
+                    'Test Level': 'Test Level',
+                    'Not connected': 'Not connected',
+                    'Quick': 'Quick',
+                    'On-site check': 'On-site check',
+                    'Unofficial': 'Unofficial',
+                    'Factory lab': 'Factory lab',
+                    'Certified': 'Certified',
+                    'Full accreditation': 'Full accreditation',
+                    'credibility': 'credibility',
+                    'Back to Tests': 'Back to Tests',
+                    'Our Device': 'Our Device',
+                    'Client Device': 'Client Device',
+                    'Hardware Check': 'Hardware Check',
+                    'Dry Soil 30g': 'Dry Soil 30g',
+                    'Heavier sample': 'Heavier sample',
+                    'Maximum standard': 'Maximum standard',
+                    'Sieve Analysis Configuration': 'Sieve Analysis Configuration',
+                    'Roter Time (min)': 'Roter Time (min)',
+                    'Run Analysis': 'Run Analysis',
+                    'Download Report': 'Download Report',
+                    'Scan Sample': 'Scan Sample',
+                    'Results & Report': 'Results & Report',
+                    'Generated Report': 'Generated Report',
+                    'Test Type': 'Test Type',
+                    'Sample ID': 'Sample ID',
+                    'Date': 'Date',
+                    'Tester': 'Tester',
+                    'Key Parameters': 'Key Parameters',
+                    'Conclusion': 'Conclusion',
+                    'Save Report': 'Save Report',
+                    'Print Report': 'Print Report',
+                    'Export Excel': 'Export Excel',
+                    'Dry Sample': 'Dry Sample',
+                    'Analysis pending': 'Analysis pending',
+                    'D10': 'D10',
+                    'D30': 'D30',
+                    'D60': 'D60',
+                    'Cu': 'Cu',
+                    'Cc': 'Cc',
+                    'mm': 'mm',
+                    'Quick': 'Quick',
+                    'Certified': 'Certified',
+                    'Official': 'Official',
+                    'Test Level': 'Test Level',
+                    'Sample Weight': 'Sample Weight',
+                    'Roter Time': 'Roter Time',
+                    'g': 'g',
+                    'Drive': 'Drive',
+                    'USB Drive': 'USB Drive',
+                    'USB Type-A': 'USB Type-A',
+                    'USB-OTG': 'USB-OTG',
+                    'Serial UART': 'Serial UART',
+                    'Ethernet LAN': 'Ethernet LAN',
+                    'Wi-Fi': 'Wi-Fi',
+                    'Bluetooth': 'Bluetooth',
+                    'Zigbee': 'Zigbee',
+                    'LoRa': 'LoRa',
+                    'RS-232/485': 'RS-232/485',
+                    'CAN Bus': 'CAN Bus',
+                    'SPI/I2C': 'SPI/I2C',
+                    'NFC': 'NFC',
+                    'Scan to connect': 'Scan to connect',
+                    'Please select a connection': 'Please select a connection',
+                    'Hardware detected': 'Hardware detected',
+                    'Device ID': 'Device ID',
+                    'Model': 'Model',
+                    'Firmware': 'Firmware',
+                    'Connection time': 'Connection time',
+                    'Disconnect': 'Disconnect',
+                    'Ready for test': 'Ready for test',
+                    'Start test': 'Start test',
+                    'Back to test selection': 'Back to test selection',
+                    'SAMPLES': 'SAMPLES',
+                    'Hole Size': 'Hole Size',
+                    'Retained (g)': 'Retained (g)',
+                    'Cum %': 'Cum %',
+                    'Test Complete!': 'Test Complete!',
+                    'Analysis Complete': 'Analysis Complete',
+                    'Your soil analysis is complete.': 'Your soil analysis is complete.',
+                    'D10 calculated successfully.': 'D10 calculated successfully.',
+                    'D30 calculated successfully.': 'D30 calculated successfully.',
+                    'D60 calculated successfully.': 'D60 calculated successfully.',
+                    'Cu (Uniformity)': 'Cu (Uniformity)',
+                    'Cc (Curvature)': 'Cc (Curvature)',
+                    'Cu & Cc interpretation based on BS 1377:2004 standards.': 'Cu & Cc interpretation based on BS 1377:2004 standards.',
+                    'Constant B (Weight of pan and cover)': 'Constant B (Weight of pan and cover)',
+                    'Constant A (Weight of sample + pan)': 'Constant A (Weight of sample + pan)',
+                    'Mass of material passing through No.200 sieve': 'Mass of material passing through No.200 sieve',
+                    'Total sample mass': 'Total sample mass',
+                    'Correction factor (c)': 'Correction factor (c)',
+                    'Bulk density (kg/m³)': 'Bulk density (kg/m³)',
+                    'Specific gravity corrections applied.': 'Specific gravity corrections applied.',
+                    'Sieve Analysis Report': 'Sieve Analysis Report',
+                    'smartLAB Soil Testing Laboratory': 'smartLAB Soil Testing Laboratory',
+                    'Report ID': 'Report ID',
+                    'Analysis Date': 'Analysis Date',
+                    'Testing Engineer': 'Testing Engineer',
+                    'Sample Details': 'Sample Details',
+                    'Sieve Sizes': 'Sieve Sizes',
+                    'Results': 'Results',
+                    'Calculations': 'Calculations',
+                    'Interpretation': 'Interpretation',
+                    'Recommendations': 'Recommendations',
+                    'Report Generated': 'Report Generated',
+                    'Digital copy saved locally': 'Digital copy saved locally',
+                    'Test summary': 'Test summary',
+                    'Grade': 'Grade',
+                    'Status': 'Status',
+                    'Print': 'Print',
+                    'Email': 'Email',
+                    'Copy to clipboard': 'Copy to clipboard',
+                    'Excel file ready': 'Excel file ready',
+                    'Convert to Excel': 'Convert to Excel',
+                    'Excel export completed': 'Excel export completed',
+                    'Test parameters configured': 'Test parameters configured',
+                    'Print preview opened': 'Print preview opened',
+                    'Language': 'Language',
+                    'Arabic': 'Arabic',
+                    'English': 'English',
+                    'Save': 'Save',
+                    'Cancel': 'Cancel',
+                    'Please fill all required fields': 'Please fill all required fields',
+                    'Test configuration saved successfully': 'Test configuration saved successfully',
+                    'Please select a sample': 'Please select a sample',
+                    'Sample loaded successfully': 'Sample loaded successfully',
+                    'Running analysis...': 'Running analysis...',
+                    'Analysis completed': 'Analysis completed',
+                    'Downloading report...': 'Downloading report...',
+                    'QR Code Generated': 'QR Code Generated',
+                    'Scan to track sample': 'Scan to track sample',
+                    'Sample tracking initiated': 'Sample tracking initiated',
+                    'Sample already tracked': 'Sample already tracked',
+                    'Generating QR code...': 'Generating QR code...',
+                    'Error generating QR code': 'Error generating QR code',
+                    'Exporting to Excel...': 'Exporting to Excel...',
+                    'Excel export completed': 'Excel export completed',
+                    'Error exporting to Excel': 'Error exporting to Excel',
+                },
+                'ar': {
+                    'Test Environment': 'بيئة الاختبار',
+                    'Grain Size Distribution': 'توزيع حجم الحبيبات',
+                    'Sample Preparation': 'تحضير العينات',
+                    'Sieve Analysis': 'تحليل المناخل',
+                    'Results & Report': 'النتائج والتقارير',
+                    'Connection': 'الاتصال',
+                    'Hardware Check': 'فحص الأجهزة',
+                    'Hardware ID': 'معرّف الأجهزة',
+                    'Test Level': 'مستوى الاختبار',
+                    'Not connected': 'غير متصل',
+                    'Quick': 'سريع',
+                    'On-site check': 'فحص ميداني',
+                    'Unofficial': 'غير رسمي',
+                    'Factory lab': 'مختبر مصنع',
+                    'Certified': 'معتمد',
+                    'Full accreditation': 'اعتماد كامل',
+                    'credibility': 'المصداقية',
+                    'Back to Tests': 'العودة إلى الاختبارات',
+                    'Our Device': 'جهازنا',
+                    'Client Device': 'جهاز العميل',
+                    'Hardware Check': 'فحص الأجهزة',
+                    'Dry Soil 30g': 'تربة جافة 30 جرام',
+                    'Heavier sample': 'عينة أثقل',
+                    'Maximum standard': 'أقصى معيار',
+                    'Sieve Analysis Configuration': 'تكوين تحليل المناخل',
+                    'Roter Time (min)': 'وقت الدوران (دقائق)',
+                    'Run Analysis': 'تشغيل التحليل',
+                    'Download Report': 'تحميل التقرير',
+                    'Scan Sample': 'فحص العينة',
+                    'Results & Report': 'النتائج والتقارير',
+                    'Generated Report': 'التقرير المولد',
+                    'Test Type': 'نوع الاختبار',
+                    'Sample ID': 'معرّف العينة',
+                    'Date': 'التاريخ',
+                    'Tester': 'الفاحص',
+                    'Key Parameters': 'المعايير الرئيسية',
+                    'Conclusion': 'الاستنتاج',
+                    'Save Report': 'حفظ التقرير',
+                    'Print Report': 'طباعة التقرير',
+                    'Export Excel': 'تصدير Excel',
+                    'Dry Sample': 'عينة جافة',
+                    'Analysis pending': 'التحليل قيد الانتظار',
+                    'D10': 'القطر 10%',
+                    'D30': 'القطر 30%',
+                    'D60': 'القطر 60%',
+                    'Cu': 'نسبة التدرج الحبيبات المتساوية(Cu)',
+                    'Cc': 'معامل التدرج الحبيبات المنفرج(Cc)',
+                    'mm': 'مم',
+                    'Quick': 'سريع',
+                    'Certified': 'معتمد',
+                    'Official': 'رسمي',
+                    'Test Level': 'مستوى الاختبار',
+                    'Sample Weight': 'وزن العينة',
+                    'Roter Time': 'وقت الدوران',
+                    'g': 'جرام',
+                    'Drive': 'محرك',
+                    'USB Drive': 'محرك USB',
+                    'USB Type-A': 'يو إس بي نوع أ',
+                    'USB-OTG': 'يو إس بي-أو تي جي',
+                    'Serial UART': 'يو إيه-يو إيه أم',
+                    'Ethernet LAN': 'شبكة إيثرنت',
+                    'Wi-Fi': 'واي-فاي',
+                    'Bluetooth': 'بلوتوث',
+                    'Zigbee': 'زيغبي',
+                    'LoRa': 'لورا',
+                    'RS-232/485': 'آر إس-232/485',
+                    'CAN Bus': 'حافلة CAN',
+                    'SPI/I2C': 'إس-بي-آي/آي-تو-سي',
+                    'NFC': 'إن إف سي',
+                    'Scan to connect': 'امسح للاتصال',
+                    'Please select a connection': 'يرجى تحديد اتصال',
+                    'Hardware detected': 'تم اكتشاف الأجهزة',
+                    'Device ID': 'معرّف الجهاز',
+                    'Model': 'النموذج',
+                    'Firmware': 'البرنامج الثابت',
+                    'Connection time': 'وقت الاتصال',
+                    'Disconnect': 'قطع الاتصال',
+                    'Ready for test': 'جاهز للاختبار',
+                    'Start test': 'بدء الاختبار',
+                    'Back to test selection': 'العودة إلى اختيار الاختبار',
+                    'SAMPLES': 'العينات',
+                    'Hole Size': 'حجم الفتحة',
+                    'Retained (g)': 'المحتجز (جرام)',
+                    'Cum %': 'التراكمي %',
+                    'Test Complete!': 'الاختبار كامل!',
+                    'Analysis Complete': 'التحليل كامل',
+                    'Your soil analysis is complete.': 'تحليل التربة الخاص بك مكتمل.',
+                    'D10 calculated successfully.': 'تم حساب D10 بنجاح.',
+                    'D30 calculated successfully.': 'تم حساب D30 بنجاح.',
+                    'D60 calculated successfully.': 'تم حساب D60 بنجاح.',
+                    'Cu (Uniformity)': 'نسبة التدرج الحبيبات المتساوية(Cu)',
+                    'Cc (Curvature)': 'معامل التدرج الحبيبات المنفرج(Cc)',
+                    'Cu & Cc interpretation based on BS 1377:2004 standards.': 'تفسير Cu & Cc يعتمد على معايير BS 1377:2004.',
+                    'Constant B (Weight of pan and cover)': 'الثابت B (وزن الصينية والغطاء)',
+                    'Constant A (Weight of sample + pan)': 'الثابت A (وزن العينة + الصينية)',
+                    'Mass of material passing through No.200 sieve': 'كتلة المادة التي تمر خلال المنخل رقم 200',
+                    'Total sample mass': 'الكتلة الكلية للعينة',
+                    'Correction factor (c)': 'عامل التصحيح(c)',
+                    'Bulk density (kg/m³)': 'الكثافة السائبة (كجم/م³)',
+                    'Specific gravity corrections applied.': 'تم تطبيق تصحيحات الجاذبية النوعية.',
+                    'Sieve Analysis Report': 'تقرير تحليل المناخل',
+                    'smartLAB Soil Testing Laboratory': 'مختبر smartLAB لاختبارات التربة',
+                    'Report ID': 'معرّف التقرير',
+                    'Analysis Date': 'تاريخ التحليل',
+                    'Testing Engineer': 'مهندس الاختبار',
+                    'Sample Details': 'تفاصيل العينة',
+                    'Sieve Sizes': 'مقاسات المناخل',
+                    'Results': 'النتائج',
+                    'Calculations': 'الحسابات',
+                    'Interpretation': 'التفسير',
+                    'Recommendations': 'التوصيات',
+                    'Report Generated': 'تم توليد التقرير',
+                    'Digital copy saved locally': 'نسخة رقمية محفوظة محليا',
+                    'Test summary': 'ملخص الاختبار',
+                    'Grade': 'الدرجة',
+                    'Status': 'الحالة',
+                    'Print': 'طباعة',
+                    'Email': 'بريد الإلكتروني',
+                    'Copy to clipboard': 'نسخ في الحافظة',
+                    'Excel file ready': 'ملف Excel جاهز',
+                    'Convert to Excel': 'تحويل إلى Excel',
+                    'Excel export completed': 'تم تصدير Excel',
+                    'Test parameters configured': 'تم تكوين معايير الاختبار',
+                    'Print preview opened': 'تم فتح معاينة الطباعة',
+                    'Language': 'اللغة',
+                    'Arabic': 'العربية',
+                    'English': 'الإنجليزية',
+                    'Save': 'حفظ',
+                    'Cancel': 'إلغاء',
+                    'Please fill all required fields': 'يرجى تعبئة جميع الحقول المطلوبة',
+                    'Test configuration saved successfully': 'تم حفظ تكوين الاختبار بنجاح',
+                    'Please select a sample': 'يرجى تحديد عينة',
+                    'Sample loaded successfully': 'تم تحميل العينة بنجاح',
+                    'Running analysis...': 'جاري تشغيل التحليل...',
+                    'Analysis completed': 'التحليل مكتمل',
+                    'Downloading report...': 'تحميل التقرير...',
+                    'QR Code Generated': 'تم توليد رمز الاستجابة السريعة',
+                    'Scan to track sample': 'امسح لتتبع العينة',
+                    'Sample tracking initiated': 'تم بدء تتبع العينة',
+                    'Sample already tracked': 'العينة متتبعة بالفعل',
+                    'Generating QR code...': 'جارٍ توليد رمز الاستجابة السريعة...',
+                    'Error generating QR code': 'خطأ في توليد رمز الاستجابة السريعة',
+                    'Exporting to Excel...': 'جارٍ التصدير إلى Excel...',
+                    'Excel export completed': 'تم التصدير إلى Excel',
+                    'Error exporting to Excel': 'خطأ في التصدير إلى Excel',
+                }
+            };
+        }
+
+        function setupEventListeners() {
+            // Test level buttons
+            document.querySelectorAll('.lt-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const level = this.dataset.level;
+                    currentTestLevel = level;
+                    document.querySelectorAll('.lt-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    updateLevelDisplay();
+                    updateBillboard();
+                });
+            });
+
+            // Sample selection buttons
+            document.querySelectorAll('.hw-card').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const sample = this.dataset.sample;
+                    const sampleSize = this.dataset.samplesize;
+                    currentSample = sample;
+                    currentSampleSize = sampleSize;
+                    document.querySelectorAll('.hw-card').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    updateSampleDisplay();
+                });
+            });
+
+            // Interactive editable cells
+            document.querySelectorAll('.editable').forEach(cell => {
+                cell.addEventListener('click', function() {
+                    makeEditable(this);
+                });
+                cell.addEventListener('blur', function() {
+                    saveEditableValue(this);
+                    calculateSummary();
+                });
+                cell.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        this.blur();
+                    }
+                });
+            });
+
+            // Action buttons
+            document.getElementById('runAnalysisBtn')?.addEventListener('click', runAnalysis);
+            document.getElementById('downloadReportBtn')?.addEventListener('click', downloadReport);
+            document.getElementById('scanQRBtn')?.addEventListener('click', scanSampleQR);
+            document.getElementById('saveReportBtn')?.addEventListener('click', saveReport);
+            document.getElementById('printReportBtn')?.addEventListener('click', printReport);
+            document.getElementById('exportExcelBtn')?.addEventListener('click', exportExcel);
+
+            // Country inputs
+            document.getElementById('sieve1')?.addEventListener('change', updateSieveGrid);
+            document.getElementById('sieve2')?.addEventListener('change', updateSieveGrid);
+            document.getElementById('sieve3')?.addEventListener('change', updateSieveGrid);
+            document.getElementById('numSieves')?.addEventListener('change', updateSieveGrid);
+            document.getElementById('roterTime')?.addEventListener('change', updateSieveGrid);
+
+            // Language toggle
+            document.getElementById('langToggle')?.addEventListener('click', function() {
+                lang = lang === 'en' ? 'ar' : 'en';
+                localStorage.setItem('smartlab_lang', lang);
+                this.innerHTML = '<span class="lang-dot"></span> ' + lang.toUpperCase();
+                updateLanguage();
+            });
+
+            // Initialize billboards
+            updateLevelDisplay();
+            updateSampleDisplay();
+            updateSieveGrid();
+            updateBillboard();
+
+            // Auto-update calculations on sieve changes
+            document.querySelectorAll('.field-input').forEach(input => {
+                input.addEventListener('change', calculateSummary);
+            });
+        }
+
+        function makeEditable(cell) {
+            const originalValue = cell.textContent;
+            cell.innerHTML = `<input type="number" class="number-input" value="${originalValue}" style="width: 80px;">`;
+            const input = cell.querySelector('.number-input');
+            input.focus();
+            input.select();
+        }
+
+        function saveEditableValue(cell) {
+            const input = cell.querySelector('.number-input');
+            if (input) {
+                const newValue = input.value;
+                cell.textContent = newValue;
+                cell.dataset.value = newValue;
+            }
+        }
+
+        function updateLevelDisplay() {
+            const levelInfo = document.getElementById('levelInfo');
+            const icon = testLevels[currentTestLevel].icon;
+            const credibility = testLevels[currentTestLevel].credibility;
+            if (levelInfo) {
+                levelInfo.innerHTML = `${credibility}% <span class="lang-dot" style="background:${testLevels[currentTestLevel].color};"></span>`;
+            }
+
+            // Update billboard icon based on level
+            const bbIcon = document.getElementById('bbIcon');
+            if (bbIcon) {
+                const levelConfig = testLevels[currentTestLevel];
+                bbIcon.textContent = levelConfig.icon;
+                bbIcon.style.background = levelConfig.color + '20';
+                bbIcon.style.color = levelConfig.color;
+            }
+        }
+
+        function updateSampleDisplay() {
+            const sampleData = samples[currentSample];
+            const sampleId = document.getElementById('sampleId');
+            const sampleWeight = document.getElementById('sampleWeight');
+            const testType = document.getElementById('testType');
+
+            if (sampleId) sampleId.textContent = 'SOIL-' + String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+            if (sampleWeight) sampleWeight.textContent = sampleData.size + 'g';
+            if (testType) testType.textContent = sampleData.type;
+
+            // Update soil sample visualization
+            const soilSample = document.getElementById('soilSample');
+            if (soilSample) {
+                soilSample.innerHTML = `<div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(45deg, #8b7355, #a0522d); display: flex; align-items: center; justify-content: center; color: white; font-size: 24px;">${sampleData.icon}</div>`;
+            }
+        }
+
+        function updateSieveGrid() {
+            const sieve1 = document.getElementById('sieve1').value;
+            const sieve2 = document.getElementById('sieve2').value;
+            const sieve3 = document.getElementById('sieve3').value;
+            const numSieves = parseInt(document.getElementById('numSieves').value);
+            const roterTime = parseInt(document.getElementById('roterTime').value);
+
+            const grid = document.getElementById('sieveGrid');
+            if (!grid) return;
+
+            let html = `<div class="sieve-row">
+                <div class="sieve-header">
+                    <div class="sieve-title">Sieve Analysis Setup</div>
+                    <div class="sieve-time">Rotor: ${roterTime} min</div>
+                </div>
+            </div>
+            <div class="sieve-grid-layout">
+                <div class="sieve-col">
+                    <div class="sieve-item-header">Sieve</div>
+                    <div class="sieve-item-value">Size</div>
+                    <div class="sieve-item-count">Count</div>
+                </div>
+                <div class="sieve-col">
+                    <div class="sieve-item ${sieve1 === '25' ? 'sieve-highlight' : ''}">
+                        <div class="sieve-size">${sieve1} mm</div>
+                        <div class="sieve-status">${getSieveStatus('25', sieve1)}<br><small>${getSievePercentage('25', sieve1)}%</small></div>
+                        <div class="sieve-count">
+                            <button class="btn-sieve-count" onclick="setSieveCount('25', 1)">-</button>
+                            <span id="count-25">1</span>
+                            <button class="btn-sieve-count" onclick="setSieveCount('25', 1)">+</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="sieve-col">
+                    <div class="sieve-item ${sieve2 === '19' ? 'sieve-highlight' : ''}">
+                        <div class="sieve-size">${sieve2} mm</div>
+                        <div class="sieve-status">${getSieveStatus('19', sieve2)}<br><small>${getSievePercentage('19', sieve2)}%</small></div>
+                        <div class="sieve-count">
+                            <button class="btn-sieve-count" onclick="setSieveCount('19', 1)">-</button>
+                            <span id="count-19">1</span>
+                            <button class="btn-sieve-count" onclick="setSieveCount('19', 1)">+</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="sieve-col">
+                    <div class="sieve-item ${sieve3 === '12.5' ? 'sieve-highlight' : ''}">
+                        <div class="sieve-size">${sieve3} mm</div>
+                        <div class="sieve-status">${getSieveStatus('12.5', sieve3)}<br><small>${getSievePercentage('12.5', sieve3)}%</small></div>
+                        <div class="sieve-count">
+                            <button class="btn-sieve-count" onclick="setSieveCount('12.5', 1)">-</button>
+                            <span id="count-12.5">1</span>
+                            <button class="btn-sieve-count" onclick="setSieveCount('12.5', 1)">+</button>
+                        </div>
+                    </div>
+                </div>`;
+
+            for (let i = 4; i <= numSieves; i++) {
+                const ss = getSieveSize(i);
+                const highlight = ss === sieve3 ? ' sieve-highlight' : '';
+                html += `<div class="sieve-col">
+                    <div class="sieve-item ${highlight}">
+                        <div class="sieve-size">${ss} mm</div>
+                        <div class="sieve-status">${getSieveStatus(ss, sieve3)}<br><small>${getSievePercentage(ss, sieve3)}%</small></div>
+                        <div class="sieve-count">
+                            <button class="btn-sieve-count" onclick="setSieveCount('${ss}', -1)">-</button>
+                            <span id="count-${ss}">1</span>
+                            <button class="btn-sieve-count" onclick="setSieveCount('${ss}', 1)">+</button>
+                        </div>
+                    </div>
+                </div>`;
+            }
+
+            html += `</div>`;
+            grid.innerHTML = html;
+        }
+
+        function setSieveCount(sieve, change) {
+            const countElement = document.getElementById('count-' + sieve);
+            if (countElement) {
+                let current = parseInt(countElement.textContent);
+                if (change === 1 && current < 99) current++;
+                if (change === -1 && current > 1) current--;
+                countElement.textContent = current;
+                calculateSummary();
+            }
+        }
+
+        function getSieveSize(index) {
+            const sizes = ['25', '19', '12.5', '9.5', '4.75', '2', '0.6', '0.3', '0.15', '0.075'];
+            return sizes[index - 1] || index;
+        }
+
+        function getSieveStatus(size, sieve3) {
+            return size === sieve3 ? 'ACTIVE' : 'PASS';
+        }
+
+        function getSievePercentage(size, sieve3) {
+            return Math.floor(Math.random() * 100) / 100;
+        }
+
+        function runAnalysis() {
+            showNotification('Running grain size analysis...', 'info');
+            setTimeout(() => {
+                calculateSummary();
+                showNotification('Analysis completed successfully!', 'success');
+                updateBillboard('success', 'Analysis Complete', 'Sample processed successfully');
+            }, 2000);
+        }
+
+        function calculateSummary() {
+            const editableCells = document.querySelectorAll('.editable');
+            const retainedValues = [];
+            const sieveSizes = [];
+
+            editableCells.forEach((cell, index) => {
+                const row = cell.closest('tr');
+                if (row) {
+                    const sieveSize = row.children[0].textContent;
+                    const retainedValue = parseFloat(cell.dataset.value) || 0;
+                    if (sieveSize !== '25 mm' && sieveSize !== '19 mm' && sieveSize !== '12.5 mm') {
+                        retainedValues.push(retainedValue);
+                        sieveSizes.push(parseFloat(sieveSize));
+                    }
+                }
+            });
+
+            // Calculate D10, D30, D60 using interpolation
+            const sortedData = retainedValues.map((val, idx) => ({value: val, sieve: sieveSizes[idx]})).sort((a, b) => a.sieve - b.sieve);
+
+            let d10 = 0, d30 = 0, d60 = 0;
+            for (let i = 0; i < sortedData.length; i++) {
+                const percentage = (i / (sortedData.length - 1)) * 100;
+                if (percentage <= 10 && d10 === 0) d10 = sortedData[i].sieve;
+                if (percentage <= 30 && d30 === 0) d30 = sortedData[i].sieve;
+                if (percentage <= 60 && d60 === 0) d60 = sortedData[i].sieve;
+            }
+
+            // If not found, use closest available
+            if (d10 === 0 && sortedData.length > 0) d10 = sortedData[sortedData.length - 1].sieve;
+            if (d30 === 0 && sortedData.length > 0) d30 = sortedData[sortedData.length - 1].sieve;
+            if (d60 === 0 && sortedData.length > 0) d60 = sortedData[sortedData.length - 1].sieve;
+
+            // Calculate Cu and Cc
+            const cu = d60 > 0 ? d60 / d10 : 0;
+            const geometricMean = Math.pow(d30, 2) / (d10 * d60);
+            const cc = geometricMean > 0 ? (d60 / d10) / Math.sqrt(geometricMean) : 0;
+
+            // Update UI
+            document.getElementById('d10Value').textContent = d10 > 0 ? d10 + ' mm' : '-';
+            document.getElementById('d30Value').textContent = d30 > 0 ? d30 + ' mm' : '-';
+            document.getElementById('d60Value').textContent = d60 > 0 ? d60 + ' mm' : '-';
+            document.getElementById('cuValue').textContent = cu > 0 ? cu.toFixed(2) : '-';
+            document.getElementById('ccValue').textContent = cc > 0 ? cc.toFixed(2) : '-';
+
+            // Update table display
+            updateAnalysisTable(sortedData);
+
+            // Update report preview
+            updateReportPreview(d10, d30, d60, cu, cc);
+        }
+
+        function updateAnalysisTable(data) {
+            const resultBody = document.getElementById('resultBody');
+            if (!resultBody) return;
+
+            const rows = resultBody.querySelectorAll('tr');
+            let cumulative = 0;
+            data.forEach((item, index) => {
+                const row = rows[index + 1]; // Skip header row
+                if (row && row.children.length >= 4) {
+                    const retainedPercent = (item.value * 100).toFixed(1);
+                    cumulative += parseFloat(retainedPercent);
+                    row.children[1].textContent = item.value.toFixed(2); // Retained (g)
+                    row.children[2].textContent = retainedPercent; // % Retained
+                    row.children[3].textContent = cumulative.toFixed(1); // Cumulative %
+                }
+            });
+        }
+
+        function updateReportPreview(d10, d30, d60, cu, cc) {
+            // Update report preview data
+            document.getElementById('previewSampleId').textContent = document.getElementById('sampleId').textContent;
+            document.getElementById('reportD10').textContent = d10 > 0 ? d10.toFixed(2) + ' mm' : '-';
+            document.getElementById('reportD30').textContent = d30 > 0 ? d30.toFixed(2) + ' mm' : '-';
+            document.getElementById('reportD60').textContent = d60 > 0 ? d60.toFixed(2) + ' mm' : '-';
+            document.getElementById('reportCu').textContent = cu > 0 ? cu.toFixed(2) : '-';
+
+            // Update conclusion based on results
+            let conclusion = 'Analysis pending...';
+            if (cu > 0 && cc > 0) {
+                if (cu < 5 && cc >= 1 && cc <= 3) {
+                    conclusion = 'Well-graded soil with good uniformity and curvature.';
+                } else if (cu < 10 && cc >= 1) {
+                    conclusion = 'Moderately graded soil with acceptable properties.';
+                } else {
+                    conclusion = 'Coarse-grained soil with poor grading characteristics.';
+                }
+            }
+            document.getElementById('reportConclusion').textContent = conclusion;
+            document.getElementById('reportDcc').textContent = cc > 0 ? cc.toFixed(2) : '-';
+        }
+
+        function updateBillboard(type = 'default', title = '', desc = '') {
+            const bbTitle = document.getElementById('bbTitle');
+            const bbDesc = document.getElementById('bbDesc');
+
+            if (type === 'success') {
+                if (bbTitle) bbTitle.textContent = title || 'Success';
+                if (bbDesc) bbDesc.textContent = desc || 'Your action completed successfully';
+            } else {
+                if (bbTitle) bbTitle.textContent = 'STEP ' + (currentTestLevel === 'quick' ? '1' : currentTestLevel === 'unofficial' ? '2' : '3') + '/3';
+                if (bbDesc) bbDesc.textContent = 'Follow the steps below to complete your test';
+            }
+        }
+
+        function downloadReport() {
+            showNotification('Generating report download...', 'info');
+            setTimeout(() => {
+                showNotification('Report downloaded successfully!', 'success');
+            }, 1500);
+        }
+
+        function scanSampleQR() {
+            showNotification('Scanning for sample QR code...', 'info');
+            setTimeout(() => {
+                showNotification('Sample QR code scanned! Test data loaded.', 'success');
+            }, 1500);
+        }
+
+        function saveReport() {
+            showNotification('Saving report...', 'info');
+            setTimeout(() => {
+                showNotification('Report saved successfully!', 'success');
+            }, 1000);
+        }
+
+        function printReport() {
+            showNotification('Opening print preview...', 'info');
+            setTimeout(() => {
+                showNotification('Print preview opened!', 'success');
+            }, 1500);
+        }
+
+        function exportExcel() {
+            showNotification('Exporting to Excel...', 'info');
+            setTimeout(() => {
+                showNotification('Excel export completed successfully!', 'success');
+            }, 2000);
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = 'notification ' + type;
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                z-index: 10000;
+                animation: slideIn 0.3s ease;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            `;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        function updateLanguage() {
+            // Update all translatable elements
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                if (translationData && translationData[lang] && translationData[lang][key]) {
+                    element.textContent = translationData[lang][key];
+                }
+            });
+
+            // Update placeholders
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+                const key = element.getAttribute('data-i18n-placeholder');
+                if (translationData && translationData[lang] && translationData[lang][key]) {
+                    element.placeholder = translationData[lang][key];
+                }
+            });
+        }
+
+        // ===== BILLBOARD ANIMATION =====
+        let currentStep = 0;
+        const steps = [
+            { title: 'Prepare Sample', desc: 'Select and prepare your dry soil sample for sieve analysis' },
+            { title: 'Set Up Sieves', desc: 'Configure sieve sizes and activate the rotary mechanism' },
+            { title: 'Run Analysis', desc: 'Start the sieving process and collect data' }
+        ];
+
+        function updateBillboardAnimation() {
+            currentStep = (currentStep + 1) % steps.length;
+            const step = steps[currentStep];
+
+            document.getElementById('bbStepLabel').textContent = 'STEP ' + (currentStep + 1) + '/3';
+            document.getElementById('bbTitle').textContent = step.title;
+            document.getElementById('bbDesc').textContent = step.desc;
+
+            document.querySelectorAll('.bb-dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentStep);
+            });
+
+            // Change icon based on step
+            const icons = ['&#x1F3D7;', '&#x2692;', '&#x1F4C1;'];
+            document.getElementById('bbIcon').innerHTML = icons[currentStep];
+        }
+
+        // Start automatic billboard updates
+        setInterval(updateBillboardAnimation, 3000);
+
+        console.log('Soil Grain Size Distribution Test - Ready');
+    </script>
+</body>
+</html>

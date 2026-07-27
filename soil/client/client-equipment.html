@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Equipment Inventory</title>
+    <link rel="icon" href="../favicon.ico">
+    <link rel="stylesheet" href="client-common.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="page">
+        <a href="../soil.html" class="back-link">
+            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            <span data-i18n="Back to Soil">Back to Soil & Roads</span>
+        </a>
+
+        <h1 class="page-title" data-i18n="Equipment">Equipment <span>Inventory</span></h1>
+        <p class="page-sub" data-i18n="Equipment desc">Track and manage laboratory equipment, specimens, and tools</p>
+
+        <div class="section">
+            <div class="section-title"><span class="st-icon">🔧</span> <span data-i18n="Active Equipment">Active Equipment</span></div>
+            <div class="card-grid" id="equipmentGrid">
+                <!-- Injected by JS -->
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title"><span class="st-icon">📦</span> <span data-i18n="Available Specimens">Available Specimens</span></div>
+            <div class="card-grid" id="specimensGrid">
+                <!-- Injected by JS -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var equipment = JSON.parse(localStorage.getItem('soil_equipment') || '[]');
+        var lang = localStorage.getItem('smartlab_lang') || 'en';
+
+        function renderEquipment() {
+            var active = equipment.filter(function(e) { return e.status === 'available'; });
+            var inUse = equipment.filter(function(e) { return e.status === 'in_use'; });
+
+            renderEquipmentGrid('equipmentGrid', active, true);
+            renderSpecimenGrid('specimensGrid', inUse, false);
+
+            if (active.length === 0) {
+                document.getElementById('equipmentGrid').innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="icon">🔧</div><h3 data-i18n="No Equipment">No Equipment</h3><p data-i18n="Add your first equipment item">Add your first laboratory equipment item to begin tracking inventory.</p></div>';
+            }
+            if (inUse.length === 0) {
+                document.getElementById('specimensGrid').innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="icon">📦</div><h3 data-i18n="No Specimens">No Specimens</h3><p data-i18n="No active specimens">You don\'t have any active specimens in the lab.</p></div>';
+            }
+        }
+
+        function renderEquipmentGrid(gridId, list, showActions) {
+            var grid = document.getElementById(gridId);
+            if (!grid) return;
+            if (list.length === 0) { grid.innerHTML = ''; return; }
+            grid.innerHTML = list.map(function(e) {
+                var statusClass = e.status === 'available' ? 'status-active' : 'status-pending';
+                var statusText = e.status === 'available' ? (lang==='ar'?'متاح':'Available') : (lang==='ar'?'قيد الاستخدام':'In Use');
+                return '<div class="project-card" onclick="openEquipment(\'' + e.id + '\')">' +
+                    '<div class="project-header">' +
+                        '<span class="project-name">' + e.name + '</span>' +
+                        '<span class="project-status ' + statusClass + '">' + statusText + '</span>' +
+                    '</div>' +
+                    '<div class="project-meta">' +
+                        '<span>🔍 ' + (e.type || '-') + '</span>' +
+                        '<span>🏢 ' + (e.location || '-') + '</span>' +
+                        '<span>📅 Cal: ' + (e.calibration || '-') + '</span>' +
+                    '</div>' +
+                    '<div class="project-tests">' +
+                        '<span class="test-tag">' + (e.serial || '-') + '</span>' +
+                        (e.maintenance ? '<span class="test-tag">Maintenance Due</span>' : '') +
+                    '</div>' +
+                    (showActions ? '<div class="project-actions">' +
+                        '<button class="btn-sm btn-primary" onclick="event.stopPropagation(); updateEquipment(\'' + e.id + '\')" data-i18n="Update">Update</button>' +
+                        '<button class="btn-sm btn-secondary" onclick="event.stopPropagation(); markMaintenance(\'' + e.id + '\')" data-i18n="Maintenance">Maintenance</button>' +
+                    '</div>' : '') +
+                '</div>';
+            }).join('');
+        }
+
+        function renderSpecimenGrid(gridId, list, showActions) {
+            var grid = document.getElementById(gridId);
+            if (!grid) return;
+            if (list.length === 0) { grid.innerHTML = ''; return; }
+            grid.innerHTML = list.map(function(e) {
+                var statusClass = e.status === 'in_use' ? 'status-pending' : 'status-completed';
+                var statusText = e.status === 'in_use' ? (lang==='ar'?'قيد الاستخدام':'In Use') : (lang==='ar'?'مكتمل':'Completed');
+                return '<div class="project-card" onclick="openSpecimen(\'' + e.id + '\')">' +
+                    '<div class="project-header">' +
+                        '<span class="project-name">' + e.name + '</span>' +
+                        '<span class="project-status ' + statusClass + '">' + statusText + '</span>' +
+                    '</div>' +
+                    '<div class="project-meta">' +
+                        '<span>🔬 ' + (e.testType || '-') + '</span>' +
+                        '<span>🏗️ ' + (e.project || '-') + '</span>' +
+                        '<span>📅 Due: ' + (e.dueDate || '-') + '</span>' +
+                    '</div>' +
+                    '<div class="project-tests">' +
+                        '<span class="test-tag">ID: ' + e.id + '</span>' +
+                        (e.curing ? '<span class="test-tag">Curing: ' + e.curing + '</span>' : '') +
+                    '</div>' +
+                    (showActions ? '<div class="project-actions">' +
+                        '<button class="btn-sm btn-primary" onclick="event.stopPropagation(); updateSpecimen(\'' + e.id + '\')" data-i18n="Update">Update</button>' +
+                        '<button class="btn-sm btn-secondary" onclick="event.stopPropagation(); completeSpecimen(\'' + e.id + '\')" data-i18n="Complete">Complete</button>' +
+                    '</div>' : '') +
+                '</div>';
+            }).join('');
+        }
+
+        function openEquipment(id) {
+            localStorage.setItem('currentEquipmentId', id);
+            window.location.href = 'client-reports.html?type=equipment&item=' + id;
+        }
+
+        function updateEquipment(id) {
+            var name = prompt((lang==='ar'?'أدخل الاسم الجديد':'Enter new name') + ':');
+            if (!name) return;
+            var eq = equipment.find(function(x) { return x.id === id; });
+            if (eq) eq.name = name;
+            localStorage.setItem('soil_equipment', JSON.stringify(equipment));
+            renderEquipment();
+        }
+
+        function markMaintenance(id) {
+            var eq = equipment.find(function(x) { return x.id === id; });
+            if (!eq) return;
+            eq.maintenance = new Date().toISOString();
+            localStorage.setItem('soil_equipment', JSON.stringify(equipment));
+            renderEquipment();
+            alert((lang==='ar'?'تم تحديد موعد الصيانة':'Maintenance scheduled'));
+        }
+
+        function openSpecimen(id) {
+            localStorage.setItem('currentSpecimenId', id);
+            window.location.href = 'client-reports.html?type=specimen&item=' + id;
+        }
+
+        function updateSpecimen(id) {
+            var specimen = equipment.find(function(x) { return x.id === id && x.status === 'in_use'; });
+            if (!specimen) return;
+            specimen.dueDate = prompt((lang==='ar'?'أدخل تاريخ الانتهاء الجديد':'Enter new due date:') + ' (YYYY-MM-DD):');
+            if (!specimen.dueDate) return;
+            localStorage.setItem('soil_equipment', JSON.stringify(equipment));
+            renderEquipment();
+        }
+
+        function completeSpecimen(id) {
+            var specimen = equipment.find(function(x) { return x.id === id && x.status === 'in_use'; });
+            if (!specimen) return;
+            specimen.status = 'completed';
+            localStorage.setItem('soil_equipment', JSON.stringify(equipment));
+            renderEquipment();
+            alert((lang==='ar'?'تم إكمال العينة':'Specimen completed'));
+        }
+
+        // Language toggle
+        document.getElementById('langToggle').addEventListener('click', function() {
+            lang = lang === 'en' ? 'ar' : 'en';
+            localStorage.setItem('smartlab_lang', lang);
+            this.innerHTML = '<span class="lang-dot"></span> ' + lang.toUpperCase();
+            renderEquipment();
+        });
+        document.getElementById('langToggle').innerHTML = '<span class="lang-dot"></span> ' + lang.toUpperCase();
+
+        // Init
+        renderEquipment();
+    </script>
+    <script>
+        window.translations = {
+            'en': {
+                'Back to Soil': 'Back to Soil & Roads',
+                'Equipment': 'Equipment <span>Inventory</span>',
+                'Equipment desc': 'Track and manage laboratory equipment, specimens, and tools',
+                'Active Equipment': 'Active Equipment',
+                'Available Specimens': 'Available Specimens',
+                'No Equipment': 'No Equipment',
+                'Add your first equipment item': 'Add your first laboratory equipment item to begin tracking inventory.',
+                'No Specimens': 'No Specimens',
+                'You don\'t have any active specimens in the lab': 'You don\'t have any active specimens in the lab.',
+                'Update': 'Update',
+                'Maintenance': 'Maintenance',
+                'Complete': 'Complete'
+            },
+            'ar': {
+                'Back to Soil': 'العودة إلى التربة والطرق',
+                'Equipment': 'مخزون <span>المعدات</span>',
+                'Equipment desc': 'تتبع وإدارة معدات المختبر، العينات، والأدوات',
+                'Active Equipment': 'المعدات النشطة',
+                'Available Specimens': 'العينات المتاحة',
+                'No Equipment': 'لا توجد معدات',
+                'Add your first equipment item': 'أضف أول عنصر معدات مخبري لبدء تتبع المخزون.',
+                'No Specimens': 'لا توجد عينات',
+                'You don\'t have any active specimens in the lab': 'ليس لديك أي عينات نشطة في المختبر.',
+                'Update': 'تحديث',
+                'Maintenance': 'صيانة',
+                'Complete': 'اكتمال'
+            }
+        };
+    </script>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="../../components.js"></script>
+</body>
+</html>

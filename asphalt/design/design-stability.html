@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Stability Criteria</title>
+    <link rel="icon" href="../favicon.ico">
+    <link rel="stylesheet" href="design-common.css">
+    <style>
+        :root { --accent-page: #f87171; }
+        .breadcrumb a, .page-title span, .design-title, .design-icon,
+        .back-btn, .back-btn:hover, .notes-title, .notes-list li::before,
+        .comp-title, .band-btn, .band-btn:hover, .band-btn.active,
+        .criteria-name, .pg-grade, .aging-title, .climate-name,
+        .chart-title, .formula-title, .layout-title, .equip-name { color: var(--accent-page); }
+        .design-icon { background: rgba(248,113,113,0.1); border-color: rgba(248,113,113,0.4); }
+        .back-btn { background: rgba(248,113,113,0.1); border-color: rgba(248,113,113,0.2); }
+        .back-btn:hover { background: rgba(248,113,113,0.2); }
+        .notes-section { background: rgba(248,113,113,0.04); border-color: rgba(248,113,113,0.1); }
+        .mix-component, .criteria-card, .pg-card, .aging-card, .equip-card, .spec-item { background: rgba(248,113,113,0.05); border-color: rgba(248,113,113,0.1); }
+        .criteria-card:hover, .pg-card:hover, .equip-card:hover { border-color: rgba(248,113,113,0.3); }
+        .band-btn, .band-btn { background: rgba(248,113,113,0.1); border-color: rgba(248,113,113,0.2); color: var(--accent-page); }
+        .band-btn:hover, .band-btn.active { background: rgba(248,113,113,0.2); border-color: var(--accent-page); }
+        .mix-table th, .band-table th, .traffic-table th { color: var(--accent-page); }
+        .chart-section, .formula-section, .climate-map, .layout-section { background: rgba(248,113,113,0.04); border-color: rgba(248,113,113,0.1); }
+        .criteria-name, .aging-title { border-color: rgba(248,113,113,0.15); }
+    </style>
+
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="page">
+        <nav class="breadcrumb">
+            <a href="../asphalt.html">Asphalt & Marshall</a>
+            <span>/</span>
+            <span>Stability Criteria</span>
+        </nav>
+        <h1 class="page-title">Stability <span>Criteria</span></h1>
+        <p class="page-sub">Marshall stability, flow, and quotient limits by traffic level per ASTM D6927 / AASHTO T245</p>
+
+        <div class="design-section">
+            <div class="design-header">
+                <div class="design-icon">📊</div>
+                <div>
+                    <div class="design-title">Marshall Design Criteria</div>
+                    <p class="design-desc">Performance thresholds for stability, flow, and stiffness quotient</p>
+                </div>
+            </div>
+
+            <div class="criteria-grid">
+                <div class="criteria-card">
+                    <div class="criteria-name">Heavy Traffic (≥ 10M ESALs)</div>
+                    <div class="criteria-row"><span class="criteria-label">Stability (min)</span><span class="criteria-value gold">≥ 8.0 kN (1800 lbf)</span></div>
+                    <div class="criteria-row"><span class="criteria-label">Flow</span><span class="criteria-value gold">2 - 4 mm (8-16 units)</span></div>
+                    <div class="criteria-row"><span class="criteria-label">MQ (Stability/Flow)</span><span class="criteria-value blue">≥ 2.5 kN/mm</span></div>
+                    <div class="criteria-row"><span class="criteria-label">Air Voids</span><span class="criteria-value emerald">3% - 5%</span></div>
+                    <div class="criteria-row"><span class="criteria-label">VMA (min)</span><span class="criteria-value emerald">> 13%</span></div>
+                    <div class="criteria-row"><span class="criteria-label">TSR (AASHTO T283)</span><span class="criteria-value blue">≥ 80%</span></div>
+                </div>
+                <div class="criteria-card">
+                    <div class="criteria-name">Medium Traffic (1M - 10M ESALs)</div>
+                    <div class="criteria-row"><span class="criteria-label">Stability (min)</span><span class="criteria-value gold">≥ 5.3 kN (1200 lbf)</span></div>
+                    <div class="criteria-row"><span class="criteria-label">Flow</span><span class="criteria-value gold">2 - 4 mm (8-16 units)</span></div>
+                    <div class="criteria-row"><span class="criteria-label">MQ (Stability/Flow)</span><span class="criteria-value blue">≥ 1.8 kN/mm</span></div>
+                    <div class="criteria-row"><span class="criteria-label">Air Voids</span><span class="criteria-value emerald">3% - 5%</span></div>
+                    <div class="criteria-row"><span class="criteria-label">VMA (min)</span><span class="criteria-value emerald">> 13%</span></div>
+                    <div class="criteria-row"><span class="criteria-label">TSR (AASHTO T283)</span><span class="criteria-value blue">≥ 75%</span></div>
+                </div>
+                <div class="criteria-card">
+                    <div class="criteria-name">Light Traffic (< 1M ESALs)</div>
+                    <div class="criteria-row"><span class="criteria-label">Stability (min)</span><span class="criteria-value gold">≥ 3.3 kN (750 lbf)</span></div>
+                    <div class="criteria-row"><span class="criteria-label">Flow</span><span class="criteria-value gold">2 - 4 mm (8-16 units)</span></div>
+                    <div class="criteria-row"><span class="criteria-label">MQ (Stability/Flow)</span><span class="criteria-value blue">≥ 1.2 kN/mm</span></div>
+                    <div class="criteria-row"><span class="criteria-label">Air Voids</span><span class="criteria-value emerald">3% - 5%</span></div>
+                    <div class="criteria-row"><span class="criteria-label">VMA (min)</span><span class="criteria-value emerald">> 13%</span></div>
+                    <div class="criteria-row"><span class="criteria-label">TSR (AASHTO T283)</span><span class="criteria-value blue">≥ 70%</span></div>
+                </div>
+            </div>
+
+            <div class="formula-section">
+                <div class="formula-title">Key Formulas</div>
+                <div class="formula">Stability = P<sub>max</sub> × C<sub>thickness</sub></div>
+                <div class="formula">Flow = Deformation at P<sub>max</sub> (0.25 mm units)</div>
+                <div class="formula">MQ = Stability / Flow  (kN/mm or lbf/0.01in)</div>
+                <div class="formula">Air Voids = 100 × (1 - Gmb / Gmm)</div>
+                <div class="formula">VMA = 100 - (Gmb × P<sub>s</sub> / G<sub>sb</sub>)</div>
+                <div class="formula">VFB = VMA - Air Voids</div>
+                <div class="formula-desc">
+                    P<sub>max</sub> = maximum load • C<sub>thickness</sub> = thickness correction factor (1.0 for 63.5mm) • Gmb = bulk specific gravity • Gmm = theoretical max specific gravity • P<sub>s</sub> = aggregate % by weight • G<sub>sb</sub> = aggregate bulk specific gravity
+                </div>
+            </div>
+
+            <div class="formula-section">
+                <div class="formula-title">Traffic Classification & Criteria</div>
+                <table class="traffic-table">
+                    <thead>
+                        <tr>
+                            <th>Traffic Level</th>
+                            <th>ESALs (Design Life)</th>
+                            <th>Min Stability (kN)</th>
+                            <th>Flow Range (mm)</th>
+                            <th>Min MQ (kN/mm)</th>
+                            <th>Min TSR</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Very Heavy</td><td>> 30M</td><td class="highlight">10.0</td><td>2-3</td><td class="highlight">3.0</td><td>85%</td></tr>
+                        <tr><td>Heavy</td><td>10M - 30M</td><td class="highlight">8.0</td><td>2-4</td><td class="highlight">2.5</td><td>80%</td></tr>
+                        <tr><td>Medium</td><td>1M - 10M</td><td class="highlight">5.3</td><td>2-4</td><td class="highlight">1.8</td><td>75%</td></tr>
+                        <tr><td>Light</td><td>0.1M - 1M</td><td class="highlight">3.3</td><td>2-4</td><td class="highlight">1.2</td><td>70%</td></tr>
+                        <tr><td>Very Light</td><td>< 0.1M</td><td class="highlight">2.2</td><td>2-4</td><td class="highlight">0.8</td><td>65%</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <a href="../asphalt.html" class="back-btn">← Back to Asphalt & Marshall</a>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+    <script src="../../components.js"></script>
+</body>
+</html>

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Test Reports</title>
+    <link rel="icon" href="../favicon.ico">
+    <link rel="stylesheet" href="client-common.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="page">
+        <a href="../concrete.html" class="back-link">
+            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            <span data-i18n="Back to Concrete">Back to Concrete Testing</span>
+        </a>
+
+        <h1 class="page-title" data-i18n="Test Reports">Test <span>Reports</span></h1>
+        <p class="page-sub" data-i18n="Reports desc">View and manage all test reports, results, and certificates</p>
+
+        <div class="filters">
+            <select class="filter-select" id="reportFilter">
+                <option value="">All Reports</option>
+                <option value="2024">2024</option>
+                <option value="2023">2023</option>
+            </select>
+            <select class="filter-select" id="statusFilter">
+                <option value="">All Status</option>
+                <option value="certified">Certified</option>
+                <option value="unofficial">Unofficial</option>
+                <option value="quick">Quick</option>
+            </select>
+        </div>
+
+        <div class="chart-section">
+            <div class="chart-title">📊 Test Reports Overview</div>
+            <div class="chart-section-inner" style="height: 300px; display: flex; align-items: center; justify-content: center; border: 1px dashed var(--border-glass); border-radius: var(--radius-sm);">
+                <div style="text-align: center;">
+                    <div class="icon" style="font-size: 48px; opacity: 0.3;">📊</div>
+                    <p style="color: var(--text-muted); margin-top: 8px;">Charts integration available</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title"><span class="st-icon">📋</span> <span data-i18n="Recent Reports">Recent Reports</span></div>
+            <div class="table-container">
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Test</th>
+                            <th>Material</th>
+                            <th>Result</th>
+                            <th>Status</th>
+                            <th>Time</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportsTable">
+                        <tr>
+                            <td>C-2024-042</td>
+                            <td>Compressive Strength</td>
+                            <td>Foundation</td>
+                            <td>35.2 MPa</td>
+                            <td><span class="badge badge-certified">Certified</span></td>
+                            <td>10:30 AM</td>
+                            <td class="actions-cell">
+                                <button class="btn-icon" title="View">👁️</button>
+                                <button class="btn-icon pdf" title="PDF">📄</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>C-2024-041</td>
+                            <td>Slump Test</td>
+                            <td>Beam</td>
+                            <td>35 mm</td>
+                            <td><span class="badge badge-unofficial">Unofficial</span></td>
+                            <td>09:45 AM</td>
+                            <td class="actions-cell">
+                                <button class="btn-icon" title="View">👁️</button>
+                                <button class="btn-icon pdf" title="PDF">📄</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>C-2024-040</td>
+                            <td>Air Content</td>
+                            <td>Beams</td>
+                            <td>2.5%</td>
+                            <td><span class="badge badge-quick">Quick</span></td>
+                            <td>08:20 AM</td>
+                            <td class="actions-cell">
+                                <button class="btn-icon" title="View">👁️</button>
+                                <button class="btn-icon pdf" title="PDF">📄</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var reports = JSON.parse(localStorage.getItem('concrete_reports') || '[]');
+        var lang = localStorage.getItem('smartlab_lang') || 'en';
+
+        function renderReports() {
+            var tableBody = document.getElementById('reportsTable');
+            if (!tableBody) return;
+
+            var filteredReports = reports.filter(function(r) {
+                var matchesFilter = true;
+                if (document.getElementById('reportFilter')) {
+                    var filter = document.getElementById('reportFilter').value;
+                    if (filter && !r.id.includes(filter)) matchesFilter = false;
+                }
+                if (document.getElementById('statusFilter')) {
+                    var statusFilter = document.getElementById('statusFilter').value;
+                    if (statusFilter) {
+                        var statusMap = {
+                            'certified': 'badge-certified',
+                            'unofficial': 'badge-unofficial',
+                            'quick': 'badge-quick'
+                        };
+                        if (!r.status || !r.status.includes(statusFilter)) matchesFilter = false;
+                    }
+                }
+                return matchesFilter;
+            });
+
+            if (filteredReports.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted);">No reports found matching the selected filters.</td></tr>';
+                return;
+            }
+
+            tableBody.innerHTML = filteredReports.map(function(r) {
+                var statusClass = r.status === 'certified' ? 'badge-certified' : r.status === 'unofficial' ? 'badge-unofficial' : 'badge-quick';
+                var statusText = r.status === 'certified' ? (lang==='ar'?'معتمد':'Certified') : r.status === 'unofficial' ? (lang==='ar'?'غير رسمي':'Unofficial') : (lang==='ar'?'سريع':'Quick');
+                return '<tr>' +
+                    '<td>' + r.id + '</td>' +
+                    '<td>' + r.test + '</td>' +
+                    '<td>' + r.material + '</td>' +
+                    '<td>' + r.result + '</td>' +
+                    '<td><span class="badge ' + statusClass + '">' + statusText + '</span></td>' +
+                    '<td>' + r.time + '</td>' +
+                    '<td class="actions-cell">' +
+                        '<button class="btn-icon" title="View" onclick="viewReport(\'' + r.id + '\')">👁️</button>' +
+                        '<button class="btn-icon pdf" title="PDF" onclick="downloadReport(\'' + r.id + '\')">📄</button>' +
+                    '</td>' +
+                '</tr>';
+            }).join('');
+
+            attachReportActions();
+        }
+
+        function viewReport(id) {
+            alert((lang==='ar'?'عرض تقرير ' + id:'View report ' + id));
+        }
+
+        function downloadReport(id) {
+            alert((lang==='ar'?'تنزيل تقرير PDF ' + id:'Download PDF report ' + id));
+        }
+
+        function attachReportActions() {
+            document.querySelectorAll('.btn-icon').forEach(function(btn) {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+        }
+
+        document.getElementById('reportFilter').addEventListener('change', renderReports);
+        document.getElementById('statusFilter').addEventListener('change', renderReports);
+
+        // Language toggle
+        document.getElementById('langToggle').addEventListener('click', function() {
+            lang = lang === 'en' ? 'ar' : 'en';
+            localStorage.setItem('smartlab_lang', lang);
+            this.innerHTML = '<span class="lang-dot"></span> ' + lang.toUpperCase();
+            renderReports();
+        });
+        document.getElementById('langToggle').innerHTML = '<span class="lang-dot"></span> ' + lang.toUpperCase();
+
+        // Init
+        renderReports();
+    </script>
+    <script>
+        window.translations = {
+            'en': {
+                'Back to Concrete': 'Back to Concrete Testing',
+                'Test Reports': 'Test <span>Reports</span>',
+                'Reports desc': 'View and manage all test reports, results, and certificates',
+                'Recent Reports': 'Recent Reports',
+                'Certified': 'Certified',
+                'Unofficial': 'Unofficial',
+                'Quick': 'Quick',
+                'All Reports': 'All Reports',
+                'All Status': 'All Status'
+            },
+            'ar': {
+                'Back to Concrete': 'العودة إلى اختبارات الخرسانة',
+                'Test Reports': 'تقارير <span>الاختبارات</span>',
+                'Reports desc': 'عرض وإدارة جميع تقارير الاختبارات، النتائج، والشهادات',
+                'Recent Reports': 'التقارير الأخيرة',
+                'Certified': 'معتمد',
+                'Unofficial': 'غير رسمي',
+                'Quick': 'سريع',
+                'All Reports': 'جميع التقارير',
+                'All Status': 'جميع الحالات'
+            }
+        };
+    </script>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="../../components.js"></script>
+</body>
+</html>

@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Library</title>
+    <link rel="icon" href="favicon.ico">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0e1a; color: #e2e8f0; min-height: 100vh;
+            padding-top: 64px;
+        }
+        :root {
+            --accent-gold: #fbbf24; --accent-blue: #3b82f6; --accent-emerald: #10b981;
+            --accent-red: #f87171; --accent-amber: #f59e0b; --accent-cyan: #06b6d4;
+            --accent-purple: #a855f7;
+            --border-glass: rgba(255,255,255,0.06);
+            --bg-card: rgba(15,23,42,0.55);
+            --text-primary: #f1f5f9; --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --radius-sm: 6px; --radius-md: 10px;
+        }
+
+        /* ===== HEADER ===== */
+        .app-header {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+            background: rgba(10,14,26,0.92); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-glass);
+            padding: 0 32px; height: 64px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .app-header .header-left { display: flex; align-items: center; gap: 16px; }
+        .app-header .header-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .app-header .header-logo img { width: 42px; height: 42px; object-fit: cover; border-radius: 10px; box-shadow: 0 0 20px rgba(59,130,246,0.25); }
+        .app-header .header-logo span { font-size: 20px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.5px; }
+        .app-header .header-logo span span { color: var(--accent-gold); }
+        .app-header .header-nav { display: flex; align-items: center; gap: 2px; margin: 0 12px; }
+        .app-header .header-nav a {
+            color: var(--text-secondary); text-decoration: none;
+            font-size: 13px; font-weight: 500;
+            padding: 8px 16px; border-radius: var(--radius-sm);
+            transition: all 0.2s; position: relative;
+        }
+        .app-header .header-nav a:hover { color: var(--text-primary); background: rgba(255,255,255,0.06); }
+        .header-right { display: flex; align-items: center; gap: 10px; }
+        .lang-btn {
+            display: flex; align-items: center; gap: 6px;
+            padding: 7px 14px; background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border-glass); border-radius: var(--radius-sm);
+            color: var(--text-secondary); font-family: inherit;
+            font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+            text-transform: uppercase;
+        }
+        .lang-btn:hover { background: rgba(255,255,255,0.08); color: var(--text-primary); }
+        .lang-btn .lang-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-emerald); display: inline-block; }
+        body.rtl { direction: rtl; text-align: right; }
+        body.rtl .app-header .header-left { flex-direction: row-reverse; }
+        body.rtl .app-header .header-right { flex-direction: row-reverse; }
+        .app-header .header-nav a.nav-enter {
+            background: linear-gradient(135deg, var(--accent-blue), #6366f1);
+            color: #fff !important; font-weight: 600; padding: 8px 20px;
+            margin-left: 6px; border-radius: 20px;
+            box-shadow: 0 2px 12px rgba(59,130,246,0.25);
+        }
+        .app-header .header-nav a.nav-enter:hover {
+            box-shadow: 0 4px 20px rgba(59,130,246,0.45); transform: translateY(-1px);
+        }
+
+        /* ===== PAGE ===== */
+        .page { max-width: 1200px; margin: 0 auto; padding: 24px 20px 60px; }
+        .page-title { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+        .page-title span { color: var(--accent-emerald); }
+        .page-sub { color: var(--text-secondary); font-size: 14px; margin-bottom: 32px; }
+
+        /* ===== LIBRARY LAYOUT ===== */
+        .lib-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }
+        .lib-card {
+            background: linear-gradient(145deg, rgba(15,23,42,0.5), rgba(15,23,42,0.8));
+            border: 1px solid var(--border-glass); border-radius: var(--radius-md);
+            padding: 24px; transition: all 0.3s; position: relative; overflow: hidden;
+        }
+        .lib-card:hover { border-color: var(--accent-emerald); transform: translateY(-4px); }
+        .lib-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-emerald));
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .lib-card:hover::before { opacity: 1; }
+        .lib-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+        .lib-icon { width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); }
+        .lib-country { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-blue); font-weight: 600; margin-bottom: 4px; }
+        .lib-name { font-size: 20px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
+        .lib-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 16px; }
+        .lib-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .lib-stat { text-align: center; padding: 8px; background: rgba(255,255,255,0.02); border-radius: var(--radius-sm); border: 1px solid var(--border-glass); }
+        .lib-stat-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
+        .lib-stat-value { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+        .lib-stat-value.us { color: var(--accent-blue); }
+        .lib-stat-value.sa { color: var(--accent-amber); }
+        .lib-stat-value.eg { color: var(--accent-red); }
+        .lib-links { display: flex; gap: 8px; margin-top: 16px; }
+        .lib-link {
+            flex: 1; padding: 10px 12px; border-radius: var(--radius-sm);
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass);
+            color: var(--text-secondary); text-decoration: none; font-size: 12px;
+            font-weight: 500; text-align: center; transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .lib-link:hover { background: rgba(255,255,255,0.06); border-color: var(--accent-blue); color: var(--accent-blue); }
+        .lib-link.design { border-color: var(--accent-blue); }
+        .lib-link.test { border-color: var(--accent-amber); }
+        .lib-link.ref { border-color: var(--accent-red); }
+
+        /* ===== SECTIONS ===== */
+        .lib-section { margin-bottom: 32px; }
+        .lib-section-title { font-size: 22px; font-weight: 700; color: var(--text-primary); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .lib-section-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); }
+
+        /* ===== COLOR INDICATORS ===== */
+        .country-us { border-left: 4px solid var(--accent-blue); }
+        .country-sa { border-left: 4px solid var(--accent-amber); }
+        .country-eg { border-left: 4px solid var(--accent-red); }
+
+        @media (max-width: 768px) {
+            .lib-grid { grid-template-columns: 1fr; }
+            .lib-header { flex-direction: column; gap: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <header class="app-header" id="app-header">
+        <div class="header-left">
+            <a href="index.html" class="header-logo">
+                <img src="assets/logo.png" alt="smartLAB" width="42" height="42">
+                <span>smart<span>LAB</span></span>
+            </a>
+            <nav class="header-nav" id="header-nav">
+                <a href="index.html" data-i18n="home">Home</a>
+                <a href="index.html#about" data-i18n="about">About</a>
+                <a href="index.html#services" data-i18n="services">Services</a>
+                <a href="index.html#contact" data-i18n="contact">Contact</a>
+                <a href="index.html" class="nav-enter" data-i18n="Enter Lab">Enter Lab</a>
+            </nav>
+        </div>
+        <div class="header-right">
+            <button class="lang-btn" id="lang-toggle"><span class="lang-dot"></span> EN</button>
+        </div>
+    </header>
+
+    <div class="page">
+        <div class="page-title">Laboratory <span>Library</span></div>
+        <div class="page-sub">Comprehensive design specifications and test procedures for asphalt construction standards - United States (US), Saudi Arabia (SA), and Egypt (EG)</div>
+
+        <div class="lib-section">
+            <div class="lib-section-title">
+                <div class="lib-section-icon">📚</div>
+                American Standards (US)
+            </div>
+            <div class="lib-grid">
+                <div class="lib-card country-us">
+                    <div class="lib-country">United States</div>
+                    <div class="lib-name">AASHTO T 180 - Mix Design</div>
+                    <div class="lib-desc">Standard method of determining maximum specific gravity and bulk density of compacted asphalt concrete mixtures using a centrifuge.</div>
+                    <div class="lib-stats">
+                        <div class="lib-stat">
+                            <div class="lib-stat-label">Temperature</div>
+                            <div class="lib-stat-value us">°C</div>
+                        </div>
+                        <div class="lib-stat">
+                            <div class="lib-stat-label">Units</div>
+                            <div class="lib-stat-value us">Imperial</div>
+                        </div>
+                        <div class="lib-stat">
+                            <div class="lib-stat-label">Year</div>
+                            <div class="lib-stat-value us">2018</div>
+                        </div>
+                    </div>
+                    <div class="lib-links">
+                        <a href="asphalt/design/design-guideline.html" class="lib-link design">🔧 Design</a>
+                        <a href="asphalt/tests/test-gradation.html" class="lib-link test">📊 Tests</a>
+                        <a href="#ref-us-aashto-t180" class="lib-link ref" onclick="addRef('US-AASHTO-T180', 'AASHTO T 180 - Mix Design (2018)')">📋 References</a>
+                    </div>
+                </div>
+
+                <div class="lib-card country-us">
+                    <div class="lib-country">United States</div>
+                    <div class="lib-name">AASHTO T 271 - Marshall Stability</div>
+                    <div class="lib-desc">Standard method of determining the Marshall stability and flow parameters of bituminous paving mixtures with a 12.7-mm (0.5-in.) standard specimen.</div>
+                    <div class="lib-stats">
+                        <div class="lib-stat">
+                            <div class="lib-stat-label">Temperature</div>
+                            <div class="lib-stat-value us">68°F</div>
+                        </div>
+                        <div class="lib-stat">
+                            <div class="lib-stat-label">Specimen</div>
+                            <div class="lib-stat-value us">12.7mm</div>
+                        </div>
+                        <div class="lib-stat">
+                            <div class="lib-stat-label">Year</div>
+                            <div class="lib-stat-value us">2016</div>
+                        </div>
+                    </div>
+                    <div class="lib-links">
+                        <a href="asphalt/design/design-yourmix.html" class="lib-link design">🔧 Design</a>
+                        <a href="asphalt/tests/test-marshall.html" class="lib-link test">📊 Tests</a>
+                        <a href="#ref-us-aashto-t271" class="lib-link ref" onclick="addRef('US-AASHTO-T271', 'AASHTO T 271 - Marshall Stability (2016)')">📋 References</a>
+                    </div>
+                </div>
+
+                <div class="lib-card country-us">
+                    <div class="lib-country">United States</div>
+                    <div class="lib-name">AASHTO T 240 - Density</div>
+                    <div class="lib-desc">Standard method of determining the bulk density of uncompacted paving mixtures by the sand-pour cylinder method.</div>
+                    
+                    <div class="lib-stats">
+                        <div class="lib-stat">
+                            <div class="lib-stat-label">Method</div>
+                            <div class="lib-stat-value us">Sand Pour</div>
+                        </div>
+                        <div class="lib-stat">
+                            <div class="lib-stat-label">Year</div>
+                            <div class="lib-stat-value us">2019</div>
+                        </div>
+                        <div class="lib-stat">
+                            <div class="lib-stat-label">Precision</div>
+                            <div class="lib-stat-value us">±1%</div>
+                        </div>
+                    </div>
+                    <div class="lib-links">
+                        <a href="asphalt/design/design-specimen.html" class="lib-link design">🔧 Design</a>
+                        <a href="asphalt/tests/test-density.html" class="lib-link test">📊 Tests</a>
+                        <a href="#ref-us-aashto-t240" class="lib-link ref" onclick="addRef('US-AASHTO-T240', 'AASHTO T 240 - Density (2019)')">📋 References</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="lib-section">
+            <div class="lib-section-title">
+                <div class="lib-section-icon">🇸🇦</div>
+                Saudi Standards (SA)
+            </div>
+            <div class="lib-grid">
+                <div class="lib-card country-sa">
+                    <div class="lib-country">Saudi Arabia</div>
+                    <div class="lib-name">SASO 2530 - Mix Design</div>
+                    <div class="lib-desc">Standard specification for asphalt concrete pavement mix design requirements for Saudi Arabian construction projects.</div>
+                    <div class="lib-stats">
+                        <div class="lib-stat">
+                            <div class="lib-stat-label">Temperature</div>
+                            <div class="lib-stat-value sa">°C</div>
+                        </div>
+                        <div class="lib-stat">
+                            <div class="lib-stat-label">Standard</div>
+                            <div class="lib-stat-value sa">SASO 2530</div>
+                        </div>
+                        <div class="lib-stat">
+                            <div class="lib-stat-label">Year</div>
+                            <div class="lib-stat-value sa">2020</div>
+                        </div>
+                    </div>
+                    <div class="lib-links">
+                        <a href="asphalt/design/design-guideline.html" class="lib-link design">🔧 Design</a>
+                        <a href="asphalt/tests/test-gradation.html" class="lib-link test">📊 Tests</a>
+                        <a href="#ref-sa-saso-2530" class="lib-link ref" onclick="addRef('SA-SASO-2530', 'SASO 2530 - Mix Design (2020)')">📋 References</a>
+                    </div>
+                </div>
+
+                <div class="lib-card country-sa">
+                    <div class="lib-country">Saudi Arabia</div>
+                    <div class="lib-name">SASO 2531 - Marshall Test</div>
+                    <div class="lib-desc">Standard method for determining Marshall stability and flow of hot mix asphalt using controlled temperature and loading rates.</div>
+                    <div class="lib-stats">
+                        <div class="lib-stat">
+                            <div class="lib-stat-label">Temperature</div>
+                            <div class="lib-stat-value sa">60°C</div>
+                        </div>
+                        <div class="lib-stat">
+                            <div class="lib-stat-label">Loading</div>
+                            <div class="lib-stat-value sa">0.5 kN/s</div>
+                        </div>
+                        <div class="lib-stat">
+                            <div class="lib-stat-label">Year</div>
+                            <div class="lib-stat-value sa">2021</div>
+                        </div>
+                    </div>
+                    <div class="lib-links">
+                        <a href="asphalt/design/design-yourmix.html" class="lib-link design">🔧 Design</a>
+                        <a href="asphalt/tests/test-marshall.html" class="lib-link test">📊 Tests</a>
+                        <a href="#ref-sa-saso-2531" class="lib-link ref" onclick="addRef('SA-SASO-2531', 'SASO 2531 - Marshall Test (2021)')">📋 References</a>
+                    </div>
+                </div>
+
+                <div class="lib-card country-sa">
+                    <div class="lib-country">Saudi Arabia</div>
+                    <div class="lib-name">SASO 2532 - Density Test</div>
+                    <div class="lib-desc">Standard method for determining bulk density of hot mix asphalt using the nuclear gauge method.</div>
+                    <div class="lib-stats">
+                        <div class="lib-stat">
+                            <div class="lib-stat-label">Method</div>
+                            <div class="lib-stat-value sa">Nuclear Gauge</div>
+                        </div>
+                        <div class="lib-stat">
+                            <div class="lib-stat-label">Precision</div>
+                            <div class="lib-stat-value sa">±2%</div>
+                        </div>
+                        <div class="lib-stat">
+                            <div class="lib-stat-label">Year</div>
+                            <div class="lib-stat-value sa">2021</div>
+                        </div>
+                    </div>
+                    <div class="lib-links">
+                        <a href="asphalt/design/design-specimen.html" class="lib-link design">🔧 Design</a>
+                        <a href="asphalt/tests/test-density.html" class="lib-link test">📊 Tests</a>
+                        <a href="#ref-sa-saso-2532" class="lib-link ref" onclick="addRef('SA-SASO-2532', 'SASO 2532 - Density Test (2021)')">📋 References</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="lib-section">
+            <div class="lib-section-title">
+                <div class="lib-section-icon">🇪🇬</div>
+                Egyptian Standards (EG)
+            </div>
+            <div class="lib-grid">
+                <div class="lib-card country-eg">
+                    <div class="lib-country">Egypt</div>
+                    <div class="lib-name">ERS 1992 - Mix Design</div>
+                    <div class="lib-desc">Egyptian Road Standards for asphalt concrete mix design including environmental conditions and material specifications.</div>
+                    <div class="lib-stats">
+                        <div class="lib-stat">
+                            <div class="lib-stat-label">Climate</div>
+                            <div class="lib-stat-value eg">Hot Dry</div>
+                        </div>
+                        <div class="lib-stat">
+                            <div class="lib-stat-label">Standard</div>
+                            <div class="lib-stat-value eg">ERS 1992</div>
+                        </div>
+                        <div class="lib-stat">
+                            <div class="lib-stat-label">Year</div>
+                            <div class="lib-stat-value eg">2019</div>
+                        </div>
+                    </div>
+                    <div class="lib-links">
+                        <a href="asphalt/design/design-guideline.html" class="lib-link design">🔧 Design</a>
+                        <a href="asphalt/tests/test-gradation.html" class="lib-link test">📊 Tests</a>
+                        <a href="#ref-eg-ers-1992" class="lib-link ref" onclick="addRef('EG-ERS-1992', 'ERS 1992 - Mix Design (2019)')">📋 References</a>
+                    </div>
+                </div>
+
+                <div class="lib-card country-eg">
+                    <div class="lib-country">Egypt</div>
+                    <div class="lib-name">ERS 1993 - Marshall Stability</div>
+                    <div class="lib-desc">Egyptian standard for determining Marshall stability and flow parameters of asphalt mixes with Egyptian climate considerations.</div>
+                    <div class="lib-stats">
+                        <div class="lib-stat">
+                            <div class="lib-stat-label">Temperature</div>
+                            <div class="lib-stat-value eg">70°F</div>
+                        </div>
+                        <div class="lib-stat">
+                            <div class="lib-stat-label">Specimen</div>
+                            <div class="lib-stat-value eg">152mm</div>
+                        </div>
+                        <div class="lib-stat">
+                            <div class="lib-stat-label">Year</div>
+                            <div class="lib-stat-value eg">2020</div>
+                        </div>
+                    </div>
+                    <div class="lib-links">
+                        <a href="asphalt/design/design-yourmix.html" class="lib-link design">🔧 Design</a>
+                        <a href="asphalt/tests/test-marshall.html" class="lib-link test">📊 Tests</a>
+                        <a href="#ref-eg-ers-1993" class="lib-link ref" onclick="addRef('EG-ERS-1993', 'ERS 1993 - Marshall Stability (2020)')">📋 References</a>
+                    </div>
+                </div>
+
+                <div class="lib-card country-eg">
+                    <div class="lib-country">Egypt</div>
+                    <div class="lib-name">ERS 1994 - Density</div>
+                    <div class="lib-desc">Egyptian standard for determining bulk density of hot mix asphalt using the core-cutter method for Egyptian soil conditions.</div>
+                    <div class="lib-stats">
+                        <div class="lib-stat">
+                            <div class="lib-stat-label">Method</div>
+                            <div class="lib-stat-value eg">Core Cutter</div>
+                        </div>
+                        <div class="lib-stat">
+                            <div class="lib-stat-label">Precision</div>
+                            <div class="lib-stat-value eg">±3%</div>
+                        </div>
+                        <div class="lib-stat">
+                            <div class="lib-stat-label">Year</div>
+                            <div class="lib-stat-value eg">2020</div>
+                        </div>
+                    </div>
+                    <div class="lib-links">
+                        <a href="asphalt/design/design-specimen.html" class="lib-link design">🔧 Design</a>
+                        <a href="asphalt/tests/test-density.html" class="lib-link test">📊 Tests</a>
+                        <a href="#ref-eg-ers-1994" class="lib-link ref" onclick="addRef('EG-ERS-1994', 'ERS 1994 - Density (2020)')">📋 References</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Reference storage
+        const references = {
+            'US-AASHTO-T180': {
+                title: 'AASHTO T 180 - Mix Design (2018)',
+                content: 'Maximum Specific Gravity and Bulk Density of Compacted Asphalt Concrete Mixtures. Recommended for quality control and acceptance testing.'
+            },
+            'US-AASHTO-T271': {
+                title: 'AASHTO T 271 - Marshall Stability (2016)',
+                content: 'Determining Marshall Stability and Flow Parameters. Standard procedure for assessing mix performance and durability.'
+            },
+            'US-AASHTO-T240': {
+                title: 'AASHTO T 240 - Density (2019)',
+                content: 'Bulk Density of Uncompacted Paving Mixtures. Sand-pour cylinder method for density determination.'
+            },
+            'SA-SASO-2530': {
+                title: 'SASO 2530 - Mix Design (2020)',
+                content: 'Saudi Arabian Standard for Asphalt Concrete Mix Design. Local specifications for Kingdom construction projects.'
+            },
+            'SA-SASO-2531': {
+                title: 'SASO 2531 - Marshall Test (2021)',
+                content: 'Standard Method for Marshall Stability Test of Hot Mix Asphalt. Kingdom-specific loading rates and temperatures.'
+            },
+            'SA-SASO-2532': {
+                title: 'SASO 2532 - Density Test (2021)',
+                content: 'Standard Method for Density Determination. Nuclear gauge method with specific calibration requirements.'
+            },
+            'EG-ERS-1992': {
+                title: 'ERS 1992 - Mix Design (2019)',
+                content: 'Egyptian Road Standards for Asphalt Mix Design. Climate-specific requirements for hot dry conditions.'
+            },
+            'EG-ERS-1993': {
+                title: 'ERS 1993 - Marshall Stability (2020)',
+                content: 'Marshall Stability Test Standard. Egyptian adaptation with larger specimen size for local conditions.'
+            },
+            'EG-ERS-1994': {
+                title: 'ERS 1994 - Density (2020)',
+                content: 'Density Determination Standard. Core-cutter method specifically for Egyptian soil and climate conditions.'
+            }
+        };
+
+        function addRef(id, title) {
+            event.preventDefault();
+            const ref = references[id];
+            if (!ref) return;
+            
+            let refPanel = document.getElementById('ref-panel');
+            if (!refPanel) {
+                refPanel = document.createElement('div');
+                refPanel.id = 'ref-panel';
+                refPanel.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(10,14,26,0.95); border: 2px solid var(--accent-gold); border-radius: var(--radius-md); padding: 24px; max-width: 500px; width: 90%; max-height: 80vh; overflow: auto; z-index: 10001;';
+                document.body.appendChild(refPanel);
+            }
+            
+            refPanel.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-glass); padding-bottom: 12px;">
+                    <h3 style="color: var(--accent-gold); margin: 0;">${ref.title}</h3>
+                    <button onclick="document.getElementById('ref-panel').remove();" style="background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer;">&times;</button>
+                </div>
+                <div style="color: var(--text-secondary); line-height: 1.6;">${ref.content}</div>
+            `;
+            refPanel.style.display = 'flex';
+            refPanel.style.flexDirection = 'column';
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const refPanel = document.getElementById('ref-panel');
+                if (refPanel) refPanel.remove();
+            }
+        });
+
+        // Initialize language toggle
+        const langToggle = document.getElementById('lang-toggle');
+        if (langToggle) {
+            langToggle.addEventListener('click', function() {
+                const isArabic = document.body.classList.contains('rtl');
+                document.body.classList.toggle('rtl');
+                this.querySelector('.lang-dot').style.background = isArabic ? 'var(--accent-emerald)' : 'var(--accent-amber)';
+                this.textContent = isArabic ? 'EN' : 'AR';
+            });
+        }
+    </script>
+</body>
+</html>

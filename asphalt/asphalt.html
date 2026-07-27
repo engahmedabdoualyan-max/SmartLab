@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Asphalt & Marshall</title>
+    <link rel="icon" href="/favicon.ico">
+    <link rel="stylesheet" href="./asphalt.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <main class="page">
+        <h1 class="page-title" data-i18n="Asphalt & Marshall">Asphalt & <span>Marshall</span></h1>
+
+        <div class="section-tabs">
+            <button class="section-tab active" onclick="switchTab('tests', event)"><span data-i18n="Tests">Tests</span></button>
+            <button class="section-tab" onclick="switchTab('design', event)"><span data-i18n="Design">Design</span></button>
+            <button class="section-tab" onclick="switchTab('library', event)"><span data-i18n="Library">Library</span></button>
+            <button class="section-tab" onclick="switchTab('client', event)"><span data-i18n="Client Space">Client Space</span></button>
+        </div>
+
+        <section class="vhalf active" id="panel-tests">
+            <h2 data-i18n="Tests">Tests</h2>
+            <div class="card-grid design-grid">
+                <a href="tests/test-marshall.html" target="_blank" class="design-card">
+                    <div class="dc-icon">🧪</div>
+                    <div class="dc-body">
+                        <div class="dc-name" data-i18n="Marshall Stability">Marshall Stability</div>
+                        <div class="dc-desc">Measures resistance of asphalt mixes to deformation under loading</div>
+                    </div>
+                </a>
+                <a href="tests/test-flow.html" target="_blank" class="design-card">
+                    <div class="dc-icon">💧</div>
+                    <div class="dc-body">
+                        <div class="dc-name" data-i18n="Flow Value">Flow Value</div>
+                        <div class="dc-desc">Measures the vertical deformation of the specimen under load</div>
+                    </div>
+                </a>
+                <a href="tests/test-extraction.html" target="_blank" class="design-card">
+                    <div class="dc-icon">🏭</div>
+                    <div class="dc-body">
+                        <div class="dc-name" data-i18n="Bitumen Extraction">Bitumen Extraction</div>
+                        <div class="dc-desc">Extracts bitumen from the mix to determine binder content</div>
+                    </div>
+                </a>
+                <a href="tests/test-density.html" target="_blank" class="design-card">
+                    <div class="dc-icon">⚖️</div>
+                    <div class="dc-body">
+                        <div class="dc-name" data-i18n="Density & Voids">Density & Voids</div>
+                        <div class="dc-desc">Calculates bulk density and air void content of the mix</div>
+                    </div>
+                </a>
+                <a href="tests/test-gradation.html" target="_blank" class="design-card">
+                    <div class="dc-icon">🔀</div>
+                    <div class="dc-body">
+                        <div class="dc-name" data-i18n="Aggregate Gradation">Aggregate Gradation</div>
+                        <div class="dc-desc">Determines particle size distribution of aggregates in the mix</div>
+                    </div>
+                </a>
+                <a href="tests/test-ignition.html" target="_blank" class="design-card">
+                    <div class="dc-icon">🔥</div>
+                    <div class="dc-body">
+                        <div class="dc-name" data-i18n="Ignition Method">Ignition Method</div>
+                        <div class="dc-desc">Burns off bitumen to accurately determine binder content</div>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <section class="vhalf" id="panel-design">
+            <h2 data-i18n="Design">Design</h2>
+            <div class="card-grid design-grid">
+                <a href="design/design-mix.html" class="design-card">
+                    <div class="dc-icon">🧪</div>
+                    <div class="dc-body">
+                        <div class="dc-name" data-i18n="Mix Design">Mix Design</div>
+                        <div class="dc-desc">ACI 211.1, Marshall, Superpave methods</div>
+                    </div>
+                </a>
+                <a href="design/design-yourmix.html" class="design-card">
+                    <div class="dc-icon">⚡</div>
+                    <div class="dc-body">
+                        <div class="dc-name" data-i18n="Design Your Mix">Design Your Mix</div>
+                        <div class="dc-desc">Upload gradations, optimize & get OAC</div>
+                    </div>
+                </a>
+                <a href="design/design-gradation.html" class="design-card">
+                    <div class="dc-icon">📊</div>
+                    <div class="dc-body">
+                        <div class="dc-name" data-i18n="Gradation Design">Gradation Design</div>
+                        <div class="dc-desc">Sieve analysis, 0.45 power chart, blend optimization</div>
+                    </div>
+                </a>
+                <a href="design/design-stability.html" class="design-card">
+                    <div class="dc-icon">⚖️</div>
+                    <div class="dc-body">
+                        <div class="dc-name" data-i18n="Stability Design">Stability Design</div>
+                        <div class="dc-desc">Marshall stability, flow, VMA/VFA targets</div>
+                    </div>
+                </a>
+                <a href="design/design-temperature.html" class="design-card">
+                    <div class="dc-icon">🌡️</div>
+                    <div class="dc-body">
+                        <div class="dc-name" data-i18n="Temperature Design">Temperature Design</div>
+                        <div class="dc-desc">Mixing, compaction, curing temperatures</div>
+                    </div>
+                </a>
+                <a href="design/design-equipment.html" class="design-card">
+                    <div class="dc-icon">🔧</div>
+                    <div class="dc-body">
+                        <div class="dc-name" data-i18n="Equipment Design">Equipment Design</div>
+                        <div class="dc-desc">Molds, hammers, baths, balances, furnaces</div>
+                    </div>
+                </a>
+                <a href="design/design-specimen.html" class="design-card">
+                    <div class="dc-icon">📦</div>
+                    <div class="dc-body">
+                        <div class="dc-name" data-i18n="Specimen Prep">Specimen Prep</div>
+                        <div class="dc-desc">Dimensions, numbering, curing, storage</div>
+                    </div>
+                </a>
+                <a href="design/design-guideline.html" class="design-card">
+                    <div class="dc-icon">📘</div>
+                    <div class="dc-body">
+                        <div class="dc-name" data-i18n="Guideline Mix">Guideline Mix</div>
+                        <div class="dc-desc">Batch weights, JMF tables & design parameters</div>
+                    </div>
+                </a>
+                <a href="design/design-layerthickness.html" class="design-card">
+                    <div class="dc-icon">🧱</div>
+                    <div class="dc-body">
+                        <div class="dc-name" data-i18n="Layer Thickness">Layer Thickness</div>
+                        <div class="dc-desc">Traffic-based pavement layer thickness design per AASHTO 1993</div>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <section class="vhalf" id="panel-library">
+            <h2 data-i18n="Library">Library</h2>
+            <div class="card-grid design-grid">
+                <a href="library.html" class="design-card">
+                    <div class="dc-icon">📚</div>
+                    <div class="dc-body">
+                        <div class="dc-name" data-i18n="Standards Library">Standards Library</div>
+                        <div class="dc-desc">AASHTO, ASTM, BS, ECP — 50+ standards with search & filters</div>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <section class="vhalf" id="panel-client">
+            <h2 data-i18n="Client Space">Client Space</h2>
+            <div class="card-grid design-grid">
+                <a href="client/client-analytics.html" class="design-card">
+                    <div class="dc-icon">📈</div>
+                    <div class="dc-body">
+                        <div class="dc-name" data-i18n="Analytics">Analytics</div>
+                        <div class="dc-desc">Client project analytics and performance metrics</div>
+                    </div>
+                </a>
+                <a href="client/client-team.html" class="design-card">
+                    <div class="dc-icon">👥</div>
+                    <div class="dc-body">
+                        <div class="dc-name" data-i18n="Team Management">Team Management</div>
+                        <div class="dc-desc">Project team assignments and contacts</div>
+                    </div>
+                </a>
+                <a href="client/client-equipment.html" class="design-card">
+                    <div class="dc-icon">🔧</div>
+                    <div class="dc-body">
+                        <div class="dc-name" data-i18n="Equipment">Equipment</div>
+                        <div class="dc-desc">Project equipment listings and availability</div>
+                    </div>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <div id="footer-placeholder"></div>
+
+    <script>
+        function switchTab(tabName, event) {
+            // إخفاء جميع الأقسام وإزالة كلاس active
+            document.querySelectorAll('.vhalf').forEach(section => {
+                section.classList.remove('active');
+                section.style.display = 'none'; 
+            });
+            // إزالة التفعيل من جميع الأزرار
+            document.querySelectorAll('.section-tab').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // إظهار القسم المطلوب وتفعيله
+            const activeSection = document.getElementById('panel-' + tabName);
+            if(activeSection) {
+                activeSection.classList.add('active');
+                activeSection.style.display = 'block';
+            }
+            if (event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            }
+        }
+    </script>
+
+    <script>
+        window.translations = {
+            'en': { 'Asphalt & Marshall': 'Asphalt & <span>Marshall</span>', 'Asphalt page desc': 'Marshall stability, flow value, and bitumen extraction testing', 'Tests': 'Tests', 'Design': 'Design', 'Library': 'Library', 'Client Space': 'Client Space', 'Marshall Stability': 'Marshall Stability', 'Flow Value': 'Flow Value', 'Bitumen Extraction': 'Bitumen Extraction', 'Density & Voids': 'Density & Voids', 'Aggregate Gradation': 'Aggregate Gradation', 'Ignition Method': 'Ignition Method', 'Coming soon': 'Coming soon…', 'Mix Design': 'Mix Design', 'Gradation Design': 'Gradation Design', 'Stability Design': 'Stability Design', 'Temperature Design': 'Temperature Design', 'Equipment Design': 'Equipment Design', 'Specimen Prep': 'Specimen Prep', 'Guideline Mix': 'Guideline Mix', 'Layer Thickness': 'Layer Thickness', 'Design Your Mix': 'Design Your Mix', 'Standards Library': 'Standards Library', 'Design Samples': 'Design Samples', 'Test Reports': 'Test Reports', 'Analytics': 'Analytics', 'Team Management': 'Team Management', 'Equipment': 'Equipment' },
+            'ar': { 'Asphalt & Marshall': 'الأسفلت <span>ومارشال</span>', 'Asphalt page desc': 'اختبارات ثبات مارشال، قيمة التدفق، واستخلاص البيتومين', 'Tests': 'الاختبارات', 'Design': 'التصميم', 'Library': 'المكتبة', 'Client Space': 'مساحة العميل', 'Marshall Stability': 'ثبات مارشال', 'Flow Value': 'قيمة التدفق', 'Bitumen Extraction': 'استخلاص البيتومين', 'Density & Voids': 'الكثافة والفراغات', 'Aggregate Gradation': 'تدرج الركام', 'Ignition Method': 'طريقة الاحتراق', 'Coming soon': 'قريباً…', 'Mix Design': 'تصميم الخلطة', 'Gradation Design': 'تصميم التدرج', 'Stability Design': 'تصميم الثبات', 'Temperature Design': 'تصميم الحرارة', 'Equipment Design': 'تصميم المعدات', 'Specimen Prep': 'إعداد العينات', 'Guideline Mix': 'الخلطة الإرشادية', 'Layer Thickness': 'سمك الطبقات', 'Design Your Mix': 'صمم خليطك', 'Standards Library': 'مكتبة المعايير', 'Design Samples': 'عينات التصميم', 'Test Reports': 'تقارير الاختبارات', 'Analytics': 'التحليلات', 'Team Management': 'إدارة الفريق', 'Equipment': 'المعدات' }
+        };
+    </script>
+    <script src="../components.js"></script>
+</body>
+</html>

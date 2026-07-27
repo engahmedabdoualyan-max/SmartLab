@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Break Schedule</title>
+    <link rel="icon" href="../favicon.ico">
+    <link rel="stylesheet" href="design-common.css">
+    <style>
+        :root { --accent-page: #f87171; }
+        body { color-scheme: dark; }
+        .design-icon { background: rgba(248,113,113,0.1); border-color: rgba(248,113,113,0.4); }
+        .back-btn { background: rgba(248,113,113,0.1); border-color: rgba(248,113,113,0.2); }
+        .back-btn:hover { background: rgba(248,113,113,0.2); }
+        .notes-section { background: rgba(248,113,113,0.04); border-color: rgba(248,113,113,0.1); }
+        .band-btn { background: rgba(248,113,113,0.1); border-color: rgba(248,113,113,0.2); color: var(--accent-red); }
+        .band-btn:hover, .band-btn.active { background: rgba(248,113,113,0.2); border-color: var(--accent-red); }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    <div class="page">
+        <nav class="breadcrumb">
+            <a href="../concrete.html">Concrete Testing</a>
+            <span>/</span>
+            <a href="design-mix.html">Design Tools</a>
+            <span>/</span>
+            <span>Break Schedule</span>
+        </nav>
+        <h1 class="page-title">Break <span>Schedule</span></h1>
+        <p class="page-sub">Plan compressive strength test ages per ACI 318 / ASTM C39 — Generate cylinder break schedule with maturity tracking</p>
+
+        <section class="design-section">
+            <div class="design-header">
+                <div class="design-icon">📅</div>
+                <div>
+                    <div class="design-title">Break Schedule Generator</div>
+                    <div class="design-desc">Define test ages, cylinder counts, and acceptance criteria. Track maturity and predict early-age strength.</div>
+                </div>
+            </div>
+
+            <div class="tab-row">
+                <button class="tab-btn active" onclick="switchTab('builder', this)">Builder</button>
+                <button class="tab-btn" onclick="switchTab('maturity', this)">Maturity</button>
+                <button class="tab-btn" onclick="switchTab('report', this)">Report</button>
+            </div>
+
+            <div class="tab-panel active" id="panel-builder">
+                <div class="two-col">
+                    <div class="sidebar">
+                        <div class="sidebar-title">⚙️ Schedule Setup</div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Project Name</label>
+                            <input type="text" class="sidebar-input" id="projectName" value="Foundation Pour - Grid A1-A5">
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Mix Design Ref</label>
+                            <input type="text" class="sidebar-input" id="mixRef" value="MD-2024-0042">
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Specified f'c</label>
+                            <input type="number" class="sidebar-input" id="specFc" value="30" step="1"><span class="unit">MPa</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Concrete Class</label>
+                            <select class="sidebar-input" id="concClass">
+                                <option value="normal">Normal Weight</option>
+                                <option value="lightweight">Lightweight</option>
+                                <option value="high-strength">High Strength (>50 MPa)</option>
+                                <option value="mass">Mass Concrete</option>
+                            </select>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Curing Method</label>
+                            <select class="sidebar-input" id="cureMethod">
+                                <option value="standard">Standard (23°C, 95% RH)</option>
+                                <option value="field">Field Cured (Match Structure)</option>
+                                <option value="accelerated">Accelerated (Heat/Moisture)</option>
+                            </select>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Cement Type</label>
+                            <select class="sidebar-input" id="breakCementType">
+                                <option value="I">Type I (OPC)</option>
+                                <option value="II">Type II</option>
+                                <option value="III">Type III (High Early)</option>
+                                <option value="IP">Type IP (Pozzolan)</option>
+                                <option value="IS">Type IS (Slag)</option>
+                            </select>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">SCM Type</label>
+                            <select class="sidebar-input" id="breakScmType">
+                                <option value="none">None</option>
+                                <option value="flyash">Fly Ash (20-30%)</option>
+                                <option value="slag">Slag (30-50%)</option>
+                                <option value="silica">Silica Fume (5-10%)</option>
+                            </select>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Test Ages (days)</label>
+                            <input type="text" class="sidebar-input" id="testAges" value="1, 3, 7, 14, 28, 56" placeholder="Comma-separated days">
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Cylinders per Age</label>
+                            <input type="number" class="sidebar-input" id="cylPerAge" value="3" min="2" max="6">
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Hold Cylinders?</label>
+                            <select class="sidebar-input" id="holdCyl">
+                                <option value="2">2 Hold (56/90 days)</option>
+                                <option value="1">1 Hold (56 days)</option>
+                                <option value="0">None</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="generateSchedule()">📅 Generate Schedule</button>
+                    </div>
+
+                    <div>
+                        <div id="scheduleOutput" style="display:none;">
+                            <h3 style="color:var(--accent-red);margin-bottom:16px;">📋 Break Schedule</h3>
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Test Age</th>
+                                            <th>Date</th>
+                                            <th>Cylinders</th>
+                                            <th>Expected Strength</th>
+                                            <th>Acceptance Criteria</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="scheduleTable"></tbody>
+                                </table>
+                            </div>
+                            <div class="chart-section" style="margin-top:24px;">
+                                <div class="chart-title">📈 Strength Development Curve</div>
+                                <canvas class="chart-canvas" id="strengthChart"></canvas>
+                            </div>
+                        </div>
+                        <div id="schedulePlaceholder" style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+                            <div style="font-size:48px;margin-bottom:16px;">📅</div>
+                            <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Configure Schedule</div>
+                            <div style="font-size:13px;max-width:400px;">Enter project details and test ages in the sidebar, then click <strong>Generate Schedule</strong>.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-panel" id="panel-maturity">
+                <h3 style="color:var(--accent-red);margin-bottom:16px;">🌡️ Maturity Method (ASTM C1074)</h3>
+                <div class="form-grid" style="margin-bottom:24px;">
+                    <div class="form-field">
+                        <label>Maturity Function</label>
+                        <select id="maturityFunc">
+                            <option value="nurse-saul">Nurse-Saul (Time-Temperature)</option>
+                            <option value="arrhenius">Arrhenius (Equivalent Age)</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label>Datum Temperature (T₀)</label>
+                        <input type="number" id="datumTemp" value="-10" step="1"><span class="unit">°C</span>
+                    </div>
+                    <div class="form-field">
+                        <label>Activation Energy (E)</label>
+                        <input type="number" id="activationE" value="33500" step="500"><span class="unit">J/mol</span>
+                    </div>
+                    <div class="form-field">
+                        <label>Reference Temperature</label>
+                        <input type="number" id="refTemp" value="23" step="1"><span class="unit">°C</span>
+                    </div>
+                </div>
+                <div class="spec-grid">
+                    <div class="spec-item">
+                        <div class="spec-title">🌡️ Nurse-Saul Method</div>
+                        <div class="spec-desc">M = Σ(T - T₀)Δt. Simple time-temperature summation. T₀ = -10°C for Type I cement. Best for normal concrete.</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">⚛️ Arrhenius Method</div>
+                        <div class="spec-desc">te = Σexp[E/R(1/T₀ - 1/T)]Δt. More accurate for varying temperatures. E = 33,500 J/mol for Type I.</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">📊 Strength-Maturity Curve</div>
+                        <div class="spec-desc">Log(S) = a + b·log(M). Calibrate with 3+ cylinder breaks at different ages. Track in-place strength real-time.</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">🏗️ Field Application</div>
+                        <div class="spec-desc">Embed iButton/loggers in critical pours. Read maturity → estimate strength → make formwork removal, post-tensioning, loading decisions.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-panel" id="panel-report">
+                <div id="reportContent" style="display:none;">
+                    <h3 style="color:var(--accent-red);margin-bottom:16px;">📄 Break Schedule Report</h3>
+                    <div class="code-block" id="scheduleReport"></div>
+                    <button class="btn btn-gold" onclick="exportSchedule()" style="margin-top:16px;">📄 Export Schedule</button>
+                </div>
+                <div style="text-align:center;padding:40px;color:var(--text-muted);" id="reportEmpty">
+                    <div style="font-size:40px;margin-bottom:16px;">📄</div>
+                    <div style="font-size:16px;font-weight:600;margin-bottom:8px;">No Schedule Generated</div>
+                    <div style="font-size:13px;">Generate a schedule in the Builder tab first.</div>
+                </div>
+            </div>
+        </section>
+
+        <a href="../concrete.html" class="back-btn">← Back to Concrete Testing</a>
+    </div>
+    <div id="footer-placeholder"></div>
+    <script src="../components.js"></script>
+    <script>
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('panel-' + tabId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        function generateSchedule() {
+            const projectName = document.getElementById('projectName').value;
+            const mixRef = document.getElementById('mixRef').value;
+            const specFc = parseFloat(document.getElementById('specFc').value);
+            const agesStr = document.getElementById('testAges').value;
+            const cylPerAge = parseInt(document.getElementById('cylPerAge').value);
+            const holdCyl = parseInt(document.getElementById('holdCyl').value);
+            const cementType = document.getElementById('breakCementType').value;
+            const scmType = document.getElementById('breakScmType').value;
+
+            const ages = agesStr.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n)).sort((a,b) => a-b);
+            const today = new Date();
+
+            // Strength development model (simplified ACI 209 / CEB-FIP)
+            function estimateStrength(age) {
+                let alpha, beta;
+                if (cementType === 'III') { alpha = 0.85; beta = 0.15; }
+                else if (scmType === 'flyash') { alpha = 0.65; beta = 0.25; }
+                else if (scmType === 'slag') { alpha = 0.60; beta = 0.30; }
+                else { alpha = 0.70; beta = 0.20; }
+                return specFc * (age / (alpha + beta * age));
+            }
+
+            const tbody = document.getElementById('scheduleTable');
+            tbody.innerHTML = '';
+
+            ages.forEach((age, idx) => {
+                const testDate = new Date(today);
+                testDate.setDate(today.getDate() + age);
+                const dateStr = testDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                const estStrength = estimateStrength(age).toFixed(1);
+                const isHold = idx >= ages.length - holdCyl;
+
+                // ACI 318 acceptance: avg of 3 ≥ f'c, no single < f'c - 3.5 MPa (f'c ≤ 35) or -0.10f'c
+                let criteria = `Avg ≥ ${specFc} MPa`;
+                if (specFc <= 35) criteria += `; No single < ${(specFc - 3.5).toFixed(1)} MPa`;
+                else criteria += `; No single < ${(specFc * 0.9).toFixed(1)} MPa`;
+
+                tbody.innerHTML += `
+                    <tr class="${isHold ? 'hold-row' : ''}">
+                        <td><strong>Day ${age}</strong></td>
+                        <td>${dateStr}</td>
+                        <td>${cylPerAge} ${isHold ? '(HOLD)' : ''}</td>
+                        <td><span class="highlight">${estStrength} MPa</span></td>
+                        <td>${criteria}</td>
+                        <td><span class="${isHold ? 'badge badge-hold' : 'badge'}">${isHold ? 'HOLD' : 'TEST'}</span></td>
+                    </tr>
+                `;
+            });
+
+            // Add hold cylinders if specified
+            if (holdCyl > 0) {
+                const holdAges = [56, 90].slice(0, holdCyl);
+                holdAges.forEach((age, idx) => {
+                    const testDate = new Date(today);
+                    testDate.setDate(today.getDate() + age);
+                    const dateStr = testDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    const estStrength = estimateStrength(age).toFixed(1);
+                    tbody.innerHTML += `
+                        <tr class="hold-row" style="background:rgba(245,158,11,0.05);">
+                            <td><strong>Day ${age} (HOLD)</strong></td>
+                            <td>${dateStr}</td>
+                            <td>${cylPerAge} (HOLD)</td>
+                            <td><span class="highlight">${estStrength} MPa</span></td>
+                            <td>Research / Long-term</td>
+                            <td><span class="badge" style="background:rgba(245,158,11,0.2);color:var(--accent-amber);">HOLD</span></td>
+                        </tr>
+                    `;
+                });
+            }
+
+            document.getElementById('schedulePlaceholder').style.display = 'none';
+            document.getElementById('scheduleOutput').style.display = 'block';
+            document.getElementById('reportEmpty').style.display = 'none';
+            document.getElementById('reportContent').style.display = 'block';
+
+            // Generate report
+            generateReport(projectName, mixRef, specFc, ages, cylPerAge, holdCyl, cementType, scmType);
+
+            // Draw chart
+            drawStrengthChart(ages, ages.map(estimateStrength));
+        }
+
+        function generateReport(projectName, mixRef, specFc, ages, cylPerAge, holdCyl, cementType, scmType) {
+            const report = `
+BREAK SCHEDULE REPORT
+=====================
+
+Project: ${projectName}
+Mix Design: ${mixRef}
+Specified f'c: ${specFc} MPa
+Cement Type: ${cementType}
+SCM: ${scmType}
+Generated: ${new Date().toLocaleString()}
+
+TEST SCHEDULE:
+${ages.map((age, i) => {
+    const testDate = new Date();
+    testDate.setDate(testDate.getDate() + age);
+    return `Day ${age}: ${testDate.toLocaleDateString()} — ${cylPerAge} cylinders — Est. ${estimateStrength(age).toFixed(1)} MPa`;
+}).join('\n')}
+
+${holdCyl > 0 ? `HOLD CYLINDERS:\nDay 56: Research / Long-term\n${holdCyl === 2 ? 'Day 90: Research / Long-term' : ''}` : ''}
+
+ACCEPTANCE CRITERIA (ACI 318):
+- Average of ${cylPerAge} cylinders ≥ ${specFc} MPa
+${specFc <= 35 ? `- No single cylinder < ${(specFc - 3.5).toFixed(1)} MPa` : `- No single cylinder < ${(specFc * 0.9).toFixed(1)} MPa (10% of f'c)`}
+
+NOTES:
+1. Cure cylinders per ASTM C31 (standard or field cure as specified).
+2. Test per ASTM C39 at designated ages.
+3. Report individual and average strengths.
+4. Hold cylinders stored for potential future testing.
+            `.trim();
+            document.getElementById('scheduleReport').textContent = report;
+        }
+
+        function estimateStrength(age) {
+            const specFc = parseFloat(document.getElementById('specFc').value) || 30;
+            const cementType = document.getElementById('breakCementType').value;
+            const scmType = document.getElementById('breakScmType').value;
+            let alpha, beta;
+            if (cementType === 'III') { alpha = 0.85; beta = 0.15; }
+            else if (scmType === 'flyash') { alpha = 0.65; beta = 0.25; }
+            else if (scmType === 'slag') { alpha = 0.60; beta = 0.30; }
+            else { alpha = 0.70; beta = 0.20; }
+            return specFc * (age / (alpha + beta * age));
+        }
+
+        function drawStrengthChart(ages, strengths) {
+            // Simple canvas drawing
+            const canvas = document.getElementById('strengthChart');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 300;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const maxAge = Math.max(...ages) * 1.1;
+            const maxStr = Math.max(...strengths) * 1.2;
+            const padding = 60;
+            const w = canvas.width - 2 * padding;
+            const h = canvas.height - 2 * padding;
+
+            // Axes
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 5; i++) {
+                const y = padding + (i/5)*h;
+                ctx.beginPath(); ctx.moveTo(padding, y); ctx.lineTo(canvas.width-padding, y); ctx.stroke();
+                ctx.fillStyle = 'var(--text-muted)'; ctx.font = '11px monospace';
+                ctx.fillText((maxStr*(1-i/5)).toFixed(0), 10, y+4);
+            }
+            for (let i = 0; i <= 5; i++) {
+                const x = padding + (i/5)*w;
+                ctx.beginPath(); ctx.moveTo(x, padding); ctx.lineTo(x, canvas.height-padding); ctx.stroke();
+                ctx.fillStyle = 'var(--text-muted)'; ctx.font = '11px monospace';
+                ctx.fillText((maxAge*i/5).toFixed(0), x-15, canvas.height-padding+20);
+            }
+
+            // Curve
+            ctx.strokeStyle = 'var(--accent-red)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ages.forEach((age, i) => {
+                const x = padding + (age/maxAge)*w;
+                const y = canvas.height - padding - (strengths[i]/maxStr)*h;
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+
+            // Points
+            ctx.fillStyle = 'var(--accent-red)';
+            ages.forEach((age, i) => {
+                const x = padding + (age/maxAge)*w;
+                const y = canvas.height - padding - (strengths[i]/maxStr)*h;
+                ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI*2); ctx.fill();
+            });
+
+            // Target line
+            const specFc = parseFloat(document.getElementById('specFc').value) || 30;
+            const ty = canvas.height - padding - (specFc/maxStr)*h;
+            ctx.strokeStyle = 'var(--accent-gold)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5,5]);
+            ctx.beginPath(); ctx.moveTo(padding, ty); ctx.lineTo(canvas.width-padding, ty); ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        function exportSchedule() {
+            const report = document.getElementById('scheduleReport').textContent;
+            const blob = new Blob([report], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'break-schedule.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

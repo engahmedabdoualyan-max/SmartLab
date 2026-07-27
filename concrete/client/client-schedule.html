@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Schedule Management</title>
+    <link rel="icon" href="../favicon.ico">
+    <link rel="stylesheet" href="client-common.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="page">
+        <a href="../concrete.html" class="back-link">
+            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            <span data-i18n="Back to Concrete">Back to Concrete Testing</span>
+        </a>
+
+        <h1 class="page-title" data-i18n="Schedule">Schedule <span>Management</span></h1>
+        <p class="page-sub" data-i18n="Schedule desc">Manage lab schedules, specimen deadlines, and testing appointments</p>
+
+        <div class="section">
+            <div class="section-title"><span class="st-icon">📅</span> <span data-i18n="Upcoming Tasks">Upcoming Tasks</span></div>
+            <div class="card-grid" id="tasksGrid">
+                <!-- Injected by JS -->
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title"><span class="st-icon">⏰</span> <span data-i18n="Deadline Alerts">Deadline Alerts</span></div>
+            <div class="card-grid" id="deadlineGrid">
+                <!-- Injected by JS -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var schedule = JSON.parse(localStorage.getItem('concrete_schedule') || '[]');
+        var lang = localStorage.getItem('smartlab_lang') || 'en';
+
+        function renderSchedule() {
+            var upcoming = schedule.filter(function(s) { return s.status === 'scheduled'; });
+            var expired = schedule.filter(function(s) { return s.status === 'expired'; });
+
+            renderTaskGrid('tasksGrid', upcoming, true);
+            renderDeadlineGrid('deadlineGrid', expired, false);
+
+            if (upcoming.length === 0) {
+                document.getElementById('tasksGrid').innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="icon">📅</div><h3 data-i18n="No Scheduled Tasks">No Scheduled Tasks</h3><p data-i18n="Schedule your first task">Schedule your first testing appointment to begin managing lab deadlines.</p></div>';
+            }
+            if (expired.length === 0) {
+                document.getElementById('deadlineGrid').innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="icon">⏰</div><h3 data-i18n="No Expired Deadlines">No Expired Deadlines</h3><p data-i18n="All deadlines are current">All scheduled deadlines are current and pending.</p></div>';
+            }
+        }
+
+        function renderTaskGrid(gridId, list, showActions) {
+            var grid = document.getElementById(gridId);
+            if (!grid) return;
+            if (list.length === 0) { grid.innerHTML = ''; return; }
+            grid.innerHTML = list.map(function(t) {
+                var statusClass = t.status === 'scheduled' ? 'status-active' : 'status-pending';
+                var statusText = t.status === 'scheduled' ? (lang==='ar'?'مخطط':'Scheduled') : (lang==='ar'?'قيد الانتظار':'Pending');
+                return '<div class="project-card" onclick="openTask(\'' + t.id + '\')">' +
+                    '<div class="project-header">' +
+                        '<span class="project-name">' + t.name + '</span>' +
+                        '<span class="project-status ' + statusClass + '">' + statusText + '</span>' +
+                    '</div>' +
+                    '<div class="project-meta">' +
+                        '<span>🏗️ ' + (t.project || '-') + '</span>' +
+                        '<span>👥 ' + (t.testBy || '-') + '</span>' +
+                        '<span>📅 ' + t.date + '</span>' +
+                    '</div>' +
+                    '<div class="project-tests">' +
+                        '<span class="test-tag">ID: ' + t.id + '</span>' +
+                        (t.isUrgent ? '<span class="test-tag">Urgent</span>' : '') +
+                    '</div>' +
+                    (showActions ? '<div class="project-actions">' +
+                        '<button class="btn-sm btn-primary" onclick="event.stopPropagation(); openTask(\'' + t.id + '\')" data-i18n="View">View</button>' +
+                        '<button class="btn-sm btn-secondary" onclick="event.stopPropagation(); completeTask(\'' + t.id + '\')" data-i18n="Complete">Complete</button>' +
+                    '</div>' : '') +
+                '</div>';
+            }).join('');
+        }
+
+        function renderDeadlineGrid(gridId, list, showActions) {
+            var grid = document.getElementById(gridId);
+            if (!grid) return;
+            if (list.length === 0) { grid.innerHTML = ''; return; }
+            grid.innerHTML = list.map(function(t) {
+                var statusClass = t.status === 'expired' ? 'status-completed' : 'status-pending';
+                var statusText = t.status === 'expired' ? (lang==='ar'?'منتهي':'Expired') : (lang==='ar'?'قيد الانتظار':'Pending');
+                return '<div class="project-card" onclick="openTask(\'' + t.id + '\')">' +
+                    '<div class="project-header">' +
+                        '<span class="project-name">' + t.name + '</span>' +
+                        '<span class="project-status ' + statusClass + '">' + statusText + '</span>' +
+                    '</div>' +
+                    '<div class="project-meta">' +
+                        '<span>🏗️ ' + (t.project || '-') + '</span>' +
+                        '<span>👨\u200d🔬 ' + (t.testBy || '-') + '</span>' +
+                        '<span>📅 Expired: ' + t.date + '</span>' +
+                    '</div>' +
+                    '<div class="project-tests">' +
+                        '<span class="test-tag">ID: ' + t.id + '</span>' +
+                        (t.isUrgent ? '<span class="test-tag">Urgent</span>' : '') +
+                    '</div>' +
+                    (showActions ? '<div class="project-actions">' +
+                        '<button class="btn-sm btn-primary" onclick="event.stopPropagation(); openTask(\'' + t.id + '\')" data-i18n="View">View</button>' +
+                    '</div>' : '') +
+                '</div>';
+            }).join('');
+        }
+
+        function openTask(id) {
+            localStorage.setItem('currentTaskId', id);
+            window.location.href = 'client-reports.html?type=schedule&task=' + id;
+        }
+
+        function completeTask(id) {
+            var task = schedule.find(function(x) { return x.id === id; });
+            if (!task) return;
+            task.status = 'completed';
+            localStorage.setItem('concrete_schedule', JSON.stringify(schedule));
+            renderSchedule();
+        }
+
+        // Language toggle
+        document.getElementById('langToggle').addEventListener('click', function() {
+            lang = lang === 'en' ? 'ar' : 'en';
+            localStorage.setItem('smartlab_lang', lang);
+            this.innerHTML = '<span class="lang-dot"></span> ' + lang.toUpperCase();
+            renderSchedule();
+        });
+        document.getElementById('langToggle').innerHTML = '<span class="lang-dot"></span> ' + lang.toUpperCase();
+
+        // Init
+        renderSchedule();
+    </script>
+    <script>
+        window.translations = {
+            'en': {
+                'Back to Concrete': 'Back to Concrete Testing',
+                'Schedule': 'Schedule <span>Management</span>',
+                'Schedule desc': 'Manage lab schedules, specimen deadlines, and testing appointments',
+                'Upcoming Tasks': 'Upcoming Tasks',
+                'Deadline Alerts': 'Deadline Alerts',
+                'No Scheduled Tasks': 'No Scheduled Tasks',
+                'Schedule your first task': 'Schedule your first testing appointment to begin managing lab deadlines.',
+                'No Expired Deadlines': 'No Expired Deadlines',
+                'All deadlines are current': 'All scheduled deadlines are current and pending.',
+                'View': 'View',
+                'Complete': 'Complete',
+                'Concrete Testing': 'Concrete Testing'
+            },
+            'ar': {
+                'Back to Concrete': 'العودة إلى اختبارات الخرسانة',
+                'Schedule': 'إدارة <span>الجدول</span>',
+                'Schedule desc': 'إدارة الجداول الزمنية للمختبر، مواعيد انتهاء العينات، ومواعيد الاختبارات',
+                'Upcoming Tasks': 'المهام القادمة',
+                'Deadline Alerts': 'تنبيهات المواعيد النهائية',
+                'No Scheduled Tasks': 'لا توجد مهام مجدولة',
+                'Schedule your first task': 'قم بجدولة موعد الاختبار الأول لبدء إدارة مواعيد المختبر.',
+                'No Expired Deadlines': 'لا توجد مواعيد نهائية منتهية الصلاحية',
+                'All deadlines are current': 'جميع المواعيد النهائية المجدولة حالية بانتظار التنفيذ.',
+                'View': 'عرض',
+                'Complete': 'اكتمال',
+                'Concrete Testing': 'اختبارات <span>الخرسانة</span>'
+            }
+        };
+    </script>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="../../components.js"></script>
+</body>
+</html>

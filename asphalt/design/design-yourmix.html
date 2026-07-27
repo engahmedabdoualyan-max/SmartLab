@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Design Your Mix</title>
+    <link rel="icon" href="../favicon.ico">
+    <link rel="stylesheet" href="design-common.css">
+    <style>
+        :root { --accent-page: #10b981; }
+        body { color-scheme: dark; }
+        .breadcrumb a, .page-title span, .design-title, .design-icon,
+        .back-btn, .back-btn:hover, .notes-title, .notes-list li::before,
+        .comp-title, .band-btn, .band-btn:hover, .band-btn.active,
+        .criteria-name, .pg-grade, .aging-title, .climate-name,
+        .chart-title, .formula-title, .layout-title, .equip-name { color: var(--accent-page); }
+        .design-icon { background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.4); }
+        .back-btn { background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.2); }
+        .back-btn:hover { background: rgba(16,185,129,0.2); }
+        .notes-section { background: rgba(16,185,129,0.04); border-color: rgba(16,185,129,0.1); }
+        .mix-component, .criteria-card, .pg-card, .aging-card, .equip-card, .spec-item { background: rgba(16,185,129,0.05); border-color: rgba(16,185,129,0.1); }
+        .criteria-card:hover, .pg-card:hover, .equip-card:hover { border-color: rgba(16,185,129,0.3); }
+        .band-btn, .band-btn { background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.2); color: var(--accent-page); }
+        .band-btn:hover, .band-btn.active { background: rgba(16,185,129,0.2); border-color: var(--accent-page); }
+        .mix-table th, .band-table th, .traffic-table th { color: var(--accent-page); }
+        .chart-section, .formula-section, .climate-map, .layout-section { background: rgba(16,185,129,0.04); border-color: rgba(16,185,129,0.1); }
+        .criteria-name, .aging-title { border-color: rgba(16,185,129,0.15); }
+    </style>
+
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="page">
+        <nav class="breadcrumb">
+            <a href="../asphalt.html">Asphalt & Marshall</a>
+            <span>/</span>
+            <a href="design-guideline.html">Design Guidelines</a>
+            <span>/</span>
+            <span>Design Your Mix</span>
+        </nav>
+        <h1 class="page-title">Design <span>Your Mix</span></h1>
+        <p class="page-sub">Upload gradation data or enter manually, then run optimizer to get optimal AC% and mix proportions per AASHTO T 245 / ECP 104</p>
+
+        <!-- Step 1: Design Code -->
+        <section class="section">
+                <div class="section-header">
+                    <div class="section-title">1. Choose Design Code</div>
+                    <span class="badge badge-active" id="codeBadge">AASHTO T 245</span>
+                </div>
+                <div class="code-grid" id="codeGrid">
+                    <div class="code-btn active" onclick="setDesignCode(this, 'AASHTO T 245')">
+                        AASHTO T 245<div class="code-label">Marshall (Primary)<span class="code-badge">PRIMARY</span></div>
+                    </div>
+                    <div class="code-btn" onclick="setDesignCode(this, 'ECP 104')">
+                        ECP 104<div class="code-label">Egyptian Code</div>
+                    </div>
+                    <div class="code-btn" onclick="setDesignCode(this, 'Saudi MOC/MOMRA')">
+                        Saudi MOC/MOMRA<div class="code-label">Saudi Specs</div>
+                    </div>
+                    <div class="code-btn" onclick="setDesignCode(this, 'Asphalt Institute MS-2')">
+                        AI MS-2<div class="code-label">Asphalt Institute</div>
+                    </div>
+                </div>
+        </section>
+
+        <!-- Step 2: Mix Class -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-title">2. Mix Class</div>
+                <span class="badge" id="classBadge" style="background:var(--accent-blue);color:#fff;">Class D — Standard Surface</span>
+            </div>
+            <div class="class-grid">
+                <div class="class-btn" onclick="setClass(this, 'A')"><div class="class-letter">A</div><div class="class-desc">Wearing Course</div></div>
+                <div class="class-btn" onclick="setClass(this, 'B')"><div class="class-letter">B</div><div class="class-desc">Binder Course</div></div>
+                <div class="class-btn" onclick="setClass(this, 'C')"><div class="class-letter">C</div><div class="class-desc">Base Course</div></div>
+                <div class="class-btn active" onclick="setClass(this, 'D')"><div class="class-letter">D</div><div class="class-desc">Standard Course</div></div>
+            </div>
+        </section>
+
+        <!-- Step 3: Two column layout -->
+        <div class="two-col">
+            <!-- SIDEBAR: Crusher + Material Properties -->
+            <aside class="sidebar">
+                <div class="sidebar-title">⚙️ Aggregate Setup</div>
+
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Crusher / Source Name</label>
+                    <input type="text" class="sidebar-input" id="crusherName" value="Main Crusher Plant" onchange="updateCrusher('name', this.value)">
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Crusher Type</label>
+                    <select class="sidebar-input" id="crusherType" onchange="updateCrusher('type', this.value)">
+                        <option>Jaw Crusher</option><option>Cone Crusher</option><option>Jaw + Cone</option><option>Impact Crusher</option><option>VSI</option>
+                    </select>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Location / Quarry</label>
+                    <input type="text" class="sidebar-input" id="crusherLoc" value="Quarry Site A" onchange="updateCrusher('loc', this.value)">
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Capacity (t/h)</label>
+                    <input type="number" class="sidebar-input" id="crusherCap" value="250" onchange="updateCrusher('cap', this.value)">
+                </div>
+
+                <hr style="border: none;border-top: 1px solid var(--border-glass);margin: 16px 0;">
+
+                <div class="sidebar-title" style="color: var(--accent-cyan);">⚗️ Material Properties</div>
+                <div class="prop-grid">
+                    <div class="prop-item"><div class="prop-label">Bulk SG</div><input type="number" step="0.01" value="2.65" class="sidebar-input" style="text-align:center" onchange="updateMatProp('bulkSG', this.value)"></div>
+                    <div class="prop-item"><div class="prop-label">App. SG</div><input type="number" step="0.01" value="2.72" class="sidebar-input" style="text-align:center" onchange="updateMatProp('appSG', this.value)"></div>
+                    <div class="prop-item"><div class="prop-label">Absorption %</div><input type="number" step="0.1" value="1.2" class="sidebar-input" style="text-align:center" onchange="updateMatProp('absorption', this.value)"></div>
+                    <div class="prop-item"><div class="prop-label">LAA Loss %</div><input type="number" step="1" value="22" class="sidebar-input" style="text-align:center" onchange="updateMatProp('laa', this.value)"></div>
+                    <div class="prop-item"><div class="prop-label">Flakiness %</div><input type="number" step="1" value="15" class="sidebar-input" style="text-align:center" onchange="updateMatProp('flakiness', this.value)"></div>
+                    <div class="prop-item"><div class="prop-label">Elongation %</div><input type="number" step="1" value="12" class="sidebar-input" style="text-align:center" onchange="updateMatProp('elongation', this.value)"></div>
+                </div>
+
+                <div style="margin-top: 12px;padding: 8px;background: rgba(251,191,36,0.05);border-radius: var(--radius-sm);font-size: 10px;color: var(--text-muted);line-height: 1.6;">
+                    <strong style="color: var(--accent-gold);">Note:</strong> These properties feed the design table. Verify against selected design code limits before optimization.
+                </div>
+            </aside>
+
+            <!-- MAIN AREA -->
+            <div class="main-area">
+                <!-- Tab Switcher -->
+                <div class="tab-switcher">
+                    <div class="tab-btn active" onclick="setTab('manual', this)">📝 Manual Input</div>
+                    <div class="tab-btn" onclick="setTab('upload', this)">📁 Upload File</div>
+                </div>
+
+                <!-- MANUAL INPUT TAB -->
+                <div id="tabManual">
+                    <section class="section">
+                        <div class="section-header">
+                            <div class="section-title">Aggregate Gradation (%)</div>
+                            <span style="font-size: 11px; color: var(--text-muted);">Enter % passing each sieve (0-100)</span>
+                        </div>
+                        <div class="table-container">
+                            <table class="grad-table">
+                                <thead>
+                                    <tr style="background: rgba(59,130,246,0.1);">
+                                        <th colspan="2">Component</th>
+                                        <th id="sieveHeaderRow"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="gradTableBody"></tbody>
+                                <tr class="target-row">
+                                    <td colspan="2"><strong>Target Gradation</strong></td>
+                                    <td id="targetRow"></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="action-row" style="margin-top: 16px;">
+                            <button class="btn btn-emerald" onclick="runOptimizer()">🚀 Run Optimizer</button>
+                            <button class="btn btn-secondary" onclick="resetGrads()">↺ Reset to Defaults</button>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- UPLOAD TAB -->
+                <div id="tabUpload" style="display:none;">
+                    <section class="section">
+                        <div class="section-header">
+                            <div class="section-title">Upload Gradation File</div>
+                            <span style="font-size:11px;color:var(--text-muted)">CSV • TSV • TXT • JSON • PDF • JPG/PNG</span>
+                        </div>
+                        <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleDrop(event)">
+                            <div class="drop-zone-icon">📥</div>
+                            <div class="drop-zone-text" id="dropText">Drop file here or click to browse</div>
+                            <div class="drop-zone-hint">CSV • TSV • TXT • JSON • PDF • JPG/PNG</div>
+                            <input type="file" accept=".csv,.tsv,.txt,.json,.pdf,.jpg,.jpeg,.png" class="hidden" id="fileInput" onchange="handleFileSelect(this.files[0])">
+                        </div>
+
+                        <!-- Parse Status -->
+                        <div id="parseStatus" style="margin-top: 12px;"></div>
+
+                        <!-- File Format Guide -->
+                        <div class="format-guide">
+                            <div style="font-weight:600;color:var(--accent-blue);margin-bottom:8px;font-size:12px;">Supported Formats</div>
+                            <pre>CSV / TSV / TXT (rows = components, cols = sieves):
+Component,37.5,25,19,12.5,9.5,4.75,2.36,1.18,0.6,0.3,0.15,0.075
+Bin4,100,92,55,12,3,1,0,0,0,0,0,0
+Bin3,100,100,98,78,30,4,1,0,0,0,0,0
+Bin2,100,100,100,100,92,28,6,2,1,0,0,0
+Sand,100,100,100,100,100,96,72,52,36,22,12,6
+Natural,100,100,100,100,100,99,92,76,56,30,10,3
+Filler,100,100,100,100,100,100,100,100,100,98,92,82
+
+JSON format:
+{ "gradations": { "a4": [100,92,55,...], "a3": [...], ... } }</pre>
+                        </div>
+
+                        <!-- Image preview -->
+                        <div id="imagePreview" style="margin-top:12px;display:none;text-align:center;"></div>
+
+                        <!-- Results from uploaded file -->
+                        <div id="uploadResult" style="margin-top:12px;display:none;">
+                            <div class="status-bar status-ok" id="uploadStatus">✅ Parsed successfully</div>
+                            <div class="action-row">
+                                <button class="btn btn-emerald" onclick="runOptimizer()">🚀 Run Optimizer</button>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- RESULTS PANEL -->
+                <div id="resultsPanel" style="display:none;">
+                    <section class="section">
+                        <div class="section-header">
+                            <div class="section-title">🎯 Optimization Results</div>
+                            <span id="passBadge" class="badge badge-pass">✓ PASS</span>
+                        </div>
+
+                        <div class="two-col">
+                            <!-- Optimal Proportions -->
+                            <div>
+                                <h3 style="font-size:14px;font-weight:600;color:var(--accent-gold);margin-bottom:12px;">Optimal Proportions</h3>
+                                <div id="proportionsList" style="display:flex;flex-direction:column;gap:8px;"></div>
+                            </div>
+                            <!-- Key Metrics -->
+                            <div>
+                                <h3 style="font-size:14px;font-weight:600;color:var(--accent-gold);margin-bottom:12px;">Key Metrics</h3>
+                                <div class="prop-grid" style="grid-template-columns:1fr 1fr;">
+                                    <div class="result-card"><div class="result-label">Optimal AC %</div><div class="result-value" id="resAC">--</div><div class="result-unit">%</div></div>
+                                    <div class="result-card"><div class="result-label">Aggregate Weight</div><div class="result-value" id="resAggWt">--</div><div class="result-unit">kg / ton</div></div>
+                                    <div class="result-card"><div class="result-label">Stability</div><div class="result-value" id="resStab">--</div><div class="result-unit">N</div></div>
+                                    <div class="result-card"><div class="result-label">Flow</div><div class="result-value" id="resFlow">--</div><div class="result-unit">mm</div></div>
+                                    <div class="result-card"><div class="result-label">Air Voids (Va)</div><div class="result-value" id="resVa">--</div><div class="result-unit">% (target 4%)</div></div>
+                                    <div class="result-card"><div class="result-label">VMA</div><div class="result-value" id="resVma">--</div><div class="result-unit">%</div></div>
+                                    <div class="result-card"><div class="result-label">VFB</div><div class="result-value" id="resVfb">--</div><div class="result-unit">%</div></div>
+                                    <div class="result-card"><div class="result-label">MQ (Stab/Flow)</div><div class="result-value" id="resMq">--</div><div class="result-unit">kN/mm</div></div>
+                                    <div class="result-card"><div class="result-label">Gmm (Theoretical Max)</div><div class="result-value" id="resGmm">--</div><div class="result-unit">—</div></div>
+                                    <div class="result-card"><div class="result-label">Gmb (Bulk Density)</div><div class="result-value" id="resGmb">--</div><div class="result-unit">kg/m³</div></div>
+                                </div>
+                                <div id="resPassFail" style="margin-top:16px;padding:12px;border-radius:var(--radius-sm);text-align:center;font-weight:700;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Gradation Chart -->
+                        <div class="chart-container" style="margin-top:16px;">
+                            <div style="font-size:12px;font-weight:600;color:var(--accent-blue);margin-bottom:8px;">📈 Combined Gradation vs Specification</div>
+                            <svg id="resultChart" viewBox="0 0 720 420" style="width:100%;height:auto;" direction="ltr"></svg>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+
+        <a href="../asphalt.html" class="btn btn-secondary" style="margin-top: 16px;">← Back to Asphalt & Marshall</a>
+
+        <!-- Design Assistant -->
+        <section class="section" id="assistantSection" style="margin-top: 32px; display: none;">
+            <div class="section-header">
+                <div class="section-title">🤖 Mix Design Assistant</div>
+                <span class="badge" id="assistantBadge" style="background: var(--accent-emerald); color: #fff;">Analyzing</span>
+            </div>
+            <div style="font-size:13px;color:var(--text-dim);margin-bottom:16px;">
+                Technical review per AASHTO M 323 / ECP 104 — validates gradation, bitumen content, volumetric parameters, and Marshall criteria
+            </div>
+            <div id="assistantContent" style="display:flex;flex-direction:column;gap:12px;"></div>
+        </section>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <script>
+        const SIEVES = [37.5, 25, 19, 12.5, 9.5, 4.75, 2.36, 1.18, 0.6, 0.3, 0.15, 0.075];
+        const AGG_KEYS = ['a4', 'a3', 'a2', 'a1', 'ns', 'fl'];
+        const AGG_NAMES = { a4: 'Bin 4 (Coarse)', a3: 'Bin 3 (Med)', a2: 'Bin 2 (Chips)', a1: 'Bin 1 (Sand)', ns: 'Natural Sand', fl: 'Filler' };
+        const AGG_DEFAULTS = {
+            a4: [100,100,92,55,12,3,1,0,0,0,0,0],
+            a3: [100,100,100,98,78,30,4,1,0,0,0,0],
+            a2: [100,100,100,100,100,92,28,6,2,1,0,0],
+            a1: [100,100,100,100,100,100,96,72,52,36,22,12],
+            ns:  [100,100,100,100,100,100,99,92,76,56,30,10],
+            fl:  [100,100,100,100,100,100,100,100,100,100,98,92],
+        };
+
+        const MIX_CLASSES = {
+            A: { name: 'Wearing Course', nmas: 19, bitumen: [4.0, 6.0], default: 5.0,
+                specLow: [100, 100, 90, 60, 45, 25, 15, 10, 6, 4, 2, 0],
+                specHigh: [100, 100, 100, 100, 100, 80, 65, 50, 40, 30, 20, 12],
+                vmaMin: 13, stabMin: 7500,
+                aggregates: [{key:'a4',pct:25},{key:'a3',pct:20},{key:'a2',pct:15},{key:'a1',pct:30},{key:'ns',pct:5},{key:'fl',pct:5}] },
+            B: { name: 'Binder Course', nmas: 19, bitumen: [4.0, 6.0], default: 5.0,
+                specLow: [100, 100, 90, 60, 42, 22, 12, 8, 5, 3, 2, 0],
+                specHigh: [100, 100, 100, 100, 100, 80, 65, 50, 40, 30, 20, 12],
+                vmaMin: 13, stabMin: 7500,
+                aggregates: [{key:'a4',pct:30},{key:'a3',pct:20},{key:'a2',pct:10},{key:'a1',pct:28},{key:'ns',pct:7},{key:'fl',pct:5}] },
+            C: { name: 'Base Course', nmas: 25, bitumen: [3.5, 5.5], default: 4.5,
+                specLow: [100, 90, 70, 50, 35, 20, 12, 8, 5, 3, 2, 0],
+                specHigh: [100, 100, 100, 100, 100, 80, 65, 50, 40, 30, 22, 12],
+                vmaMin: 12, stabMin: 5000,
+                aggregates: [{key:'a4',pct:20},{key:'a3',pct:25},{key:'a2',pct:20},{key:'a1',pct:25},{key:'ns',pct:5},{key:'fl',pct:5}] },
+            D: { name: 'Standard Surface', nmas: 12.5, bitumen: [4.0, 6.0], default: 5.2,
+                specLow: [100, 100, 100, 90, 55, 35, 20, 13, 9, 5, 3, 0],
+                specHigh: [100, 100, 100, 100, 100, 85, 70, 55, 42, 32, 22, 12],
+                vmaMin: 14, stabMin: 7500,
+                aggregates: [{key:'a4',pct:12},{key:'a3',pct:18},{key:'a2',pct:20},{key:'a1',pct:35},{key:'ns',pct:10},{key:'fl',pct:5}] }
+        };
+
+        let currentClass = 'D';
+        let designCode = 'AASHTO T 245';
+        let grads = {};
+        let optimalResult = null;
+        let uploadedGrads = null;
+        let matProps = { bulkSG: 2.65, appSG: 2.72, absorption: 1.2, laa: 22, flakiness: 15, elongation: 12 };
+        let crusherProps = { name: 'Main Crusher Plant', type: 'Jaw Crusher', loc: 'Quarry Site A', cap: 250 };
+
+        function init() {
+            buildSieveHeaders();
+            resetGrads();
+            renderTable();
+            updateTarget();
+        }
+
+        function buildSieveHeaders() {
+            const headerEl = document.getElementById('sieveHeaderRow');
+            if (headerEl) headerEl.outerHTML = SIEVES.map(s => `<th style="font-family:'SF Mono',monospace;font-size:10px;">${s} mm</th>`).join('');
+            const targetEl = document.getElementById('targetRow');
+            if (targetEl) targetEl.outerHTML = SIEVES.map((_, i) => `<td id="target-${i}" style="font-family:'SF Mono',monospace;">--</td>`).join('');
+        }
+
+        function resetGrads() {
+            uploadedGrads = null;
+            grads = {};
+            AGG_KEYS.forEach(k => { grads[k] = [...AGG_DEFAULTS[k]]; });
+            if (optimalResult) { optimalResult = null; document.getElementById('resultsPanel').style.display = 'none'; }
+            renderTable();
+            updateTarget();
+        }
+
+        function setDesignCode(btn, code) {
+            designCode = code;
+            document.querySelectorAll('.code-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('codeBadge').textContent = code;
+        }
+
+        function setClass(btn, cls) {
+            currentClass = cls;
+            document.querySelectorAll('.class-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const def = MIX_CLASSES[cls];
+            document.getElementById('classBadge').textContent = `Class ${cls} — ${def.name}`;
+            resetGrads();
+            renderTable();
+            updateTarget();
+            if (optimalResult) { optimalResult = null; document.getElementById('resultsPanel').style.display = 'none'; document.getElementById('assistantSection').style.display = 'none'; }
+        }
+
+        function updateTarget() {
+            const def = MIX_CLASSES[currentClass];
+            SIEVES.forEach((_, i) => {
+                const el = document.getElementById('target-' + i);
+                if (el) el.textContent = ((def.specLow[i] + def.specHigh[i]) / 2).toFixed(0);
+            });
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('gradTableBody');
+            tbody.innerHTML = AGG_KEYS.map((k, ri) => `
+                <tr style="${ri % 2 === 0 ? '' : 'background:rgba(30,41,59,0.2);'}">
+                    <td style="font-weight:600;color:var(--text-primary)">${AGG_NAMES[k]}</td>
+                    <td style="font-size:10px;color:var(--text-muted)">${AGG_NAMES[k].split('(')[0].trim()}</td>
+                    ${grads[k].map((v, i) => `<td><input type="number" min="0" max="100" step="0.1" value="${v}" onchange="updateGrad('${k}',${i},parseFloat(this.value)||0)"></td>`).join('')}
+                </tr>
+            `).join('');
+        }
+
+        function updateGrad(key, idx, val) {
+            if (!grads[key]) return;
+            grads[key][idx] = Math.max(0, Math.min(100, val || 0));
+        }
+
+        function setTab(tab, btn) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('tabManual').style.display = tab === 'manual' ? '' : 'none';
+            document.getElementById('tabUpload').style.display = tab === 'upload' ? '' : 'none';
+        }
+
+        /* ===== OPTIMIZER ===== */
+        function midBand(low, high) { return low.map((l, i) => (l + high[i]) / 2); }
+        function getTarget() {
+            const def = MIX_CLASSES[currentClass];
+            return midBand(def.specLow, def.specHigh);
+        }
+
+        function errorOf(p, keys, componentGrads, target) {
+            const total = p.reduce((s, v) => s + v, 0);
+            if (total <= 0) return Infinity;
+            let e = 0;
+            SIEVES.forEach((_, idx) => {
+                let c = 0;
+                keys.forEach((k, ki) => { c += (p[ki] / total) * componentGrads[k][idx]; });
+                e += (c - target[idx]) ** 2;
+            });
+            return e;
+        }
+
+        function optimizeProportions(keys, componentGrads, initial) {
+            const target = getTarget();
+            let best = initial.map(i => i.pct);
+            let bestErr = Infinity;
+            for (let it = 0; it < 3000; it++) {
+                const trial = best.map(v => {
+                    const delta = (Math.random() - 0.5) * 4 * (1 - it / 3000);
+                    return Math.max(0, Math.min(60, v + delta));
+                });
+                const s = trial.reduce((a, b) => a + b, 0);
+                if (s === 0) continue;
+                const norm = trial.map(v => (v / s) * 100);
+                const err = errorOf(norm, keys, componentGrads, target);
+                if (err < bestErr) { bestErr = err; best = norm; }
+            }
+            return keys.map((k, i) => ({ key: k, pct: Math.round(best[i] * 10) / 10 }));
+        }
+
+        function estimateMarshall(ac, combinedCurve, mixClass) {
+            const def = MIX_CLASSES[mixClass];
+            const Gb = 1.03;
+            const Gsb = matProps.bulkSG;
+            const Ps = 100 - ac;
+
+            const Gse = Gsb * (1 + matProps.absorption / 100);
+            const Gmm = 100 / ((ac / Gb) + (Ps / Gse));
+            const Va = 4.0;
+            const Gmb = Gmm * (1 - Va / 100);
+            const VMA = 100 - (Gmb * Ps / Gsb);
+            const VFB = VMA > 0 ? ((VMA - Va) / VMA) * 100 : 0;
+
+            const laaFactor = Math.max(0.4, 1 - (matProps.laa - 20) / 100);
+            const distFromOpt = Math.abs(ac - def.default);
+            const stability = Math.round(Math.max(0, (9500 - distFromOpt * 3000)) * laaFactor);
+            const flow = Math.round((Math.max(1.0, 2.0 + (ac - def.default) * 1.5)) * 10) / 10;
+            const mq = flow > 0 ? Math.round(((stability / 1000) / flow) * 100) / 100 : 0;
+
+            const acOk = ac >= def.bitumen[0] && ac <= def.bitumen[1];
+            const vaOk = Va >= 3 && Va <= 5;
+            const vmaOk = VMA >= def.vmaMin;
+            const vfbOk = VFB >= 65 && VFB <= 80;
+            const stabOk = stability >= def.stabMin;
+            const flowOk = flow >= 2 && flow <= 4;
+            const mqOk = mq >= 1.5;
+
+            return {
+                stability, flow, airVoids: Va, vma: Math.round(VMA * 10) / 10,
+                vfb: Math.round(VFB * 10) / 10, mq,
+                gmm: Math.round(Gmm * 1000) / 1000,
+                gmb: Math.round(Gmb * 1000) / 1000,
+                density: Math.round(Gmb * 1000),
+                pass: acOk && vaOk && vmaOk && vfbOk && stabOk && flowOk && mqOk
+            };
+        }
+
+        function runOptimizer() {
+            const def = MIX_CLASSES[currentClass];
+            const keys = AGG_KEYS;
+            const initial = def.aggregates.map(a => ({ key: a.key, pct: a.pct }));
+            const optimal = optimizeProportions(keys, grads, initial);
+            const target = getTarget();
+
+            let bestAC = def.default;
+            let bestScore = -Infinity;
+            for (let ac = def.bitumen[0]; ac <= def.bitumen[1]; ac += 0.1) {
+                const combined = SIEVES.map((_, idx) => {
+                    let s = 0;
+                    optimal.forEach(o => { s += (o.pct / 100) * grads[o.key][idx]; });
+                    return s;
+                });
+                const m = estimateMarshall(ac, combined, currentClass);
+                let score = 0;
+                if (m.pass) score += 100;
+                if (m.stability >= def.stabMin) score += 15;
+                else score -= 20;
+                if (m.flow >= 2 && m.flow <= 4) score += 10;
+                else score -= 15;
+                if (m.airVoids >= 3 && m.airVoids <= 5) score += 15;
+                else score -= 20;
+                if (m.vma >= def.vmaMin) score += 10;
+                else score -= 15;
+                if (m.mq >= 1.5) score += 5;
+                if (m.vfb >= 65 && m.vfb <= 80) score += 10;
+                else score -= 10;
+                score -= Math.abs(m.airVoids - 4) * 8;
+                score -= Math.abs(ac - def.default) * 2;
+                if (score > bestScore) { bestScore = score; bestAC = Math.round(ac * 10) / 10; }
+            }
+
+            const combinedCurve = SIEVES.map((_, idx) => {
+                let s = 0;
+                optimal.forEach(o => { s += (o.pct / 100) * grads[o.key][idx]; });
+                return Math.round(s * 10) / 10;
+            });
+            const marshall = estimateMarshall(bestAC, combinedCurve, currentClass);
+            optimalResult = { proportions: optimal, ac: bestAC, combined: combinedCurve, marshall };
+            renderResults(optimalResult);
+            document.getElementById('resultsPanel').style.display = '';
+            document.getElementById('resultsPanel').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function renderResults(res) {
+            const def = MIX_CLASSES[currentClass];
+            const m = res.marshall;
+            const totalWeight = 1000;
+            const bitumenWt = (totalWeight * res.ac) / 100;
+            const aggWt = totalWeight - bitumenWt;
+
+            document.getElementById('resAC').textContent = res.ac.toFixed(1);
+            document.getElementById('resAggWt').textContent = aggWt.toFixed(0);
+            document.getElementById('resStab').textContent = m.stability.toLocaleString();
+            document.getElementById('resFlow').textContent = m.flow.toFixed(1);
+            document.getElementById('resVa').textContent = m.airVoids.toFixed(1);
+            document.getElementById('resVma').textContent = m.vma.toFixed(1);
+            document.getElementById('resVfb').textContent = m.vfb.toFixed(1);
+            document.getElementById('resMq').textContent = m.mq.toFixed(2);
+            document.getElementById('resGmm').textContent = m.gmm.toFixed(3);
+            document.getElementById('resGmb').textContent = m.density;
+
+            const passBadge = document.getElementById('passBadge');
+            passBadge.textContent = m.pass ? '✓ PASS' : '✗ FAIL';
+            passBadge.className = 'badge ' + (m.pass ? 'badge-pass' : 'badge-fail');
+
+            const passFail = document.getElementById('resPassFail');
+            passFail.innerHTML = m.pass
+                ? `<span style="color:var(--accent-emerald)">✓ All Marshall criteria met (VMA ≥ ${def.vmaMin}%, Stab ≥ ${def.stabMin} N) — design is acceptable</span>`
+                : '<span style="color:var(--accent-red)">✗ Some criteria not met — review and adjust</span>';
+            passFail.style.cssText = m.pass
+                ? 'padding:12px;border-radius:var(--radius-sm);text-align:center;font-weight:700;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:var(--accent-emerald)'
+                : 'padding:12px;border-radius:var(--radius-sm);text-align:center;font-weight:700;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:var(--accent-red)';
+
+            document.getElementById('proportionsList').innerHTML = res.proportions.map(p => {
+                const pct = p.pct;
+                const barWidth = Math.min(100, pct);
+                return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                    <span style="font-size:11px;color:var(--text-secondary);width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${AGG_NAMES[p.key]}</span>
+                    <div style="flex:1;background:rgba(255,255,255,0.05);border-radius:3px;height:8px;overflow:hidden;">
+                        <div style="width:${barWidth}%;height:100%;background:linear-gradient(90deg,var(--accent-blue),var(--accent-gold));border-radius:3px;"></div>
+                    </div>
+                    <span style="font-size:11px;color:var(--accent-gold);font-weight:600;width:40px;text-align:right;">${pct.toFixed(1)}%</span>
+                </div>`;
+            }).join('');
+
+            renderResultChart(res.combined, def);
+            updateAssistant(res);
+        }
+
+        function renderResultChart(combined, def) {
+            const W = 720, H = 420;
+            const P = { t: 22, r: 22, b: 54, l: 48 };
+            const iW = W - P.l - P.r, iH = H - P.t - P.b;
+            const logMin = Math.log10(0.075), logMax = Math.log10(37.5);
+            const xOf = (mm) => P.l + ((Math.log10(mm) - logMin) / (logMax - logMin)) * iW;
+            const yOf = (pct) => P.t + (1 - pct / 100) * iH;
+
+            const pathFrom = (vals) => SIEVES.map((s, i) => `${i === 0 ? 'M' : 'L'} ${xOf(s).toFixed(1)} ${yOf(vals[i]).toFixed(1)}`).join(' ');
+            const areaPath = [...SIEVES.map((s, i) => `${i === 0 ? 'M' : 'L'} ${xOf(s).toFixed(1)} ${yOf(def.specHigh[i]).toFixed(1)}`), ...[...SIEVES].reverse().map((s, i) => `L ${xOf(s).toFixed(1)} ${yOf(def.specLow[SIEVES.length - 1 - i]).toFixed(1)}`), 'Z'].join('');
+
+            document.getElementById('resultChart').innerHTML = `
+                <defs><linearGradient id="specGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#10b981" stop-opacity="0.28"/><stop offset="100%" stop-color="#10b981" stop-opacity="0.08"/></linearGradient></defs>
+                <rect x="${P.l}" y="${P.t}" width="${iW}" height="${iH}" fill="#0f172a" stroke="#334155" rx="2"/>
+                ${[0,20,40,60,80,100].map(p => `<line x1="${P.l}" x2="${P.l + iW}" y1="${yOf(p)}" y2="${yOf(p)}" stroke="#1e293b" stroke-width="1"/><text x="${P.l - 7}" y="${yOf(p) + 4}" font-size="11" fill="#94a3b8" text-anchor="end">${p}%</text>`).join('')}
+                ${SIEVES.map(s => `<line x1="${xOf(s)}" x2="${xOf(s)}" y1="${P.t}" y2="${P.t + iH}" stroke="#1e293b" stroke-width="1"/><text x="${xOf(s)}" y="${P.t + iH + 16}" font-size="10" fill="#94a3b8" text-anchor="middle">${s}</text>`).join('')}
+                <path d="${areaPath}" fill="url(#specGrad)" stroke="none"/>
+                <path d="${pathFrom(def.specHigh)}" fill="none" stroke="#10b981" stroke-width="1.8" stroke-dasharray="4 3"/>
+                <path d="${pathFrom(def.specLow)}" fill="none" stroke="#10b981" stroke-width="1.8" stroke-dasharray="4 3"/>
+                <path d="${pathFrom(combined)}" fill="none" stroke="#fbbf24" stroke-width="3"/>
+                ${SIEVES.map((s, i) => `<circle cx="${xOf(s)}" cy="${yOf(combined[i])}" r="4" fill="#fbbf24" stroke="#0f172a" stroke-width="1"/>`).join('')}
+                <text x="${P.l + iW / 2}" y="${H - 16}" font-size="12" fill="#cbd5e1" text-anchor="middle">Sieve Size (mm)</text>
+                <text x="${-(P.t + iH / 2)}" y="16" font-size="12" fill="#cbd5e1" text-anchor="middle" transform="rotate(-90)">% Passing</text>
+                <g transform="translate(${P.l + 14}, ${P.t + 12})"><rect width="190" height="54" fill="#0b1220" stroke="#334155" rx="4"/><line x1="10" y1="20" x2="34" y2="20" stroke="#fbbf24" stroke-width="3"/><text x="40" y="24" font-size="11" fill="#fbbf24">Combined</text><line x1="10" y1="40" x2="34" y2="40" stroke="#10b981" stroke-width="1.8" stroke-dasharray="4 3"/><text x="40" y="44" font-size="11" fill="#10b981">Spec Limits</text></g>
+            `;
+        }
+
+        function updateCrusher(field, val) {
+            crusherProps[field] = val;
+        }
+        function updateMatProp(field, val) {
+            const n = parseFloat(val);
+            matProps[field] = isNaN(n) ? val : n;
+        }
+
+        /* ===== DESIGN ASSISTANT ===== */
+        function updateAssistant(res) {
+            const def = MIX_CLASSES[currentClass];
+            const m = res.marshall;
+            const combined = res.combined;
+            const totalPct = res.proportions.reduce((s, p) => s + p.pct, 0);
+
+            document.getElementById('assistantSection').style.display = '';
+
+            const checks = [];
+
+            const sieveViolations = SIEVES.filter((s, i) => combined[i] < def.specLow[i] || combined[i] > def.specHigh[i]);
+            checks.push({
+                label: 'Gradation Compliance',
+                ok: sieveViolations.length === 0,
+                detail: sieveViolations.length === 0
+                    ? `All ${SIEVES.length} sieve points within Class ${currentClass} spec limits`
+                    : `Out of spec at: ${sieveViolations.map(s => s + ' mm').join(', ')}`,
+                code: sieveViolations.length === 0 ? 'AASHTO M 323 ✓' : 'AASHTO M 323 ✗'
+            });
+
+            const ac = res.ac;
+            const acOk = ac >= def.bitumen[0] && ac <= def.bitumen[1];
+            checks.push({
+                label: 'Optimal AC Content',
+                ok: acOk,
+                detail: `${ac.toFixed(1)}% — Range: ${def.bitumen[0]}% to ${def.bitumen[1]}%`,
+                code: acOk ? 'ECP 104 ✓' : 'ECP 104 ✗'
+            });
+
+            const airVoidsOk = m.airVoids >= 3 && m.airVoids <= 5;
+            checks.push({
+                label: 'Air Voids (Va)',
+                ok: airVoidsOk,
+                detail: `${m.airVoids.toFixed(1)}% — Required: 3% to 5%`,
+                code: airVoidsOk ? 'AASHTO T 245 ✓' : 'AASHTO T 245 ✗'
+            });
+
+            const vmaOk = m.vma >= def.vmaMin;
+            checks.push({
+                label: 'VMA (Voids in Mineral Aggregate)',
+                ok: vmaOk,
+                detail: `${m.vma.toFixed(1)}% — Min ${def.vmaMin}% (NMAS ${def.nmas}mm per AASHTO M 323 Table 3)`,
+                code: vmaOk ? 'AASHTO M 323 ✓' : 'AASHTO M 323 ✗'
+            });
+
+            const vfbOk = m.vfb >= 65 && m.vfb <= 80;
+            checks.push({
+                label: 'VFB (Voids Filled with Bitumen)',
+                ok: vfbOk,
+                detail: `${m.vfb.toFixed(1)}% — Required: 65% to 80% (AASHTO M 323)`,
+                code: vfbOk ? 'AASHTO M 323 ✓' : 'AASHTO M 323 ✗'
+            });
+
+            const stabOk = m.stability >= def.stabMin;
+            checks.push({
+                label: 'Marshall Stability',
+                ok: stabOk,
+                detail: `${m.stability.toLocaleString()} N — Min: ${def.stabMin.toLocaleString()} N (75 blows, AASHTO T 245)`,
+                code: stabOk ? 'AASHTO T 245 ✓' : 'AASHTO T 245 ✗'
+            });
+
+            const flowOk = m.flow >= 2 && m.flow <= 4;
+            checks.push({
+                label: 'Flow Value',
+                ok: flowOk,
+                detail: `${m.flow.toFixed(1)} mm — Required: 2 to 4 mm`,
+                code: flowOk ? 'AASHTO T 245 ✓' : 'AASHTO T 245 ✗'
+            });
+
+            const mqOk = m.mq >= 1.5;
+            checks.push({
+                label: 'Marshall Quotient (MQ)',
+                ok: mqOk,
+                detail: `${m.mq.toFixed(2)} kN/mm — Minimum: 1.5`,
+                code: mqOk ? '✓' : '✗'
+            });
+
+            const aggSumOk = Math.abs(totalPct - 100) <= 0.5;
+            checks.push({
+                label: 'Aggregate Proportions Sum',
+                ok: aggSumOk,
+                detail: `${totalPct.toFixed(1)}% — Should equal 100%`,
+                code: aggSumOk ? '✓' : '✗'
+            });
+
+            const laaOk = matProps.laa <= 30;
+            checks.push({
+                label: 'LAA Abrasion',
+                ok: laaOk,
+                detail: `${matProps.laa}% loss — Max recommended: 30%`,
+                code: laaOk ? 'AASHTO T 96 ✓' : 'AASHTO T 96 ✗'
+            });
+
+            const flakOk = matProps.flakiness <= 25;
+            checks.push({
+                label: 'Flakiness Index',
+                ok: flakOk,
+                detail: `${matProps.flakiness}% — Max recommended: 25%`,
+                code: flakOk ? 'BS 812 ✓' : 'BS 812 ✗'
+            });
+
+            const allPass = checks.every(c => c.ok);
+
+            const badge = document.getElementById('assistantBadge');
+            badge.textContent = allPass ? '✓ DESIGN APPROVED' : '⚠ NEEDS ADJUSTMENT';
+            badge.style.background = allPass ? 'var(--accent-emerald)' : 'var(--accent-red)';
+
+            const compaction = designCode === 'ECP 104' ? '75 blows (Heavy traffic)' : designCode === 'Asphalt Institute MS-2' ? '75 blows (Highways)' : '75 blows per AASHTO T 245';
+
+            document.getElementById('assistantContent').innerHTML = `
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                    ${checks.map(c => `
+                        <div style="background:rgba(15,23,42,0.6);border:1px solid ${c.ok ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'};padding:12px;border-radius:8px;">
+                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                                <span style="font-size:16px;">${c.ok ? '✅' : '❌'}</span>
+                                <span style="font-weight:600;color:${c.ok ? 'var(--accent-emerald)' : 'var(--accent-red)'};font-size:12px;">${c.label}</span>
+                            </div>
+                            <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px;">${c.detail}</div>
+                            <div style="font-size:10px;color:var(--text-muted);font-family:monospace;">${c.code}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div style="background:rgba(${allPass ? '16,185,129' : '239,68,68'},0.08);border:1px solid rgba(${allPass ? '16,185,129' : '239,68,68'},0.3);padding:14px;border-radius:8px;margin-top:4px;">
+                    <div style="font-weight:700;color:${allPass ? 'var(--accent-emerald)' : 'var(--accent-red)'};margin-bottom:4px;font-size:14px;">
+                        ${allPass ? '✓ MIX DESIGN APPROVED' : '⚠ DESIGN NEEDS ADJUSTMENT'}
+                    </div>
+                    <div style="font-size:12px;color:var(--text-dim);line-height:1.6;">
+                        ${allPass
+                            ? `Class ${currentClass} mix optimized at <strong>${ac.toFixed(1)}% AC</strong> with ${m.stability.toLocaleString()} N stability and ${m.flow.toFixed(1)} mm flow meets all Marshall criteria under ${designCode}. Recommended compaction: ${compaction}. Material: LAA ${matProps.laa}%, Bulk SG ${matProps.bulkSG}, App SG ${matProps.appSG}.`
+                            : `Correct the ${checks.filter(c => !c.ok).length} issue(s) above: ${checks.filter(c => !c.ok).map(c => c.label).join(', ')}. Re-run optimizer after adjustment.`
+                        }
+                    </div>
+                </div>
+            `;
+        }
+
+        /* ===== FILE UPLOAD ===== */
+        function handleDrop(event) {
+            event.preventDefault();
+            document.getElementById('dropZone').classList.remove('dragover');
+            const file = event.dataTransfer.files[0];
+            if (file) processFile(file);
+        }
+
+        function handleFileSelect(file) {
+            if (!file) return;
+            processFile(file);
+        }
+
+        function processFile(file) {
+            const status = document.getElementById('parseStatus');
+            const ext = file.name.toLowerCase().split('.').pop();
+
+            if (['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext)) {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    document.getElementById('imagePreview').style.display = '';
+                    document.getElementById('imagePreview').innerHTML = `<img src="${reader.result}" alt="Uploaded" style="max-width:100%;max-height:200px;border-radius:var(--radius-sm);border:1px solid var(--border-glass);"><p style="font-size:11px;color:var(--text-muted);margin-top:8px;">📸 Image loaded — read values and enter manually in the table above.</p>`;
+                    status.innerHTML = '<div class="status-bar status-err">📸 Image detected — please enter gradation values manually in the table.</div>';
+                };
+                reader.readAsDataURL(file);
+                return;
+            }
+
+            if (ext === 'pdf') {
+                status.innerHTML = '<div class="status-bar status-err">PDF detected — text extraction limited. Convert to CSV/JSON or enter manually.</div>';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const text = e.target.result;
+                let parsed = false;
+
+                if (ext === 'json') {
+                    try {
+                        const data = JSON.parse(text);
+                        if (data.gradations) {
+                            AGG_KEYS.forEach((k, i) => {
+                                if (data.gradations[k]) grads[k] = [...data.gradations[k]].slice(0, SIEVES.length);
+                            });
+                            parsed = true; status.innerHTML = '<div class="status-bar status-ok">✅ Parsed gradations from JSON file</div>';
+                        } else if (Array.isArray(data) && data.length > 0) {
+                            AGG_KEYS.forEach((k, i) => { if (data[i]) grads[k] = [...data[i]].slice(0, SIEVES.length); });
+                            parsed = true; status.innerHTML = '<div class="status-bar status-ok">✅ Parsed array of arrays from JSON</div>';
+                        }
+                    } catch (err) {
+                        status.innerHTML = '<div class="status-bar status-err">Invalid JSON format</div>';
+                    }
+                } else {
+                    const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+                    if (lines.length >= 2) {
+                        const firstLine = lines[0];
+                        const delimiter = firstLine.includes('\t') ? '\t' : firstLine.includes(';') ? ';' : ',';
+                        const headerParts = firstLine.split(delimiter).map(h => h.trim().toLowerCase());
+                        const isSieveHeader = headerParts.filter(h => !isNaN(parseFloat(h.replace(/[^0-9.]/g, '')))).length >= 4;
+
+                        let dataRows = [];
+                        if (isSieveHeader && lines.length > 1) {
+                            dataRows = lines.slice(1).map(l => l.split(delimiter).map(p => { const n = parseFloat(p.trim().replace(/["']/g, '')); return isNaN(n) ? null : n; }).filter(n => n !== null));
+                        } else {
+                            dataRows = lines.map(l => l.split(delimiter).map(p => { const n = parseFloat(p.trim().replace(/["']/g, '')); return isNaN(n) ? null : n; }).filter(n => n !== null));
+                        }
+
+                        if (dataRows.length >= 6) {
+                            AGG_KEYS.forEach((k, i) => {
+                                if (dataRows[i]) grads[k] = dataRows[i].slice(0, SIEVES.length).map(v => Math.max(0, Math.min(100, v)));
+                            });
+                            parsed = true;
+                            status.innerHTML = `<div class="status-bar status-ok">✅ Parsed ${dataRows.length} components from ${file.name}</div>`;
+                        }
+                    }
+                }
+
+                if (!parsed) {
+                    status.innerHTML = '<div class="status-bar status-err">Could not parse file. Use CSV/JSON format or enter manually.</div>';
+                } else {
+                    uploadedGrads = { ...grads };
+                    renderTable();
+                    updateTarget();
+                    document.getElementById('uploadResult').style.display = '';
+                    document.getElementById('uploadResult').scrollIntoView({ behavior: 'smooth' });
+                }
+            };
+
+            if (ext === 'pdf') {
+                status.innerHTML = '<div class="status-bar status-err">PDF not supported for direct parsing. Convert to CSV/JSON first.</div>';
+            } else {
+                reader.readAsText(file);
+            }
+        }
+
+         /* Init */
+         document.addEventListener('DOMContentLoaded', init);
+     </script>
+     <script src="../../components.js"></script>
+ </body>
+ </html>

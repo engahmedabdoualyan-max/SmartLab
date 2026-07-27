@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Compaction Curve</title>
+    <link rel="icon" href="../favicon.ico">
+    <link rel="stylesheet" href="design-common.css">
+    <style>
+        :root { --accent-page: #fb923c; }
+        body { color-scheme: dark; }
+        .design-icon { background: rgba(251,146,60,0.1); border-color: rgba(251,146,60,0.4); }
+        .back-btn { background: rgba(251,146,60,0.1); border-color: rgba(251,146,60,0.2); }
+        .back-btn:hover { background: rgba(251,146,60,0.2); }
+        .notes-section { background: rgba(251,146,60,0.04); border-color: rgba(251,146,60,0.1); }
+        .band-btn { background: rgba(251,146,60,0.1); border-color: rgba(251,146,60,0.2); color: var(--accent-orange); }
+        .band-btn:hover, .band-btn.active { background: rgba(251,146,60,0.2); border-color: var(--accent-orange); }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    <div class="page">
+        <nav class="breadcrumb">
+            <a href="../soil.html">Soil & Roads</a>
+            <span>/</span>
+            <a href="design-pavement.html">Design Tools</a>
+            <span>/</span>
+            <span>Compaction Curve</span>
+        </nav>
+        <h1 class="page-title">Compaction <span>Curve</span></h1>
+        <p class="page-sub">Standard & Modified Proctor Analysis — Plot dry density vs moisture content, determine MDD & OMC per AASHTO T 99/T 180 / ASTM D698/D1557</p>
+
+        <section class="design-section">
+            <div class="design-header">
+                <div class="design-icon">📊</div>
+                <div>
+                    <div class="design-title">Proctor Compaction Analysis</div>
+                    <div class="design-desc">Enter lab compaction data points. Auto-fit curve, calculate Maximum Dry Density (MDD) and Optimum Moisture Content (OMC). Compare Standard vs Modified.</div>
+                </div>
+            </div>
+
+            <div class="tab-row">
+                <button class="tab-btn active" onclick="switchTab('standard', this)">Standard Proctor</button>
+                <button class="tab-btn" onclick="switchTab('modified', this)">Modified Proctor</button>
+                <button class="tab-btn" onclick="switchTab('comparison', this)">Comparison</button>
+                <button class="tab-btn" onclick="switchTab('qc', this)">Field QC</button>
+            </div>
+
+            <!-- TAB 1: STANDARD PROCTOR -->
+            <div class="tab-panel active" id="panel-standard">
+                <div class="two-col">
+                    <div class="sidebar">
+                        <div class="sidebar-title">🧪 Lab Data Points</div>
+                        <div class="form-grid" style="margin-top:8px;">
+                            <div class="form-field"><label>Point 1 - w (%)</label><input type="number" id="sw1" value="8" step="0.5"><span class="unit">%</span></div>
+                            <div class="form-field"><label>γd (pcf)</label><input type="number" id="sd1" value="112" step="0.5"><span class="unit">pcf</span></div>
+                            <div class="form-field"><label>Point 2 - w (%)</label><input type="number" id="sw2" value="10" step="0.5"><span class="unit">%</span></div>
+                            <div class="form-field"><label>γd (pcf)</label><input type="number" id="sd2" value="118" step="0.5"><span class="unit">pcf</span></div>
+                            <div class="form-field"><label>Point 3 - w (%)</label><input type="number" id="sw3" value="12" step="0.5"><span class="unit">%</span></div>
+                            <div class="form-field"><label>γd (pcf)</label><input type="number" id="sd3" value="122" step="0.5"><span class="unit">pcf</span></div>
+                            <div class="form-field"><label>Point 4 - w (%)</label><input type="number" id="sw4" value="14" step="0.5"><span class="unit">%</span></div>
+                            <div class="form-field"><label>γd (pcf)</label><input type="number" id="sd4" value="120" step="0.5"><span class="unit">pcf</span></div>
+                            <div class="form-field"><label>Point 5 - w (%)</label><input type="number" id="sw5" value="16" step="0.5"><span class="unit">%</span></div>
+                            <div class="form-field"><label>γd (pcf)</label><input type="number" id="sd5" value="115" step="0.5"><span class="unit">pcf</span></div>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Specific Gravity (Gs)</label>
+                            <input type="number" class="sidebar-input" id="sGs" value="2.70" step="0.01">
+                        </div>
+                        <button class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="calcStandard()">📊 Analyze Standard</button>
+                    </div>
+
+                    <div>
+                        <div id="stdResults" style="display:none;">
+                            <h3 style="color:var(--accent-orange);margin-bottom:16px;">📋 Standard Proctor Results (AASHTO T 99 / ASTM D698)</h3>
+                            <div class="result-grid">
+                                <div class="result-card"><div class="result-icon">📏</div><div class="result-label">MDD</div><div class="result-value" id="sMDD">--</div><div class="result-unit">pcf</div></div>
+                                <div class="result-card"><div class="result-icon">💧</div><div class="result-label">OMC</div><div class="result-value" id="sOMC">--</div><div class="result-unit">%</div></div>
+                                <div class="result-card"><div class="result-icon">🔬</div><div class="result-label">Zero Air Voids @ OMC</div><div class="result-value" id="sZAV">--</div><div class="result-unit">pcf</div></div>
+                                <div class="result-card"><div class="result-icon">📐</div><div class="result-label">Saturation @ OMC</div><div class="result-value" id="sSat">--</div><div class="result-unit">%</div></div>
+                            </div>
+
+                            <div class="chart-section" style="margin-top:24px;">
+                                <div class="chart-title">📈 Compaction Curve</div>
+                                <canvas class="chart-canvas" id="stdChart"></canvas>
+                            </div>
+
+                            <div class="table-container" style="margin-top:16px;">
+                                <table>
+                                    <thead><tr><th>Point</th><th style="text-align:center">w (%)</th><th style="text-align:right">γd (pcf)</th><th style="text-align:right">γw (pcf)</th><th style="text-align:center">S (%)</th></tr></thead>
+                                    <tbody id="stdTable"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div id="stdPlaceholder" style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+                            <div style="font-size:48px;margin-bottom:16px;">📊</div>
+                            <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Enter 3-5 Data Points</div>
+                            <div style="font-size:13px;max-width:400px;">Input moisture content and dry density from lab. Click <strong>Analyze Standard</strong>.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: MODIFIED PROCTOR -->
+            <div class="tab-panel" id="panel-modified">
+                <div class="two-col">
+                    <div class="sidebar">
+                        <div class="sidebar-title">🧪 Modified Proctor Data</div>
+                        <div class="form-grid" style="margin-top:8px;">
+                            <div class="form-field"><label>Point 1 - w (%)</label><input type="number" id="mw1" value="7" step="0.5"><span class="unit">%</span></div>
+                            <div class="form-field"><label>γd (pcf)</label><input type="number" id="md1" value="120" step="0.5"><span class="unit">pcf</span></div>
+                            <div class="form-field"><label>Point 2 - w (%)</label><input type="number" id="mw2" value="9" step="0.5"><span class="unit">%</span></div>
+                            <div class="form-field"><label>γd (pcf)</label><input type="number" id="md2" value="128" step="0.5"><span class="unit">pcf</span></div>
+                            <div class="form-field"><label>Point 3 - w (%)</label><input type="number" id="mw3" value="11" step="0.5"><span class="unit">%</span></div>
+                            <div class="form-field"><label>γd (pcf)</label><input type="number" id="md3" value="133" step="0.5"><span class="unit">pcf</span></div>
+                            <div class="form-field"><label>Point 4 - w (%)</label><input type="number" id="mw4" value="13" step="0.5"><span class="unit">%</span></div>
+                            <div class="form-field"><label>γd (pcf)</label><input type="number" id="md4" value="131" step="0.5"><span class="unit">pcf</span></div>
+                            <div class="form-field"><label>Point 5 - w (%)</label><input type="number" id="mw5" value="15" step="0.5"><span class="unit">%</span></div>
+                            <div class="form-field"><label>γd (pcf)</label><input type="number" id="md5" value="125" step="0.5"><span class="unit">pcf</span></div>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Specific Gravity (Gs)</label>
+                            <input type="number" class="sidebar-input" id="mGs" value="2.70" step="0.01">
+                        </div>
+                        <button class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="calcModified()">📊 Analyze Modified</button>
+                    </div>
+
+                    <div>
+                        <div id="modResults" style="display:none;">
+                            <h3 style="color:var(--accent-orange);margin-bottom:16px;">📋 Modified Proctor Results (AASHTO T 180 / ASTM D1557)</h3>
+                            <div class="result-grid">
+                                <div class="result-card"><div class="result-icon">📏</div><div class="result-label">MDD</div><div class="result-value" id="mMDD">--</div><div class="result-unit">pcf</div></div>
+                                <div class="result-card"><div class="result-icon">💧</div><div class="result-label">OMC</div><div class="result-value" id="mOMC">--</div><div class="result-unit">%</div></div>
+                                <div class="result-card"><div class="result-icon">🔬</div><div class="result-label">Zero Air Voids @ OMC</div><div class="result-value" id="mZAV">--</div><div class="result-unit">pcf</div></div>
+                                <div class="result-card"><div class="result-icon">📐</div><div class="result-label">Saturation @ OMC</div><div class="result-value" id="mSat">--</div><div class="result-unit">%</div></div>
+                            </div>
+
+                            <div class="chart-section" style="margin-top:24px;">
+                                <div class="chart-title">📈 Modified Compaction Curve</div>
+                                <canvas class="chart-canvas" id="modChart"></canvas>
+                            </div>
+
+                            <div class="table-container" style="margin-top:16px;">
+                                <table>
+                                    <thead><tr><th>Point</th><th style="text-align:center">w (%)</th><th style="text-align:right">γd (pcf)</th><th style="text-align:right">γw (pcf)</th><th style="text-align:center">S (%)</th></tr></thead>
+                                    <tbody id="modTable"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div id="modPlaceholder" style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+                            <div style="font-size:48px;margin-bottom:16px;">📊</div>
+                            <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Enter Modified Data</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: COMPARISON -->
+            <div class="tab-panel" id="panel-comparison">
+                <h3 style="color:var(--accent-orange);margin-bottom:16px;">⚖️ Standard vs Modified Comparison</h3>
+                <div class="result-grid">
+                    <div class="result-card"><div class="result-icon">📏</div><div class="result-label">Std MDD</div><div class="result-value" id="cStdMDD">-- pcf</div></div>
+                    <div class="result-card"><div class="result-icon">💧</div><div class="result-label">Std OMC</div><div class="result-value" id="cStdOMC">-- %</div></div>
+                    <div class="result-card"><div class="result-icon">📏</div><div class="result-label">Mod MDD</div><div class="result-value" id="cModMDD">-- pcf</div></div>
+                    <div class="result-card"><div class="result-icon">💧</div><div class="result-label">Mod OMC</div><div class="result-value" id="cModOMC">-- %</div></div>
+                </div>
+
+                <div class="chart-section" style="margin-top:24px;">
+                    <div class="chart-title">📈 Standard vs Modified Curves</div>
+                    <canvas class="chart-canvas" id="compChart"></canvas>
+                </div>
+
+                <div class="spec-grid" style="margin-top:24px;">
+                    <div class="spec-item">
+                        <div class="spec-title">📊 Energy Comparison</div>
+                        <div class="spec-desc">
+                            <strong>Standard (T 99/D698):</strong> 5.5 lb hammer, 12" drop, 3 layers, 25 blows/layer = 12,375 ft-lbf/ft³<br>
+                            <strong>Modified (T 180/D1557):</strong> 10 lb hammer, 18" drop, 5 layers, 25 blows/layer = 56,250 ft-lbf/ft³<br>
+                            <strong>Ratio:</strong> Modified energy ≈ 4.5 × Standard
+                        </div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">📈 Typical Differences</div>
+                        <div class="spec-desc">
+                            MDD (Modified) ≈ MDD (Standard) + 10-15 pcf<br>
+                            OMC (Modified) ≈ OMC (Standard) - 2-3%<br>
+                            Higher energy → denser packing at lower moisture
+                        </div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">🛣️ Application</div>
+                        <div class="spec-desc">
+                            Standard: Light traffic, embankments, trench backfill<br>
+                            Modified: Heavy traffic, runways, highways, foundations<br>
+                            Use modified when compaction equipment delivers high energy
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: FIELD QC -->
+            <div class="tab-panel" id="panel-qc">
+                <h3 style="color:var(--accent-orange);margin-bottom:16px;">🏗️ Field QC — Percent Compaction</h3>
+                <div class="two-col">
+                    <div class="sidebar">
+                        <div class="sidebar-title">📍 Field Test Data</div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Reference Proctor</label>
+                            <select class="sidebar-input" id="refProctor">
+                                <option value="standard">Standard Proctor</option>
+                                <option value="modified">Modified Proctor</option>
+                            </select>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Lab MDD (pcf)</label>
+                            <input type="number" class="sidebar-input" id="labMDD" value="122" step="0.5">
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Lab OMC (%)</label>
+                            <input type="number" class="sidebar-input" id="labOMC" value="12.0" step="0.1">
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Field Wet Density</label>
+                            <input type="number" class="sidebar-input" id="fieldWet" value="132" step="0.5"><span class="unit">pcf</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Field Moisture</label>
+                            <input type="number" class="sidebar-input" id="fieldMoist" value="11.5" step="0.1"><span class="unit">%</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Required Compaction</label>
+                            <input type="number" class="sidebar-input" id="reqComp" value="95" step="1"><span class="unit">%</span>
+                        </div>
+                        <button class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="calcFieldQC()">📊 Calculate % Compaction</button>
+                    </div>
+
+                    <div>
+                        <div id="qcResults" style="display:none;">
+                            <h3 style="color:var(--accent-orange);margin-bottom:16px;">📋 Field QC Results</h3>
+                            <div class="result-grid">
+                                <div class="result-card"><div class="result-icon">📏</div><div class="result-label">Field Dry Density</div><div class="result-value" id="qcDry">--</div><div class="result-unit">pcf</div></div>
+                                <div class="result-card"><div class="result-icon">📊</div><div class="result-label">% Compaction</div><div class="result-value" id="qcPct" style="font-size:36px;">--</div><div class="result-unit">%</div></div>
+                                <div class="result-card"><div class="result-icon">💧</div><div class="result-label">Moisture Variance</div><div class="result-value" id="qcMVar">--</div><div class="result-unit">% from OMC</div></div>
+                                <div class="result-card"><div class="result-icon">✅</div><div class="result-label">Status</div><div class="result-value" id="qcStatus" style="font-size:20px;">--</div></div>
+                            </div>
+
+                            <div class="spec-grid" style="margin-top:24px;">
+                                <div class="spec-item">
+                                    <div class="spec-title">📋 Acceptance Criteria</div>
+                                    <div class="spec-desc">
+                                        <strong>AASHTO / ASTM:</strong> ≥ 95% Standard Proctor (embankments)<br>
+                                        <strong>AASHTO / ASTM:</strong> ≥ 95% Modified Proctor (subgrade/base)<br>
+                                        <strong>Moisture:</strong> Typically OMC ± 2% (or ± 3% for cohesive)<br>
+                                        <strong>Nuclear (D2922/D3017):</strong> Direct wet/dry density + moisture
+                                    </div>
+                                </div>
+                                <div class="spec-item">
+                                    <div class="spec-title">🔬 Test Methods</div>
+                                    <div class="spec-desc">
+                                        <strong>Nuclear:</strong> AASHTO T 310 / ASTM D6938 (fast, non-destructive)<br>
+                                        <strong>Sand Cone:</strong> AASHTO T 191 / ASTM D1556 (reference)<br>
+                                        <strong>Rubber Balloon:</strong> AASHTO T 205 / ASTM D2167<br>
+                                        <strong>Drive Cylinder:</strong> AASHTO T 204 / ASTM D2937
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="qcPlaceholder" style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+                            <div style="font-size:48px;margin-bottom:16px;">🏗️</div>
+                            <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Enter Field Data</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <a href="../soil.html" class="back-btn">← Back to Soil & Roads</a>
+    </div>
+    <div id="footer-placeholder"></div>
+    <script src="../components.js"></script>
+    <script>
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('panel-' + tabId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        // Proctor analysis function
+        function analyzeProctor(wPoints, dPoints, Gs, method) {
+            const n = wPoints.length;
+            // Quadratic fit: γd = a*w² + b*w + c
+            let sumX = 0, sumY = 0, sumX2 = 0, sumX3 = 0, sumX4 = 0, sumXY = 0, sumX2Y = 0;
+            for (let i = 0; i < n; i++) {
+                const x = wPoints[i], y = dPoints[i];
+                sumX += x; sumY += y; sumX2 += x*x; sumX3 += x*x*x; sumX4 += x*x*x*x;
+                sumXY += x*y; sumX2Y += x*x*y;
+            }
+            // Solve normal equations for quadratic
+            const A = [[sumX4, sumX3, sumX2], [sumX3, sumX2, sumX], [sumX2, sumX, n]];
+            const B = [sumX2Y, sumXY, sumY];
+            const coeff = solve3x3(A, B);
+            const a = coeff[0], b = coeff[1], c = coeff[2];
+
+            // Vertex (maximum) at w = -b/(2a)
+            const wOpt = -b / (2*a);
+            const gammaMax = a*wOpt*wOpt + b*wOpt + c;
+
+            // Zero air voids curve: γzav = Gs*γw / (1 + w*Gs) where γw = 62.4 pcf
+            const gammaW = 62.4;
+            const zavOpt = (Gs * gammaW) / (1 + wOpt * Gs / 100);
+            const satOpt = (wOpt / 100) * Gs * gammaMax / (gammaW * (1 - gammaMax/(Gs*gammaW))) * 100;
+
+            // Calculate for each data point
+            const tableData = [];
+            for (let i = 0; i < n; i++) {
+                const w = wPoints[i], gd = dPoints[i];
+                const gw = gd * (1 + w/100);
+                const sat = (w/100) * Gs * gd / (gammaW * (1 - gd/(Gs*gammaW))) * 100;
+                tableData.push({w, gd, gw, sat: sat.toFixed(1)});
+            }
+
+            return {wOpt, gammaMax, zavOpt, sat: satOpt.toFixed(1), a, b, c, tableData};
+        }
+
+        function solve3x3(A, B) {
+            // Gaussian elimination for 3x3
+            const M = [A[0].concat(B[0]), A[1].concat(B[1]), A[2].concat(B[2])];
+            for (let i = 0; i < 3; i++) {
+                // Pivot
+                let maxRow = i;
+                for (let r = i+1; r < 3; r++) if (Math.abs(M[r][i]) > Math.abs(M[maxRow][i])) maxRow = r;
+                [M[i], M[maxRow]] = [M[maxRow], M[i]];
+                // Normalize
+                const piv = M[i][i];
+                for (let c = i; c < 4; c++) M[i][c] /= piv;
+                // Eliminate
+                for (let r = 0; r < 3; r++) {
+                    if (r !== i) {
+                        const factor = M[r][i];
+                        for (let c = i; c < 4; c++) M[r][c] -= factor * M[i][c];
+                    }
+                }
+            }
+            return [M[0][3], M[1][3], M[2][3]];
+        }
+
+        function drawProctorChart(canvasId, wPoints, dPoints, result, color, zavPoints) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 300;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const padding = 60;
+            const w = canvas.width - 2 * padding;
+            const h = canvas.height - 2 * padding;
+
+            // Find ranges
+            const allW = [...wPoints, result.wOpt];
+            const allD = [...dPoints, result.gammaMax];
+            const minW = Math.min(...allW) - 2;
+            const maxW = Math.max(...allW) + 2;
+            const minD = Math.min(...allD) - 5;
+            const maxD = Math.max(...allD) + 5;
+
+            // Grid
+            ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+            for (let i = 0; i <= 5; i++) {
+                const x = padding + (i/5)*w;
+                const y = padding + (i/5)*h;
+                ctx.beginPath(); ctx.moveTo(x, padding); ctx.lineTo(x, canvas.height-padding); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(padding, y); ctx.lineTo(canvas.width-padding, y); ctx.stroke();
+                ctx.fillStyle = 'var(--text-muted)'; ctx.font = '11px monospace';
+                ctx.fillText((minW + (maxW-minW)*i/5).toFixed(1), x-10, canvas.height-padding+18);
+                ctx.fillText((maxD - (maxD-minD)*i/5).toFixed(0), 10, y+4);
+            }
+
+            // Zero Air Voids curve
+            ctx.strokeStyle = 'var(--accent-cyan)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5,5]);
+            ctx.beginPath();
+            for (let w = minW; w <= maxW; w += 0.5) {
+                const zav = (Gs * 62.4) / (1 + w * Gs / 100);
+                const x = padding + ((w - minW) / (maxW - minW)) * w;
+                const y = canvas.height - padding - ((zav - minD) / (maxD - minD)) * h;
+                if (w === minW) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Data points
+            ctx.fillStyle = color;
+            wPoints.forEach((wp, i) => {
+                const x = padding + ((wp - minW) / (maxW - minW)) * w;
+                const y = canvas.height - padding - ((dPoints[i] - minD) / (maxD - minD)) * h;
+                ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI*2); ctx.fill();
+            });
+
+            // Fitted curve
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            for (let wp = minW; wp <= maxW; wp += 0.1) {
+                const gd = result.a*wp*wp + result.b*wp + result.c;
+                const x = padding + ((wp - minW) / (maxW - minW)) * w;
+                const y = canvas.height - padding - ((gd - minD) / (maxD - minD)) * h;
+                if (wp === minW) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+
+            // Optimum point
+            const ox = padding + ((result.wOpt - minW) / (maxW - minW)) * w;
+            const oy = canvas.height - padding - ((result.gammaMax - minD) / (maxD - minD)) * h;
+            ctx.fillStyle = 'var(--accent-gold)';
+            ctx.beginPath(); ctx.arc(ox, oy, 8, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = 'var(--accent-gold)'; ctx.font = '11px monospace';
+            ctx.fillText(`OMC=${result.wOpt.toFixed(1)}%, MDD=${result.gammaMax.toFixed(1)}`, ox+10, oy-10);
+        }
+
+        // Global Gs for ZAV
+        let Gs = 2.70;
+
+        function calcStandard() {
+            Gs = parseFloat(document.getElementById('sGs').value);
+            const wPts = [parseFloat(document.getElementById('sw1').value), parseFloat(document.getElementById('sw2').value),
+                parseFloat(document.getElementById('sw3').value), parseFloat(document.getElementById('sw4').value), parseFloat(document.getElementById('sw5').value)];
+            const dPts = [parseFloat(document.getElementById('sd1').value), parseFloat(document.getElementById('sd2').value),
+                parseFloat(document.getElementById('sd3').value), parseFloat(document.getElementById('sd4').value), parseFloat(document.getElementById('sd5').value)];
+
+            const res = analyzeProctor(wPts, dPts, Gs, 'standard');
+            document.getElementById('sMDD').textContent = res.gammaMax.toFixed(1);
+            document.getElementById('sOMC').textContent = res.wOpt.toFixed(1);
+            document.getElementById('sZAV').textContent = res.zavOpt.toFixed(1);
+            document.getElementById('sSat').textContent = res.sat;
+
+            // Table
+            const tbody = document.getElementById('stdTable');
+            tbody.innerHTML = '';
+            res.tableData.forEach((row, i) => {
+                tbody.innerHTML += `<tr>
+                    <td>${i+1}</td><td style="text-align:center">${row.w.toFixed(1)}</td>
+                    <td style="text-align:right">${row.gd.toFixed(1)}</td>
+                    <td style="text-align:right">${row.gw.toFixed(1)}</td>
+                    <td style="text-align:center">${row.sat}</td></tr>`;
+            });
+
+            drawProctorChart('stdChart', wPts, dPts, res, 'var(--accent-orange)');
+            document.getElementById('stdPlaceholder').style.display = 'none';
+            document.getElementById('stdResults').style.display = 'block';
+        }
+
+        function calcModified() {
+            Gs = parseFloat(document.getElementById('mGs').value);
+            const wPts = [parseFloat(document.getElementById('mw1').value), parseFloat(document.getElementById('mw2').value),
+                parseFloat(document.getElementById('mw3').value), parseFloat(document.getElementById('mw4').value), parseFloat(document.getElementById('mw5').value)];
+            const dPts = [parseFloat(document.getElementById('md1').value), parseFloat(document.getElementById('md2').value),
+                parseFloat(document.getElementById('md3').value), parseFloat(document.getElementById('md4').value), parseFloat(document.getElementById('md5').value)];
+
+            const res = analyzeProctor(wPts, dPts, Gs, 'modified');
+            document.getElementById('mMDD').textContent = res.gammaMax.toFixed(1);
+            document.getElementById('mOMC').textContent = res.wOpt.toFixed(1);
+            document.getElementById('mZAV').textContent = res.zavOpt.toFixed(1);
+            document.getElementById('mSat').textContent = res.sat;
+
+            const tbody = document.getElementById('modTable');
+            tbody.innerHTML = '';
+            res.tableData.forEach((row, i) => {
+                tbody.innerHTML += `<tr>
+                    <td>${i+1}</td><td style="text-align:center">${row.w.toFixed(1)}</td>
+                    <td style="text-align:right">${row.gd.toFixed(1)}</td>
+                    <td style="text-align:right">${row.gw.toFixed(1)}</td>
+                    <td style="text-align:center">${row.sat}</td></tr>`;
+            });
+
+            drawProctorChart('modChart', wPts, dPts, res, 'var(--accent-red)');
+            document.getElementById('modPlaceholder').style.display = 'none';
+            document.getElementById('modResults').style.display = 'block';
+
+            // Update comparison
+            updateComparison();
+        }
+
+        function updateComparison() {
+            const stdMDD = document.getElementById('sMDD').textContent;
+            const stdOMC = document.getElementById('sOMC').textContent;
+            const modMDD = document.getElementById('mMDD').textContent;
+            const modOMC = document.getElementById('mOMC').textContent;
+
+            document.getElementById('cStdMDD').textContent = stdMDD + ' pcf';
+            document.getElementById('cStdOMC').textContent = stdOMC + ' %';
+            document.getElementById('cModMDD').textContent = modMDD + ' pcf';
+            document.getElementById('cModOMC').textContent = modOMC + ' %';
+
+            // Draw comparison chart
+            drawCompChart();
+        }
+
+        function drawCompChart() {
+            const canvas = document.getElementById('compChart');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 300;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Get both results
+            const stdRes = analyzeProctor(
+                [parseFloat(document.getElementById('sw1').value), parseFloat(document.getElementById('sw2').value),
+                 parseFloat(document.getElementById('sw3').value), parseFloat(document.getElementById('sw4').value), parseFloat(document.getElementById('sw5').value)],
+                [parseFloat(document.getElementById('sd1').value), parseFloat(document.getElementById('sd2').value),
+                 parseFloat(document.getElementById('sd3').value), parseFloat(document.getElementById('sd4').value), parseFloat(document.getElementById('sd5').value)],
+                Gs, 'standard'
+            );
+            const modRes = analyzeProctor(
+                [parseFloat(document.getElementById('mw1').value), parseFloat(document.getElementById('mw2').value),
+                 parseFloat(document.getElementById('mw3').value), parseFloat(document.getElementById('mw4').value), parseFloat(document.getElementById('mw5').value)],
+                [parseFloat(document.getElementById('md1').value), parseFloat(document.getElementById('md2').value),
+                 parseFloat(document.getElementById('md3').value), parseFloat(document.getElementById('md4').value), parseFloat(document.getElementById('md5').value)],
+                Gs, 'modified'
+            );
+
+            const padding = 60;
+            const w = canvas.width - 2 * padding;
+            const h = canvas.height - 2 * padding;
+            const minW = 6, maxW = 18, minD = 105, maxD = 140;
+
+            // Grid
+            ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+            for (let i = 0; i <= 5; i++) {
+                const x = padding + (i/5)*w;
+                const y = padding + (i/5)*h;
+                ctx.beginPath(); ctx.moveTo(x, padding); ctx.lineTo(x, canvas.height-padding); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(padding, y); ctx.lineTo(canvas.width-padding, y); ctx.stroke();
+            }
+
+            // ZAV
+            ctx.strokeStyle = 'var(--accent-cyan)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5,5]);
+            ctx.beginPath();
+            for (let wp = minW; wp <= maxW; wp += 0.5) {
+                const zav = (Gs * 62.4) / (1 + wp * Gs / 100);
+                const x = padding + ((wp - minW) / (maxW - minW)) * w;
+                const y = canvas.height - padding - ((zav - minD) / (maxD - minD)) * h;
+                if (wp === minW) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Standard curve
+            ctx.strokeStyle = 'var(--accent-orange)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            for (let wp = minW; wp <= maxW; wp += 0.1) {
+                const gd = stdRes.a*wp*wp + stdRes.b*wp + stdRes.c;
+                const x = padding + ((wp - minW) / (maxW - minW)) * w;
+                const y = canvas.height - padding - ((gd - minD) / (maxD - minD)) * h;
+                if (wp === minW) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+
+            // Modified curve
+            ctx.strokeStyle = 'var(--accent-red)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            for (let wp = minW; wp <= maxW; wp += 0.1) {
+                const gd = modRes.a*wp*wp + modRes.b*wp + modRes.c;
+                const x = padding + ((wp - minW) / (maxW - minW)) * w;
+                const y = canvas.height - padding - ((gd - minD) / (maxD - minD)) * h;
+                if (wp === minW) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+
+            // Legend
+            ctx.fillStyle = 'var(--accent-orange)'; ctx.font = '12px sans-serif';
+            ctx.fillText('Standard Proctor', padding+10, padding+20);
+            ctx.fillStyle = 'var(--accent-red)';
+            ctx.fillText('Modified Proctor', padding+10, padding+40);
+            ctx.fillStyle = 'var(--accent-cyan)';
+            ctx.fillText('Zero Air Voids', padding+10, padding+60);
+        }
+
+        function calcFieldQC() {
+            const labMDD = parseFloat(document.getElementById('labMDD').value);
+            const labOMC = parseFloat(document.getElementById('labOMC').value);
+            const fieldWet = parseFloat(document.getElementById('fieldWet').value);
+            const fieldMoist = parseFloat(document.getElementById('fieldMoist').value);
+            const reqComp = parseFloat(document.getElementById('reqComp').value);
+
+            const fieldDry = fieldWet / (1 + fieldMoist/100);
+            const pctComp = (fieldDry / labMDD) * 100;
+            const moistVar = fieldMoist - labOMC;
+            const status = pctComp >= reqComp && Math.abs(moistVar) <= 3 ? 'PASS ✅' : 'FAIL ❌';
+
+            document.getElementById('qcDry').textContent = fieldDry.toFixed(1);
+            document.getElementById('qcPct').textContent = pctComp.toFixed(1);
+            document.getElementById('qcMVar').textContent = moistVar.toFixed(1);
+            document.getElementById('qcStatus').textContent = status;
+            document.getElementById('qcStatus').style.color = pctComp >= reqComp ? 'var(--accent-emerald)' : 'var(--accent-red)';
+
+            document.getElementById('qcPlaceholder').style.display = 'none';
+            document.getElementById('qcResults').style.display = 'block';
+        }
+    </script>
+</body>
+</html>

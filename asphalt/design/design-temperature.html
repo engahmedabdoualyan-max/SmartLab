@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Temperature Susceptibility</title>
+    <link rel="icon" href="../favicon.ico">
+    <link rel="stylesheet" href="design-common.css">
+    <style>
+        :root { --accent-page: #f59e0b; }
+        .breadcrumb a, .page-title span, .design-title, .design-icon,
+        .back-btn, .back-btn:hover, .notes-title, .notes-list li::before,
+        .comp-title, .band-btn, .band-btn:hover, .band-btn.active,
+        .criteria-name, .pg-grade, .aging-title, .climate-name,
+        .chart-title, .formula-title, .layout-title, .equip-name { color: var(--accent-page); }
+        .design-icon { background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.4); }
+        .back-btn { background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.2); }
+        .back-btn:hover { background: rgba(245,158,11,0.2); }
+        .notes-section { background: rgba(245,158,11,0.04); border-color: rgba(245,158,11,0.1); }
+        .mix-component, .criteria-card, .pg-card, .aging-card, .equip-card, .spec-item { background: rgba(245,158,11,0.05); border-color: rgba(245,158,11,0.1); }
+        .criteria-card:hover, .pg-card:hover, .equip-card:hover { border-color: rgba(245,158,11,0.3); }
+        .band-btn, .band-btn { background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.2); color: var(--accent-page); }
+        .band-btn:hover, .band-btn.active { background: rgba(245,158,11,0.2); border-color: var(--accent-page); }
+        .mix-table th, .band-table th, .traffic-table th { color: var(--accent-page); }
+        .chart-section, .formula-section, .climate-map, .layout-section { background: rgba(245,158,11,0.04); border-color: rgba(245,158,11,0.1); }
+        .criteria-name, .aging-title { border-color: rgba(245,158,11,0.15); }
+    </style>
+
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="page">
+        <nav class="breadcrumb">
+            <a href="../asphalt.html">Asphalt & Marshall</a>
+            <span>/</span>
+            <span>Temperature Susceptibility</span>
+        </nav>
+        <h1 class="page-title">Temperature <span>Susceptibility</span></h1>
+        <p class="page-sub">Performance Grade (PG) binder selection, aging protocols, and climate-based grading per AASHTO M332 / R29</p>
+
+        <div class="design-section">
+            <div class="design-header">
+                <div class="design-icon">🌡️</div>
+                <div>
+                    <div class="design-title">PG Binder Grading System</div>
+                    <p class="design-desc">High/low temperature performance grades with traffic and climate adjustment</p>
+                </div>
+            </div>
+
+            <div class="pg-grid">
+                <div class="pg-card">
+                    <div class="pg-grade">PG 58-22</div>
+                    <div class="pg-temp">High: 58°C / Low: -22°C</div>
+                    <div class="pg-specs">
+                        <span>Climate:</span> Standard / Mild<br>
+                        <span>Traffic:</span> < 10M ESALs<br>
+                        <span>Region:</span> Northern US, Canada<br>
+                        <span>Rutting:</span> G*/sinδ ≥ 1.0 kPa
+                    </div>
+                </div>
+                <div class="pg-card">
+                    <div class="pg-grade">PG 64-22</div>
+                    <div class="pg-temp">High: 64°C / Low: -22°C</div>
+                    <div class="pg-specs">
+                        <span>Climate:</span> Warm<br>
+                        <span>Traffic:</span> 10-30M ESALs<br>
+                        <span>Region:</span> Central US, Europe<br>
+                        <span>Rutting:</span> G*/sinδ ≥ 1.0 kPa
+                    </div>
+                </div>
+                <div class="pg-card">
+                    <div class="pg-grade">PG 70-22</div>
+                    <div class="pg-temp">High: 70°C / Low: -22°C</div>
+                    <div class="pg-specs">
+                        <span>Climate:</span> Hot<br>
+                        <span>Traffic:</span> > 30M ESALs<br>
+                        <span>Region:</span> Southern US, Desert<br>
+                        <span>Rutting:</span> G*/sinδ ≥ 1.0 kPa
+                    </div>
+                </div>
+                <div class="pg-card">
+                    <div class="pg-grade">PG 76-22</div>
+                    <div class="pg-temp">High: 76°C / Low: -22°C</div>
+                    <div class="pg-specs">
+                        <span>Climate:</span> Extreme Heat<br>
+                        <span>Traffic:</span> Very Heavy + Slow<br>
+                        <span>Region:</span> Phoenix, Middle East<br>
+                        <span>Rutting:</span> G*/sinδ ≥ 2.2 kPa
+                    </div>
+                </div>
+                <div class="pg-card">
+                    <div class="pg-grade">PG 58-28</div>
+                    <div class="pg-temp">High: 58°C / Low: -28°C</div>
+                    <div class="pg-specs">
+                        <span>Climate:</span> Cold Standard<br>
+                        <span>Traffic:</span> < 10M ESALs<br>
+                        <span>Region:</span> Northern Tier, Alaska<br>
+                        <span>Cracking:</span> S × m ≤ 180
+                    </div>
+                </div>
+                <div class="pg-card">
+                    <div class="pg-grade">PG 64-28</div>
+                    <div class="pg-temp">High: 64°C / Low: -28°C</div>
+                    <div class="pg-specs">
+                        <span>Climate:</span> Cold Warm<br>
+                        <span>Traffic:</span> 10-30M ESALs<br>
+                        <span>Region:</span> Upper Midwest, Canada<br>
+                        <span>Cracking:</span> S × m ≤ 180
+                    </div>
+                </div>
+            </div>
+
+            <div class="aging-section">
+                <div class="aging-card">
+                    <div class="aging-title">Original Binder (Tank)</div>
+                    <div class="aging-spec">
+                        <span>G*/sinδ @ 10 rad/s:</span> <span class="value">≥ 1.0 kPa</span> (rutting)<br>
+                        <span>Test Temp:</span> <span class="value">PG High Grade</span><br>
+                        <span>Flash Point:</span> <span class="value">≥ 230°C</span><br>
+                        <span>Viscosity @ 135°C:</span> <span class="value">≤ 3 Pa·s</span> (pumping)
+                    </div>
+                </div>
+                <div class="aging-card">
+                    <div class="aging-title">RTFO Aged (Construction)</div>
+                    <div class="aging-spec">
+                        <span>Mass Loss:</span> <span class="value">≤ 1.00%</span><br>
+                        <span>G*/sinδ @ 10 rad/s:</span> <span class="value">≥ 2.2 kPa</span> (rutting)<br>
+                        <span>Test Temp:</span> <span class="value">PG High Grade</span><br>
+                        <span>Simulates:</span> <span class="value">Mixing/Construction</span>
+                    </div>
+                </div>
+                <div class="aging-card">
+                    <div class="aging-title">PAV Aged (In-Service)</div>
+                    <div class="aging-spec">
+                        <span>G*×sinδ @ 10 rad/s:</span> <span class="value">≤ 5000 kPa</span> (fatigue)<br>
+                        <span>Stiffness @ 60s:</span> <span class="value">≤ 300 MPa</span> (creep)<br>
+                        <span>m-value @ 60s:</span> <span class="value">≥ 0.300</span> (relaxation)<br>
+                        <span>Test Temp:</span> <span class="value">PG Intermediate</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="climate-map">
+                <div class="climate-title">Climate-Based PG Selection (LTPPBind)</div>
+                <div class="climate-grid">
+                    <div class="climate-item">
+                        <div class="climate-name">Seattle, WA / Vancouver, BC</div>
+                        <div class="climate-pg">PG 58-22</div>
+                        <div class="climate-desc">Marine, mild temps</div>
+                    </div>
+                    <div class="climate-item">
+                        <div class="climate-name">Denver, CO / Salt Lake City, UT</div>
+                        <div class="climate-pg">PG 64-28</div>
+                        <div class="climate-desc">High altitude, wide range</div>
+                    </div>
+                    <div class="climate-item">
+                        <div class="climate-name">Atlanta, GA / Dallas, TX</div>
+                        <div class="climate-pg">PG 64-22</div>
+                        <div class="climate-desc">Humid subtropical</div>
+                    </div>
+                    <div class="climate-item">
+                        <div class="climate-name">Phoenix, AZ / Las Vegas, NV</div>
+                        <div class="climate-pg">PG 70-22 / 76-22</div>
+                        <div class="climate-desc">Desert extreme heat</div>
+                    </div>
+                    <div class="climate-item">
+                        <div class="climate-name">Minneapolis, MN / Winnipeg, MB</div>
+                        <div class="climate-pg">PG 58-34 / 58-40</div>
+                        <div class="climate-desc">Severe cold</div>
+                    </div>
+                    <div class="climate-item">
+                        <div class="climate-name">Miami, FL / Houston, TX</div>
+                        <div class="climate-pg">PG 67-22</div>
+                        <div class="climate-desc">Hot humid, no freeze</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="notes-section">
+                <div class="notes-title">PG Grade Adjustment Rules</div>
+                <ul class="notes-list">
+                    <li>Traffic speed: Slow/standing → bump high grade +1 (e.g., 64→70)</li>
+                    <li>Traffic volume: >30M ESALs → bump high grade +1</li>
+                    <li>Traffic volume: >10M ESALs → bump high grade +1 (if slow)</li>
+                    <li>Climate reliability: 98% reliability standard (vs 50% for old AC grading)</li>
+                    <li>Polymer-modified binders: Use PG Plus grades (e.g., PG 76-22 PM)</li>
+                    <li>MSCR (AASHTO T350): J<sub>nr</sub> at 3.2 kPa for rutting verification</li>
+                    <li>ΔTc (AASHTO T313): Cracking susceptibility check for modified binders</li>
+                    <li>R-value correlation: PG grade correlates with Marshall R-value for mix design</li>
+                </ul>
+            </div>
+
+            <a href="../asphalt.html" class="back-btn">← Back to Asphalt & Marshall</a>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+    <script src="../../components.js"></script>
+</body>
+</html>

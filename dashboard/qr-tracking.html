@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — QR Tracking System</title>
+    <link rel="icon" href="../favicon.ico">
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <link rel="stylesheet" href="dashboard-common.css">
+
+    <style>
+        .qr-container { background: rgba(16,185,129,0.05); border: 2px dashed rgba(16,185,129,0.3); border-radius: var(--radius-md); padding: 32px; text-align: center; margin-top: 24px; }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    <div class="page">
+        <nav class="breadcrumb">
+            <a href="../index.html">Home</a>
+            <span>/</span>
+            <a href="index.html">Dashboard</a>
+            <span>/</span>
+            <span>QR Tracking</span>
+        </nav>
+        <h1 class="page-title">QR <span>Tracking</span></h1>
+        <p class="page-sub">Scan and track samples, specimens, and equipment across the lab</p>
+
+        <div class="two-col">
+            <div class="sidebar">
+                <div class="sidebar-title">📱 Generate QR Code</div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Sample Type</label>
+                    <select class="sidebar-input" id="sampleType">
+                        <option value="soil">Soil Sample</option>
+                        <option value="concrete">Concrete Specimen</option>
+                        <option value="asphalt">Asphalt Sample</option>
+                    </select>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Sample ID</label>
+                    <input type="text" class="sidebar-input" id="sampleId" value="S-2024-001"><span class="unit">🔢</span>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Project</label>
+                    <input type="text" class="sidebar-input" id="sampleProject" value="Highway 101">
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Location</label>
+                    <input type="text" class="sidebar-input" id="sampleLocation" value="Zone A-3">
+                </div>
+                <button class="btn btn-primary" onclick="generateQR()">🔄 Generate QR</button>
+            </div>
+
+            <div>
+                <h3 style="color:var(--accent-emerald);margin-bottom:16px;">📷 QR Code</h3>
+                <div class="qr-container" id="qrContainer">
+                    <div id="qrCode" style="display:inline-block;"></div>
+                    <div style="margin-top:16px;color:var(--text-muted);" id="qrInfo">Scan to track sample</div>
+                    <button class="btn btn-gold" onclick="downloadQR()" style="margin-top:16px;">📥 Download QR</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-section" style="margin-top:32px;">
+            <div class="chart-title">📋 Tracked Items</div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Location</th>
+                            <th>Last Scan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>S-2024-001</td><td>Soil</td><td><span class="badge" style="background:rgba(59,130,246,0.2);">In Testing</span></td><td>Lab Bay 2</td><td>10:45 AM</td></tr>
+                        <tr><td>C-2024-015</td><td>Concrete</td><td><span class="badge" style="background:rgba(251,191,36,0.2);">Curing</span></td><td>Humid Room</td><td>09:30 AM</td></tr>
+                        <tr><td>A-2024-008</td><td>Asphalt</td><td><span class="badge" style="background:rgba(16,185,129,0.2);">Completed</span></td><td>Archive</td><td>Yesterday</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <a href="lab-stats.html" class="back-link">← Back to Dashboard</a>
+    </div>
+    <div id="footer-placeholder"></div>
+    <script src="../components.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            generateQR();
+        });
+
+        function generateQR() {
+            const type = document.getElementById('sampleType').value;
+            const id = document.getElementById('sampleId').value;
+            const project = document.getElementById('sampleProject').value;
+            const location = document.getElementById('sampleLocation').value;
+            
+            const qrData = JSON.stringify({
+                type: type,
+                id: id,
+                project: project,
+                location: location,
+                timestamp: new Date().toISOString()
+            });
+            
+            const qrDiv = document.getElementById('qrCode');
+            qrDiv.innerHTML = '';
+            new QRCode(qrDiv, {
+                text: qrData,
+                width: 160,
+                height: 160,
+                colorDark: '#10b981',
+                colorLight: '#0a0e1a'
+            });
+            
+            document.getElementById('qrInfo').textContent = `${type} - ${id}`;
+        }
+
+        function downloadQR() {
+            const qrImg = document.querySelector('#qrCode img') || document.querySelector('#qrCode canvas');
+            if (qrImg) {
+                const link = document.createElement('a');
+                link.download = 'sample-qr.png';
+                link.href = qrImg.src || qrImg.toDataURL();
+                link.click();
+            }
+        }
+    </script>
+</body>
+</html>

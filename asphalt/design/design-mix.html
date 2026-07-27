@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Material Mix Design</title>
+    <link rel="icon" href="../favicon.ico">
+    <link rel="stylesheet" href="design-common.css">
+    <style>
+        :root { --accent-page: #10b981; }
+        .breadcrumb a, .page-title span, .design-title, .design-icon,
+        .back-btn, .back-btn:hover, .notes-title, .notes-list li::before,
+        .comp-title, .band-btn, .band-btn:hover, .band-btn.active,
+        .criteria-name, .pg-grade, .aging-title, .climate-name,
+        .chart-title, .formula-title, .layout-title, .equip-name { color: var(--accent-page); }
+        .design-icon { background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.4); }
+        .back-btn { background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.2); }
+        .back-btn:hover { background: rgba(16,185,129,0.2); }
+        .notes-section { background: rgba(16,185,129,0.04); border-color: rgba(16,185,129,0.1); }
+        .mix-component, .criteria-card, .pg-card, .aging-card, .equip-card, .spec-item { background: rgba(16,185,129,0.05); border-color: rgba(16,185,129,0.1); }
+        .criteria-card:hover, .pg-card:hover, .equip-card:hover { border-color: rgba(16,185,129,0.3); }
+        .band-btn, .band-btn { background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.2); color: var(--accent-page); }
+        .band-btn:hover, .band-btn.active { background: rgba(16,185,129,0.2); border-color: var(--accent-page); }
+        .mix-table th, .band-table th, .traffic-table th { color: var(--accent-page); }
+        .chart-section, .formula-section, .climate-map, .layout-section { background: rgba(16,185,129,0.04); border-color: rgba(16,185,129,0.1); }
+        .criteria-name, .aging-title { border-color: rgba(16,185,129,0.15); }
+    </style>
+
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="page">
+        <nav class="breadcrumb">
+            <a href="../asphalt.html">Asphalt & Marshall</a>
+            <span>/</span>
+            <span>Material Mix Design</span>
+        </nav>
+        <h1 class="page-title">Material <span>Mix Design</span></h1>
+        <p class="page-sub">Aggregate gradation, bitumen content, and volumetric properties per ASTM D3515 / AASHTO M323</p>
+
+        <div class="design-section">
+            <div class="design-header">
+                <div class="design-icon">📐</div>
+                <div>
+                    <div class="design-title">Superpave / Marshall Mix Design</div>
+                    <p class="design-desc">Optimizing aggregate structure and binder content for performance</p>
+                </div>
+            </div>
+
+            <div class="mix-component">
+                <div class="comp-header">
+                    <div class="comp-icon">🪨</div>
+                    <div class="comp-title">Aggregate Structure</div>
+                </div>
+                <div class="comp-specs">
+                    <div class="comp-spec">
+                        <div class="comp-spec-label">Coarse Aggregate</div>
+                        <div class="comp-spec-value">> 4.75 mm (No. 4)</div>
+                    </div>
+                    <div class="comp-spec">
+                        <div class="comp-spec-label">Fine Aggregate</div>
+                        <div class="comp-spec-value">0.075 - 4.75 mm</div>
+                    </div>
+                    <div class="comp-spec">
+                        <div class="comp-spec-label">Mineral Filler</div>
+                        <div class="comp-spec-value">< 0.075 mm (No. 200)</div>
+                    </div>
+                    <div class="comp-spec">
+                        <div class="comp-spec-label">CA Angularity</div>
+                        <div class="comp-spec-value">> 95% (1 face)</div>
+                    </div>
+                    <div class="comp-spec">
+                        <div class="comp-spec-label">FA Angularity</div>
+                        <div class="comp-spec-value">> 45% (U)</div>
+                    </div>
+                    <div class="comp-spec">
+                        <div class="comp-spec-label">Flat/Elongated</div>
+                        <div class="comp-spec-value">< 10% (5:1)</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mix-component">
+                <div class="comp-header">
+                    <div class="comp-icon">🛢️</div>
+                    <div class="comp-title">Binder Selection</div>
+                </div>
+                <div class="comp-specs">
+                    <div class="comp-spec">
+                        <div class="comp-spec-label">Performance Grade</div>
+                        <div class="comp-spec-value">PG 64-22 / PG 76-22</div>
+                    </div>
+                    <div class="comp-spec">
+                        <div class="comp-spec-label">Binder Content Range</div>
+                        <div class="comp-spec-value">4.5% - 6.5%</div>
+                    </div>
+                    <div class="comp-spec">
+                        <div class="comp-spec-label">Dust/Asphalt Ratio</div>
+                        <div class="comp-spec-value">0.6 - 1.2</div>
+                    </div>
+                    <div class="comp-spec">
+                        <div class="comp-spec-label">Anti-Strip Agent</div>
+                        <div class="comp-spec-value">0.5-1.0% (if req'd)</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mix-component">
+                <div class="comp-header">
+                    <div class="comp-icon">📊</div>
+                    <div class="comp-title">Volumetric Properties</div>
+                </div>
+                <div class="comp-specs">
+                    <div class="comp-spec">
+                        <div class="comp-spec-label">Target Air Voids</div>
+                        <div class="comp-spec-value">4.0% (Ndesign)</div>
+                    </div>
+                    <div class="comp-spec">
+                        <div class="comp-spec-label">VMA (Min)</div>
+                        <div class="comp-spec-value">13% - 17%</div>
+                    </div>
+                    <div class="comp-spec">
+                        <div class="comp-spec-label">VFB</div>
+                        <div class="comp-spec-value">65% - 78%</div>
+                    </div>
+                    <div class="comp-spec">
+                        <div class="comp-spec-label">DP Ratio</div>
+                        <div class="comp-spec-value">0.6 - 1.2</div>
+                    </div>
+                    <div class="comp-spec">
+                        <div class="comp-spec-label">Gmm (Rice)</div>
+                        <div class="comp-spec-value">Per ASTM D2041</div>
+                    </div>
+                    <div class="comp-spec">
+                        <div class="comp-spec-label">Gmb (Bulk)</div>
+                        <div class="comp-spec-value">Per ASTM D2726</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="mix-table">
+                    <thead>
+                        <tr>
+                            <th>Sieve Size</th>
+                            <th>Superpave 12.5mm</th>
+                            <th>Superpave 19mm</th>
+                            <th>Marshall 12.5mm</th>
+                            <th>Marshall 19mm</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>19.0 mm</td><td>100</td><td>90-100</td><td>100</td><td>90-100</td></tr>
+                        <tr><td>12.5 mm</td><td>90-100</td><td>< 90</td><td>90-100</td><td>< 90</td></tr>
+                        <tr><td>9.5 mm</td><td>< 90</td><td>> 90</td><td>< 90</td><td>> 90</td></tr>
+                        <tr><td>4.75 mm</td><td>> 90</td><td>> 90</td><td>> 90</td><td>> 90</td></tr>
+                        <tr><td>2.36 mm</td><td>32-67</td><td>28-58</td><td>44-74</td><td>35-65</td></tr>
+                        <tr><td>1.18 mm</td><td>> 90</td><td>> 90</td><td>> 90</td><td>> 90</td></tr>
+                        <tr><td>0.075 mm</td><td>2-10</td><td>1-7</td><td>2-8</td><td>2-8</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="notes-section">
+                <div class="notes-title">Mix Design Procedure</div>
+                <ul class="notes-list">
+                    <li>Select aggregate sources and perform blend gradation (ASTM D3515)</li>
+                    <li>Determine design traffic level (ESALs) and select Ndesign gyrations</li>
+                    <li>Prepare trial blends at 3-4 binder contents (0.5% increments)</li>
+                    <li>Compact gyratory specimens to Ninitial, Ndesign, Nmax</li>
+                    <li>Measure Gmm (Rice) and Gmb (bulk) for each blend</li>
+                    <li>Plot volumetric curves and select optimum binder content at 4% Va</li>
+                    <li>Verify all criteria at optimum: VMA, VFB, DP, stability, moisture</li>
+                    <li>Run TSR (AASHTO T283) - minimum 80% retained strength</li>
+                </ul>
+            </div>
+
+            <a href="../asphalt.html" class="back-btn">← Back to Asphalt & Marshall</a>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+    <script src="../../components.js"></script>
+</body>
+</html>

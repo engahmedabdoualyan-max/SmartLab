@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Field Density Test</title>
+    <link rel="icon" href="../favicon.ico">
+    <link rel="stylesheet" href="test-common.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    <div class="page">
+        <a href="../soil.html" class="back-link">
+            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Back to Soil Tests
+        </a>
+
+        <h1 class="page-title">Field <span>Density</span></h1>
+        <p class="page-sub">Sand cone & nuclear gauge for compaction verification per ASTM D1556</p>
+
+        <div class="level-top">
+            <span class="lt-label">Test Level</span>
+            <div class="lt-btns">
+                <button class="lt-btn active" data-level="quick">⚡ Quick</button>
+                <button class="lt-btn" data-level="unofficial">🏭 Unofficial</button>
+                <button class="lt-btn" data-level="certified">🔒 Certified</button>
+            </div>
+            <span class="lt-info">Essential for QA/QC</span>
+        </div>
+
+        <div class="billboard">
+            <div class="bb-inner">
+                <div class="bb-icon">⚖️</div>
+                <div class="bb-body">
+                    <div class="bb-step-label">STEP 1/4</div>
+                    <div class="bb-title">Field Density Test</div>
+                    <div class="bb-desc">Verify compaction using sand cone or nuclear gauge methods</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="two-col">
+            <div class="sidebar">
+                <div class="sidebar-title">📐 Test Parameters</div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Method</label>
+                    <select class="sidebar-input" id="densityMethod">
+                        <option value="sandcone">Sand Cone (ASTM D1556)</option>
+                        <option value="nuclear">Nuclear Gauge (ASTM D6938)</option>
+                    </select>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Hole Volume (cm³)</label>
+                    <input type="number" class="sidebar-input" id="holeVolume" value="1000" step="1"><span class="unit">cm³</span>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Sand Density (kg/m³)</label>
+                    <input type="number" class="sidebar-input" id="sandDensity" value="1600" step="10"><span class="unit">kg/m³</span>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Sand Weight (g)</label>
+                    <input type="number" class="sidebar-input" id="sandWeight" value="1600" step="1"><span class="unit">g</span>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Surface Moisture (%)</label>
+                    <input type="number" class="sidebar-input" id="surfaceMoisture" value="5" step="0.1"><span class="unit">%</span>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Field Wet Density (kg/m³)</label>
+                    <input type="number" class="sidebar-input" id="fieldWetDensity" value="1950" step="10"><span class="unit">kg/m³</span>
+                </div>
+                <button class="btn btn-primary" onclick="calcDensity()">⚖️ Calculate Density</button>
+            </div>
+
+            <div>
+                <div id="densityResults" style="display:none;">
+                    <h3 style="color:var(--accent-orange);margin-bottom:16px;">📋 Density Results</h3>
+                    <div class="result-grid">
+                        <div class="result-card"><div class="result-icon">📏</div><div class="result-label">Dry Density</div><div class="result-value" id="rDryDensity">--</div></div>
+                        <div class="result-card"><div class="result-icon">📊</div><div class="result-label">Relative Density</div><div class="result-value" id="rRelDensity">--</div></div>
+                        <div class="result-card"><div class="result-icon">⚖️</div><div class="result-label">Moisture Content</div><div class="result-value" id="rMoisture">--</div></div>
+                    </div>
+
+                    <div class="spec-grid" style="margin-top:24px;">
+                        <div class="spec-item">
+                            <div class="spec-title">✅ Pass/Fail</div>
+                            <div class="spec-desc" id="passFail">Requires specification comparison</div>
+                        </div>
+                        <div class="spec-item">
+                            <div class="spec-title">📈 Compaction %</div>
+                            <div class="spec-desc" id="compactionPct">--% of Standard Proctor</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="densityPlaceholder" style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+                    <div style="font-size:48px;margin-bottom:16px;">⚖️</div>
+                    <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Enter Field Density Data</div>
+                    <div style="font-size:13px;max-width:400px;">Input field measurements and calculate compaction results.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="notes-section">
+            <div class="notes-title">📝 ASTM D1556 Method</div>
+            <ul class="notes-list">
+                <li>Sand cone method: excavate hole, fill with known volume of sand</li>
+                <li>Dry density = Field wet density × (100 / (100 + moisture%))</li>
+                <li>Target compaction: 95% of Standard Proctor for most applications</li>
+                <li>Minimum 5 tests per 200 m² for quality control</li>
+            </ul>
+        </div>
+    </div>
+    <div id="footer-placeholder"></div>
+    <script src="../components.js"></script>
+    <script>
+        function calcDensity() {
+            const fieldWet = parseFloat(document.getElementById('fieldWetDensity').value);
+            const moisture = parseFloat(document.getElementById('surfaceMoisture').value);
+            const holeVol = parseFloat(document.getElementById('holeVolume').value) / 1000000; // m³
+            
+            // Dry density calculation
+            const dryDensity = fieldWet * 1000 / (100 + moisture); // kg/m³ to g/cm³ then back
+            const dryDensityGc = dryDensity / 1000;
+            
+            // Relative density (assuming 1.95 t/m³ max dry density)
+            const maxDryDensity = 1950;
+            const minDryDensity = 1400;
+            const relDensity = ((dryDensity - minDryDensity) / (maxDryDensity - minDryDensity)) * 100;
+            
+            // Compaction percentage
+            const compaction = (dryDensity / maxDryDensity) * 100;
+            
+            let passFail = compaction >= 95 ? '✅ PASS - Meets specification' : '❌ FAIL - Below specification';
+            
+            document.getElementById('densityPlaceholder').style.display = 'none';
+            document.getElementById('densityResults').style.display = 'block';
+            
+            document.getElementById('rDryDensity').textContent = dryDensity.toFixed(0) + ' kg/m³';
+            document.getElementById('rRelDensity').textContent = relDensity.toFixed(0) + '%';
+            document.getElementById('rMoisture').textContent = moisture.toFixed(1) + '%';
+            document.getElementById('passFail').textContent = passFail;
+            document.getElementById('compactionPct').textContent = compaction.toFixed(1) + '% of Standard Proctor';
+        }
+    </script>
+</body>
+</html>

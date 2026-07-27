@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — My Teams</title>
+    <link rel="icon" href="../favicon.ico">
+    <link rel="stylesheet" href="client-common.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="page">
+        <a href="../concrete.html" class="back-link">
+            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            <span data-i18n="Back to Concrete">Back to Concrete Testing</span>
+        </a>
+
+        <h1 class="page-title" data-i18n="Team Management">Team <span>Management</span></h1>
+        <p class="page-sub" data-i18n="Team desc">Manage project teams, assign roles, and track responsibilities</p>
+
+        <div class="section">
+            <div class="section-title"><span class="st-icon">👥</span> <span data-i18n="Current Teams">Current Teams</span></div>
+            <div class="card-grid" id="teamsGrid">
+                <!-- Injected by JS -->
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title"><span class="st-icon">📋</span> <span data-i18n="Pending Invitations">Pending Invitations</span></div>
+            <div class="card-grid" id="invitationsGrid">
+                <!-- Injected by JS -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var teams = JSON.parse(localStorage.getItem('concrete_teams') || '[]');
+        var lang = localStorage.getItem('smartlab_lang') || 'en';
+
+        function renderTeams() {
+            var activeTeams = teams.filter(function(t) { return t.status === 'active'; });
+            var pendingTeams = teams.filter(function(t) { return t.status === 'pending'; });
+
+            renderTeamGrid('teamsGrid', activeTeams, true);
+            renderTeamGrid('invitationsGrid', pendingTeams, false);
+
+            if (activeTeams.length === 0) {
+                document.getElementById('teamsGrid').innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="icon">👥</div><h3 data-i18n="No Teams">No Teams</h3><p data-i18n="Create your first team">Create your first project team to begin managing members and assigning roles.</p></div>';
+            }
+            if (pendingTeams.length === 0) {
+                document.getElementById('invitationsGrid').innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="icon">📋</div><h3 data-i18n="No Invitations">No Invitations</h3><p data-i18n="No pending invitations">You don\'t have any pending team invitations.</p></div>';
+            }
+        }
+
+        function renderTeamGrid(gridId, list, showActions) {
+            var grid = document.getElementById(gridId);
+            if (!grid) return;
+            if (list.length === 0) { grid.innerHTML = ''; return; }
+            grid.innerHTML = list.map(function(t) {
+                var membersHtml = (t.members || []).map(function(m) {
+                    return '<span class="test-tag">' + m + '</span>';
+                }).join('');
+                var statusClass = t.status === 'active' ? 'status-active' : 'status-pending';
+                var statusText = t.status === 'active' ? (lang==='ar'?'نشط':'Active') : (lang==='ar'?'قيد الانتظار':'Pending');
+                return '<div class="project-card" onclick="openTeam(\'' + t.id + '\')">' +
+                    '<div class="project-header">' +
+                        '<span class="project-name">' + t.name + '</span>' +
+                        '<span class="project-status ' + statusClass + '">' + statusText + '</span>' +
+                    '</div>' +
+                    '<div class="project-meta">' +
+                        '<span>🏢 ' + (t.project || '-') + '</span>' +
+                        '<span>👑 ' + (t.lead || '-') + '</span>' +
+                        '<span>📅 ' + t.createdAt + '</span>' +
+                    '</div>' +
+                    '<div class="project-tests">' + membersHtml + '</div>' +
+                    (showActions ? '<div class="project-actions">' +
+                        '<button class="btn-sm btn-primary" onclick="event.stopPropagation(); openTeam(\'' + t.id + '\')" data-i18n="View">View</button>' +
+                        '<button class="btn-sm btn-secondary" onclick="event.stopPropagation(); sendInvite(\'' + t.id + '\')" data-i18n="Invite">Invite</button>' +
+                    '</div>' : '') +
+                '</div>';
+            }).join('');
+        }
+
+        function openTeam(id) {
+            localStorage.setItem('currentTeamId', id);
+            window.location.href = 'client-reports.html?type=team&team=' + id;
+        }
+
+        function sendInvite(teamId) {
+            var team = teams.find(function(x) { return x.id === teamId; });
+            if (!team) return;
+
+            var memberName = prompt((lang==='ar'?'أدخل اسم العضو':'Enter member name') + ':');
+            if (!memberName) return;
+
+            var member = {
+                name: memberName,
+                email: memberName.toLowerCase().replace(/\s+/g, '.') + '@example.com',
+                role: prompt((lang==='ar'?'أدخل دور العضو (مثل: Engineer)': 'Enter member role (e.g., Engineer):')),
+                joinedAt: new Date().toISOString()
+            };
+
+            if (!team.members) team.members = [];
+            team.members.push(member.name);
+            localStorage.setItem('concrete_teams', JSON.stringify(teams));
+            renderTeams();
+        }
+
+        // Language toggle
+        document.getElementById('langToggle').addEventListener('click', function() {
+            lang = lang === 'en' ? 'ar' : 'en';
+            localStorage.setItem('smartlab_lang', lang);
+            this.innerHTML = '<span class="lang-dot"></span> ' + lang.toUpperCase();
+            renderTeams();
+        });
+        document.getElementById('langToggle').innerHTML = '<span class="lang-dot"></span> ' + lang.toUpperCase();
+
+        // Init
+        renderTeams();
+    </script>
+    <script>
+        window.translations = {
+            'en': {
+                'Back to Concrete': 'Back to Concrete Testing',
+                'Team Management': 'Team <span>Management</span>',
+                'Team desc': 'Manage project teams, assign roles, and track responsibilities',
+                'Current Teams': 'Current Teams',
+                'Pending Invitations': 'Pending Invitations',
+                'No Teams': 'No Teams',
+                'Create your first team': 'Create your first project team to begin managing members and assigning roles.',
+                'No Invitations': 'No Invitations',
+                'You don\'t have any pending team invitations': 'You don\'t have any pending team invitations.',
+                'View': 'View',
+                'Invite': 'Invite',
+                'Concrete Testing': 'Concrete Testing'
+            },
+            'ar': {
+                'Back to Concrete': 'العودة إلى اختبارات الخرسانة',
+                'Team Management': 'إدارة <span>الفريق</span>',
+                'Team desc': 'إدارة فرق المشاريع، تعيين الأدوار، وتتبع المسؤوليات',
+                'Current Teams': 'الفِرق الحالية',
+                'Pending Invitations': 'الدعوات المعلقة',
+                'No Teams': 'لا توجد فرق',
+                'Create your first team': 'أنشئ أول فريق مشروع لبدء إدارة الأعضاء وتعيين الأدوار.',
+                'No Invitations': 'لا توجد دعوات',
+                'You don\'t have any pending team invitations': 'ليس لديك أي دعوات فريق معلقة.',
+                'View': 'عرض',
+                'Invite': 'دعوة',
+                'Concrete Testing': 'اختبارات <span>الخرسانة</span>'
+            }
+        };
+    </script>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="../../components.js"></script>
+</body>
+</html>

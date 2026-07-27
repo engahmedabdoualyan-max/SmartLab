@@ -1,0 +1,31 @@
+<header class="app-header" id="app-header">
+    <div class="header-left">
+        <a href="/index.html" class="header-logo">
+            <img src="/assets/logo.png" alt="smartLAB" width="42" height="42">
+            <span>smart<span>LAB</span></span>
+        </a>
+        <nav class="header-nav" id="header-nav">
+            <a href="/index.html" data-i18n="home">Home</a>
+            <a href="/index.html#about" data-i18n="about">About</a>
+            <a href="/index.html#services" data-i18n="services">Services</a>
+            <a href="/index.html#contact" data-i18n="contact">Contact</a>
+            <a href="/index.html" class="nav-enter" data-i18n="Enter Lab">Enter Lab</a>
+        </nav>
+    </div>
+    <div class="header-right">
+        <button class="lang-btn" id="lang-toggle"><span class="lang-dot"></span> EN</button>
+        <div class="header-user" id="header-user" style="display:none;">
+            <img id="user-avatar-topbar" class="user-avatar" style="display:none;" alt="">
+            <div id="user-avatar-fallback" class="user-avatar fallback" style="display:none;">U</div>
+            <span class="user-name" id="user-name-topbar"></span>
+            <div class="header-guest-badge" id="guest-badge">
+                <span class="dot"></span>
+                <span data-i18n="Guest">Guest</span>
+            </div>
+        </div>
+        <button class="btn-signout" id="btn-signout" style="display:none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            <span data-i18n="Sign Out">Sign Out</span>
+        </button>
+    </div>
+</header>

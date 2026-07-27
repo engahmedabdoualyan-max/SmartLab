@@ -1,0 +1,79 @@
+name: Deploy to Vercel
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Lint and Type Check
+        run: |
+          npm run lint
+          npm run typecheck
+
+      - name: Build application
+        run: npm run build
+        env:
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_API_TOKEN: ${{ secrets.VERCEL_API_TOKEN }}
+
+      - name: Deploy to Vercel
+        if: github.event_name != 'pull_request'
+        uses: vercel/actions@v1
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-project: ${{ secrets.VERCEL_PROJECT_NAME }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+
+      - name: Deploy Preview
+        if: github.event_name == 'pull_request'
+        uses: vercel/actions/preview@v1
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-project: ${{ secrets.VERCEL_PROJECT_NAME }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+
+      - name: Create Release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ github.sha }}
+          release_name: Release ${{ github.sha }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-files
+          path: |
+            dist/
+            vercel.json
+          retention-days: 1
+
+      - name: Notify completion
+        if: always()
+        run: |
+          echo "Deployment workflow completed successfully!"
+          echo "Build Artifacts: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"

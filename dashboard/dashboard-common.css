@@ -1,0 +1,87 @@
+/* smartLAB — Dashboard Common Styles */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Cairo', sans-serif;
+    background: #0a0e1a; color: #e2e8f0; min-height: 100vh;
+    padding-top: 64px; color-scheme: dark;
+}
+:root {
+    --accent-blue: #3b82f6; --accent-gold: #fbbf24; --accent-amber: #f59e0b;
+    --accent-emerald: #10b981; --accent-red: #f87171; --accent-cyan: #06b6d4;
+    --accent-purple: #a855f7; --accent-orange: #fb923c;
+    --border-glass: rgba(255,255,255,0.06);
+    --text-primary: #f1f5f9; --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --radius-sm: 6px; --radius-md: 10px;
+}
+
+/* Header */
+.app-header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+    background: rgba(10,14,26,0.92); backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border-glass);
+    padding: 0 32px; height: 64px;
+    display: flex; align-items: center; justify-content: space-between;
+}
+
+/* Page */
+.page { max-width: 1200px; margin: 0 auto; padding: 24px 20px 60px; }
+.breadcrumb { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; font-size: 13px; color: var(--text-secondary); }
+.breadcrumb a { color: var(--accent-blue); text-decoration: none; }
+.page-title { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+.page-title span { color: var(--accent-blue); }
+.page-sub { color: var(--text-secondary); font-size: 14px; margin-bottom: 32px; }
+
+/* Cards */
+.stat-card { background: linear-gradient(145deg, rgba(59,130,246,0.08), rgba(59,130,246,0.03)); border: 1px solid rgba(59,130,246,0.15); border-radius: var(--radius-md); padding: 24px; transition: all 0.3s; }
+.stat-card:hover { border-color: rgba(59,130,246,0.3); transform: translateY(-2px); }
+.stat-card .stat-icon { font-size: 28px; margin-bottom: 12px; }
+.stat-card .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 4px; }
+.stat-card .stat-value { font-size: 28px; font-weight: 700; color: var(--accent-blue); font-family: 'SF Mono', monospace; }
+
+.grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 24px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px; }
+
+/* Charts */
+.chart-section { background: rgba(15,23,42,0.5); border: 1px solid var(--border-glass); border-radius: var(--radius-md); padding: 24px; margin-top: 24px; }
+.chart-title { font-size: 14px; font-weight: 600; color: var(--accent-blue); margin-bottom: 16px; }
+.chart-canvas { width: 100%; height: 250px; background: rgba(0,0,0,0.2); border-radius: var(--radius-sm); }
+
+/* Tables */
+.table-container { overflow-x: auto; margin-top: 24px; }
+.table-container table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.table-container th, .table-container td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border-glass); }
+.table-container th { color: var(--accent-blue); font-weight: 600; font-size: 11px; text-transform: uppercase; background: rgba(30,41,59,0.5); }
+.table-container td { color: var(--text-secondary); }
+.table-container tr:hover td { background: rgba(255,255,255,0.02); }
+
+/* Forms */
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 16px; }
+.form-field { background: rgba(15,23,42,0.4); border: 1px solid var(--border-glass); border-radius: var(--radius-sm); padding: 16px; }
+.form-field label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 8px; }
+.form-field input, .form-field select { width: 100%; background: transparent; border: none; color: var(--text-primary); font-size: 14px; font-family: inherit; outline: none; }
+
+/* Buttons */
+.btn { padding: 10px 20px; border-radius: var(--radius-sm); font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; display: inline-flex; align-items: center; gap: 8px; }
+.btn-primary { background: linear-gradient(135deg, var(--accent-blue), #6366f1); color: #fff; box-shadow: 0 2px 12px rgba(59,130,246,0.3); }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(59,130,246,0.45); }
+.btn-gold { background: linear-gradient(135deg, var(--accent-gold), var(--accent-amber)); color: #1e1e1e; }
+
+/* Back Button */
+.back-link { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 20px; color: var(--accent-blue); text-decoration: none; font-size: 13px; font-weight: 500; }
+.back-link:hover { text-decoration: underline; }
+.back-link svg { width: 20px; height: 20px; }
+
+/* Progress Bars */
+.progress-bar { height: 8px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden; margin-top: 12px; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent-emerald), var(--accent-blue)); transition: width 0.5s; }
+
+/* Badges */
+.badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .page { padding: 24px 16px 40px; }
+    .grid-2 { grid-template-columns: 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+}

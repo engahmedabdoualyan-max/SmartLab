@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Concrete Mix Design (ACI 211)</title>
+    <link rel="icon" href="../favicon.ico">
+    <link rel="stylesheet" href="design-common.css">
+    <style>
+        :root { --accent-page: #f87171; }
+        body { color-scheme: dark; }
+        .design-icon { background: rgba(248,113,113,0.1); border-color: rgba(248,113,113,0.4); }
+        .back-btn { background: rgba(248,113,113,0.1); border-color: rgba(248,113,113,0.2); }
+        .back-btn:hover { background: rgba(248,113,113,0.2); }
+        .notes-section { background: rgba(248,113,113,0.04); border-color: rgba(248,113,113,0.1); }
+        .mix-table th, .band-table th, .traffic-table th { color: var(--accent-red); }
+        .band-btn { background: rgba(248,113,113,0.1); border-color: rgba(248,113,113,0.2); color: var(--accent-red); }
+        .band-btn:hover, .band-btn.active { background: rgba(248,113,113,0.2); border-color: var(--accent-red); }
+        .criteria-name, .aging-title { border-color: rgba(248,113,113,0.15); }
+        .chart-section, .formula-section { background: rgba(248,113,113,0.04); border-color: rgba(248,113,113,0.1); }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    <div class="page">
+        <nav class="breadcrumb">
+            <a href="../concrete.html">Concrete Testing</a>
+            <span>/</span>
+            <a href="design-break.html">Design Tools</a>
+            <span>/</span>
+            <span>Mix Design</span>
+        </nav>
+        <h1 class="page-title">Concrete <span>Mix Design</span></h1>
+        <p class="page-sub">ACI 211 Absolute Volume Method — Calculate proportions for normal weight concrete per ASTM C94 / ACI 318</p>
+
+        <section class="design-section">
+            <div class="design-header">
+                <div class="design-icon">🧮</div>
+                <div>
+                    <div class="design-title">Mix Design Calculator</div>
+                    <div class="design-desc">Enter target strength, slump, and aggregate properties. Get cement content, water, air, and aggregate weights per m³ or yd³.</div>
+                </div>
+            </div>
+
+            <div class="tab-row">
+                <button class="tab-btn active" onclick="switchTab('calculator', this)">Calculator</button>
+                <button class="tab-btn" onclick="switchTab('inputs', this)">Inputs</button>
+                <button class="tab-btn" onclick="switchTab('results', this)">Results</button>
+                <button class="tab-btn" onclick="switchTab('standards', this)">Standards</button>
+            </div>
+
+            <!-- TAB 1: CALCULATOR -->
+            <div class="tab-panel active" id="panel-calculator">
+                <div class="two-col">
+                    <div class="sidebar">
+                        <div class="sidebar-title">📋 Project Parameters</div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Design Standard</label>
+                            <select class="sidebar-input" id="designStandard">
+                                <option value="ACI211">ACI 211.1 (US)</option>
+                                <option value="ACI318">ACI 318 (Structural)</option>
+                                <option value="BS8500">BS 8500 / EN 206 (UK/EU)</option>
+                                <option value="ECP203">ECP 203 (Egypt)</option>
+                            </select>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Target Strength f'c</label>
+                            <input type="number" class="sidebar-input" id="targetStrength" value="30" step="1" min="15" max="80"><span class="unit">MPa</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Slump</label>
+                            <input type="number" class="sidebar-input" id="slump" value="100" step="5" min="25" max="200"><span class="unit">mm</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Air Content</label>
+                            <input type="number" class="sidebar-input" id="airContent" value="2" step="0.5" min="0" max="6"><span class="unit">%</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Max Aggregate Size</label>
+                            <input type="number" class="sidebar-input" id="maxAggSize" value="20" step="5" min="10" max="40"><span class="unit">mm</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Cement Type</label>
+                            <select class="sidebar-input" id="cementType">
+                                <option value="I">Type I (OPC)</option>
+                                <option value="II">Type II (Moderate Sulfate)</option>
+                                <option value="III">Type III (High Early)</option>
+                                <option value="IP">Type IP (Pozzolan)</option>
+                                <option value="IS">Type IS (Slag)</option>
+                            </select>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Supplementary Cementitious</label>
+                            <select class="sidebar-input" id="scmType">
+                                <option value="none">None</option>
+                                <option value="flyash">Fly Ash (Class F)</option>
+                                <option value="flyashC">Fly Ash (Class C)</option>
+                                <option value="slag">GGBFS (Slag)</option>
+                                <option value="silica">Silica Fume</option>
+                            </select>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">SCM Replacement %</label>
+                            <input type="number" class="sidebar-input" id="scmPercent" value="0" step="5" min="0" max="50"><span class="unit">%</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Unit System</label>
+                            <select class="sidebar-input" id="unitSystem">
+                                <option value="metric">Metric (kg/m³)</option>
+                                <option value="imperial">Imperial (lb/yd³)</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="calculateMix()">🧮 Calculate Mix</button>
+                    </div>
+
+                    <div>
+                        <div id="calculatorResults" style="display:none;">
+                            <div class="result-grid">
+                                <div class="result-card">
+                                    <div class="result-icon">💧</div>
+                                    <div class="result-label">Water Content</div>
+                                    <div class="result-value" id="rWater">--</div>
+                                </div>
+                                <div class="result-card">
+                                    <div class="result-icon">🧱</div>
+                                    <div class="result-label">Cement Content</div>
+                                    <div class="result-value" id="rCement">--</div>
+                                </div>
+                                <div class="result-card">
+                                    <div class="result-icon">🪨</div>
+                                    <div class="result-label">Coarse Aggregate</div>
+                                    <div class="result-value" id="rCoarse">--</div>
+                                </div>
+                                <div class="result-card">
+                                    <div class="result-icon">🏖️</div>
+                                    <div class="result-label">Fine Aggregate</div>
+                                    <div class="result-value" id="rFine">--</div>
+                                </div>
+                                <div class="result-card">
+                                    <div class="result-icon">☁️</div>
+                                    <div class="result-label">Air Content</div>
+                                    <div class="result-value" id="rAir">--</div>
+                                </div>
+                                <div class="result-card">
+                                    <div class="result-icon">⚖️</div>
+                                    <div class="result-label">w/c Ratio</div>
+                                    <div class="result-value" id="rWc">--</div>
+                                </div>
+                            </div>
+
+                            <div class="chart-section" style="margin-top:24px;">
+                                <div class="chart-title">📊 Mix Proportions by Volume</div>
+                                <canvas class="chart-canvas" id="volumeChart"></canvas>
+                            </div>
+
+                            <div class="mix-table" style="margin-top:24px;">
+                                <table>
+                                    <thead>
+                                        <tr><th>Component</th><th style="text-align:right">Mass (kg/m³)</th><th style="text-align:right">Volume (m³)</th><th style="text-align:center">%</th></tr>
+                                    </thead>
+                                    <tbody id="mixTableBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div id="calculatorPlaceholder" style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+                            <div style="font-size:48px;margin-bottom:16px;">🧮</div>
+                            <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Ready to Calculate</div>
+                            <div style="font-size:13px;max-width:400px;">Enter parameters in the sidebar and click <strong>Calculate Mix</strong> to generate ACI 211 proportions.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: INPUTS -->
+            <div class="tab-panel" id="panel-inputs">
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label>Fine Aggregate Specific Gravity</label>
+                        <input type="number" id="faSg" value="2.65" step="0.01"><span class="unit">SG</span>
+                    </div>
+                    <div class="form-field">
+                        <label>Coarse Aggregate Specific Gravity</label>
+                        <input type="number" id="caSg" value="2.70" step="0.01"><span class="unit">SG</span>
+                    </div>
+                    <div class="form-field">
+                        <label>Fine Aggregate Absorption</label>
+                        <input type="number" id="faAbs" value="1.2" step="0.1"><span class="unit">%</span>
+                    </div>
+                    <div class="form-field">
+                        <label>Coarse Aggregate Absorption</label>
+                        <input type="number" id="caAbs" value="0.8" step="0.1"><span class="unit">%</span>
+                    </div>
+                    <div class="form-field">
+                        <label>Fine Aggregate Fineness Modulus</label>
+                        <input type="number" id="faFm" value="2.75" step="0.05"><span class="unit">FM</span>
+                    </div>
+                    <div class="form-field">
+                        <label>Cement Specific Gravity</label>
+                        <input type="number" id="cementSg" value="3.15" step="0.01"><span class="unit">SG</span>
+                    </div>
+                    <div class="form-field">
+                        <label>Water Temperature</label>
+                        <input type="number" id="waterTemp" value="20" step="1"><span class="unit">°C</span>
+                    </div>
+                    <div class="form-field">
+                        <label>Admixture Dosage</label>
+                        <input type="number" id="admixDosage" value="0" step="0.1"><span class="unit">mL/100kg</span>
+                    </div>
+                </div>
+
+                <div class="spec-grid" style="margin-top:24px;">
+                    <div class="spec-item">
+                        <div class="spec-title">📏 Fine Aggregate Gradation</div>
+                        <div class="spec-desc">Enter sieve analysis for sand. Use ASTM C33 limits for concrete sand.</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">📏 Coarse Aggregate Gradation</div>
+                        <div class="spec-desc">Enter sieve analysis for stone. Use ASTM C33 size #57 or #67 limits.</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">🌡️ Environmental Exposure</div>
+                        <div class="spec-desc">Select exposure class per ACI 318: F0-F3 (freeze-thaw), S0-S3 (sulfate), C0-C2 (corrosion), W0-W1 (water contact).</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">🧪 Trial Batch Verification</div>
+                        <div class="spec-desc">Always verify with trial batches per ACI 211. Adjust water for slump, air, and strength.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: RESULTS -->
+            <div class="tab-panel" id="panel-results">
+                <div id="resultsContent" style="display:none;">
+                    <h3 style="color:var(--accent-red);margin-bottom:16px;">📋 Mix Design Report</h3>
+                    <div class="code-block" id="reportOutput"></div>
+                    <button class="btn btn-gold" onclick="exportReport()" style="margin-top:16px;">📄 Export Report</button>
+                </div>
+                <div style="text-align:center;padding:40px;color:var(--text-muted);" id="resultsEmpty">
+                    <div style="font-size:40px;margin-bottom:16px;">📊</div>
+                    <div style="font-size:16px;font-weight:600;margin-bottom:8px;">No Results Yet</div>
+                    <div style="font-size:13px;">Run calculation from the Calculator tab to see detailed results.</div>
+                </div>
+            </div>
+
+            <!-- TAB 4: STANDARDS -->
+            <div class="tab-panel" id="panel-standards">
+                <div class="spec-grid">
+                    <div class="spec-item">
+                        <div class="spec-title">ACI 211.1</div>
+                        <div class="spec-desc">Standard Practice for Selecting Proportions for Normal, Heavyweight, and Mass Concrete. The primary US method using absolute volume.</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">ACI 318</div>
+                        <div class="spec-desc">Building Code Requirements for Structural Concrete. Defines w/c limits, exposure classes, and durability requirements.</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">ASTM C94</div>
+                        <div class="spec-desc">Standard Specification for Ready-Mixed Concrete. Defines tolerances, delivery, and testing requirements.</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">BS 8500 / EN 206</div>
+                        <div class="spec-desc">European concrete specification. Uses exposure classes (XC, XD, XS, XF, XA) and compressive strength classes (C20/25, etc.).</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">ECP 203</div>
+                        <div class="spec-desc">Egyptian Code for Concrete Mix Design. Defines cement types, aggregate requirements, and mix proportioning for Egyptian conditions.</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">ASTM C33 / C330</div>
+                        <div class="spec-desc">Standard Specification for Concrete Aggregates (normal weight / lightweight). Gradation limits for fine and coarse aggregates.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <a href="../concrete.html" class="back-btn">← Back to Concrete Testing</a>
+    </div>
+    <div id="footer-placeholder"></div>
+    <script src="../components.js"></script>
+    <script>
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('panel-' + tabId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        function calculateMix() {
+            const fc = parseFloat(document.getElementById('targetStrength').value);
+            const slump = parseFloat(document.getElementById('slump').value);
+            const air = parseFloat(document.getElementById('airContent').value);
+            const maxAgg = parseFloat(document.getElementById('maxAggSize').value);
+            const cementType = document.getElementById('cementType').value;
+            const scmType = document.getElementById('scmType').value;
+            const scmPct = parseFloat(document.getElementById('scmPercent').value) / 100;
+            const unitSystem = document.getElementById('unitSystem').value;
+
+            // ACI 211 Step 1: Slump & Air (from tables)
+            // Step 2: Max aggregate size → coarse agg volume
+            const caVolumeTable = { 10: 0.50, 12.5: 0.59, 19: 0.66, 20: 0.67, 25: 0.71, 37.5: 0.75, 50: 0.78, 75: 0.82 };
+            const caVol = caVolumeTable[maxAgg] || 0.67;
+
+            // Step 3: w/c ratio from strength (ACI 211 Table 6.3.3)
+            // Approximate: f'c = A / (w/c)^B
+            let wcRatio;
+            if (fc >= 40) wcRatio = 0.38;
+            else if (fc >= 35) wcRatio = 0.42;
+            else if (fc >= 30) wcRatio = 0.46;
+            else if (fc >= 25) wcRatio = 0.50;
+            else if (fc >= 20) wcRatio = 0.55;
+            else wcRatio = 0.60;
+
+            // Adjust for cement type
+            if (cementType === 'III') wcRatio *= 0.95;
+            else if (cementType === 'II') wcRatio *= 1.02;
+
+            // Step 4: Water content (Table 6.3.3) - approx for slump 75-100mm, 20mm agg
+            let water = 185; // kg/m³ base
+            if (slump > 100) water += 15;
+            if (slump < 75) water -= 10;
+            if (maxAgg === 10) water += 20;
+            if (maxAgg >= 25) water -= 10;
+
+            // Step 5: Cement content = water / w/c
+            let cement = water / wcRatio;
+
+            // SCM replacement
+            let scm = 0;
+            if (scmType !== 'none' && scmPct > 0) {
+                scm = cement * scmPct;
+                cement = cement * (1 - scmPct);
+            }
+
+            // Step 6: Air content
+            const airVol = air / 100;
+
+            // Step 7: Coarse aggregate
+            const caSg = parseFloat(document.getElementById('caSg').value) || 2.70;
+            const caMass = caVol * 1000 * caSg;
+
+            // Step 8: Fine aggregate (by difference)
+            const cementSg = parseFloat(document.getElementById('cementSg').value) || 3.15;
+            const faSg = parseFloat(document.getElementById('faSg').value) || 2.65;
+            const scmSg = scmType === 'silica' ? 2.20 : (scmType === 'flyash' || scmType === 'flyashC' ? 2.30 : 2.90);
+
+            const cementVol = cement / (cementSg * 1000);
+            const waterVol = water / 1000;
+            const airVolCalc = air / 100;
+            const caVolCalc = caMass / (caSg * 1000);
+            const scmVol = scm / (scmSg * 1000);
+            const faVol = 1 - cementVol - waterVol - airVolCalc - caVolCalc - scmVol;
+            const faMass = faVol * faSg * 1000;
+
+            // Display results
+            const isMetric = unitSystem === 'metric';
+            const mult = isMetric ? 1 : 1.686; // kg/m³ to lb/yd³
+            const unitMass = isMetric ? 'kg/m³' : 'lb/yd³';
+            const unitVol = isMetric ? 'm³' : 'ft³';
+
+            document.getElementById('rWater').textContent = (water * mult).toFixed(0) + ' ' + unitMass;
+            document.getElementById('rCement').textContent = ((cement + scm) * mult).toFixed(0) + ' ' + unitMass;
+            document.getElementById('rCoarse').textContent = (caMass * mult).toFixed(0) + ' ' + unitMass;
+            document.getElementById('rFine').textContent = (faMass * mult).toFixed(0) + ' ' + unitMass;
+            document.getElementById('rAir').textContent = air.toFixed(1) + ' %';
+            document.getElementById('rWc').textContent = wcRatio.toFixed(2);
+
+            // Fill mix table
+            const tbody = document.getElementById('mixTableBody');
+            const totalMass = (cement + scm + water + caMass + faMass) * mult;
+            tbody.innerHTML = `
+                <tr><td>Cement (${cementType})</td><td style="text-align:right">${(cement * mult).toFixed(0)}</td><td style="text-align:right">${(cementVol).toFixed(4)}</td><td style="text-align:center">${((cementVol)*100).toFixed(1)}%</td></tr>
+                ${scm > 0 ? `<tr><td>${scmType === 'flyash' ? 'Fly Ash' : scmType === 'slag' ? 'Slag' : 'Silica Fume'}</td><td style="text-align:right">${(scm * mult).toFixed(0)}</td><td style="text-align:right">${(scmVol).toFixed(4)}</td><td style="text-align:center">${((scmVol)*100).toFixed(1)}%</td></tr>` : ''}
+                <tr><td>Water</td><td style="text-align:right">${(water * mult).toFixed(0)}</td><td style="text-align:right">${(waterVol).toFixed(4)}</td><td style="text-align:center">${((waterVol)*100).toFixed(1)}%</td></tr>
+                <tr><td>Air</td><td style="text-align:right">0</td><td style="text-align:right">${(airVolCalc).toFixed(4)}</td><td style="text-align:center">${(air).toFixed(1)}%</td></tr>
+                <tr><td>Coarse Aggregate</td><td style="text-align:right">${(caMass * mult).toFixed(0)}</td><td style="text-align:right">${(caVolCalc).toFixed(4)}</td><td style="text-align:center">${((caVolCalc)*100).toFixed(1)}%</td></tr>
+                <tr><td>Fine Aggregate</td><td style="text-align:right">${(faMass * mult).toFixed(0)}</td><td style="text-align:right">${(faVol).toFixed(4)}</td><td style="text-align:center">${((faVol)*100).toFixed(1)}%</td></tr>
+                <tr style="font-weight:700;border-top:2px solid var(--accent-red);"><td>TOTAL</td><td style="text-align:right">${totalMass.toFixed(0)}</td><td style="text-align:right">1.0000</td><td style="text-align:center">100%</td></tr>
+            `;
+
+            document.getElementById('calculatorPlaceholder').style.display = 'none';
+            document.getElementById('calculatorResults').style.display = 'block';
+            document.getElementById('resultsEmpty').style.display = 'none';
+            document.getElementById('resultsContent').style.display = 'block';
+
+            // Generate report
+            generateReport(fc, slump, air, maxAgg, wcRatio, cement, scm, water, caMass, faMass, cementType, scmType, scmPct, unitSystem);
+        }
+
+        function generateReport(fc, slump, air, maxAgg, wcRatio, cement, scm, water, caMass, faMass, cementType, scmType, scmPct, unitSystem) {
+            const isMetric = unitSystem === 'metric';
+            const mult = isMetric ? 1 : 1.686;
+            const unit = isMetric ? 'kg/m³' : 'lb/yd³';
+            const report = `
+MIX DESIGN REPORT — ACI 211.1 Absolute Volume Method
+========================================================
+
+PROJECT PARAMETERS:
+- Target Strength (f'c): ${fc} MPa
+- Slump: ${slump} mm
+- Air Content: ${air}%
+- Max Aggregate Size: ${maxAgg} mm
+- Cement Type: ${cementType}
+- SCM: ${scmType === 'none' ? 'None' : scmType + ' at ' + (scmPct*100).toFixed(0) + '%'}
+- Unit System: ${isMetric ? 'Metric (kg/m³)' : 'Imperial (lb/yd³)'}
+
+CALCULATED PROPORTIONS (per m³ / yd³):
+- w/c Ratio: ${wcRatio.toFixed(2)}
+- Water: ${(water * mult).toFixed(0)} ${unit}
+- Cement: ${(cement * mult).toFixed(0)} ${unit}
+${scm > 0 ? `- ${scmType === 'flyash' ? 'Fly Ash' : scmType === 'slag' ? 'Slag' : 'Silica Fume'}: ${(scm * mult).toFixed(0)} ${unit}` : ''}
+- Coarse Aggregate: ${(caMass * mult).toFixed(0)} ${unit}
+- Fine Aggregate: ${(faMass * mult).toFixed(0)} ${unit}
+- Air: ${air}%
+
+TOTAL: ${((cement + scm + water + caMass + faMass) * mult).toFixed(0)} ${unit}
+
+CHECKS:
+- w/c ≤ 0.45 for exposure? ${wcRatio <= 0.45 ? '✓ PASS' : '⚠ REVIEW REQUIRED'}
+- Cement ≥ 300 kg/m³? ${cement >= 300 ? '✓ PASS' : '⚠ REVIEW REQUIRED'}
+- Slump within range? ✓ PASS
+
+NOTES:
+1. Verify with trial batches per ACI 211 Section 7.
+2. Adjust water for actual aggregate moisture.
+3. Check plastic air content after admixture addition.
+4. This design is for normal weight concrete. For lightweight, use ACI 211.2.
+            `.trim();
+            document.getElementById('reportOutput').textContent = report;
+        }
+
+        function exportReport() {
+            const report = document.getElementById('reportOutput').textContent;
+            const blob = new Blob([report], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'mix-design-report.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

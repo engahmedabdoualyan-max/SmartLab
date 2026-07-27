@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Gradation Bands</title>
+    <link rel="icon" href="../favicon.ico">
+    <link rel="stylesheet" href="design-common.css">
+    <style>
+        :root { --accent-page: #06b6d4; }
+        .breadcrumb a, .page-title span, .design-title, .design-icon,
+        .back-btn, .back-btn:hover, .notes-title, .notes-list li::before,
+        .comp-title, .band-btn, .band-btn:hover, .band-btn.active,
+        .criteria-name, .pg-grade, .aging-title, .climate-name,
+        .chart-title, .formula-title, .layout-title, .equip-name { color: var(--accent-page); }
+        .design-icon { background: rgba(6,182,212,0.1); border-color: rgba(6,182,212,0.4); }
+        .back-btn { background: rgba(6,182,212,0.1); border-color: rgba(6,182,212,0.2); }
+        .back-btn:hover { background: rgba(6,182,212,0.2); }
+        .notes-section { background: rgba(6,182,212,0.04); border-color: rgba(6,182,212,0.1); }
+        .mix-component, .criteria-card, .pg-card, .aging-card, .equip-card, .spec-item { background: rgba(6,182,212,0.05); border-color: rgba(6,182,212,0.1); }
+        .criteria-card:hover, .pg-card:hover, .equip-card:hover { border-color: rgba(6,182,212,0.3); }
+        .band-btn, .band-btn { background: rgba(6,182,212,0.1); border-color: rgba(6,182,212,0.2); color: var(--accent-page); }
+        .band-btn:hover, .band-btn.active { background: rgba(6,182,212,0.2); border-color: var(--accent-page); }
+        .mix-table th, .band-table th, .traffic-table th { color: var(--accent-page); }
+        .chart-section, .formula-section, .climate-map, .layout-section { background: rgba(6,182,212,0.04); border-color: rgba(6,182,212,0.1); }
+        .criteria-name, .aging-title { border-color: rgba(6,182,212,0.15); }
+    </style>
+
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="page">
+        <nav class="breadcrumb">
+            <a href="../asphalt.html">Asphalt & Marshall</a>
+            <span>/</span>
+            <span>Gradation Bands</span>
+        </nav>
+        <h1 class="page-title">Gradation <span>Bands</span></h1>
+        <p class="page-sub">Sieve analysis control points for Superpave and Marshall mix designs per AASHTO M323 / ASTM D3515</p>
+
+        <div class="design-section">
+            <div class="design-header">
+                <div class="design-icon">📏</div>
+                <div>
+                    <div class="design-title">Control Points & Restricted Zone</div>
+                    <p class="design-desc">Upper/lower limits for each sieve to ensure proper aggregate structure</p>
+                </div>
+            </div>
+
+            <div class="band-selector">
+                <button class="band-btn active" onclick="showBand('superpave12')">Superpave 12.5mm</button>
+                <button class="band-btn" onclick="showBand('superpave19')">Superpave 19mm</button>
+                <button class="band-btn" onclick="showBand('marshall12')">Marshall 12.5mm</button>
+                <button class="band-btn" onclick="showBand('marshall19')">Marshall 19mm</button>
+            </div>
+
+            <div id="band-superpave12" class="band-content">
+                <table class="band-table">
+                    <thead>
+                        <tr>
+                            <th>Sieve Size</th>
+                            <th>Control Point</th>
+                            <th>Min % Passing</th>
+                            <th>Max % Passing</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="sieve-col">19.0 mm (3/4")</td><td>—</td><td>100</td><td>100</td><td>100% passing</td></tr>
+                        <tr><td class="sieve-col">12.5 mm (1/2")</td><td class="highlight">Control</td><td class="range-col">90</td><td class="range-col">100</td><td>Primary control sieve</td></tr>
+                        <tr><td class="sieve-col">9.5 mm (3/8")</td><td class="restricted">Restricted</td><td>—</td><td class="range-col">90</td><td>Avoid restricted zone</td></tr>
+                        <tr><td class="sieve-col">4.75 mm (No. 4)</td><td>—</td><td class="range-col">—</td><td class="range-col">90</td><td>Max 90% passing</td></tr>
+                        <tr><td class="sieve-col">2.36 mm (No. 8)</td><td class="highlight">Control</td><td class="range-col">32</td><td class="range-col">67</td><td>Key workability control</td></tr>
+                        <tr><td class="sieve-col">1.18 mm (No. 16)</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+                        <tr><td class="sieve-col">0.600 mm (No. 30)</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+                        <tr><td class="sieve-col">0.300 mm (No. 50)</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+                        <tr><td class="sieve-col">0.150 mm (No. 100)</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+                        <tr><td class="sieve-col">0.075 mm (No. 200)</td><td class="highlight">Control</td><td class="range-col">2</td><td class="range-col">10</td><td>Dust content control</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="band-superpave19" class="band-content" style="display:none;">
+                <table class="band-table">
+                    <thead>
+                        <tr>
+                            <th>Sieve Size</th>
+                            <th>Control Point</th>
+                            <th>Min % Passing</th>
+                            <th>Max % Passing</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="sieve-col">25.0 mm (1")</td><td>—</td><td>100</td><td>100</td><td>100% passing</td></tr>
+                        <tr><td class="sieve-col">19.0 mm (3/4")</td><td class="highlight">Control</td><td class="range-col">90</td><td class="range-col">100</td><td>Primary control sieve</td></tr>
+                        <tr><td class="sieve-col">12.5 mm (1/2")</td><td class="restricted">Restricted</td><td>—</td><td class="range-col">90</td><td>Avoid restricted zone</td></tr>
+                        <tr><td class="sieve-col">9.5 mm (3/8")</td><td>—</td><td class="range-col">—</td><td class="range-col">90</td><td>Max 90% passing</td></tr>
+                        <tr><td class="sieve-col">4.75 mm (No. 4)</td><td class="highlight">Control</td><td class="range-col">28</td><td class="range-col">58</td><td>Key workability control</td></tr>
+                        <tr><td class="sieve-col">2.36 mm (No. 8)</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+                        <tr><td class="sieve-col">1.18 mm (No. 16)</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+                        <tr><td class="sieve-col">0.600 mm (No. 30)</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+                        <tr><td class="sieve-col">0.300 mm (No. 50)</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+                        <tr><td class="sieve-col">0.150 mm (No. 100)</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+                        <tr><td class="sieve-col">0.075 mm (No. 200)</td><td class="highlight">Control</td><td class="range-col">1</td><td class="range-col">7</td><td>Dust content control</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="band-marshall12" class="band-content" style="display:none;">
+                <table class="band-table">
+                    <thead>
+                        <tr>
+                            <th>Sieve Size</th>
+                            <th>Control Point</th>
+                            <th>Min % Passing</th>
+                            <th>Max % Passing</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="sieve-col">19.0 mm (3/4")</td><td>—</td><td>100</td><td>100</td><td>100% passing</td></tr>
+                        <tr><td class="sieve-col">12.5 mm (1/2")</td><td class="highlight">Control</td><td class="range-col">90</td><td class="range-col">100</td><td>Primary control sieve</td></tr>
+                        <tr><td class="sieve-col">9.5 mm (3/8")</td><td class="restricted">Controlled</td><td>—</td><td class="range-col">90</td><td>Max 90% passing</td></tr>
+                        <tr><td class="sieve-col">4.75 mm (No. 4)</td><td class="highlight">Control</td><td class="range-col">44</td><td class="range-col">74</td><td>Key control point</td></tr>
+                        <tr><td class="sieve-col">2.36 mm (No. 8)</td><td>—</td><td>28</td><td>58</td><td>—</td></tr>
+                        <tr><td class="sieve-col">1.18 mm (No. 16)</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+                        <tr><td class="sieve-col">0.600 mm (No. 30)</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+                        <tr><td class="sieve-col">0.300 mm (No. 50)</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+                        <tr><td class="sieve-col">0.150 mm (No. 100)</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+                        <tr><td class="sieve-col">0.075 mm (No. 200)</td><td class="highlight">Control</td><td class="range-col">2</td><td class="range-col">8</td><td>Dust content control</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="band-marshall19" class="band-content" style="display:none;">
+                <table class="band-table">
+                    <thead>
+                        <tr>
+                            <th>Sieve Size</th>
+                            <th>Control Point</th>
+                            <th>Min % Passing</th>
+                            <th>Max % Passing</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="sieve-col">25.0 mm (1")</td><td>—</td><td>100</td><td>100</td><td>100% passing</td></tr>
+                        <tr><td class="sieve-col">19.0 mm (3/4")</td><td class="highlight">Control</td><td class="range-col">90</td><td class="range-col">100</td><td>Primary control sieve</td></tr>
+                        <tr><td class="sieve-col">12.5 mm (1/2")</td><td class="restricted">Controlled</td><td>—</td><td class="range-col">90</td><td>Max 90% passing</td></tr>
+                        <tr><td class="sieve-col">9.5 mm (3/8")</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+                        <tr><td class="sieve-col">4.75 mm (No. 4)</td><td class="highlight">Control</td><td class="range-col">35</td><td class="range-col">65</td><td>Key control point</td></tr>
+                        <tr><td class="sieve-col">2.36 mm (No. 8)</td><td>—</td><td>23</td><td>52</td><td>—</td></tr>
+                        <tr><td class="sieve-col">1.18 mm (No. 16)</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+                        <tr><td class="sieve-col">0.600 mm (No. 30)</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+                        <tr><td class="sieve-col">0.300 mm (No. 50)</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+                        <tr><td class="sieve-col">0.150 mm (No. 100)</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+                        <tr><td class="sieve-col">0.075 mm (No. 200)</td><td class="highlight">Control</td><td class="range-col">2</td><td class="range-col">8</td><td>Dust content control</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="chart-section">
+                <div class="chart-title">Gradation Curve Visualization (0.45 Power Chart)</div>
+                <div class="chart-placeholder">📈 0.45 Power Gradation Chart — Plot blend gradation against control points and restricted zone</div>
+            </div>
+
+            <div class="notes-section">
+                <div class="notes-title">Restricted Zone Avoidance</div>
+                <ul class="notes-list">
+                    <li>Restricted zone: Sieve sizes between control points where gradation should not pass through</li>
+                    <li>Superpave 12.5mm: Avoid passing through 9.5mm restricted zone (max 90% passing)</li>
+                    <li>Superpave 19mm: Avoid passing through 12.5mm restricted zone (max 90% passing)</li>
+                    <li>Marshall: Controlled points act similarly — max 90% at adjacent sieve</li>
+                    <li>Passing through restricted zone → tender mix, compaction problems</li>
+                    <li>Use 0.45 power chart to visualize and verify compliance</li>
+                    <li>Blend 3+ aggregate sources to achieve target gradation curve</li>
+                </ul>
+            </div>
+
+            <a href="../asphalt.html" class="back-btn">← Back to Asphalt & Marshall</a>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+    <script src="../../components.js"></script>
+    <script>
+        function showBand(id) {
+            document.querySelectorAll('.band-content').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.band-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('band-' + id).style.display = 'block';
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>

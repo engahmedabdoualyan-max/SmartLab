@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Gradation Chart</title>
+    <link rel="icon" href="../favicon.ico">
+    <link rel="stylesheet" href="design-common.css">
+    <style>
+        :root { --accent-page: #fb923c; }
+        body { color-scheme: dark; }
+        .design-icon { background: rgba(251,146,60,0.1); border-color: rgba(251,146,60,0.4); }
+        .back-btn { background: rgba(251,146,60,0.1); border-color: rgba(251,146,60,0.2); }
+        .back-btn:hover { background: rgba(251,146,60,0.2); }
+        .notes-section { background: rgba(251,146,60,0.04); border-color: rgba(251,146,60,0.1); }
+        .band-btn { background: rgba(251,146,60,0.1); border-color: rgba(251,146,60,0.2); color: var(--accent-orange); }
+        .band-btn:hover, .band-btn.active { background: rgba(251,146,60,0.2); border-color: var(--accent-orange); }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    <div class="page">
+        <nav class="breadcrumb">
+            <a href="../soil.html">Soil & Roads</a>
+            <span>/</span>
+            <a href="design-pavement.html">Design Tools</a>
+            <span>/</span>
+            <span>Gradation Chart</span>
+        </nav>
+        <h1 class="page-title">Gradation <span>Chart</span></h1>
+        <p class="page-sub">Sieve Analysis Plotting — Gradation curves, specification bands, blend design, and coefficient calculations per ASTM D6913 / AASHTO T 88</p>
+
+        <section class="design-section">
+            <div class="design-header">
+                <div class="design-icon">📊</div>
+                <div>
+                    <div class="design-title">Gradation Curve Analyzer</div>
+                    <div class="design-desc">Plot sieve analysis data, overlay specification bands (ASTM C33, AASHTO M 43, DOT specs), design blends, calculate coefficients.</div>
+                </div>
+            </div>
+
+            <div class="tab-row">
+                <button class="tab-btn active" onclick="switchTab('plot', this)">Plot Curve</button>
+                <button class="tab-btn" onclick="switchTab('bands', this)">Spec Bands</button>
+                <button class="tab-btn" onclick="switchTab('blend', this)">Blend Design</button>
+                <button class="tab-btn" onclick="switchTab('stats', this)">Statistics</button>
+            </div>
+
+            <!-- TAB 1: PLOT CURVE -->
+            <div class="tab-panel active" id="panel-plot">
+                <div class="two-col">
+                    <div class="sidebar">
+                        <div class="sidebar-title">📊 Sieve Data Entry</div>
+                        <div class="form-grid" style="margin-top:8px;">
+                            <div class="form-field"><label>3" (75 mm)</label><input type="number" id="g3in" value="100" step="0.1"><span class="unit">% pass</span></div>
+                            <div class="form-field"><label>2" (50 mm)</label><input type="number" id="g2in" value="100" step="0.1"><span class="unit">% pass</span></div>
+                            <div class="form-field"><label>1.5" (37.5 mm)</label><input type="number" id="g1.5in" value="100" step="0.1"><span class="unit">% pass</span></div>
+                            <div class="form-field"><label>1" (25 mm)</label><input type="number" id="g1in" value="100" step="0.1"><span class="unit">% pass</span></div>
+                            <div class="form-field"><label>3/4" (19 mm)</label><input type="number" id="g34in" value="95" step="0.1"><span class="unit">% pass</span></div>
+                            <div class="form-field"><label>1/2" (12.5 mm)</label><input type="number" id="g12in" value="82" step="0.1"><span class="unit">% pass</span></div>
+                            <div class="form-field"><label>3/8" (9.5 mm)</label><input type="number" id="g38in" value="70" step="0.1"><span class="unit">% pass</span></div>
+                            <div class="form-field"><label>#4 (4.75 mm)</label><input type="number" id="g4" value="55" step="0.1"><span class="unit">% pass</span></div>
+                            <div class="form-field"><label>#8 (2.36 mm)</label><input type="number" id="g8" value="42" step="0.1"><span class="unit">% pass</span></div>
+                            <div class="form-field"><label>#16 (1.18 mm)</label><input type="number" id="g16" value="30" step="0.1"><span class="unit">% pass</span></div>
+                            <div class="form-field"><label>#30 (0.6 mm)</label><input type="number" id="g30" value="18" step="0.1"><span class="unit">% pass</span></div>
+                            <div class="form-field"><label>#50 (0.3 mm)</label><input type="number" id="g50" value="10" step="0.1"><span class="unit">% pass</span></div>
+                            <div class="form-field"><label>#100 (0.15 mm)</label><input type="number" id="g100" value="5" step="0.1"><span class="unit">% pass</span></div>
+                            <div class="form-field"><label>#200 (0.075 mm)</label><input type="number" id="g200" value="3" step="0.1"><span class="unit">% pass</span></div>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Sample ID</label>
+                            <input type="text" class="sidebar-input" id="sampleId" value="B-2024-001">
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Material Type</label>
+                            <select class="sidebar-input" id="matType">
+                                <option value="coarse">Coarse Aggregate</option>
+                                <option value="fine">Fine Aggregate</option>
+                                <option value="base">Base Course</option>
+                                <option value="subbase">Subbase</option>
+                                <option value="soil">General Soil</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="plotGradation()">📊 Plot Curve</button>
+                    </div>
+
+                    <div>
+                        <div id="plotResults" style="display:none;">
+                            <h3 style="color:var(--accent-orange);margin-bottom:16px;">📈 Gradation Curve</h3>
+                            <div class="chart-section">
+                                <canvas class="chart-canvas" id="gradChart"></canvas>
+                            </div>
+
+                            <div class="result-grid" style="margin-top:16px;">
+                                <div class="result-card"><div class="result-icon">📐</div><div class="result-label">Cu (Uniformity)</div><div class="result-value" id="gCu">--</div></div>
+                                <div class="result-card"><div class="result-icon">📐</div><div class="result-label">Cc (Curvature)</div><div class="result-value" id="gCc">--</div></div>
+                                <div class="result-card"><div class="result-icon">📏</div><div class="result-label">D10</div><div class="result-value" id="gD10">-- mm</div></div>
+                                <div class="result-card"><div class="result-icon">📏</div><div class="result-label">D30</div><div class="result-value" id="gD30">-- mm</div></div>
+                                <div class="result-card"><div class="result-icon">📏</div><div class="result-label">D60</div><div class="result-value" id="gD60">-- mm</div></div>
+                                <div class="result-card"><div class="result-icon">📏</div><div class="result-label">FM (Fineness Modulus)</div><div class="result-value" id="gFM">--</div></div>
+                            </div>
+
+                            <div class="table-container" style="margin-top:16px;">
+                                <table>
+                                    <thead><tr><th>Sieve</th><th style="text-align:center">Size (mm)</th><th style="text-align:center">% Passing</th><th style="text-align:center">% Retained</th></tr></thead>
+                                    <tbody id="gradTable"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div id="plotPlaceholder" style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+                            <div style="font-size:48px;margin-bottom:16px;">📊</div>
+                            <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Enter Sieve Data</div>
+                            <div style="font-size:13px;max-width:400px;">Input % passing for each sieve. Click <strong>Plot Curve</strong> to analyze.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: SPEC BANDS -->
+            <div class="tab-panel" id="panel-bands">
+                <h3 style="color:var(--accent-orange);margin-bottom:16px;">📋 Specification Bands Overlay</h3>
+                <div class="form-grid" style="margin-bottom:16px;">
+                    <div class="form-field"><label>Select Specification</label>
+                        <select id="specSelect">
+                            <option value="ASTM_C33_CA">ASTM C33 - Coarse Aggregate (#57, #67, #78)</option>
+                            <option value="ASTM_C33_FA">ASTM C33 - Fine Aggregate (Concrete Sand)</option>
+                            <option value="AASHTO_M43">AASHTO M 43 - Coarse Aggregate Sizes</option>
+                            <option value="AASHTO_M147">AASHTO M 147 - Base/Subbase</option>
+                            <option value="DOT_Standard">State DOT Standard Spec</option>
+                            <option value="custom">Custom Band</option>
+                        </select>
+                    </div>
+                    <div class="form-field"><label>Size Designation</label>
+                        <select id="sizeDesignation">
+                            <option value="57">#57 (1" to #4)</option>
+                            <option value="67">#67 (3/4" to #4)</option>
+                            <option value="78">#78 (1/2" to #8)</option>
+                            <option value="89">#89 (3/8" to #16)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="chart-section">
+                    <div class="chart-title">📊 Gradation with Specification Band</div>
+                    <canvas class="chart-canvas" id="bandChart"></canvas>
+                </div>
+
+                <div class="table-container" style="margin-top:16px;">
+                    <table>
+                        <thead><tr><th>Sieve</th><th style="text-align:center">Size (mm)</th><th style="text-align:center">Min % Pass</th><th style="text-align:center">Max % Pass</th><th style="text-align:center">Sample % Pass</th><th style="text-align:center">Status</th></tr></thead>
+                        <tbody id="bandTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 3: BLEND DESIGN -->
+            <div class="tab-panel" id="panel-blend">
+                <h3 style="color:var(--accent-orange);margin-bottom:16px;">🔀 Aggregate Blend Designer</h3>
+                <div class="two-col">
+                    <div class="sidebar">
+                        <div class="sidebar-title">🧱 Component Aggregates</div>
+                        <div class="form-grid" style="margin-top:8px;">
+                            <div class="form-field"><label>Aggregate 1 Name</label><input type="text" id="a1Name" value="Coarse Stone (#57)"></div>
+                            <div class="form-field"><label>Aggregate 1 %</label><input type="number" id="a1Pct" value="50" step="1"><span class="unit">%</span></div>
+                            <div class="form-field"><label>Aggregate 2 Name</label><input type="text" id="a2Name" value="Fine Sand (FM=2.8)"></div>
+                            <div class="form-field"><label>Aggregate 2 %</label><input type="number" id="a2Pct" value="30" step="1"><span class="unit">%</span></div>
+                            <div class="form-field"><label>Aggregate 3 Name</label><input type="text" id="a3Name" value="Manufactured Sand"></div>
+                            <div class="form-field"><label>Aggregate 3 %</label><input type="number" id="a3Pct" value="20" step="1"><span class="unit">%</span></div>
+                        </div>
+
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Target Specification</label>
+                            <select class="sidebar-input" id="blendTarget">
+                                <option value="ASTM_C33_CA">ASTM C33 Coarse (#57)</option>
+                                <option value="ASTM_C33_FA">ASTM C33 Fine Sand</option>
+                                <option value="Base_Course">Base Course</option>
+                            </select>
+                        </div>
+
+                        <button class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="calcBlend()">🔀 Calculate Blend</button>
+                    </div>
+
+                    <div>
+                        <div id="blendResults" style="display:none;">
+                            <h3 style="color:var(--accent-orange);margin-bottom:16px;">📋 Blend Gradation</h3>
+                            <div class="chart-section">
+                                <div class="chart-title">📊 Blend Curve vs Target</div>
+                                <canvas class="chart-canvas" id="blendChart"></canvas>
+                            </div>
+
+                            <div class="table-container" style="margin-top:16px;">
+                                <table>
+                                    <thead><tr><th>Sieve</th><th style="text-align:center">Size (mm)</th><th style="text-align:center">Blend % Pass</th><th style="text-align:center">Target Min</th><th style="text-align:center">Target Max</th><th style="text-align:center">Status</th></tr></thead>
+                                    <tbody id="blendTable"></tbody>
+                                </table>
+                            </div>
+
+                            <div class="result-grid" style="margin-top:16px;">
+                                <div class="result-card"><div class="result-icon">📐</div><div class="result-label">Blend Cu</div><div class="result-value" id="bCu">--</div></div>
+                                <div class="result-card"><div class="result-icon">📐</div><div class="result-label">Blend Cc</div><div class="result-value" id="bCc">--</div></div>
+                                <div class="result-card"><div class="result-icon">📏</div><div class="result-label">Blend FM</div><div class="result-value" id="bFM">--</div></div>
+                            </div>
+                        </div>
+
+                        <div id="blendPlaceholder" style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+                            <div style="font-size:48px;margin-bottom:16px;">🔀</div>
+                            <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Define Components</div>
+                            <div style="font-size:13px;max-width:400px;">Enter component gradations and percentages. Click <strong>Calculate Blend</strong>.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: STATISTICS -->
+            <div class="tab-panel" id="panel-stats">
+                <h3 style="color:var(--accent-orange);margin-bottom:16px;">📊 Statistical Analysis</h3>
+                <div class="spec-grid">
+                    <div class="spec-item">
+                        <div class="spec-title">📐 Coefficient of Uniformity (Cu)</div>
+                        <div class="spec-desc">Cu = D₆₀ / D₁₀. Cu > 4 (gravel) or > 6 (sand) = well-graded. Cu < 4 = poorly graded/uniform.</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">📐 Coefficient of Curvature (Cc)</div>
+                        <div class="spec-desc">Cc = (D₃₀)² / (D₁₀ × D₆₀). 1 ≤ Cc ≤ 3 = well-graded. Outside = gap-graded or poorly graded.</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">📏 Fineness Modulus (FM)</div>
+                        <div class="spec-desc">FM = Σ(% retained on #100, #50, #30, #16, #8, #4, #3/8, #3/4, #1.5, #3, #6) / 100. Typical sand: 2.3-3.1.</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">📊 Gradation Types</div>
+                        <div class="spec-desc">
+                            <strong>Well-graded:</strong> Wide range, smooth curve, Cu≥4/6, 1≤Cc≤3<br>
+                            <strong>Poorly-graded (Uniform):</strong> Narrow range, steep curve, Cu<4/6<br>
+                            <strong>Gap-graded:</strong> Missing intermediate sizes, Cc outside 1-3<br>
+                            <strong>Open-graded:</strong> Very low fines, high permeability
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-container" style="margin-top:24px;">
+                    <table>
+                        <thead><tr><th>Parameter</th><th>Formula</th><th style="text-align:right">Value</th><th>Interpretation</th></tr></thead>
+                        <tbody id="statsTable"></tbody>
+                    </table>
+                </div>
+
+                <div class="formula-section" style="margin-top:16px;">
+                    <div class="formula-title">📐 Key Sieve Size Interpolation</div>
+                    <div class="code-block">
+For percentile P (D₁₀, D₃₀, D₆₀):
+Find sieves where %pass₁ ≥ P ≥ %pass₂
+Dₚ = D₂ + (D₁ - D₂) × (P - %pass₂) / (%pass₁ - %pass₂)
+
+Log-log interpolation (more accurate):
+log(Dₚ) = log(D₂) + (log(D₁) - log(D₂)) × (P - %pass₂) / (%pass₁ - %pass₂)
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <a href="../soil.html" class="back-btn">← Back to Soil & Roads</a>
+    </div>
+    <div id="footer-placeholder"></div>
+    <script src="../components.js"></script>
+    <script>
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('panel-' + tabId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        // Standard sieve sizes (mm)
+        const stdSieves = [
+            {label: '3"', mm: 75, id: 'g3in'},
+            {label: '2"', mm: 50, id: 'g2in'},
+            {label: '1.5"', mm: 37.5, id: 'g1.5in'},
+            {label: '1"', mm: 25, id: 'g1in'},
+            {label: '3/4"', mm: 19, id: 'g34in'},
+            {label: '1/2"', mm: 12.5, id: 'g12in'},
+            {label: '3/8"', mm: 9.5, id: 'g38in'},
+            {label: '#4', mm: 4.75, id: 'g4'},
+            {label: '#8', mm: 2.36, id: 'g8'},
+            {label: '#16', mm: 1.18, id: 'g16'},
+            {label: '#30', mm: 0.6, id: 'g30'},
+            {label: '#50', mm: 0.3, id: 'g50'},
+            {label: '#100', mm: 0.15, id: 'g100'},
+            {label: '#200', mm: 0.075, id: 'g200'}
+        ];
+
+        // Spec bands
+        const specBands = {
+            ASTM_C33_CA_57: {name: 'ASTM C33 #57', sieves: {25: [100,100], 19: [95,100], 12.5: [25,60], 9.5: [0,10], 4.75: [0,5]}},
+            ASTM_C33_CA_67: {name: 'ASTM C33 #67', sieves: {19: [100,100], 12.5: [90,100], 9.5: [20,55], 4.75: [0,10], 2.36: [0,5]}},
+            ASTM_C33_CA_78: {name: 'ASTM C33 #78', sieves: {12.5: [100,100], 9.5: [90,100], 4.75: [20,45], 2.36: [0,15], 1.18: [0,5]}},
+            ASTM_C33_FA: {name: 'ASTM C33 Fine Sand', sieves: {9.5: [100,100], 4.75: [95,100], 2.36: [80,100], 1.18: [50,85], 0.6: [25,60], 0.3: [5,30], 0.15: [0,10]}},
+            AASHTO_M147_A: {name: 'AASHTO M 147 Class A', sieves: {50: [100,100], 25: [80,100], 19: [65,90], 4.75: [40,65], 0.425: [15,35], 0.075: [5,15]}},
+            Base_Course: {name: 'Typical Base Course', sieves: {37.5: [100,100], 25: [85,100], 19: [70,90], 4.75: [40,60], 0.425: [15,30], 0.075: [5,12]}}
+        };
+
+        function plotGradation() {
+            const points = stdSieves.map(s => ({
+                label: s.label,
+                mm: s.mm,
+                passing: parseFloat(document.getElementById(s.id).value) || 0
+            })).filter(p => p.passing > 0 || p.mm >= 0.075);
+
+            // Calculate D10, D30, D60
+            const d10 = interpD(10, points);
+            const d30 = interpD(30, points);
+            const d60 = interpD(60, points);
+            const Cu = d10 > 0 ? (d60 / d10).toFixed(2) : '—';
+            const Cc = (d10 > 0 && d60 > 0) ? ((d30 * d30) / (d10 * d60)).toFixed(2) : '—';
+
+            // Fineness Modulus
+            const fmSieves = [0.15, 0.3, 0.6, 1.18, 2.36, 4.75, 9.5, 19, 37.5, 75];
+            let fmSum = 0;
+            fmSieves.forEach(sz => {
+                const p = interpP(sz, points);
+                fmSum += (100 - p);
+            });
+            const FM = (fmSum / 100).toFixed(2);
+
+            // Display
+            document.getElementById('gCu').textContent = Cu;
+            document.getElementById('gCc').textContent = Cc;
+            document.getElementById('gD10').textContent = d10 > 0 ? d10.toFixed(3) : '—';
+            document.getElementById('gD30').textContent = d30 > 0 ? d30.toFixed(3) : '—';
+            document.getElementById('gD60').textContent = d60 > 0 ? d60.toFixed(3) : '—';
+            document.getElementById('gFM').textContent = FM;
+
+            // Table
+            const tbody = document.getElementById('gradTable');
+            tbody.innerHTML = '';
+            points.forEach(p => {
+                const retained = 100 - p.passing;
+                tbody.innerHTML += `<tr>
+                    <td>${p.label}</td>
+                    <td style="text-align:center">${p.mm}</td>
+                    <td style="text-align:center">${p.passing.toFixed(1)}</td>
+                    <td style="text-align:center">${retained.toFixed(1)}</td>
+                </tr>`;
+            });
+
+            drawGradChart(points, d10, d30, d60);
+            document.getElementById('plotPlaceholder').style.display = 'none';
+            document.getElementById('plotResults').style.display = 'block';
+        }
+
+        function interpD(percent, points) {
+            for (let i = 0; i < points.length - 1; i++) {
+                if (points[i].passing >= percent && points[i+1].passing <= percent) {
+                    const ratio = (percent - points[i+1].passing) / (points[i].passing - points[i+1].passing);
+                    // Log-log interpolation
+                    return Math.exp(Math.log(points[i+1].mm) + ratio * (Math.log(points[i].mm) - Math.log(points[i+1].mm)));
+                }
+            }
+            return 0;
+        }
+
+        function interpP(size, points) {
+            for (let i = 0; i < points.length - 1; i++) {
+                if (points[i].mm >= size && points[i+1].mm <= size) {
+                    const ratio = (Math.log(points[i].mm) - Math.log(size)) / (Math.log(points[i].mm) - Math.log(points[i+1].mm));
+                    return points[i+1].passing + ratio * (points[i].passing - points[i+1].passing);
+                }
+            }
+            return points[points.length-1].passing;
+        }
+
+        function drawGradChart(points, d10, d30, d60) {
+            const canvas = document.getElementById('gradChart');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 300;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const padding = 60;
+            const w = canvas.width - 2 * padding;
+            const h = canvas.height - 2 * padding;
+            const maxSize = 75, minSize = 0.075;
+
+            // Grid
+            ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+            for (let i = 0; i <= 5; i++) {
+                const y = padding + (i/5)*h;
+                const x = padding + (i/5)*w;
+                ctx.beginPath(); ctx.moveTo(x, padding); ctx.lineTo(x, canvas.height-padding); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(padding, y); ctx.lineTo(canvas.width-padding, y); ctx.stroke();
+                ctx.fillStyle = 'var(--text-muted)'; ctx.font = '11px monospace';
+                ctx.fillText((100*(1-i/5)).toFixed(0)+'%', 10, y+4);
+            }
+            const szLabels = [75, 25, 9.5, 2, 0.425, 0.075];
+            szLabels.forEach((sz, i) => {
+                const x = padding + (Math.log10(maxSize/sz) / Math.log10(maxSize/minSize)) * w;
+                ctx.fillStyle = 'var(--text-muted)'; ctx.font = '10px monospace';
+                ctx.fillText(sz + (sz>=1?'mm':'mm'), x-10, canvas.height-padding+18);
+            });
+
+            // Curve
+            ctx.strokeStyle = 'var(--accent-orange)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            points.forEach((p, i) => {
+                const x = padding + (Math.log10(maxSize/p.mm) / Math.log10(maxSize/minSize)) * w;
+                const y = canvas.height - padding - (p.passing/100)*h;
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+
+            // Points
+            ctx.fillStyle = 'var(--accent-orange)';
+            points.forEach(p => {
+                const x = padding + (Math.log10(maxSize/p.mm) / Math.log10(maxSize/minSize)) * w;
+                const y = canvas.height - padding - (p.passing/100)*h;
+                ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI*2); ctx.fill();
+            });
+
+            // D10, D30, D60 markers
+            [d10, d30, d60].forEach((d, i) => {
+                if (d > 0) {
+                    const p = interpP(d, points);
+                    const x = padding + (Math.log10(maxSize/d) / Math.log10(maxSize/minSize)) * w;
+                    const y = canvas.height - padding - (p/100)*h;
+                    ctx.fillStyle = ['var(--accent-red)','var(--accent-gold)','var(--accent-emerald)'][i];
+                    ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = 'var(--text-muted)'; ctx.font = '10px monospace';
+                    ctx.fillText(['D10','D30','D60'][i], x-10, y-10);
+                }
+            });
+        }
+
+        // Spec band plotting
+        document.getElementById('specSelect').addEventListener('change', function() {
+            plotWithBand();
+        });
+        document.getElementById('sizeDesignation').addEventListener('change', function() {
+            plotWithBand();
+        });
+
+        function plotWithBand() {
+            const specKey = document.getElementById('specSelect').value + '_' + document.getElementById('sizeDesignation').value;
+            const spec = specBands[specKey] || specBands.ASTM_C33_CA_57;
+
+            // Get current sample data
+            const points = stdSieves.map(s => ({
+                label: s.label, mm: s.mm,
+                passing: parseFloat(document.getElementById(s.id).value) || 0
+            })).filter(p => p.passing > 0 || p.mm >= 0.075);
+
+            drawBandChart(points, spec);
+            buildBandTable(points, spec);
+        }
+
+        function drawBandChart(points, spec) {
+            const canvas = document.getElementById('bandChart');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 300;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const padding = 60;
+            const w = canvas.width - 2 * padding;
+            const h = canvas.height - 2 * padding;
+            const maxSize = 75, minSize = 0.075;
+
+            // Grid
+            ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+            for (let i = 0; i <= 5; i++) {
+                const y = padding + (i/5)*h;
+                const x = padding + (i/5)*w;
+                ctx.beginPath(); ctx.moveTo(x, padding); ctx.lineTo(x, canvas.height-padding); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(padding, y); ctx.lineTo(canvas.width-padding, y); ctx.stroke();
+            }
+
+            // Spec band (min-max envelope)
+            const bandSieves = Object.keys(spec.sieves).map(k => parseFloat(k)).sort((a,b)=>b-a);
+            ctx.fillStyle = 'rgba(251,146,60,0.1)';
+            ctx.beginPath();
+            // Upper bound
+            bandSieves.forEach((sz, i) => {
+                const x = padding + (Math.log10(maxSize/sz) / Math.log10(maxSize/minSize)) * w;
+                const y = canvas.height - padding - (spec.sieves[sz][1]/100)*h;
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            });
+            // Lower bound (reverse)
+            [...bandSieves].reverse().forEach((sz, i) => {
+                const x = padding + (Math.log10(maxSize/sz) / Math.log10(maxSize/minSize)) * w;
+                const y = canvas.height - padding - (spec.sieves[sz][0]/100)*h;
+                ctx.lineTo(x, y);
+            });
+            ctx.closePath();
+            ctx.fill();
+
+            // Sample curve
+            ctx.strokeStyle = 'var(--accent-orange)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            points.forEach((p, i) => {
+                const x = padding + (Math.log10(maxSize/p.mm) / Math.log10(maxSize/minSize)) * w;
+                const y = canvas.height - padding - (p.passing/100)*h;
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+
+            // Sample points
+            ctx.fillStyle = 'var(--accent-orange)';
+            points.forEach(p => {
+                const x = padding + (Math.log10(maxSize/p.mm) / Math.log10(maxSize/minSize)) * w;
+                const y = canvas.height - padding - (p.passing/100)*h;
+                ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI*2); ctx.fill();
+            });
+        }
+
+        function buildBandTable(points, spec) {
+            const tbody = document.getElementById('bandTable');
+            tbody.innerHTML = '';
+            Object.keys(spec.sieves).sort((a,b)=>b-a).forEach(sz => {
+                const [min, max] = spec.sieves[sz];
+                const sampleP = interpP(parseFloat(sz), points);
+                const status = sampleP >= min && sampleP <= max ? '✅ PASS' : '❌ FAIL';
+                const statusClass = sampleP >= min && sampleP <= max ? 'style="color:var(--accent-emerald)"' : 'style="color:var(--accent-red)"';
+                tbody.innerHTML += `<tr>
+                    <td>${sz} mm</td>
+                    <td style="text-align:center">${sz}</td>
+                    <td style="text-align:center">${min}</td>
+                    <td style="text-align:center">${max}</td>
+                    <td style="text-align:center">${sampleP.toFixed(1)}</td>
+                    <td style="text-align:center" ${statusClass}>${status}</td>
+                </tr>`;
+            });
+        }
+
+        // Blend design
+        function calcBlend() {
+            const a1Pct = parseFloat(document.getElementById('a1Pct').value) / 100;
+            const a2Pct = parseFloat(document.getElementById('a2Pct').value) / 100;
+            const a3Pct = parseFloat(document.getElementById('a3Pct').value) / 100;
+
+            // Example component gradations (simplified)
+            const comps = [
+                {name: document.getElementById('a1Name').value, pct: a1Pct,
+                 passing: {75:100, 50:100, 37.5:100, 25:100, 19:95, 12.5:50, 9.5:20, 4.75:5, 2.36:2, 1.18:1, 0.6:0.5, 0.3:0.2, 0.15:0.1, 0.075:0.1}},
+                {name: document.getElementById('a2Name').value, pct: a2Pct,
+                 passing: {75:100, 50:100, 37.5:100, 25:100, 19:100, 12.5:100, 9.5:100, 4.75:95, 2.36:80, 1.18:50, 0.6:25, 0.3:10, 0.15:5, 0.075:3}},
+                {name: document.getElementById('a3Name').value, pct: a3Pct,
+                 passing: {75:100, 50:100, 37.5:100, 25:100, 19:100, 12.5:100, 9.5:95, 4.75:80, 2.36:60, 1.18:35, 0.6:18, 0.3:8, 0.15:4, 0.075:2}}
+            ];
+
+            // Calculate blend
+            const sizes = [75, 50, 37.5, 25, 19, 12.5, 9.5, 4.75, 2.36, 1.18, 0.6, 0.3, 0.15, 0.075];
+            const blend = sizes.map(sz => {
+                let sum = 0;
+                comps.forEach(c => sum += c.pct * (c.passing[sz] || 0));
+                return {size: sz, passing: sum};
+            });
+
+            // Stats
+            const d10 = interpDBlend(10, blend);
+            const d30 = interpDBlend(30, blend);
+            const d60 = interpDBlend(60, blend);
+            const Cu = d10 > 0 ? (d60/d10).toFixed(2) : '—';
+            const Cc = (d10>0 && d60>0) ? ((d30*d30)/(d10*d60)).toFixed(2) : '—';
+
+            // FM
+            const fmSieves = [0.15, 0.3, 0.6, 1.18, 2.36, 4.75, 9.5, 19, 37.5, 75];
+            let fmSum = 0;
+            fmSieves.forEach(sz => {
+                const p = interpPBlend(sz, blend);
+                fmSum += (100 - p);
+            });
+            const FM = (fmSum/100).toFixed(2);
+
+            document.getElementById('bCu').textContent = Cu;
+            document.getElementById('bCc').textContent = Cc;
+            document.getElementById('bFM').textContent = FM;
+
+            // Target spec
+            const target = specBands.Base_Course;
+
+            // Table
+            const tbody = document.getElementById('blendTable');
+            tbody.innerHTML = '';
+            [37.5, 25, 19, 4.75, 0.425, 0.075].forEach(sz => {
+                const [min, max] = target.sieves[sz] || [0,100];
+                const sampleP = interpPBlend(sz, blend);
+                const status = sampleP >= min && sampleP <= max ? '✅ PASS' : '❌ FAIL';
+                const sClass = sampleP >= min && sampleP <= max ? 'color:var(--accent-emerald)' : 'color:var(--accent-red)';
+                tbody.innerHTML += `<tr>
+                    <td>${sz} mm</td>
+                    <td style="text-align:center">${sz}</td>
+                    <td style="text-align:center">${sampleP.toFixed(1)}</td>
+                    <td style="text-align:center">${min}</td>
+                    <td style="text-align:center">${max}</td>
+                    <td style="text-align:center" style="${sClass}">${status}</td>
+                </tr>`;
+            });
+
+            drawBlendChart(blend, target);
+            document.getElementById('blendPlaceholder').style.display = 'none';
+            document.getElementById('blendResults').style.display = 'block';
+        }
+
+        function interpDBlend(percent, blend) {
+            for (let i = 0; i < blend.length - 1; i++) {
+                if (blend[i].passing >= percent && blend[i+1].passing <= percent) {
+                    const ratio = (percent - blend[i+1].passing) / (blend[i].passing - blend[i+1].passing);
+                    return Math.exp(Math.log(blend[i+1].size) + ratio * (Math.log(blend[i].size) - Math.log(blend[i+1].size)));
+                }
+            }
+            return 0;
+        }
+
+        function interpPBlend(size, blend) {
+            for (let i = 0; i < blend.length - 1; i++) {
+                if (blend[i].size >= size && blend[i+1].size <= size) {
+                    const ratio = (Math.log(blend[i].size) - Math.log(size)) / (Math.log(blend[i].size) - Math.log(blend[i+1].size));
+                    return blend[i+1].passing + ratio * (blend[i].passing - blend[i+1].passing);
+                }
+            }
+            return blend[blend.length-1].passing;
+        }
+
+        function drawBlendChart(blend, target) {
+            const canvas = document.getElementById('blendChart');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 300;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const padding = 60;
+            const w = canvas.width - 2 * padding;
+            const h = canvas.height - 2 * padding;
+            const maxSize = 75, minSize = 0.075;
+
+            // Grid
+            ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+            for (let i = 0; i <= 5; i++) {
+                const y = padding + (i/5)*h;
+                const x = padding + (i/5)*w;
+                ctx.beginPath(); ctx.moveTo(x, padding); ctx.lineTo(x, canvas.height-padding); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(padding, y); ctx.lineTo(canvas.width-padding, y); ctx.stroke();
+            }
+
+            // Target band
+            const bandSieves = Object.keys(target.sieves).map(k => parseFloat(k)).sort((a,b)=>b-a);
+            ctx.fillStyle = 'rgba(251,146,60,0.1)';
+            ctx.beginPath();
+            bandSieves.forEach((sz, i) => {
+                const x = padding + (Math.log10(maxSize/sz) / Math.log10(maxSize/minSize)) * w;
+                const y = canvas.height - padding - (target.sieves[sz][1]/100)*h;
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            });
+            [...bandSieves].reverse().forEach((sz, i) => {
+                const x = padding + (Math.log10(maxSize/sz) / Math.log10(maxSize/minSize)) * w;
+                const y = canvas.height - padding - (target.sieves[sz][0]/100)*h;
+                ctx.lineTo(x, y);
+            });
+            ctx.closePath(); ctx.fill();
+
+            // Blend curve
+            ctx.strokeStyle = 'var(--accent-orange)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            blend.forEach((b, i) => {
+                const x = padding + (Math.log10(maxSize/b.size) / Math.log10(maxSize/minSize)) * w;
+                const y = canvas.height - padding - (b.passing/100)*h;
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+
+            // Points
+            ctx.fillStyle = 'var(--accent-orange)';
+            blend.forEach(b => {
+                const x = padding + (Math.log10(maxSize/b.size) / Math.log10(maxSize/minSize)) * w;
+                const y = canvas.height - padding - (b.passing/100)*h;
+                ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI*2); ctx.fill();
+            });
+        }
+
+        // Statistics tab
+        function buildStatsTable() {
+            const points = stdSieves.map(s => ({
+                label: s.label, mm: s.mm,
+                passing: parseFloat(document.getElementById(s.id).value) || 0
+            })).filter(p => p.passing > 0 || p.mm >= 0.075);
+
+            const d10 = interpD(10, points);
+            const d30 = interpD(30, points);
+            const d60 = interpD(60, points);
+            const Cu = d10 > 0 ? (d60/d10).toFixed(2) : '—';
+            const Cc = (d10>0 && d60>0) ? ((d30*d30)/(d10*d60)).toFixed(2) : '—';
+
+            const tbody = document.getElementById('statsTable');
+            tbody.innerHTML = `
+                <tr><td>D₁₀ (Effective Size)</td><td>Interpolation at 10%</td><td style="text-align:right">${d10 > 0 ? d10.toFixed(3) : '—'}</td><td>${d10 > 0 ? 'Control size for permeability' : 'Need more fines'}</td></tr>
+                <tr><td>D₃₀</td><td>Interpolation at 30%</td><td style="text-align:right">${interpD(30, points) > 0 ? interpD(30, points).toFixed(3) : '—'}</td><td>Shape parameter</td></tr>
+                <tr><td>D₆₀</td><td>Interpolation at 60%</td><td style="text-align:right">${d60 > 0 ? d60.toFixed(3) : '—'}</td><td>Mean particle size</td></tr>
+                <tr><td>Cu (Uniformity)</td><td>D₆₀/D₁₀</td><td style="text-align:right">${Cu}</td><td>${Cu !== '—' && Cu >= 6 ? 'Well-graded (Cu≥6)' : Cu !== '—' && Cu >= 4 ? 'Well-graded (Cu≥4)' : 'Poorly graded'}</td></tr>
+                <tr><td>Cc (Curvature)</td><td>(D₃₀)²/(D₁₀×D₆₀)</td><td style="text-align:right">${Cc}</td><td>${Cc !== '—' && Cc >= 1 && Cc <= 3 ? 'Well-graded (1≤Cc≤3)' : 'Gap-graded'}</td></tr>
+                <tr><td>Fineness Modulus</td><td>Σ% retained / 100</td><td style="text-align:right">${(stdSieves.filter(s=>s.mm>=0.15).reduce((sum,s)=>{const p=interpP(s.mm,stdSieves.map(s=>({mm:s.mm,passing:parseFloat(document.getElementById(s.id).value)||0})));return sum+(100-p);},0)/100).toFixed(2)}</td><td>2.3-3.1 = concrete sand</td></tr>
+                <tr><td>% Gravel (>4.75mm)</td><td>100 - %pass #4</td><td style="text-align:right">${(100 - interpP(4.75, stdSieves.map(s=>({mm:s.mm,passing:parseFloat(document.getElementById(s.id).value)||0})))).toFixed(1)}%</td><td>Coarse fraction</td></tr>
+                <tr><td>% Sand (4.75-0.075mm)</td><td>%pass #4 - %pass #200</td><td style="text-align:right">${(interpP(4.75, points) - interpP(0.075, points)).toFixed(1)}%</td><td>Medium fraction</td></tr>
+                <tr><td>% Fines (<0.075mm)</td><td>%pass #200</td><td style="text-align:right">${interpP(0.075, points).toFixed(1)}%</td><td>Silt + clay</td></tr>
+            `;
+        }
+
+        // Initialize
+        buildStatsTable();
+    </script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Atterberg Limits Test</title>
+    <link rel="icon" href="../favicon.ico">
+    <link rel="stylesheet" href="test-common.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    <div class="page">
+        <a href="../soil.html" class="back-link">
+            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Back to Soil Tests
+        </a>
+
+        <h1 class="page-title">Atterberg <span>Limits</span></h1>
+        <p class="page-sub">Liquid limit, plastic limit & plasticity index per ASTM D4318</p>
+
+        <div class="level-top">
+            <span class="lt-label">Test Level</span>
+            <div class="lt-btns">
+                <button class="lt-btn active" data-level="quick">⚡ Quick</button>
+                <button class="lt-btn" data-level="unofficial">🏭 Unofficial</button>
+                <button class="lt-btn" data-level="certified">🔒 Certified</button>
+            </div>
+            <span class="lt-info">Classification critical</span>
+        </div>
+
+        <div class="billboard">
+            <div class="bb-inner">
+                <div class="bb-icon">🤲</div>
+                <div class="bb-body">
+                    <div class="bb-step-label">STEP 1/3</div>
+                    <div class="bb-title">Atterberg Limits Test</div>
+                    <div class="bb-desc">Determine liquid limit, plastic limit, and plasticity index</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="two-col">
+            <div class="sidebar">
+                <div class="sidebar-title">⚖ Test Inputs</div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Liquid Limit (LL)</label>
+                    <input type="number" class="sidebar-input" id="liquidLimit" value="45" step="1"><span class="unit">%</span>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Plastic Limit (PL)</label>
+                    <input type="number" class="sidebar-input" id="plasticLimit" value="22" step="1"><span class="unit">%</span>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Number of LL Tests</label>
+                    <input type="number" class="sidebar-input" id="llCount" value="3" min="2" max="5"><span class="unit">tests</span>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Test Method</label>
+                    <select class="sidebar-input" id="limitMethod">
+                        <option value="fall-cone">Fall Cone (ASTM D4318)</option>
+                        <option value="casagrande">Casagrande Cup</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="calcLimits()">🤲 Calculate Limits</button>
+            </div>
+
+            <div>
+                <div id="limitsResults" style="display:none;">
+                    <h3 style="color:var(--accent-orange);margin-bottom:16px;">📋 Atterberg Limits Results</h3>
+                    <div class="result-grid">
+                        <div class="result-card"><div class="result-icon">📊</div><div class="result-label">Liquid Limit</div><div class="result-value" id="rLL">--</div></div>
+                        <div class="result-card"><div class="result-icon">🤲</div><div class="result-label">Plastic Limit</div><div class="result-value" id="rPL">--</div></div>
+                        <div class="result-card"><div class="result-icon">📈</div><div class="result-label">Plasticity Index</div><div class="result-value" id="rPI">--</div></div>
+                    </div>
+
+                    <div class="chart-section" style="margin-top:24px;">
+                        <div class="chart-title">📈 Plasticity Chart</div>
+                        <canvas class="chart-canvas" id="limitsChart"></canvas>
+                    </div>
+
+                    <div class="spec-grid" style="margin-top:24px;">
+                        <div class="spec-item">
+                            <div class="spec-title">🎯 Soil Classification</div>
+                            <div class="spec-desc" id="soilClassDesc">Low plasticity soil - ML or CL classification likely</div>
+                        </div>
+                        <div class="spec-item">
+                            <div class="spec-title">💧 Shrinkage Potential</div>
+                            <div class="spec-desc" id="shrinkageDesc">Moderate shrinkage potential</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="limitsPlaceholder" style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+                    <div style="font-size:48px;margin-bottom:16px;">🤲</div>
+                    <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Enter Limits Data</div>
+                    <div style="font-size:13px;max-width:400px;">Input liquid and plastic limits to calculate plasticity index and classify soil.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="notes-section">
+            <div class="notes-title">📝 ASTM D4318 Method</div>
+            <ul class="notes-list">
+                <li>Liquid Limit: Moisture content where soil flows 13mm in 25 blows</li>
+                <li>Plastic Limit: Lowest moisture where soil can be rolled without cracking</li>
+                <li>Plasticity Index = LL - PL</li>
+                <li>LL range controls volumetric changes in fine-grained soils</li>
+            </ul>
+        </div>
+    </div>
+    <div id="footer-placeholder"></div>
+    <script src="../components.js"></script>
+    <script>
+        function calcLimits() {
+            const ll = parseFloat(document.getElementById('liquidLimit').value);
+            const pl = parseFloat(document.getElementById('plasticLimit').value);
+            const pi = ll - pl;
+            
+            let classification = '';
+            if (pi < 4) classification = 'Low plasticity - ML/CL borderline';
+            else if (pi < 7) classification = 'Low to moderate plasticity - CL likely';
+            else if (pi < 15) classification = 'Moderate plasticity - CL classification';
+            else if (pi < 25) classification = 'High plasticity - CH likely';
+            else classification = 'Very high plasticity - CH classification';
+            
+            let shrinkage = '';
+            if (pi < 5) shrinkage = 'Low shrinkage potential - minimal volume change';
+            else if (pi < 10) shrinkage = 'Moderate shrinkage potential - some cracking';
+            else if (pi < 20) shrinkage = 'Significant shrinkage - potential heave/shrink';
+            else shrinkage = 'High shrinkage potential - expansive soil';
+            
+            document.getElementById('limitsPlaceholder').style.display = 'none';
+            document.getElementById('limitsResults').style.display = 'block';
+            
+            document.getElementById('rLL').textContent = ll.toFixed(1) + '%';
+            document.getElementById('rPL').textContent = pl.toFixed(1) + '%';
+            document.getElementById('rPI').textContent = pi.toFixed(1);
+            document.getElementById('soilClassDesc').textContent = classification;
+            document.getElementById('shrinkageDesc').textContent = shrinkage;
+            
+            drawLimitsChart(pi);
+        }
+        
+        function drawLimitsChart(pi) {
+            const canvas = document.getElementById('limitsChart');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 200;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const max = 30;
+            const h = canvas.height - 40;
+            
+            // PI bar
+            ctx.fillStyle = 'var(--accent-orange)';
+            ctx.fillRect(60, 20, 100, h * pi / max);
+            ctx.fillStyle = 'var(--text-muted)';
+            ctx.font = '12px monospace';
+            ctx.fillText('PI', 60, canvas.height - 5);
+        }
+    </script>
+</body>
+</html>

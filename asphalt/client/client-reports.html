@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Test Reports</title>
+    <link rel="icon" href="../favicon.ico">
+    <link rel="stylesheet" href="client-common.css">
+
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="page">
+        <a href="../asphalt.html" class="back-link">
+            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            <span data-i18n="Back to Asphalt">Back to Asphalt & Marshall</span>
+        </a>
+
+        <h1 class="page-title" data-i18n="Test Reports">Test <span>Reports</span></h1>
+        <p class="page-sub" data-i18n="Reports desc">View, download, and manage all test reports for your projects</p>
+
+        <div class="section">
+            <div class="section-title"><span class="st-icon">📋</span> <span data-i18n="All Reports">All Reports</span></div>
+            
+            <div class="filters">
+                <select class="filter-select" id="projectFilter">
+                    <option value="all" data-i18n="All Projects">All Projects</option>
+                </select>
+                <select class="filter-select" id="testTypeFilter">
+                    <option value="all" data-i18n="All Test Types">All Test Types</option>
+                    <option value="marshall">Marshall Stability</option>
+                    <option value="flow">Flow Value</option>
+                    <option value="extraction">Bitumen Extraction</option>
+                    <option value="density">Density & Voids</option>
+                    <option value="gradation">Aggregate Gradation</option>
+                    <option value="ignition">Ignition Method</option>
+                </select>
+                <select class="filter-select" id="statusFilter">
+                    <option value="all" data-i18n="All Status">All Status</option>
+                    <option value="certified">Certified</option>
+                    <option value="unofficial">Unofficial</option>
+                    <option value="quick">Quick</option>
+                    <option value="rejected">Rejected</option>
+                </select>
+                <select class="filter-select" id="dateFilter">
+                    <option value="all" data-i18n="All Time">All Time</option>
+                    <option value="week">Last Week</option>
+                    <option value="month">Last Month</option>
+                    <option value="quarter">Last Quarter</option>
+                    <option value="year">Last Year</option>
+                </select>
+            </div>
+
+            <div id="reportsTableContainer">
+                <table class="report-table" id="reportsTable">
+                    <thead>
+                        <tr>
+                            <th data-i18n="Report ID">Report ID</th>
+                            <th data-i18n="Project">Project</th>
+                            <th data-i18n="Test Type">Test Type</th>
+                            <th data-i18n="Sample">Sample #</th>
+                            <th data-i18n="Date">Date</th>
+                            <th data-i18n="Level">Level</th>
+                            <th data-i18n="Status">Status</th>
+                            <th data-i18n="Actions">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportsBody"></tbody>
+                </table>
+            </div>
+            <div id="emptyReports" class="empty-state" style="display:none;">
+                <div class="icon">📋</div>
+                <h3 data-i18n="No Reports">No Reports Found</h3>
+                <p data-i18n="No reports match">No reports match your current filters.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var lang = localStorage.getItem('smartlab_lang') || 'en';
+        var reports = JSON.parse(localStorage.getItem('asphalt_reports') || '[]');
+        var projects = JSON.parse(localStorage.getItem('asphalt_projects') || '[]');
+
+        var testTypes = {
+            marshall: { name: 'Marshall Stability', icon: '🧪' },
+            flow: { name: 'Flow Value', icon: '💧' },
+            extraction: { name: 'Bitumen Extraction', icon: '🏭' },
+            density: { name: 'Density & Voids', icon: '⚗️' },
+            gradation: { name: 'Aggregate Gradation', icon: '🌍' },
+            ignition: { name: 'Ignition Method', icon: '🔥' }
+        };
+
+        // Generate sample reports if empty
+        if (reports.length === 0 && projects.length > 0) {
+            generateSampleReports();
+        }
+
+        function generateSampleReports() {
+            var levels = ['quick', 'unofficial', 'certified'];
+            var statuses = ['quick', 'unofficial', 'certified', 'rejected'];
+            var sampleReports = [];
+            
+            projects.forEach(function(project) {
+                (project.tests || []).forEach(function(testType) {
+                    var count = Math.floor(Math.random() * 3) + 1;
+                    for (var i = 0; i < count; i++) {
+                        var level = levels[Math.floor(Math.random() * levels.length)];
+                        var status = statuses[Math.floor(Math.random() * statuses.length)];
+                        var date = new Date(project.startDate || Date.now());
+                        date.setDate(date.getDate() + Math.floor(Math.random() * 30));
+                        
+                        sampleReports.push({
+                            id: 'RPT-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substr(2, 4).toUpperCase(),
+                            projectId: project.id,
+                            projectName: project.name,
+                            testType: testType,
+                            sampleNumber: 'S-' + date.getFullYear() + '-' + (1000 + Math.floor(Math.random() * 9000)),
+                            date: date.toISOString().split('T')[0],
+                            level: level,
+                            status: status,
+                            hasPDF: true,
+                            hasExcel: true
+                        });
+                    }
+                });
+            });
+            
+            reports = sampleReports;
+            localStorage.setItem('asphalt_reports', JSON.stringify(reports));
+        }
+
+        function renderReports() {
+            var projectFilter = document.getElementById('projectFilter').value;
+            var testTypeFilter = document.getElementById('testTypeFilter').value;
+            var statusFilter = document.getElementById('statusFilter').value;
+            var dateFilter = document.getElementById('dateFilter').value;
+
+            var filtered = reports.filter(function(r) {
+                if (projectFilter !== 'all' && r.projectId !== projectFilter) return false;
+                if (testTypeFilter !== 'all' && r.testType !== testTypeFilter) return false;
+                if (statusFilter !== 'all' && r.status !== statusFilter) return false;
+                if (dateFilter !== 'all') {
+                    var reportDate = new Date(r.date);
+                    var now = new Date();
+                    var diffDays = (now - reportDate) / (1000 * 60 * 60 * 24);
+                    if (dateFilter === 'week' && diffDays > 7) return false;
+                    if (dateFilter === 'month' && diffDays > 30) return false;
+                    if (dateFilter === 'quarter' && diffDays > 90) return false;
+                    if (dateFilter === 'year' && diffDays > 365) return false;
+                }
+                return true;
+            });
+
+            var tbody = document.getElementById('reportsBody');
+            var container = document.getElementById('reportsTableContainer');
+            var empty = document.getElementById('emptyReports');
+
+            if (filtered.length === 0) {
+                container.style.display = 'none';
+                empty.style.display = 'block';
+                return;
+            }
+            container.style.display = 'block';
+            empty.style.display = 'none';
+
+            tbody.innerHTML = filtered.map(function(r) {
+                var testInfo = testTypes[r.testType] || { name: r.testType, icon: '📋' };
+                var statusClass = 'badge-' + r.status;
+                var statusText = r.status === 'certified' ? (lang==='ar'?'معتمد':'Certified') : 
+                                 r.status === 'unofficial' ? (lang==='ar'?'غير رسمي':'Unofficial') :
+                                 r.status === 'quick' ? (lang==='ar'?'سريع':'Quick') : (lang==='ar'?'مرفوض':'Rejected');
+                
+                var project = projects.find(function(p) { return p.id === r.projectId; });
+                
+                return '<tr>' +
+                    '<td><code>' + r.id + '</code></td>' +
+                    '<td>' + (project ? project.name : r.projectId) + '</td>' +
+                    '<td>' + testInfo.icon + ' ' + testInfo.name + '</td>' +
+                    '<td><code>' + r.sampleNumber + '</code></td>' +
+                    '<td>' + r.date + '</td>' +
+                    '<td>' + (r.status === 'certified' ? (lang==='ar'?'معتمد':'Certified') : r.status === 'unofficial' ? (lang==='ar'?'غير رسمي':'Unofficial') : (lang==='ar'?'سريع':'Quick')) + '</td>' +
+                    '<td><span class="badge ' + statusClass + '">' + statusText + '</span></td>' +
+                    '<td class="actions-cell">' +
+                        '<button class="btn-icon" onclick="viewReport(\'' + r.id + '\')" title="View" data-i18n="View">👁</button>' +
+                        '<button class="btn-icon pdf" onclick="downloadPDF(\'' + r.id + '\')" title="PDF" data-i18n="PDF">📄</button>' +
+                        '<button class="btn-icon" onclick="downloadExcel(\'' + r.id + '\')" title="Excel" data-i18n="Excel">📊</button>' +
+                    '</td>' +
+                '</tr>';
+            }).join('');
+        }
+
+        function viewReport(id) {
+            alert((lang==='ar'?'عرض التقرير: ':'View report: ') + id);
+        }
+        function downloadPDF(id) {
+            alert((lang==='ar'?'تحميل PDF: ':'Download PDF: ') + id);
+        }
+        function downloadExcel(id) {
+            alert((lang==='ar'?'تحميل Excel: ':'Download Excel: ') + id);
+        }
+
+        // Filters
+        document.getElementById('projectFilter').addEventListener('change', renderReports);
+        document.getElementById('testTypeFilter').addEventListener('change', renderReports);
+        document.getElementById('statusFilter').addEventListener('change', renderReports);
+        document.getElementById('dateFilter').addEventListener('change', renderReports);
+
+        // Populate project filter
+        function populateProjectFilter() {
+            var select = document.getElementById('projectFilter');
+            var current = select.value;
+            select.innerHTML = '<option value="all" data-i18n="All Projects">All Projects</option>' +
+                projects.map(function(p) { return '<option value="' + p.id + '">' + p.name + '</option>'; }).join('');
+            select.value = current;
+        }
+
+        // Language
+        document.getElementById('langToggle').addEventListener('click', function() {
+            lang = lang === 'en' ? 'ar' : 'en';
+            localStorage.setItem('smartlab_lang', lang);
+            this.innerHTML = '<span class="lang-dot"></span> ' + lang.toUpperCase();
+            populateProjectFilter();
+            renderReports();
+        });
+        document.getElementById('langToggle').innerHTML = '<span class="lang-dot"></span> ' + lang.toUpperCase();
+
+        // Init
+        populateProjectFilter();
+        renderReports();
+    </script>
+    <script>
+        window.translations = {
+            'en': {
+                'Back to Asphalt': 'Back to Asphalt & Marshall',
+                'Test Reports': 'Test <span>Reports</span>',
+                'Reports desc': 'View, download, and manage all test reports for your projects',
+                'All Reports': 'All Reports',
+                'All Projects': 'All Projects',
+                'All Test Types': 'All Test Types',
+                'All Status': 'All Status',
+                'All Time': 'All Time',
+                'Last Week': 'Last Week',
+                'Last Month': 'Last Month',
+                'Last Quarter': 'Last Quarter',
+                'Last Year': 'Last Year',
+                'Report ID': 'Report ID',
+                'Project': 'Project',
+                'Test Type': 'Test Type',
+                'Sample': 'Sample #',
+                'Date': 'Date',
+                'Level': 'Level',
+                'Status': 'Status',
+                'Actions': 'Actions',
+                'No Reports': 'No Reports Found',
+                'No reports match': 'No reports match your current filters.',
+                'View': 'View',
+                'PDF': 'PDF',
+                'Excel': 'Excel',
+                'Asphalt & Marshall': 'Asphalt & Marshall',
+                'Tests': 'Tests', 'Design': 'Design'
+            },
+            'ar': {
+                'Back to Asphalt': 'العودة إلى الأسفلت ومارشال',
+                'Test Reports': 'تقارير <span>الاختبارات</span>',
+                'Reports desc': 'عرض وتحميل وإدارة جميع تقارير الاختبارات لمشاريعك',
+                'All Reports': 'جميع التقارير',
+                'All Projects': 'جميع المشاريع',
+                'All Test Types': 'جميع أنواع الاختبارات',
+                'All Status': 'جميع الحالات',
+                'All Time': 'كل الوقت',
+                'Last Week': 'الأسبوع الماضي',
+                'Last Month': 'الشهر الماضي',
+                'Last Quarter': 'الربع الأخير',
+                'Last Year': 'العام الماضي',
+                'Report ID': 'رقم التقرير',
+                'Project': 'المشروع',
+                'Test Type': 'نوع الاختبار',
+                'Sample': 'رقم العينة',
+                'Date': 'التاريخ',
+                'Level': 'المستوى',
+                'Status': 'الحالة',
+                'Actions': 'إجراءات',
+                'No Reports': 'لا توجد تقارير',
+                'No reports match': 'لا توجد تقارير تطابق الفلاتر الحالية.',
+                'View': 'عرض',
+                'PDF': 'PDF',
+                'Excel': 'إكسل',
+                'Asphalt & Marshall': 'الأسفلت <span>ومارشال</span>',
+                'Tests': 'الاختبارات', 'Design': 'التصميم'
+            }
+        };
+    </script>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="../../components.js"></script>
+</body>
+</html>

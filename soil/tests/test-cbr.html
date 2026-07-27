@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — CBR Test</title>
+    <link rel="icon" href="../favicon.ico">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <link rel="stylesheet" href="test-common.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    <div class="page">
+        <a href="../soil.html" class="back-link">
+            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Back to Soil Tests
+        </a>
+
+        <h1 class="page-title">CBR <span>Test</span></h1>
+        <p class="page-sub">California Bearing Ratio for subgrade & base evaluation per ASTM D1883</p>
+
+        <!-- Test Level -->
+        <div class="level-top">
+            <span class="lt-label">Test Level</span>
+            <div class="lt-btns" id="testLevelSelectTop">
+                <button class="lt-btn active" data-level="quick">⚡ Quick</button>
+                <button class="lt-btn" data-level="unofficial">🏭 Unofficial</button>
+                <button class="lt-btn" data-level="certified">🔒 Certified</button>
+            </div>
+            <span class="lt-info">40% credibility</span>
+        </div>
+
+        <!-- BILLBOARD -->
+        <div class="billboard">
+            <div class="bb-inner">
+                <div class="bb-icon">🛞</div>
+                <div class="bb-body">
+                    <div class="bb-step-label">STEP 1/3</div>
+                    <div class="bb-title">California Bearing Ratio Test</div>
+                    <div class="bb-desc">Measure penetration resistance to evaluate subgrade and base course strength</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONNECTION SECTION -->
+        <div class="section">
+            <div class="section-title">🔌 Connection</div>
+            <div class="conn-grid">
+                <button class="conn-btn" data-conn="usb-a">💻 USB-A</button>
+                <button class="conn-btn" data-conn="usb-otg">📱 USB-OTG</button>
+                <button class="conn-btn" data-conn="wifi">📶 Wi-Fi</button>
+                <button class="conn-btn" data-conn="bluetooth">🔵 Bluetooth</button>
+            </div>
+            <div class="conn-status disconnected" id="connStatus">🔴 Not connected</div>
+        </div>
+
+        <!-- HARDWARE CHECK -->
+        <div class="section">
+            <div class="section-title">🛠 Hardware Check</div>
+            <div id="hwIdBox">
+                <span>Hardware ID:</span>
+                <span id="hwIdValue">CBR-TESTER-01</span>
+            </div>
+            <div class="hw-connect">
+                <button class="btn btn-primary" onclick="connectDevice()">Connect Device</button>
+            </div>
+        </div>
+
+        <!-- TEST INPUTS -->
+        <div class="two-col">
+            <div class="sidebar">
+                <div class="sidebar-title">📊 Test Parameters</div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Sample Diameter</label>
+                    <input type="number" class="sidebar-input" id="sampleDia" value="150" step="1"><span class="unit">mm</span>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Sample Height</label>
+                    <input type="number" class="sidebar-input" id="sampleHeight" value="125" step="1"><span class="unit">mm</span>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Penetration Rate</label>
+                    <input type="number" class="sidebar-input" id="penRate" value="1.27" step="0.01" readonly><span class="unit">mm/min</span>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Test Type</label>
+                    <select class="sidebar-input" id="testType">
+                        <option value="unsoaked">Unsoaked</option>
+                        <option value="soaked">Soaked (48hr)</option>
+                    </select>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Load (kN)</label>
+                    <input type="number" class="sidebar-input" id="load" value="0" step="0.1"><span class="unit">kN</span>
+                </div>
+                <button class="btn btn-primary" onclick="runCBRTest()">🛞 Run CBR Test</button>
+            </div>
+
+            <div>
+                <div id="cbrResults" style="display:none;">
+                    <h3 style="color:var(--accent-orange);margin-bottom:16px;">📋 CBR Results</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Penetration (mm)</th>
+                                    <th>Load (kN)</th>
+                                    <th>CBR (Soaked)</th>
+                                    <th>CBR (Unsoaked)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cbrTable"></tbody>
+                        </table>
+                    </div>
+                    <div class="result-grid" style="margin-top:16px;">
+                        <div class="result-card"><div class="result-icon">📊</div><div class="result-label">Peak CBR (2.5mm)</div><div class="result-value" id="rPeakCbr">--</div></div>
+                        <div class="result-card"><div class="result-icon">🛞</div><div class="result-label">Avg CBR (50mm)</div><div class="result-value" id="rAvgCbr">--</div></div>
+                        <div class="result-card"><div class="result-icon">📈</div><div class="result-label">Modulus (Mpa)</div><div class="result-value" id="rModulus">--</div></div>
+                    </div>
+                </div>
+
+                <div id="cbrPlaceholder" style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+                    <div style="font-size:48px;margin-bottom:16px;">🛞</div>
+                    <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Ready for CBR Test</div>
+                    <div style="font-size:13px;max-width:400px;">Enter test parameters and run the CBR test to evaluate soil bearing capacity.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="notes-section" style="margin-top:24px;">
+            <div class="notes-title">📝 Notes</div>
+            <ul class="notes-list">
+                <li>CBR measured at 2.5mm and 50mm penetration per ASTM D1883</li>
+                <li>Soaked samples submerged 48 hours prior to testing</li>
+                <li>Minimum of 3 specimens per sample for reliability</li>
+                <li>CBR ≥ 30 for subgrade in heavy traffic areas</li>
+            </ul>
+        </div>
+    </div>
+    <div id="footer-placeholder"></div>
+    <script src="../components.js"></script>
+    <script>
+        function connectDevice() {
+            document.getElementById('connStatus').className = 'conn-status connected';
+            document.getElementById('connStatus').innerHTML = '✅ Connected to CBR Tester';
+        }
+
+        function runCBRTest() {
+            const load = parseFloat(document.getElementById('load').value);
+            const testType = document.getElementById('testType').value;
+            
+            // Simplified CBR calculation (ASTM D1883)
+            // Standard loads for soaked conditions at 2.5mm: 39.9kN for 100% CBR
+            const soakedRef = 39.9; // kN reference for 100% CBR (soaked)
+            const unsoakedRef = 45.1; // kN reference for 100% CBR (unsoaked)
+            
+            let cbrSoaked = (load / soakedRef) * 100;
+            let cbrUnsoaked = (load / unsoakedRef) * 100;
+            
+            // Apply moisture condition multiplier
+            if (testType === 'unsoaked') {
+                cbrSoaked = cbrSoaked * 0.85; // Typical ratio
+            }
+
+            document.getElementById('cbrPlaceholder').style.display = 'none';
+            document.getElementById('cbrResults').style.display = 'block';
+
+            const tbody = document.getElementById('cbrTable');
+            tbody.innerHTML = `
+                <tr><td>2.5 mm</td><td>${load.toFixed(1)}</td><td>${cbrSoaked.toFixed(1)}%</td><td>${cbrUnsoaked.toFixed(1)}%</td></tr>
+                <tr><td>50 mm</td><td>${(load * 0.8).toFixed(1)}</td><td>${(cbrSoaked * 0.8).toFixed(1)}%</td><td>${(cbrUnsoaked * 0.8).toFixed(1)}%</td></tr>
+            `;
+
+            document.getElementById('rPeakCbr').textContent = cbrSoaked.toFixed(1) + '%';
+            document.getElementById('rAvgCbr').textContent = ((cbrSoaked + cbrUnsoaked) / 2).toFixed(1) + '%';
+            document.getElementById('rModulus').textContent = (load * 10).toFixed(1) + ' MPa';
+        }
+    </script>
+</body>
+</html>

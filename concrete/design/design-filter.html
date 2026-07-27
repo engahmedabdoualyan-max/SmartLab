@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Filter Design</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="design-common.css">
+    <style>
+        :root { --accent-page: #f87171; }
+        body { color-scheme: dark; }
+        .design-icon { background: rgba(248,113,113,0.1); border-color: rgba(248,113,113,0.4); }
+        .back-btn { background: rgba(248,113,113,0.1); border-color: rgba(248,113,113,0.2); }
+        .back-btn:hover { background: rgba(248,113,113,0.2); }
+        .notes-section { background: rgba(248,113,113,0.04); border-color: rgba(248,113,113,0.1); }
+        .band-btn { background: rgba(248,113,113,0.1); border-color: rgba(248,113,113,0.2); color: var(--accent-red); }
+        .band-btn:hover, .band-btn.active { background: rgba(248,113,113,0.2); border-color: var(--accent-red); }
+        .filter-card { background: rgba(15,23,42,0.4); border: 1px solid var(--border-glass); border-radius: var(--radius-md); padding: 20px; transition: all 0.3s; }
+        .filter-card:hover { border-color: rgba(248,113,113,0.3); transform: translateY(-2px); }
+        .filter-card .filter-type { font-size: 14px; font-weight: 700; color: var(--accent-red); margin-bottom: 8px; }
+        .filter-card .filter-name { font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+        .filter-card .filter-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 12px; }
+        .filter-card .filter-spec { font-size: 11px; color: var(--accent-gold); font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    <div class="page">
+        <nav class="breadcrumb">
+            <a href="../concrete.html">Concrete Testing</a>
+            <span>/</span>
+            <a href="design-break.html">Design Tools</a>
+            <span>/</span>
+            <span>Filter Design</span>
+        </nav>
+        <h1 class="page-title">Filter <span>Design</span></h1>
+        <p class="page-sub">Design aggregate gradation for optimal concrete performance per ASTM C33 / AASHTO M43 — Fine and coarse gradation curves, uniformity coefficient, and percentage passing each sieve</p>
+
+        <section class="design-section">
+            <div class="design-header">
+                <div class="design-icon">🌊</div>
+                <div>
+                    <div class="design-title">Aggregate Gradation Design</div>
+                    <div class="design-desc">Select and optimize aggregate gradation for strength, workability, and durability. Input gradation requirements, check against standards, and generate continuous gradation curves.</div>
+                </div>
+            </div>
+
+            <div class="tab-row">
+                <button class="tab-btn active" onclick="switchTab('builder', this)">Builder</button>
+                <button class="tab-btn" onclick="switchTab('analysis', this)">Gradation Analysis</button>
+                <button class="tab-btn" onclick="switchTab('criteria', this)">Design Criteria</button>
+                <button class="tab-btn" onclick="switchTab('standards', this)">Standards</button>
+            </div>
+
+            <!-- TAB 1: BUILDER -->
+            <div class="tab-panel active" id="panel-builder">
+                <h3 style="color:var(--accent-red);margin-bottom:16px;">🌊 Gradation Builder</h3>
+                <div class="two-col">
+                    <div class="sidebar">
+                        <div class="sidebar-title">📊 Gradation Parameters</div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Fine Aggregate % Passing</label>
+                            <input type="number" class="sidebar-input" id="finePassing" value="99" step="1" min="0" max="100"><span class="unit">%</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Maximum Size (inches)</label>
+                            <select class="sidebar-input" id="maxSize">
+                                <option value="0.125">3/8 inch</option>
+                                <option value="0.25">1/4 inch</option>
+                                <option value="0.375">3/8 inch</option>
+                                <option value="0.5" selected>1/2 inch</option>
+                                <option value="0.625">5/8 inch</option>
+                                <option value="0.75">3/4 inch</option>
+                            </select>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Mix Type</label>
+                            <select class="sidebar-input" id="mixType">
+                                <option value="normal">Normal Weight Concrete</option>
+                                <option value="lightweight">Lightweight Concrete</option>
+                                <option value="high-strength">High Strength (>6000 psi)</option>
+                                <option value="self-consol">Self-Consolidating</option>
+                            </select>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Exposure Conditions</label>
+                            <select class="sidebar-input" id="exposure">
+                                <option value="indoor">Indoor / Dry</option>
+                                <option value="marine">Marine / Coastal</option>
+                                <option value="freeze-thaw">Freeze-Thaw</option>
+                                <option value="sulfates">Sulfate Resistant</option>
+                                <option value="deicing">Deicing Salts</option>
+                            </select>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">w/c Ratio</label>
+                            <input type="number" class="sidebar-input" id="wcratio" value="0.45" step="0.01" min="0.35" max="0.60"><span class="unit">—</span>
+                        </div>
+                        <button class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="generateGradation()">🌊 Generate Gradation</button>
+                    </div>
+
+                    <div>
+                        <div id="gradationOutput" style="display:none;">
+                            <h3 style="color:var(--accent-red);margin-bottom:16px;">📋 Gradation Results</h3>
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Sieve Size</th>
+                                            <th style="text-align:right">Std. Spec %</th>
+                                            <th style="text-align:right">Required %</th>
+                                            <th style="text-align:right">Designed %</th>
+                                            <th style="text-align:center">Deviation</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="gradationTable"></tbody>
+                                </table>
+                            </div>
+                            <div class="result-grid" style="margin-top:16px;">
+                                <div class="result-card"><div class="result-icon">🎯</div><div class="result-label">Uniformity Coefficient</div><div class="result-value" id="rUniformity">--</div></div>
+                                <div class="result-card"><div class="result-icon">📊</div><div class="result-label">Fineness Modulus</div><div class="result-value" id="rFineness">--</div></div>
+                                <div class="result-card"><div class="result-icon">✅</div><div class="result-label">Compliance</div><div class="result-value" id="rCompliance">--</div></div>
+                                <div class="result-card"><div class="result-icon">📈</div><div class="result-label">Variation</div><div class="result-value" id="rVariation">--</div></div>
+                            </div>
+                        </div>
+
+                        <div id="gradationPlaceholder" style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+                            <div style="font-size:48px;margin-bottom:16px;">🌊</div>
+                            <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Configure Gradation</div>
+                            <div style="font-size:13px;max-width:400px;">Set gradation parameters above and click <strong>Generate Gradation</strong> to create optimized aggregate gradation curves.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: ANALYSIS -->
+            <div class="tab-panel" id="panel-analysis">
+                <h3 style="color:var(--accent-red);margin-bottom:16px;">📊 Gradation Analysis</h3>
+                <div class="two-col">
+                    <div class="sidebar">
+                        <div class="sidebar-title">📈 Analysis Tools</div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Curve Type</label>
+                            <select class="sidebar-input" id="curveType">
+                                <option value="continuous">Continuous</option>
+                                <option value="dupl">Duvall</option>
+                                <option value="blending">Blending Test</option>
+                                <option value="percentPassing">Percent Passing Curves</option>
+                            </select>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Sample Data File</label>
+                            <input type="file" class="sidebar-input" id="sampleFile" accept=".txt,.csv">
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Analysis Method</label>
+                            <select class="sidebar-input" id="analysisMethod">
+                                <option value="stdTest">Standard Test (ASTM C117)</option>
+                                <option value="coarseOnly">Coarse Aggregate Only</option>
+                                <option value="fineOnly">Fine Aggregate Only</option>
+                                <option value="combined">Combined Gradation</option>
+                            </select>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Percentage Passing Required</label>
+                            <input type="number" class="sidebar-input" id="pctPassingReq" value="85" step="5" min="60" max="100"><span class="unit">%</span>
+                        </div>
+                        <button class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="analyzeGradation()">📊 Analyze Gradation</button>
+                    </div>
+
+                    <div>
+                        <div id="analysisResults" style="display:none;">
+                            <h4 style="color:var(--accent-red);margin-bottom:12px;">📊 Analysis Results</h4>
+                            <div class="chart-section">
+                                <div class="chart-title">📈 Gradation Curve</div>
+                                <canvas class="chart-canvas" id="gradationChart"></canvas>
+                            </div>
+                            <div class="result-grid" style="margin-top:16px;">
+                                <div class="result-card"><div class="result-icon">📊</div><div class="result-label">Uniformity Coeff</div><div class="result-value" id="rUniformity2">--</div></div>
+                                <div class="result-card"><div class="result-icon">📏</div><div class="result-label">Coefficient of Curvature</div><div class="result-value" id="rCurvature">--</div></div>
+                                <div class="result-card"><div class="result-icon">🎯</div><div class="result-label">Gap Graded</div><div class="result-value" id="rGapGraded">--</div></div>
+                                <div class="result-card"><div class="result-icon">⚖️</div><div class="result-label">Balanced</div><div class="result-value" id="rBalanced">--</div></div>
+                            </div>
+                        </div>
+
+                        <div id="analysisPlaceholder" style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+                            <div style="font-size:48px;margin-bottom:16px;">📊</div>
+                            <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Enter Analysis Parameters</div>
+                            <div style="font-size:13px;max-width:400px;">Select analysis method and configure parameters, then click <strong>Analyze Gradation</strong>.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: CRITERIA -->
+            <div class="tab-panel" id="panel-criteria">
+                <h3 style="color:var(--accent-red);margin-bottom:16px;">📋 Design Criteria</h3>
+                <div class="spec-grid" style="margin-top:24px;">
+                    <div class="spec-item">
+                        <div class="spec-title">🌊 Gradation Requirements</div>
+                        <div class="spec-desc">
+                            <strong>ACI 211.1:</strong> Maximum size 1.5 in (38 mm) for most concretes. Fine aggregate: 100% passing 0.45 mm (No. 70 sieve). Cohesive aggregate: ≤ 15% passing 0.075 mm. Moisture content: control range ±1%.<br><br>
+                            <strong>AASHTO M43:</strong> Gradation limits defined by Table 1. Uniformity coefficient: < 5.0 (coarse), < 2.0 (fine). Curvature coefficient: 1-3 (balanced gradation). Gap grading allowed with caution.
+                        </div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">💧 Water-Cement Ratio</div>
+                        <div class="spec-desc">
+                            <strong>Standard Mixes:</strong> w/c = 0.40-0.60 (strength 3000-6000 psi). High-strength: w/c ≤ 0.40 (6000-10000 psi). Low w/c: w/c ≤ 0.35 (10000+ psi). For sulfate resistance: w/c ≤ 0.45.
+                        </div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">🔧 Mix Specifics</div>
+                        <div class="spec-desc">
+                            <strong>Aggregate Ratio:</strong> Fine aggregate % of total aggregate 35-60%. Minimum cement content 250-400 kg/m³ (varies by w/c). Air entrainment: 1-3% for freeze-thaw, 0.5-2% for general concretes.<br><br>
+                            <strong>Exposure Adjustments:</strong> Marine: air 4-7%, w/c ≤ 0.40. Freeze-thaw: air 5-8%, special airenterrainers. Sulfates: Type V cement, w/c ≤ 0.45.
+                        </div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">🌡️ Environmental Factors</div>
+                        <div class="spec-desc">
+                            <strong>Temperature Effects:</strong> Hot weather (<30°C): use retarders, additional water. Cold weather (<10°C): accelerators, heated materials. Temperature differential ≤ 20°C for mass concrete.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="notes-section" style="margin-top:24px;">
+                    <div class="notes-title">📝 Implementation Notes</div>
+                    <ul class="notes-list">
+                        <li>Run sieve analysis per ASTM C117 for both fine and coarse aggregates.</li>
+                        <li>Always trial batch (ASTM C185) with admixtures before large-scale production.</li>
+                        <li>Test per ASTM C138 (unit weight), C231 (air), C1064 (degrees of hydration) for high-performance mixes.</li>
+                        <li>Verify gradation against maximum and minimum gradation curves per AASHTO M43 limits.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- TAB 4: STANDARDS -->
+            <div class="tab-panel" id="panel-standards">
+                <h3 style="color:var(--accent-red);margin-bottom:16px;">📚 Gradation Standards Reference</h3>
+                <div class="spec-grid">
+                    <div class="spec-item">
+                        <div class="spec-title">ASTM C33 / C33M</div>
+                        <div class="spec-desc">Standard Specification for Concrete Aggregates. Sieve analysis requirements, physical properties, gradation limits for fine and coarse aggregates, moisture and absorption.</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">AASHTO M43</div>
+                        <div class="spec-desc">Standard Specification for Aggregates for Hydraulic Concrete. Maximum and minimum gradation curves, uniformity coefficient, curvature coefficient, gradation acceptance limits.</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">ACI 211.1-15</div>
+                        <div class="spec-desc">Guide for Selecting Proportions. Chapter 6 details aggregate gradation selection for mix design. Rapid slump loss prevention, segregation control.</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">EN 206 / BS 8500</div>
+                        <div class="spec-desc">European concrete standard. XG (coarse) and XF (fine) gradation classes. EN 13043 for manufactured sand, EN 12620 for natural aggregates.</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">ECP 203 / ECP 204</div>
+                        <div class="spec-desc">Egyptian concrete production codes. Local gradation requirements based on available aggregate sources. Egyptian cement grades and corresponding limits.</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-title">NT BUILD 492</div>
+                        <div class="spec-desc">Nordic test for aggregate grading. Specific sieving procedures and calculation methods for uniformity and curvature coefficients used in Nordic countries.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <a href="../concrete.html" class="back-btn">← Back to Concrete Testing</a>
+    </div>
+    <div id="footer-placeholder"></div>
+    <script src="../components.js"></script>
+    <script>
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('panel-' + tabId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        function generateGradation() {
+            const finePassing = parseFloat(document.getElementById('finePassing').value);
+            const maxSize = parseFloat(document.getElementById('maxSize').value);
+            const mixType = document.getElementById('mixType').value;
+            const exposure = document.getElementById('exposure').value;
+            const wcratio = parseFloat(document.getElementById('wcratio').value);
+
+            // Sieve sizes (inches)
+            const sieves = [0.125, 0.075, 0.05, 0.025, 0.015, 0.01, 0.005, 0.0025];
+            const sieveNames = ['3/8"', 'No. 100', 'No. 200', 'No. 400', 'No. 500', 'No. 635', 'No. 1000', 'No. 2000'];
+
+            // Generate optimized gradation based on parameters
+            const tableBody = document.getElementById('gradationTable');
+            tableBody.innerHTML = '';
+
+            // Determine gradation curve based on mix type and exposure
+            let gradationCurve;
+            if (mixType === 'self-consol') {
+                gradationCurve = generateSelfConsolidatingGradation(finePassing, maxSize);
+            } else if (exposure === 'marine') {
+                gradationCurve = generateMarineGradation(finePassing, maxSize);
+            } else if (wcratio <= 0.40) {
+                gradationCurve = generateHighStrengthGradation(finePassing, maxSize);
+            } else if (exposure === 'freeze-thaw') {
+                gradationCurve = generateFreezeThawGradation(finePassing, maxSize);
+            } else {
+                gradationCurve = generateStandardGradation(finePassing, maxSize);
+            }
+
+            gradationCurve.forEach((passing, index) => {
+                // Standard specification values (approximate)
+                let stdPassing;
+                if (index === 0) stdPassing = Math.min(100, (1 - Math.exp(-maxSize/sieves[0]*10))*100);
+                else if (index === 1) stdPassing = 90 + (finePassing - 90) * (sieves[0]/sieves[1]);
+                else if (index === 2) stdPassing = 80 + (finePassing - 80) * (sieves[1]/sieves[2]);
+                else if (index === 3) stdPassing = 70;
+                else if (index === 4) stdPassing = 60;
+                else if (index === 5) stdPassing = 50;
+                else if (index === 6) stdPassing = 40;
+                else stdPassing = 30;
+
+                const required = Math.max(0, Math.min(100, finePassing - index * 15));
+                const deviation = passing - stdPassing;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${sieveNames[index]}</strong></td>
+                    <td style="text-align:right">${stdPassing.toFixed(1)}%</td>
+                    <td style="text-align:right">${required.toFixed(1)}%</td>
+                    <td style="text-align:right"><strong>${passing.toFixed(1)}%</strong></td>
+                    <td style="text-align:center">
+                        <span class="badge" style="background:${Math.abs(deviation) > 10 ? 'var(--accent-red)' : Math.abs(deviation) > 5 ? 'var(--accent-amber)' : 'var(--accent-emerald)'}">
+                            ${deviation.toFixed(1)}%
+                        </span>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            // Calculate gradation properties
+            const designedPassing = gradationCurve[gradationCurve.length - 1];
+            const uniformityCoeff = calculateUniformityCoefficient(gradationCurve);
+            const finenessMod = calculateFinenessModulus(gradationCurve);
+            const compliance = uniformityCoeff < 5.0 && finenessMod >= 2.0 && finenessMod <= 3.5 ? '✅ Compliant' : '⚠️ Adjust';
+            const variation = calculateVariation(gradationCurve);
+
+            document.getElementById('rUniformity').textContent = uniformityCoeff.toFixed(2);
+            document.getElementById('rFineness').textContent = finenessMod.toFixed(2);
+            document.getElementById('rCompliance').textContent = compliance;
+            document.getElementById('rVariation').textContent = variation + '%';
+
+            document.getElementById('gradationPlaceholder').style.display = 'none';
+            document.getElementById('gradationOutput').style.display = 'block';
+        }
+
+        function calculateUniformityCoefficient(passing) {
+            let maxPassing = Math.max(...passing);
+            let minPassing = Math.min(...passing);
+            for (let i = 0; i < passing.length; i++) {
+                if (passing[i] < 10) {
+                    minPassing = passing[i];
+                    break;
+                }
+            }
+            return (maxPassing - minPassing) / (maxPassing - minPassing + 5);
+        }
+
+        function calculateFinenessModulus(passing) {
+            const cumulativePassing = passing.map(p => 100 - p);
+            let cumulative = 0;
+            let weightSum = 0;
+            const sieveSizes = [0.125, 0.075, 0.05, 0.025, 0.015, 0.01, 0.005, 0.0025];
+            const sieveWeights = [0.9, 0.7, 0.5, 0.3, 0.15, 0.1, 0.05, 0.025];
+
+            for (let i = 0; i < passing.length; i++) {
+                if (i < 3) cumulative += (100 - passing[i]) * sieveWeights[i];
+                weightSum += sieveWeights[i];
+            }
+            return cumulative / weightSum;
+        }
+
+        function calculateVariation(passing) {
+            const avg = passing.reduce((a, b) => a + b, 0) / passing.length;
+            const variance = passing.reduce((sum, val) => sum + Math.pow(val - avg, 2), 0) / passing.length;
+            return Math.sqrt(variance);
+        }
+
+        function generateStandardGradation(finePassing, maxSize) {
+            const gradation = [];
+            const basePassing = finePassing - 10;
+            for (let i = 0; i < 8; i++) {
+                const adjustedPass = Math.min(100, Math.max(0, basePassing - i * Math.max(8, 15 - i * 2)));
+                gradation.push(adjustedPass);
+            }
+            return gradation;
+        }
+
+        function generateHighStrengthGradation(finePassing, maxSize) {
+            const gradation = [];
+            const basePassing = finePassing - 15;
+            for (let i = 0; i < 8; i++) {
+                const factor = i < 3 ? 0.8 : i < 6 ? 1.2 : 0.9;
+                const adjustedPass = Math.min(100, Math.max(0, basePassing * factor - i * (8 + i * 2)));
+                gradation.push(adjustedPass);
+            }
+            return gradation;
+        }
+
+        function generateSelfConsolidatingGradation(finePassing, maxSize) {
+            const gradation = [];
+            const basePassing = finePassing - 20;
+            for (let i = 0; i < 8; i++) {
+                const curve = i < 2 ? 0.6 : i < 5 ? 1.0 : 0.8;
+                const adjustedPass = Math.min(100, Math.max(0, basePassing * curve - i * 12));
+                gradation.push(adjustedPass);
+            }
+            return gradation;
+        }
+
+        function generateFreezeThawGradation(finePassing, maxSize) {
+            const gradation = [];
+            const basePassing = finePassing - 5;
+            for (let i = 0; i < 8; i++) {
+                const factor = i < 2 ? 0.9 : i < 6 ? 1.1 : 1.0;
+                const adjustedPass = Math.min(100, Math.max(0, basePassing * factor - i * 10));
+                gradation.push(adjustedPass);
+            }
+            return gradation;
+        }
+
+        function generateMarineGradation(finePassing, maxSize) {
+            const gradation = [];
+            const basePassing = finePassing - 8;
+            for (let i = 0; i < 8; i++) {
+                const adjustedPass = Math.min(100, Math.max(0, basePassing * (i < 3 ? 0.85 : 0.95) - i * 9));
+                gradation.push(adjustedPass);
+            }
+            return gradation;
+        }
+
+        function analyzeGradation() {
+            const curveType = document.getElementById('curveType').value;
+            const pctPassing = parseFloat(document.getElementById('pctPassingReq').value);
+            const analysisMethod = document.getElementById('analysisMethod').value;
+
+            let analysisData;
+            if (curveType === 'dupl') {
+                analysisData = generateDuvallGradation(pctPassing);
+            } else if (curveType === 'blending') {
+                analysisData = generateBlendingAnalysis(pctPassing);
+            } else if (curveType === 'percentPassing') {
+                analysisData = generatePercentPassingAnalysis(pctPassing);
+            } else {
+                analysisData = generateContinuousAnalysis(pctPassing);
+            }
+
+            // Display chart
+            drawGradationChart(analysisData.passings, analysisData.targets, analysisMethod);
+
+            document.getElementById('analysisPlaceholder').style.display = 'none';
+            document.getElementById('analysisResults').style.display = 'block';
+
+            // Calculate gradation properties
+            const uniformityCoeff = calculateUniformityCoefficient(analysisData.passings);
+            const curvatureCoeff = calculateCurvatureCoefficient(analysisData.passings);
+            const gapGraded = uniformityCoeff > 6.0 ? 'No' : 'Yes';
+            const balanced = uniformityCoeff < 5.0 && curvatureCoeff > 1.5 && curvatureCoeff < 3.0 ? 'Yes' : 'No';
+
+            document.getElementById('rUniformity2').textContent = uniformityCoeff.toFixed(2);
+            document.getElementById('rCurvature').textContent = curvatureCoeff.toFixed(2);
+            document.getElementById('rGapGraded').textContent = gapGraded;
+            document.getElementById('rBalanced').textContent = balanced;
+        }
+
+        function calculateCurvatureCoefficient(passing) {
+            let sumPassing = 0;
+            let count = 0;
+            for (let i = 1; i < passing.length - 1; i++) {
+                if (passing[i - 1] > passing[i] && passing[i] < passing[i + 1]) {
+                    const avgNeighbors = (passing[i - 1] + passing[i + 1]) / 2;
+                    sumPassing += passing[i] / avgNeighbors;
+                    count++;
+                }
+            }
+            return count > 0 ? sumPassing / count : 1.0;
+        }
+
+        function drawGradationChart(passings, targets, method) {
+            const canvas = document.getElementById('gradationChart');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 300;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const maxPassing = Math.max(...passings, ...(targets || []), 100);
+            const minPassing = Math.min(...passings, ...(targets || []), 0);
+            const padding = 60;
+            const w = canvas.width - 2 * padding;
+            const h = canvas.height - 2 * padding;
+
+            // Grid
+            ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+            for (let i = 0; i <= 5; i++) {
+                const y = padding + (i/5)*h;
+                ctx.beginPath(); ctx.moveTo(padding, y); ctx.lineTo(canvas.width-padding, y); ctx.stroke();
+                ctx.fillStyle = 'var(--text-muted)'; ctx.font = '11px monospace';
+                ctx.fillText((maxPassing*(1-i/5)).toFixed(0)+' %', 10, y+4);
+            }
+
+            // Sieve labels
+            ctx.fillStyle = 'var(--text-muted)'; ctx.font = '11px monospace';
+            const sieveLabels = ['3/8"', 'No.100', 'No.200', 'No.400', 'No.500', 'No.635', 'No.1000', 'No.2000'];
+            for (let i = 0; i < Math.min(8, sieveLabels.length); i++) {
+                const x = padding + (i/7)*w;
+                ctx.fillText(sieveLabels[i], x-10, canvas.height-padding+20);
+            }
+
+            // Passings curve
+            ctx.strokeStyle = 'var(--accent-red)';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            passings.forEach((p, i) => {
+                const x = padding + (i/(Math.min(8, passings.length)-1))*w;
+                const y = canvas.height - padding - (p/maxPassing)*h;
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+
+            // Targets curve (if provided)
+            if (targets) {
+                ctx.strokeStyle = 'var(--accent-amber)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5,5]);
+                ctx.beginPath();
+                targets.forEach((t, i) => {
+                    const x = padding + (i/(Math.min(8, targets.length)-1))*w;
+                    const y = canvas.height - padding - (t/maxPassing)*h;
+                    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                });
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            // Sample points
+            ctx.fillStyle = 'var(--accent-red)';
+            passings.forEach((p, i) => {
+                const x = padding + (i/(Math.min(8, passings.length)-1))*w;
+                const y = canvas.height - padding - (p/maxPassing)*h;
+                ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI*2); ctx.fill();
+            });
+
+            // Method label
+            ctx.fillStyle = 'var(--accent-gold)'; ctx.font = 'bold 12px monospace';
+            ctx.fillText(method, padding+10, padding+20);
+        }
+
+        function generateDuvallGradation(pctPassing) {
+            const passings = [];
+            for (let i = 0; i < 8; i++) {
+                const sieve = 0.125 / Math.pow(2, i);
+                const target = pctPassing;
+                const curve = 0.7 * Math.exp(-sieve * 20) + 0.3;
+                passings.push(Math.min(100, Math.max(0, target * curve)));
+            }
+            return { passings, targets: null };
+        }
+
+        function generateBlendingAnalysis(pctPassing) {
+            const passings = [];
+            for (let i = 0; i < 8; i++) {
+                const variability = Math.sin(i * 0.8) * 10 + Math.cos(i * 0.5) * 8;
+                const base = pctPassing - i * 12;
+                const adjusted = base + variability;
+                passings.push(Math.min(100, Math.max(0, adjusted)));
+            }
+            return { passings, targets: null };
+        }
+
+        function generatePercentPassingAnalysis(pctPassing) {
+            const passings = [];
+            for (let i = 0; i < 8; i++) {
+                const sieve = 0.125 / Math.pow(2, i);
+                const passPercent = 100 * (1 - Math.exp(-pctPassing * sieve));
+                passings.push(passPercent);
+            }
+            return { passings, targets: null };
+        }
+
+        function generateContinuousAnalysis(pctPassing) {
+            const passings = [];
+            for (let i = 0; i < 8; i++) {
+                const sieve = 0.125 / Math.pow(2, i);
+                const passPercent = 100 * Math.sqrt(1 - Math.exp(-pctPassing * sieve));
+                passings.push(passPercent);
+            }
+            return { passings, targets: null };
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            generateGradation();
+        });
+        // Update unique info display
+        const uniqueInfo = document.createElement('div');
+        uniqueInfo.className = 'unique-info';
+        uniqueInfo.innerHTML = `
+            <div class="unique-details">
+                <div class="unique-row"><strong>Type:</strong> Continuous gradation design tool</div>
+                <div class="unique-row"><strong>Target:</strong> Blend coarse and fine aggregates for optimal performance</div>
+                <div class="unique-row"><strong>Method:</strong> Design gradation based on mix type and exposure</div>
+                <div class="unique-row"><strong>Output:</strong> gradation percentages, gradation coefficients, and compliance check</div>
+            </div>
+        `;
+        infoContainer.appendChild(uniqueInfo);
+
+        function getClientFeatures() {
+            const features = {
+                hasLocalStorage: typeof localStorage !== 'undefined',
+                hasWebGL: !!window.WebGLRenderingContext,
+                hasCanvas: !!document.createElement('canvas').getContext,
+                userAgent: navigator.userAgent.toLowerCase(),
+                screenWidth: screen.width,
+                language: navigator.language || navigator.userLanguage,
+                cookiesEnabled: navigator.cookieEnabled,
+                onLine: navigator.onLine
+            };
+            features.isMobile = features.userAgent.includes('mobile');
+            features.isTablet = features.userAgent.includes('tablet') || (features.screenWidth >= 768 && features.screenWidth <= 1024);
+            features.isDesktop = !features.isMobile && !features.isTablet;
+            return features;
+        }
+
+        function setClientData() {
+            const clientFeatures = getClientFeatures();
+            const clientData = {
+                timestamp: new Date().toISOString(),
+                version: '2.4.1',
+                features: clientFeatures,
+                userId: 'user_' + Math.random().toString(36).substr(2, 9),
+                sessionId: sessionStorage.getItem('sessionId') || Math.random().toString(36).substr(2, 16)
+            };
+            localStorage.setItem('clientData', JSON.stringify(clientData));
+            sessionStorage.setItem('sessionId', clientData.sessionId);
+        }
+
+        function exportData() {
+            const data = {
+                clientInfo: localStorage.getItem('clientData') ? JSON.parse(localStorage.getItem('clientData')) : null,
+                gradationData: gradationData,
+                exportTime: new Date().toISOString(),
+                exportVersion: '2.4.1'
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'gradation-data-' + new Date().getTime() + '.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            alert('Data exported successfully!');
+        }
+
+        window.addEventListener('beforeunload', function(e) {
+            setClientData();
+        });
+
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                setClientData();
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            setClientData();
+            generateGradation();
+        });
+    </script>
+</body>
+</html>

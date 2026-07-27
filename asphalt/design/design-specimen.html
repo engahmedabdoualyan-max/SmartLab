@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Specimen Design</title>
+    <link rel="icon" href="../favicon.ico">
+    <link rel="stylesheet" href="design-common.css">
+    <style>
+        :root { --accent-page: #fbbf24; }
+        .breadcrumb a, .page-title span, .design-title, .design-icon,
+        .back-btn, .back-btn:hover, .notes-title, .notes-list li::before,
+        .comp-title, .band-btn, .band-btn:hover, .band-btn.active,
+        .criteria-name, .pg-grade, .aging-title, .climate-name,
+        .chart-title, .formula-title, .layout-title, .equip-name { color: var(--accent-page); }
+        .design-icon { background: rgba(251,191,36,0.1); border-color: rgba(251,191,36,0.4); }
+        .back-btn { background: rgba(251,191,36,0.1); border-color: rgba(251,191,36,0.2); }
+        .back-btn:hover { background: rgba(251,191,36,0.2); }
+        .notes-section { background: rgba(251,191,36,0.04); border-color: rgba(251,191,36,0.1); }
+        .mix-component, .criteria-card, .pg-card, .aging-card, .equip-card, .spec-item { background: rgba(251,191,36,0.05); border-color: rgba(251,191,36,0.1); }
+        .criteria-card:hover, .pg-card:hover, .equip-card:hover { border-color: rgba(251,191,36,0.3); }
+        .band-btn, .band-btn { background: rgba(251,191,36,0.1); border-color: rgba(251,191,36,0.2); color: var(--accent-page); }
+        .band-btn:hover, .band-btn.active { background: rgba(251,191,36,0.2); border-color: var(--accent-page); }
+        .mix-table th, .band-table th, .traffic-table th { color: var(--accent-page); }
+        .chart-section, .formula-section, .climate-map, .layout-section { background: rgba(251,191,36,0.04); border-color: rgba(251,191,36,0.1); }
+        .criteria-name, .aging-title { border-color: rgba(251,191,36,0.15); }
+    </style>
+
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="page">
+        <nav class="breadcrumb">
+            <a href="../asphalt.html">Asphalt & Marshall</a>
+            <span>/</span>
+            <span>Specimen Design</span>
+        </nav>
+        <h1 class="page-title">Specimen <span>Design</span></h1>
+        <p class="page-sub">6-inch Marshall specimen geometry and compaction parameters per ASTM D6926</p>
+
+        <div class="design-section">
+            <div class="design-header">
+                <div class="design-icon">📦</div>
+                <div>
+                    <div class="design-title">Marshall Specimen Geometry</div>
+                    <p class="design-desc">Standard 4-inch diameter specimen for Marshall stability and flow testing</p>
+                </div>
+            </div>
+
+            <div class="spec-grid">
+                <div class="spec-item">
+                    <div class="spec-label">Diameter</div>
+                    <div class="spec-value gold">101.6 mm (4.00 in)</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Height</div>
+                    <div class="spec-value gold">63.5 mm (2.50 in)</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Compaction</div>
+                    <div class="spec-value gold">75 blows per side</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Hammer Mass</div>
+                    <div class="spec-value gold">4536 g (10 lbs)</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Drop Height</div>
+                    <div class="spec-value gold">457 mm (18 in)</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Target Air Voids</div>
+                    <div class="spec-value gold">3% - 5%</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">VMA (Min)</div>
+                    <div class="spec-value gold">> 13%</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">VFB Range</div>
+                    <div class="spec-value gold">65% - 78%</div>
+                </div>
+            </div>
+
+            <div class="notes-section">
+                <div class="notes-title">Key Notes</div>
+                <ul class="notes-list">
+                    <li>Specimens prepared at 4 bitumen contents (typically 4.5%, 5.0%, 5.5%, 6.0%)</li>
+                    <li>3 specimens per bitumen content for statistical validity</li>
+                    <li>Compaction temperature: 135-145°C (275-295°F)</li>
+                    <li>Condition in 60°C water bath for 30-40 min before testing</li>
+                    <li>Extrude carefully to avoid specimen damage</li>
+                    <li>Measure bulk specific gravity (Gmb) per ASTM D2726</li>
+                </ul>
+            </div>
+
+            <a href="../asphalt.html" class="back-btn">← Back to Asphalt & Marshall</a>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+    <script src="../../components.js"></script>
+</body>
+</html>

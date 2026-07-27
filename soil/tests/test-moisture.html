@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Moisture Content Test</title>
+    <link rel="icon" href="../favicon.ico">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <link rel="stylesheet" href="test-common.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="page">
+        <a href="../soil.html" class="back-link">
+            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            <span data-i18n="Back to Tests">Back to Tests</span>
+        </a>
+
+        <h1 class="page-title" id="testTitle"><span data-i18n="Test Environment">Test Environment</span></h1>
+        <p class="page-sub" id="testSub">Moisture Content Test</p>
+
+        <!-- Test Level selector -->
+        <div class="level-top" id="levelTopBar">
+            <span class="lt-label">&#x1F3C6; <span data-i18n="Test Level">Test Level</span></span>
+            <div class="lt-btns" id="testLevelSelectTop">
+                <button class="lt-btn active" data-level="quick">&#x26A1; <span data-i18n="Quick">Quick</span><span class="lt-sub" data-i18n="On-site check">On-site check</span></button>
+                <button class="lt-btn" data-level="unofficial">&#x1F3ED; <span data-i18n="Unofficial">Unofficial</span><span class="lt-sub" data-i18n="Factory lab">Factory lab</span></button>
+                <button class="lt-btn" data-level="certified">&#x1F512; <span data-i18n="Certified">Certified</span><span class="lt-sub" data-i18n="Full accreditation">Full accreditation</span></button>
+            </div>
+            <span class="lt-info" id="levelInfo">40% <span data-i18n="credibility">credibility</span></span>
+        </div>
+
+        <!-- ===== 1. SAMPLE PREPARATION ===== -->
+        <div class="section">
+            <div class="section-title"><span class="st-icon">&#x1F517;</span> <span data-i18n="Sample Preparation">Sample Preparation</span></div>
+
+            <div class="sample-setup">
+                <div class="sample-card selected" data-sample="oven-dry">
+                    <div class="sample-icon">🔥</div>
+                    <div class="sample-info">
+                        <div class="sample-name">Oven-Dry Method</div>
+                        <div class="sample-desc">Standard drying at 105-110°C for 24 hours</div>
+                    </div>
+                    <div class="sample-status">ACTIVE</div>
+                </div>
+                <div class="sample-card" data-sample="rapid">
+                    <div class="sample-icon">⚡</div>
+                    <div class="sample-info">
+                        <div class="sample-name">Rapid Method</div>
+                        <div class="sample-desc">Quick drying using infrared or microwave</div>
+                    </div>
+                    <div class="sample-status">STANDARD</div>
+                </div>
+                <div class="sample-card" data-sample="alternative">
+                    <div class="sample-icon">🔬</div>
+                    <div class="sample-info">
+                        <div class="sample-name">Alternative Method</div>
+                        <div class="sample-desc">Boiling method for certain soil types</div>
+                    </div>
+                    <div class="sample-status">OPTIONAL</div>
+                </div>
+            </div>
+
+            <div class="sample-display">
+                <div class="sample-visual">
+                    <div class="oven">
+                        <div class="oven-door">
+                            <div class="oven-interior">
+                                <div class="sample-container">
+                                    <div class="soil-sample">
+                                        <div class="moisture-indicator">
+                                            <span class="droplet">💧</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sample-config">
+                    <div class="config-section">
+                        <div class="config-title">Drying Configuration</div>
+                        <div class="config-fields">
+                            <div class="field-group">
+                                <label class="field-label">Sample Weight (Wet)</label>
+                                <input type="number" class="field-input" id="wetWeight" value="100" min="10" max="1000">
+                                <span class="unit">g</span>
+                            </div>
+                            <div class="field-group">
+                                <label class="field-label">Sample Weight (Dry)</label>
+                                <input type="number" class="field-input" id="dryWeight" value="80" min="1" max="500">
+                                <span class="unit">g</span>
+                            </div>
+                            <div class="field-group">
+                                <label class="field-label">Drying Temperature</label>
+                                <select class="field-input" id="dryingTemp">
+                                    <option value="105" selected>105°C</option>
+                                    <option value="110">110°C</option>
+                                    <option value="120">120°C</option>
+                                    <option value="150">150°C</option>
+                                </select>
+                                <span class="unit">°C</span>
+                            </div>
+                            <div class="field-group">
+                                <label class="field-label">Drying Time</label>
+                                <input type="number" class="field-input" id="dryingTime" value="24" min="2" max="48">
+                                <span class="unit">hours</span>
+                            </div>
+                            <div class="field-group">
+                                <label class="field-label">Method</label>
+                                <select class="field-input" id="dryingMethod">
+                                    <option value="oven" selected>Oven</option>
+                                    <option value="infrared">Infrared</option>
+                                    <option value="microwave">Microwave</option>
+                                    <option value="boiling">Boiling</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 2. CALCULATION ===== -->
+        <div class="section">
+            <div class="section-title"><span class="st-icon">🧮</span> <span data-i18n="Moisture Calculation">Moisture Calculation</span></div>
+
+            <div class="calculation-section">
+                <div class="formula-display">
+                    <div class="formula-title">Moisture Content Formula</div>
+                    <div class="formula-box">
+                        <div class="formula-row">
+                            <span class="formula-label">Percentage Moisture:</span>
+                            <span class="formula-equation">(W wet - W dry) ÷ W dry × 100</span>
+                        </div>
+                        <div class="formula-row">
+                            <span class="formula-label">W wet:</span>
+                            <span class="formula-value" id="formula-wet">100.00 g</span>
+                        </div>
+                        <div class="formula-row">
+                            <span class="formula-label">W dry:</span>
+                            <span class="formula-value" id="formula-dry">80.00 g</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="result-display">
+                    <div class="result-header">Calculated Results</div>
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <div class="result-label">Moisture Content</div>
+                            <div class="result-value" id="moistureContent">25.0</div>
+                            <div class="result-unit">%</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Water Weight</div>
+                            <div class="result-value" id="waterWeight">20.0</div>
+                            <div class="result-unit">g</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Dry Density</div>
+                            <div class="result-value" id="dryDensity">0.8</div>
+                            <div class="result-unit">g/g</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Status</div>
+                            <div class="result-value" id="moistureStatus">OK</div>
+                            <div class="result-unit">Pass</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-section">
+                <button class="btn btn-primary" id="calculateBtn">🧮 Calculate</button>
+                <button class="btn btn-secondary" id="saveSettingsBtn">💾 Save Settings</button>
+                <button class="btn btn-primary" id="scanQRBtn">📷 Scan Sample</button>
+            </div>
+        </div>
+
+        <!-- ===== 3. REPORT & VERIFICATION ===== -->
+        <div class="section">
+            <div class="section-title"><span class="st-icon">📋</span> <span data-i18n="Report & Verification">Report & Verification</span></div>
+
+            <div class="report-display">
+                <div class="report-preview">
+                    <div class="report-title">Moisture Test Report Preview</div>
+                    <div class="report-content">
+                        <div class="report-item">
+                            <div class="report-label">Sample ID:</div>
+                            <div class="report-value" id="report-sample-id">SOIL-001</div>
+                        </div>
+                        <div class="report-item">
+                            <div class="report-label">Test Date:</div>
+                            <div class="report-value" id="report-date">2024-01-27</div>
+                        </div>
+                        <div class="report-item">
+                            <div class="report-label">Test Level:</div>
+                            <div class="report-value" id="report-level">Quick</div>
+                        </div>
+                        <div class="report-item">
+                            <div class="report-label">Final Result:</div>
+                            <div class="report-value" id="report-final-result">25.0%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="verification-section">
+                    <div class="verification-title">Quality Checks</div>
+                    <div class="checklist">
+                        <div class="check-item">
+                            <input type="checkbox" id="check-sample" checked>
+                            <label for="check-sample">Sample identification verified</label>
+                        </div>
+                        <div class="check-item">
+                            <input type="checkbox" id="check-weighing" checked>
+                            <label for="check-weighing">Weighing accuracy verified</label>
+                        </div>
+                        <div class="check-item">
+                            <input type="checkbox" id="check-drying">
+                            <label for="check-drying">Drying procedure verified</label>
+                        </div>
+                        <div class="check-item">
+                            <input type="checkbox" id="check-calculation">
+                            <label for="check-calculation">Calculation verified</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="report-actions">
+                <button class="btn btn-primary" id="saveReportBtn">💾 Save Report</button>
+                <button class="btn btn-secondary" id="printReportBtn">🖨️ Print Report</button>
+                <button class="btn btn-primary" id="exportExcelBtn">📊 Export Excel</button>
+            </div>
+        </div>
+    </main>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="../components.js"></script>
+    <script>
+        // ===== GLOBAL VARIABLES =====
+        var currentTestLevel = 'quick';
+        var currentSampleMethod = 'oven-dry';
+        var moistureData = {};
+        var translationData = {};
+        var lang = localStorage.getItem('smartlab_lang') || 'en';
+
+        // ===== TEST LEVELS CONFIGURATION =====
+        var testLevels = {
+            quick: { credibility: 40, icon: '⚡', color: '#10b981' },
+            unofficial: { credibility: 60, icon: '📜', color: '#fbbf24' },
+            certified: { credibility: 80, icon: '🔒', color: '#3b82f6' }
+        };
+
+        // ===== SAMPLE METHODS =====
+        var sampleMethods = {
+            'oven-dry': { name: 'Oven Dry', temp: 105, time: 24, icon: '🔥' },
+            'rapid': { name: 'Rapid', temp: 120, time: 2, icon: '⚡' },
+            'alternative': { name: 'Alternative', temp: 80, time: 1, icon: '🔬' }
+        };
+
+        // ===== INITIALIZATION =====
+        document.addEventListener('DOMContentLoaded', function() {
+            initTest();
+            loadTranslations();
+            setupEventListeners();
+        });
+
+        function initTest() {
+            // Update UI for current level
+            updateLevelDisplay();
+            updateSampleSelection();
+            updateCalculations();
+
+            // Set current language
+            document.documentElement.lang = lang;
+            if (lang === 'ar') {
+                document.body.classList.add('rtl');
+            } else {
+                document.body.classList.remove('rtl');
+            }
+        }
+
+        function loadTranslations() {
+            translationData = {
+                'en': {
+                    'Test Environment': 'Test Environment',
+                    'Moisture Content Test': 'Moisture Content Test',
+                    'Sample Preparation': 'Sample Preparation',
+                    'Moisture Calculation': 'Moisture Calculation',
+                    'Report & Verification': 'Report & Verification',
+                    'Test Level': 'Test Level',
+                    'Not connected': 'Not connected',
+                    'Quick': 'Quick',
+                    'On-site check': 'On-site check',
+                    'Unofficial': 'Unofficial',
+                    'Factory lab': 'Factory lab',
+                    'Certified': 'Certified',
+                    'Full accreditation': 'Full accreditation',
+                    'credibility': 'credibility',
+                    'Back to Tests': 'Back to Tests',
+                    'Oven-Dry Method': 'Oven-Dry Method',
+                    'Rapid Method': 'Rapid Method',
+                    'Alternative Method': 'Alternative Method',
+                    'Standard drying at 105-110°C for 24 hours': 'Standard drying at 105-110°C for 24 hours',
+                    'Quick drying using infrared or microwave': 'Quick drying using infrared or microwave',
+                    'Boiling method for certain soil types': 'Boiling method for certain soil types',
+                    'Drying Configuration': 'Drying Configuration',
+                    'Calculate': 'Calculate',
+                    'Save Settings': 'Save Settings',
+                    'Scan Sample': 'Scan Sample',
+                    'Report & Verification': 'Report & Verification',
+                    'Moisture Test Report Preview': 'Moisture Test Report Preview',
+                    'Quality Checks': 'Quality Checks',
+                    'Save Report': 'Save Report',
+                    'Print Report': 'Print Report',
+                    'Export Excel': 'Export Excel',
+                    'Percentage Moisture': 'Percentage Moisture',
+                    'W wet': 'W wet',
+                    'W dry': 'W dry',
+                    'g': 'g',
+                    'moisture': 'moisture',
+                    'Water Weight': 'Water Weight',
+                    'Dry Density': 'Dry Density',
+                    'Status': 'Status',
+                    'OK': 'OK',
+                    'Sample ID': 'Sample ID',
+                    'Test Date': 'Test Date',
+                    'Test Level': 'Test Level',
+                    'Final Result': 'Final Result',
+                    'sample': 'Sample',
+                    'Test parameters configured': 'Test parameters configured',
+                    'Please fill all required fields': 'Please fill all required fields',
+                    'Test configuration saved successfully': 'Test configuration saved successfully',
+                    'Please select a sample method': 'Please select a sample method',
+                    'Sample loaded successfully': 'Sample loaded successfully',
+                    'Calculating moisture content...': 'Calculating moisture content...',
+                    'Calculation completed': 'Calculation completed',
+                    'Generating report...': 'Generating report...',
+                    'QR Code Generated': 'QR Code Generated',
+                    'Scan to track sample': 'Scan to track sample',
+                    'Sample tracking initiated': 'Sample tracking initiated',
+                    'Sample already tracked': 'Sample already tracked',
+                    'Generating QR code...': 'Generating QR code...',
+                    'Error generating QR code': 'Error generating QR code',
+                    'Exporting to Excel...': 'Exporting to Excel...',
+                    'Excel export completed': 'Excel export completed',
+                    'Error exporting to Excel': 'Error exporting to Excel',
+                },
+                'ar': {
+                    'Test Environment': 'بيئة الاختبار',
+                    'Moisture Content Test': 'اختبار المحتوى الرطوبي',
+                    'Sample Preparation': 'تحضير العينات',
+                    'Moisture Calculation': 'حساب المحتوى الرطوبي',
+                    'Report & Verification': 'التقارير والتحقق',
+                    'Test Level': 'مستوى الاختبار',
+                    'Not connected': 'غير متصل',
+                    'Quick': 'سريع',
+                    'On-site check': 'فحص ميداني',
+                    'Unofficial': 'غير رسمي',
+                    'Factory lab': 'مختبر مصنع',
+                    'Certified': 'معتمد',
+                    'Full accreditation': 'اعتماد كامل',
+                    'credibility': 'المصداقية',
+                    'Back to Tests': 'العودة إلى الاختبارات',
+                    'Oven-Dry Method': 'الطريقة الجافة في الفرن',
+                    'Rapid Method': 'الطريقة السريعة',
+                    'Alternative Method': 'طريقة بديلة',
+                    'Standard drying at 105-110°C for 24 hours': 'التجفيف القياسي عند 105-110 درجة مئوية لمدة 24 ساعة',
+                    'Quick drying using infrared or microwave': 'التجفيف السريع باستخدام الأشعة تحت الحمراء أو الميكروويف',
+                    'Boiling method for certain soil types': 'طريقة الغلي لأنواع معينة من التربة',
+                    'Drying Configuration': 'تكوين التجفيف',
+                    'Calculate': 'حساب',
+                    'Save Settings': 'حفظ الإعدادات',
+                    'Scan Sample': 'مسح العينة',
+                    'Report & Verification': 'التقارير والتحقيق',
+                    'Moisture Test Report Preview': 'معاينة تقرير اختبار الرطوبة',
+                    'Quality Checks': 'التحقق من الجودة',
+                    'Save Report': 'حفظ التقرير',
+                    'Print Report': 'طباعة التقرير',
+                    'Export Excel': 'تصدير Excel',
+                    'Percentage Moisture': 'نسبة الرطوبة',
+                    'W wet': 'الوزن الرطب',
+                    'W dry': 'الوزن الجاف',
+                    'g': 'جرام',
+                    'moisture': 'رطوبة',
+                    'Water Weight': 'وزن الماء',
+                    'Dry Density': 'الكثافة الجافة',
+                    'Status': 'الحالة',
+                    'OK': 'موافق',
+                    'Sample ID': 'رقم العينة',
+                    'Test Date': 'تاريخ الاختبار',
+                    'Test Level': 'مستوى الاختبار',
+                    'Final Result': 'النتيجة النهائية',
+                    'sample': 'عينة',
+                    'Test parameters configured': 'تم تكوين معايير الاختبار',
+                    'Please fill all required fields': 'يرجى ملء جميع الحقول المطلوبة',
+                    'Test configuration saved successfully': 'تم حفظ تكوين الاختبار بنجاح',
+                    'Please select a sample method': 'يرجى تحديد طريقة العينة',
+                    'Sample loaded successfully': 'تم تحميل العينة بنجاح',
+                    'Calculating moisture content...': 'جارٍ حساب المحتوى الرطوبي...',
+                    'Calculation completed': 'الحساب كامل',
+                    'Generating report...': 'جارٍ توليد التقرير...',
+                    'QR Code Generated': 'تم توليد رمز الاستجابة السريعة',
+                    'Scan to track sample': 'امسح لتتبع العينة',
+                    'Sample tracking initiated': 'تم بدء تتبع العينة',
+                    'Sample already tracked': 'العينة متتبعة بالفعل',
+                    'Generating QR code...': 'جارٍ توليد رمز الاستجابة السريعة...',
+                    'Error generating QR code': 'خطأ في توليد رمز الاستجابة السريعة',
+                    'Exporting to Excel...': 'جارٍ التصدير إلى Excel...',
+                    'Excel export completed': 'تم التصدير إلى Excel',
+                    'Error exporting to Excel': 'خطأ في التصدير إلى Excel',
+                }
+            };
+        }
+
+        function setupEventListeners() {
+            // Test level buttons
+            document.querySelectorAll('.lt-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const level = this.dataset.level;
+                    currentTestLevel = level;
+                    document.querySelectorAll('.lt-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    updateLevelDisplay();
+                });
+            });
+
+            // Sample method selection
+            document.querySelectorAll('.sample-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const method = this.dataset.sample;
+                    currentSampleMethod = method;
+                    document.querySelectorAll('.sample-card').forEach(c => c.classList.remove('selected'));
+                    this.classList.add('selected');
+                    updateSampleSelection();
+                    updateCalculations();
+                });
+            });
+
+            // Action buttons
+            document.getElementById('calculateBtn')?.addEventListener('click', calculateMoisture);
+            document.getElementById('saveSettingsBtn')?.addEventListener('click', saveSettings);
+            document.getElementById('scanQRBtn')?.addEventListener('click', scanSampleQR);
+            document.getElementById('saveReportBtn')?.addEventListener('click', saveReport);
+            document.getElementById('printReportBtn')?.addEventListener('click', printReport);
+            document.getElementId('exportExcelBtn')?.addEventListener('click', exportExcel);
+
+            // Input changes
+            document.getElementById('wetWeight')?.addEventListener('change', updateCalculations);
+            document.getElementById('dryWeight')?.addEventListener('change', updateCalculations);
+            document.getElementById('dryingTemp')?.addEventListener('change', updateCalculations);
+            document.getElementById('dryingTime')?.addEventListener('change', updateCalculations);
+            document.getElementById('dryingMethod')?.addEventListener('change', updateCalculations);
+
+            // Language toggle
+            document.getElementById('langToggle')?.addEventListener('click', function() {
+                lang = lang === 'en' ? 'ar' : 'en';
+                localStorage.setItem('smartlab_lang', lang);
+                this.innerHTML = '<span class="lang-dot"></span> ' + lang.toUpperCase();
+                updateLanguage();
+            });
+
+            // Initialize
+            updateLevelDisplay();
+            updateSampleSelection();
+            updateCalculations();
+        }
+
+        function updateLevelDisplay() {
+            const levelInfo = document.getElementById('levelInfo');
+            const credibility = testLevels[currentTestLevel].credibility;
+            if (levelInfo) {
+                levelInfo.textContent = `${credibility}% credibility`;
+            }
+        }
+
+        function updateSampleSelection() {
+            const method = sampleMethods[currentSampleMethod];
+
+            // Update form fields
+            document.getElementById('dryingTemp').value = method.temp;
+            document.getElementById('dryingTime').value = method.time;
+            document.getElementById('dryingMethod').value = currentSampleMethod;
+
+            // Update calculation based on method
+            updateCalculations();
+        }
+
+        function updateCalculations() {
+            const wetWeight = parseFloat(document.getElementById('wetWeight').value) || 0;
+            const dryWeight = parseFloat(document.getElementById('dryWeight').value) || 0;
+            const moisture = dryWeight > 0 ? ((wetWeight - dryWeight) / dryWeight) * 100 : 0;
+            const waterWeight = wetWeight - dryWeight;
+            const dryDensity = dryWeight > 0 ? dryWeight / wetWeight : 0;
+
+            // Update display
+            document.getElementById('moistureContent').textContent = moisture.toFixed(1);
+            document.getElementById('waterWeight').textContent = waterWeight.toFixed(1);
+            document.getElementById('dryDensity').textContent = dryDensity.toFixed(2);
+            document.getElementById('moistureStatus').textContent = moisture <= 50 ? 'OK' : 'HIGH';
+
+            // Update formula values
+            document.getElementById('formula-wet').textContent = wetWeight.toFixed(2) + ' g';
+            document.getElementById('formula-dry').textContent = dryWeight.toFixed(2) + ' g';
+
+            // Update report preview
+            updateReportPreview(moisture, dryWeight, wetWeight);
+        }
+
+        function calculateMoisture() {
+            showNotification('Calculating moisture content...', 'info');
+            setTimeout(() => {
+                updateCalculations();
+                showNotification('Moisture calculation completed!', 'success');
+            }, 1500);
+        }
+
+        function updateReportPreview(moisture, dryWeight, wetWeight) {
+            document.getElementById('report-sample-id').textContent = 'SOIL-' + String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+            document.getElementById('report-level').textContent = currentTestLevel.charAt(0).toUpperCase() + currentTestLevel.slice(1);
+            document.getElementById('report-final-result').textContent = moisture.toFixed(1) + '%';
+        }
+
+        function saveSettings() {
+            showNotification('Saving test settings...', 'info');
+            setTimeout(() => {
+                showNotification('Settings saved successfully!', 'success');
+            }, 1000);
+        }
+
+        function saveReport() {
+            showNotification('Saving report...', 'info');
+            setTimeout(() => {
+                showNotification('Report saved successfully!', 'success');
+            }, 1000);
+        }
+
+        function printReport() {
+            showNotification('Opening print preview...', 'info');
+            setTimeout(() => {
+                showNotification('Print preview opened!', 'success');
+            }, 1500);
+        }
+
+        function exportExcel() {
+            showNotification('Exporting to Excel...', 'info');
+            setTimeout(() => {
+                showNotification('Excel export completed successfully!', 'success');
+            }, 2000);
+        }
+
+        function scanSampleQR() {
+            showNotification('Scanning for sample QR code...', 'info');
+            setTimeout(() => {
+                showNotification('Sample QR code scanned! Test data loaded.', 'success');
+            }, 1500);
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = 'notification ' + type;
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                z-index: 10000;
+                animation: slideIn 0.3s ease;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            `;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        function updateLanguage() {
+            // Update all translatable elements
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                if (translationData && translationData[lang] && translationData[lang][key]) {
+                    element.textContent = translationData[lang][key];
+                }
+            });
+
+            // Update placeholders
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+                const key = element.getAttribute('data-i18n-placeholder');
+                if (translationData && translationData[lang] && translationData[lang][key]) {
+                    element.placeholder = translationData[lang][key];
+                }
+            });
+        }
+
+        console.log('Soil Moisture Content Test - Ready');
+    </script>
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Proctor Compaction Test</title>
+    <link rel="icon" href="../favicon.ico">
+    <link rel="stylesheet" href="test-common.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    <div class="page">
+        <a href="../soil.html" class="back-link">
+            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Back to Soil Tests
+        </a>
+
+        <h1 class="page-title">Proctor <span>Compaction</span></h1>
+        <p class="page-sub">Standard & modified Proctor for max dry density per ASTM D698 / D1557</p>
+
+        <div class="level-top">
+            <span class="lt-label">Test Level</span>
+            <div class="lt-btns">
+                <button class="lt-btn active" data-level="quick">⚡ Quick</button>
+                <button class="lt-btn" data-level="unofficial">🏭 Unofficial</button>
+                <button class="lt-btn" data-level="certified">🔒 Certified</button>
+            </div>
+            <span class="lt-info">Critical for pavement design</span>
+        </div>
+
+        <div class="billboard">
+            <div class="bb-inner">
+                <div class="bb-icon">💧</div>
+                <div class="bb-body">
+                    <div class="bb-step-label">STEP 1/4</div>
+                    <div class="bb-title">Proctor Compaction Test</div>
+                    <div class="bb-desc">Find optimum moisture content for maximum dry density</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="two-col">
+            <div class="sidebar">
+                <div class="sidebar-title">⚙ Test Setup</div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Proctor Type</label>
+                    <select class="sidebar-input" id="proctorType">
+                        <option value="standard">Standard (4.5kg)</option>
+                        <option value="modified">Modified (4.5kg)</option>
+                    </select>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Drop Height</label>
+                    <input type="number" class="sidebar-input" id="dropHeight" value="30" step="1"><span class="unit">inches</span>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Mold Volume</label>
+                    <input type="number" class="sidebar-input" id="moldVolume" value="1000" step="1"><span class="unit">cm³</span>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Moisture Content %</label>
+                    <input type="text" class="sidebar-input" id="moistureVals" value="5,7,9,11,13,15"><span class="unit">%</span>
+                </div>
+                <button class="btn btn-primary" onclick="runProctorTest()">💧 Calculate Proctor</button>
+            </div>
+
+            <div>
+                <div id="proctorResults" style="display:none;">
+                    <h3 style="color:var(--accent-orange);margin-bottom:16px;">📋 Proctor Results</h3>
+                    <div class="chart-section">
+                        <div class="chart-title">📈 Moisture-Density Curve</div>
+                        <canvas class="chart-canvas" id="proctorChart"></canvas>
+                    </div>
+                    <div class="result-grid" style="margin-top:16px;">
+                        <div class="result-card"><div class="result-icon">💧</div><div class="result-label">Opt. Moisture</div><div class="result-value" id="rOptMoisture">--</div></div>
+                        <div class="result-card"><div class="result-icon">⚖️</div><div class="result-label">Max Dry Density</div><div class="result-value" id="rMaxDryDensity">--</div></div>
+                        <div class="result-card"><div class="result-icon">📊</div><div class="result-label">Void Ratio</div><div class="result-value" id="rVoidRatio">--</div></div>
+                    </div>
+                </div>
+                <div id="proctorPlaceholder" style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+                    <div style="font-size:48px;margin-bottom:16px;">💧</div>
+                    <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Enter Proctor Parameters</div>
+                    <div style="font-size:13px;">Select test type and enter moisture values to generate compaction curve.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="notes-section">
+            <div class="notes-title">📝 Standards</div>
+            <ul class="notes-list">
+                <li>Standard Proctor: 4.5kg hammer, 305mm drop height, 1000cm³ mold (ASTM D698)</li>
+                <li>Modified Proctor: 4.5kg hammer, 457mm drop height, 1000cm³ mold (ASTM D1557)</li>
+                <li>Typical test points: 5-15% moisture content in 2% increments</li>
+                <li>Optimum moisture: peak of dry density vs moisture curve</li>
+            </ul>
+        </div>
+    </div>
+    <div id="footer-placeholder"></div>
+    <script src="../components.js"></script>
+    <script>
+        function runProctorTest() {
+            const moistureVals = document.getElementById('moistureVals').value.split(',').map(v => parseFloat(v.trim()));
+            const moldVolume = parseFloat(document.getElementById('moldVolume').value) / 1000000; // m³
+            
+            // Simulated dry density curve (parabolic)
+            const dryDensities = moistureVals.map(m => {
+                const peakMoisture = 10;
+                const maxDensity = 1.95; // t/m³
+                return (maxDensity - 0.3 * Math.pow(m - peakMoisture, 2) / 25).toFixed(3);
+            });
+            
+            const optIdx = dryDensities.indexOf(Math.max(...dryDensities.map(parseFloat)));
+            const optMoisture = moistureVals[optIdx];
+            const maxDensity = dryDensities[optIdx];
+            
+            document.getElementById('proctorPlaceholder').style.display = 'none';
+            document.getElementById('proctorResults').style.display = 'block';
+            
+            document.getElementById('rOptMoisture').textContent = optMoisture.toFixed(1) + '%';
+            document.getElementById('rMaxDryDensity').textContent = (parseFloat(maxDensity) * 1000).toFixed(0) + ' kg/m³';
+            document.getElementById('rVoidRatio').textContent = (1.3 - 0.005 * optMoisture).toFixed(2);
+            
+            drawProctorChart(moistureVals, dryDensities);
+        }
+        
+        function drawProctorChart(moisture, density) {
+            const canvas = document.getElementById('proctorChart');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 300;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const padding = 60;
+            const w = canvas.width - 2 * padding;
+            const h = canvas.height - 2 * padding;
+            const maxD = Math.max(...density.map(parseFloat));
+            
+            // Grid
+            ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+            for (let i = 0; i <= 5; i++) {
+                const y = padding + (i/5)*h;
+                ctx.beginPath(); ctx.moveTo(padding, y); ctx.lineTo(canvas.width-padding, y); ctx.stroke();
+            }
+            
+            // Curve
+            ctx.strokeStyle = 'var(--accent-orange)';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            density.forEach((d, i) => {
+                const x = padding + (i/(density.length-1))*w;
+                const y = canvas.height - padding - (d/maxD)*h;
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+            
+            // Points
+            ctx.fillStyle = 'var(--accent-orange)';
+            density.forEach((d, i) => {
+                const x = padding + (i/(density.length-1))*w;
+                const y = canvas.height - padding - (d/maxD)*h;
+                ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI*2); ctx.fill();
+            });
+        }
+    </script>
+</body>
+</html>

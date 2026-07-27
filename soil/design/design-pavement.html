@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Pavement Design (AASHTO 1993)</title>
+    <link rel="icon" href="../favicon.ico">
+    <link rel="stylesheet" href="design-common.css">
+    <style>
+        :root { --accent-page: #fb923c; }
+        body { color-scheme: dark; }
+        .design-icon { background: rgba(251,146,60,0.1); border-color: rgba(251,146,60,0.4); }
+        .back-btn { background: rgba(251,146,60,0.1); border-color: rgba(251,146,60,0.2); }
+        .back-btn:hover { background: rgba(251,146,60,0.2); }
+        .notes-section { background: rgba(251,146,60,0.04); border-color: rgba(251,146,60,0.1); }
+        .band-btn { background: rgba(251,146,60,0.1); border-color: rgba(251,146,60,0.2); color: var(--accent-orange); }
+        .band-btn:hover, .band-btn.active { background: rgba(251,146,60,0.2); border-color: var(--accent-orange); }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    <div class="page">
+        <nav class="breadcrumb">
+            <a href="../soil.html">Soil & Roads</a>
+            <span>/</span>
+            <a href="design-classification.html">Design Tools</a>
+            <span>/</span>
+            <span>Pavement Design</span>
+        </nav>
+        <h1 class="page-title">Pavement <span>Design</span></h1>
+        <p class="page-sub">AASHTO 1993 Flexible & Rigid Pavement Design — Structural Number, Layer Thickness, Traffic Analysis per AASHTO Guide</p>
+
+        <section class="design-section">
+            <div class="design-header">
+                <div class="design-icon">🛣️</div>
+                <div>
+                    <div class="design-title">AASHTO 1993 Pavement Designer</div>
+                    <div class="design-desc">Design flexible and rigid pavements using the AASHTO 1993 empirical method. Calculate Structural Number (SN), layer thicknesses, and verify against traffic loading.</div>
+                </div>
+            </div>
+
+            <div class="tab-row">
+                <button class="tab-btn active" onclick="switchTab('flexible', this)">Flexible</button>
+                <button class="tab-btn" onclick="switchTab('rigid', this)">Rigid</button>
+                <button class="tab-btn" onclick="switchTab('traffic', this)">Traffic</button>
+                <button class="tab-btn" onclick="switchTab('materials', this)">Materials</button>
+                <button class="tab-btn" onclick="switchTab('report', this)">Report</button>
+            </div>
+
+            <!-- TAB 1: FLEXIBLE -->
+            <div class="tab-panel active" id="panel-flexible">
+                <div class="two-col">
+                    <div class="sidebar">
+                        <div class="sidebar-title">📐 Design Inputs</div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Design Life</label>
+                            <input type="number" class="sidebar-input" id="designLife" value="20" step="1"><span class="unit">years</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Reliability</label>
+                            <input type="number" class="sidebar-input" id="reliability" value="90" step="1"><span class="unit">%</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Overall Std Dev (So)</label>
+                            <input type="number" class="sidebar-input" id="stdDev" value="0.45" step="0.01"><span class="unit">—</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Initial Serviceability (po)</label>
+                            <input type="number" class="sidebar-input" id="po" value="4.2" step="0.1"><span class="unit">—</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Terminal Serviceability (pt)</label>
+                            <input type="number" class="sidebar-input" id="pt" value="2.5" step="0.1"><span class="unit">—</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Subgrade Resilient Modulus</label>
+                            <input type="number" class="sidebar-input" id="mr" value="7000" step="500"><span class="unit">psi</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Drainage Coefficient (m)</label>
+                            <input type="number" class="sidebar-input" id="drainCoeff" value="1.0" step="0.1"><span class="unit">—</span>
+                        </div>
+                        <button class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="calcFlexible()">🛣️ Design Flexible</button>
+                    </div>
+
+                    <div>
+                        <div id="flexResults" style="display:none;">
+                            <h3 style="color:var(--accent-orange);margin-bottom:16px;">📋 Flexible Pavement Design Results</h3>
+                            <div class="result-grid">
+                                <div class="result-card"><div class="result-icon">📊</div><div class="result-label">Required SN</div><div class="result-value" id="rReqSN">--</div></div>
+                                <div class="result-card"><div class="result-icon">🛤️</div><div class="result-label">W18 (ESALs)</div><div class="result-value" id="rW18">--</div></div>
+                                <div class="result-card"><div class="result-icon">📏</div><div class="result-label">Total Thickness</div><div class="result-value" id="rTotalThick">--</div></div>
+                            </div>
+
+                            <div class="chart-section" style="margin-top:24px;">
+                                <div class="chart-title">📈 Layer Thickness Design</div>
+                                <canvas class="chart-canvas" id="flexChart"></canvas>
+                            </div>
+
+                            <div class="table-container" style="margin-top:24px;">
+                                <table>
+                                    <thead>
+                                        <tr><th>Layer</th><th style="text-align:right">a (coeff)</th><th style="text-align:right">m (drain)</th><th style="text-align:right">D (in)</th><th style="text-align:right">a×m×D</th></tr>
+                                    </thead>
+                                    <tbody id="flexTable"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div id="flexPlaceholder" style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+                            <div style="font-size:48px;margin-bottom:16px;">🛣️</div>
+                            <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Ready to Design</div>
+                            <div style="font-size:13px;max-width:400px;">Enter design parameters and click <strong>Design Flexible</strong>.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: RIGID -->
+            <div class="tab-panel" id="panel-rigid">
+                <div class="two-col">
+                    <div class="sidebar">
+                        <div class="sidebar-title">🏗️ Rigid Design Inputs</div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Design Life</label>
+                            <input type="number" class="sidebar-input" id="rigidLife" value="30" step="1"><span class="unit">years</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Reliability</label>
+                            <input type="number" class="sidebar-input" id="rigidRel" value="95" step="1"><span class="unit">%</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Std Dev (So)</label>
+                            <input type="number" class="sidebar-input" id="rigidSo" value="0.35" step="0.01"><span class="unit">—</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">po</label>
+                            <input type="number" class="sidebar-input" id="rigidPo" value="4.5" step="0.1"><span class="unit">—</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">pt</label>
+                            <input type="number" class="sidebar-input" id="rigidPt" value="2.5" step="0.1"><span class="unit">—</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Modulus of Rupture (Sc)</label>
+                            <input type="number" class="sidebar-input" id="modRupture" value="650" step="25"><span class="unit">psi</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Ecc (E concrete)</label>
+                            <input type="number" class="sidebar-input" id="ecc" value="4000000" step="500000"><span class="unit">psi</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">k-value (subgrade)</label>
+                            <input type="number" class="sidebar-input" id="kValue" value="200" step="25"><span class="unit">pci</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Load Transfer (J)</label>
+                            <input type="number" class="sidebar-input" id="loadTransfer" value="3.2" step="0.1"><span class="unit">—</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Drainage (Cd)</label>
+                            <input type="number" class="sidebar-input" id="rigidCd" value="1.0" step="0.1"><span class="unit">—</span>
+                        </div>
+                        <button class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="calcRigid()">🏗️ Design Rigid</button>
+                    </div>
+
+                    <div>
+                        <div id="rigidResults" style="display:none;">
+                            <h3 style="color:var(--accent-orange);margin-bottom:16px;">📋 Rigid Pavement Design Results</h3>
+                            <div class="result-grid">
+                                <div class="result-card"><div class="result-icon">📏</div><div class="result-label">Slab Thickness</div><div class="result-value" id="rSlabD">--</div></div>
+                                <div class="result-card"><div class="result-icon">📊</div><div class="result-label">W18 (ESALs)</div><div class="result-value" id="rRigidW18">--</div></div>
+                                <div class="result-card"><div class="result-icon">🔧</div><div class="result-label">Joint Spacing</div><div class="result-value" id="rJoint">--</div></div>
+                            </div>
+                            <div class="chart-section" style="margin-top:24px;">
+                                <div class="chart-title">📈 Rigid Pavement Thickness vs Traffic</div>
+                                <canvas class="chart-canvas" id="rigidChart"></canvas>
+                            </div>
+                        </div>
+                        <div id="rigidPlaceholder" style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+                            <div style="font-size:48px;margin-bottom:16px;">🏗️</div>
+                            <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Rigid Design Ready</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: TRAFFIC -->
+            <div class="tab-panel" id="panel-traffic">
+                <h3 style="color:var(--accent-orange);margin-bottom:16px;">🚛 Traffic Analysis (ESAL Calculator)</h3>
+                <div class="two-col">
+                    <div class="sidebar">
+                        <div class="sidebar-title">🚦 Traffic Data</div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Initial AADT (2-way)</label>
+                            <input type="number" class="sidebar-input" id="aadt" value="5000" step="100">
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Growth Rate</label>
+                            <input type="number" class="sidebar-input" id="growthRate" value="3" step="0.1"><span class="unit">%</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Design Life</label>
+                            <input type="number" class="sidebar-input" id="trafficLife" value="20" step="1"><span class="unit">years</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Directional Distribution</label>
+                            <input type="number" class="sidebar-input" id="dirDist" value="0.5" step="0.05"><span class="unit">—</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Lane Distribution</label>
+                            <input type="number" class="sidebar-input" id="laneDist" value="0.9" step="0.05"><span class="unit">—</span>
+                        </div>
+                        <div class="sidebar-field">
+                            <label class="sidebar-label">Truck % (AADTT)</label>
+                            <input type="number" class="sidebar-input" id="truckPct" value="15" step="1"><span class="unit">%</span>
+                        </div>
+                        <button class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="calcESALs()">🚛 Calculate ESALs</button>
+                    </div>
+
+                    <div>
+                        <div class="spec-grid" style="margin-top:16px;">
+                            <div class="spec-item">
+                                <div class="spec-title">🚛 Vehicle Class Distribution</div>
+                                <div class="spec-desc">Enter % of trucks by FHWA class (4-13). Defaults based on typical highway mix.</div>
+                            </div>
+                            <div class="spec-item">
+                                <div class="spec-title">⚖️ Axle Load Factors</div>
+                                <div class="spec-desc">Equivalency factors per AASHTO 1993 Appendix D. Single/Dual/Tandem/Tridem axles.</div>
+                            </div>
+                            <div class="spec-item">
+                                <div class="spec-title">📊 Growth Model</div>
+                                <div class="spec-desc">Simple compound: N = AADT × 365 × [(1+r)^n - 1] / r. For r=0: N = AADT × 365 × n.</div>
+                            </div>
+                        </div>
+
+                        <div class="form-grid" style="margin-top:16px;">
+                            <div class="form-field"><label>Class 4 (Buses)</label><input type="number" id="cls4" value="2" step="1"><span class="unit">%</span></div>
+                            <div class="form-field"><label>Class 5 (2-Axle SU)</label><input type="number" id="cls5" value="20" step="1"><span class="unit">%</span></div>
+                            <div class="form-field"><label>Class 6 (3-Axle SU)</label><input type="number" id="cls6" value="8" step="1"><span class="unit">%</span></div>
+                            <div class="form-field"><label>Class 7 (4+ Axle SU)</label><input type="number" id="cls7" value="3" step="1"><span class="unit">%</span></div>
+                            <div class="form-field"><label>Class 8 (4-Axle ST)</label><input type="number" id="cls8" value="5" step="1"><span class="unit">%</span></div>
+                            <div class="form-field"><label>Class 9 (5-Axle ST)</label><input type="number" id="cls9" value="50" step="1"><span class="unit">%</span></div>
+                            <div class="form-field"><label>Class 10 (6+ Axle ST)</label><input type="number" id="cls10" value="5" step="1"><span class="unit">%</span></div>
+                            <div class="form-field"><label>Class 11 (5-Axle MT)</label><input type="number" id="cls11" value="1" step="1"><span class="unit">%</span></div>
+                            <div class="form-field"><label>Class 12 (6+ Axle MT)</label><input type="number" id="cls12" value="1" step="1"><span class="unit">%</span></div>
+                        </div>
+
+                        <div id="esalResults" style="display:none;margin-top:24px;">
+                            <div class="result-grid">
+                                <div class="result-card"><div class="result-icon">📊</div><div class="result-label">Total W18</div><div class="result-value" id="rTotalW18">--</div></div>
+                                <div class="result-card"><div class="result-icon">📈</div><div class="result-label">Avg Daily ESALs</div><div class="result-value" id="rDailyESAL">--</div></div>
+                                <div class="result-card"><div class="result-icon">🚛</div><div class="result-label">Truck Factor</div><div class="result-value" id="rTruckFactor">--</div></div>
+                            </div>
+                            <div class="table-container" style="margin-top:16px;">
+                                <table>
+                                    <thead><tr><th>Class</th><th>%</th><th>Equiv. Factor</th><th style="text-align:right">ESALs</th></tr></thead>
+                                    <tbody id="esalTable"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: MATERIALS -->
+            <div class="tab-panel" id="panel-materials">
+                <h3 style="color:var(--accent-orange);margin-bottom:16px;">🧱 Layer Coefficients & Material Properties</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Layer / Material</th>
+                                <th>Typical a₁ (Surface)</th>
+                                <th>Typical a₂ (Base)</th>
+                                <th>Typical a₃ (Subbase)</th>
+                                <th>Drainage m (Good)</th>
+                                <th>Drainage m (Fair)</th>
+                                <th>Drainage m (Poor)</th>
+                                <th>Resilient Modulus (psi)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="materialTable">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="criteria-grid" style="margin-top:24px;">
+                    <div class="criteria-card">
+                        <div class="criteria-name">Surface (AC) a₁</div>
+                        <div class="criteria-value">0.44</div><div class="criteria-unit">per inch</div>
+                    </div>
+                    <div class="criteria-card">
+                        <div class="criteria-name">Base (Crushed) a₂</div>
+                        <div class="criteria-value">0.14</div><div class="criteria-unit">per inch</div>
+                    </div>
+                    <div class="criteria-card">
+                        <div class="criteria-name">Subbase (Sand) a₃</div>
+                        <div class="criteria-value">0.11</div><div class="criteria-unit">per inch</div>
+                    </div>
+                    <div class="criteria-card">
+                        <div class="criteria-name">Drainage m (Good)</div>
+                        <div class="criteria-value">1.00</div><div class="criteria-unit">—</div>
+                    </div>
+                    <div class="criteria-card">
+                        <div class="criteria-name">Drainage m (Poor)</div>
+                        <div class="criteria-value">0.80</div><div class="criteria-unit">—</div>
+                    </div>
+                </div>
+
+                <div class="formula-section" style="margin-top:24px;">
+                    <div class="formula-title">📐 Structural Number Equation</div>
+                    <div class="code-block">
+SN = a₁D₁ + a₂D₂m₂ + a₃D₃m₃
+a₁ = surface layer coefficient (AC ≈ 0.44)
+a₂ = base layer coefficient (crushed stone ≈ 0.14)
+a₃ = subbase layer coefficient (sand ≈ 0.11)
+m = drainage coefficient (1.0 good, 0.8 fair, 0.6 poor)
+D = layer thickness (inches)
+                    </div>
+                </div>
+
+                <div class="formula-section" style="margin-top:16px;">
+                    <div class="formula-title">📐 Rigid Pavement Design Equation (AASHTO 1993)</div>
+                    <div class="code-block">
+log₁₀(W₁₈) = ZᵣS₀ + 7.35 log₁₀(D+1) - 0.06 + log₁₀[ΔPSI / (4.5-1.5)] 
+  + (4.22 - 0.32 pₜ) log₁₀[Sc Cd (D^0.75 - 1.132) / (215.63 J (D^0.75 - 18.42/ (Ec/k)^0.25))]
+
+D = slab thickness (inches)
+Sc = modulus of rupture (psi)
+Ec = elastic modulus of concrete (psi)
+k = modulus of subgrade reaction (pci)
+J = load transfer coefficient
+Cd = drainage coefficient
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 5: REPORT -->
+            <div class="tab-panel" id="panel-report">
+                <h3 style="color:var(--accent-orange);margin-bottom:16px;">📄 Design Report Generator</h3>
+                <div class="two-col">
+                    <div class="sidebar">
+                        <div class="sidebar-title">📋 Project Info</div>
+                        <div class="sidebar-field"><label class="sidebar-label">Project Name</label><input type="text" class="sidebar-input" id="projName" value="Highway 45 - Segment 3"></div>
+                        <div class="sidebar-field"><label class="sidebar-label">Route / Road</label><input type="text" class="sidebar-input" id="routeName" value="SH-45"></div>
+                        <div class="sidebar-field"><label class="sidebar-label">Location</label><input type="text" class="sidebar-input" id="location" value="MP 12.5 - MP 18.2"></div>
+                        <div class="sidebar-field"><label class="sidebar-label">Designer</label><input type="text" class="sidebar-input" id="designer" value="Ahmed Hassan, PE"></div>
+                        <div class="sidebar-field"><label class="sidebar-label">Agency</label><input type="text" class="sidebar-input" id="agency" value="State DOT"></div>
+                        <button class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="genReport()">📄 Generate Report</button>
+                    </div>
+                    <div>
+                        <div id="reportOutput" style="display:none;">
+                            <div class="code-block" id="reportText" style="font-family:monospace;font-size:11px;white-space:pre;background:rgba(15,23,42,0.6);border:1px solid var(--border-glass);"></div>
+                            <button class="btn btn-gold" onclick="printReport()" style="margin-top:16px;">🖨️ Print Report</button>
+                        </div>
+                        <div id="reportPlaceholder" style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+                            <div style="font-size:48px;margin-bottom:16px;">📄</div>
+                            <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Complete Design First</div>
+                            <div style="font-size:13px;max-width:400px;">Design flexible/rigid pavement and traffic, then generate report.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <a href="../soil.html" class="back-btn">← Back to Soil & Roads</a>
+    </div>
+    <div id="footer-placeholder"></div>
+    <script src="../components.js"></script>
+    <script>
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('panel-' + tabId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        // Material data
+        const materials = [
+            {name: 'Asphalt Concrete (Surface)', a1: 0.44, a2: '—', a3: '—', mGood: 1.0, mFair: 1.0, mPoor: 1.0, mr: '300,000-500,000'},
+            {name: 'Asphalt Concrete (Binder)', a1: 0.40, a2: '—', a3: '—', mGood: 1.0, mFair: 1.0, mPoor: 1.0, mr: '300,000-500,000'},
+            {name: 'Cement Treated Base', a1: '—', a2: 0.23, a3: 0.20, mGood: 1.0, mFair: 0.9, mPoor: 0.8, mr: '500,000-1,000,000'},
+            {name: 'Bituminous Treated Base', a1: '—', a2: 0.34, a3: 0.30, mGood: 1.0, mFair: 0.9, mPoor: 0.8, mr: '300,000-500,000'},
+            {name: 'Crushed Stone Base', a1: '—', a2: 0.14, a3: 0.11, mGood: 1.0, mFair: 0.9, mPoor: 0.8, mr: '30,000-40,000'},
+            {name: 'Crushed Gravel Base', a1: '—', a2: 0.12, a3: 0.10, mGood: 1.0, mFair: 0.9, mPoor: 0.8, mr: '25,000-35,000'},
+            {name: 'Sand Subbase', a1: '—', a2: '—', a3: 0.11, mGood: 1.0, mFair: 0.9, mPoor: 0.8, mr: '15,000-25,000'},
+            {name: 'Soil-Cement Subbase', a1: '—', a2: '—', a3: 0.15, mGood: 1.0, mFair: 0.9, mPoor: 0.8, mr: '100,000-200,000'},
+            {name: 'Lime Stabilized Subbase', a1: '—', a2: '—', a3: 0.12, mGood: 1.0, mFair: 0.9, mPoor: 0.8, mr: '50,000-100,000'},
+        ];
+
+        function populateMaterials() {
+            const tbody = document.getElementById('materialTable');
+            tbody.innerHTML = '';
+            materials.forEach(m => {
+                tbody.innerHTML += `<tr>
+                    <td><strong>${m.name}</strong></td>
+                    <td>${m.a1}</td>
+                    <td>${m.a2}</td>
+                    <td>${m.a3}</td>
+                    <td style="text-align:center">${m.mGood}</td>
+                    <td style="text-align:center">${m.mFair}</td>
+                    <td style="text-align:center">${m.mPoor}</td>
+                    <td>${m.mr}</td>
+                </tr>`;
+            });
+        }
+
+        // Flexible Pavement Design
+        function calcFlexible() {
+            const life = parseFloat(document.getElementById('designLife').value);
+            const rel = parseFloat(document.getElementById('reliability').value);
+            const so = parseFloat(document.getElementById('stdDev').value);
+            const po = parseFloat(document.getElementById('po').value);
+            const pt = parseFloat(document.getElementById('pt').value);
+            const mr = parseFloat(document.getElementById('mr').value);
+            const m = parseFloat(document.getElementById('drainCoeff').value);
+
+            // Reliability factor Zr
+            const zrTable = { 50: 0, 60: 0.253, 70: 0.524, 75: 0.674, 80: 0.842, 85: 1.036, 90: 1.282, 95: 1.645, 99: 2.327 };
+            const zr = zrTable[rel] || 1.282;
+
+            // W18 from traffic tab (or estimate)
+            // Use default for now - will be linked later
+            const W18 = 5e6; // placeholder
+
+            // AASHTO 1993 Flexible Eq: log10(W18) = Zr*So + 9.36*log10(SN+1) - 0.20 + log10(ΔPSI/(4.2-1.5)) + 2.32*log10(Mr) - 8.07
+            // Solve for SN iteratively
+            const deltaPSI = po - pt;
+            const logTerm = Math.log10(deltaPSI / 2.7);
+            const mrTerm = 2.32 * Math.log10(mr) - 8.07;
+
+            // Iterate for SN
+            let SN = 4.0;
+            for (let i = 0; i < 20; i++) {
+                const lhs = Math.log10(W18);
+                const rhs = zr * so + 9.36 * Math.log10(SN + 1) - 0.20 + logTerm + mrTerm;
+                const diff = lhs - rhs;
+                if (Math.abs(diff) < 0.001) break;
+                SN = SN * Math.pow(10, diff / (9.36 / (SN + 1) / Math.LN10));
+            }
+
+            // Layer design (example)
+            const a1 = 0.44, a2 = 0.14, a3 = 0.11;
+            const m2 = m, m3 = m;
+            // Distribute SN: typical D1=3-4", D2=6-10", D3=6-12"
+            const D1 = 4;
+            const remSN = SN - a1 * D1;
+            const D2 = Math.min(Math.max(remSN * 0.6 / (a2 * m2), 6), 10);
+            const D3 = Math.max((remSN - a2 * m2 * D2) / (a3 * m3), 6);
+
+            document.getElementById('rReqSN').textContent = SN.toFixed(2);
+            document.getElementById('rW18').textContent = (W18/1e6).toFixed(1) + 'M';
+            document.getElementById('rTotalThick').textContent = (D1 + D2 + D3).toFixed(1) + ' in';
+
+            const tbody = document.getElementById('flexTable');
+            tbody.innerHTML = `
+                <tr><td>Surface (AC)</td><td style="text-align:right">${a1.toFixed(2)}</td><td style="text-align:right">1.0</td><td style="text-align:right">${D1.toFixed(1)}</td><td style="text-align:right">${(a1*D1).toFixed(2)}</td></tr>
+                <tr><td>Base (Crushed)</td><td style="text-align:right">${a2.toFixed(2)}</td><td style="text-align:right">${m2.toFixed(1)}</td><td style="text-align:right">${D2.toFixed(1)}</td><td style="text-align:right">${(a2*m2*D2).toFixed(2)}</td></tr>
+                <tr><td>Subbase (Sand)</td><td style="text-align:right">${a3.toFixed(2)}</td><td style="text-align:right">${m3.toFixed(1)}</td><td style="text-align:right">${D3.toFixed(1)}</td><td style="text-align:right">${(a3*m3*D3).toFixed(2)}</td></tr>
+                <tr style="font-weight:700;border-top:2px solid var(--accent-orange);"><td>TOTAL</td><td></td><td></td><td style="text-align:right">${(D1+D2+D3).toFixed(1)}</td><td style="text-align:right">${SN.toFixed(2)}</td></tr>
+            `;
+
+            drawFlexChart(SN, a1, a2, a3, D1, D2, D3, m2, m3);
+            document.getElementById('flexPlaceholder').style.display = 'none';
+            document.getElementById('flexResults').style.display = 'block';
+        }
+
+        function drawFlexChart(SN, a1, a2, a3, D1, D2, D3, m2, m3) {
+            const canvas = document.getElementById('flexChart');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 250;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const layers = [
+                {name: 'AC Surface', thick: D1, color: '#374151', sn: a1*D1},
+                {name: 'Base', thick: D2, color: '#78716c', sn: a2*m2*D2},
+                {name: 'Subbase', thick: D3, color: '#a8a29e', sn: a3*m3*D3},
+            ];
+            const totalThick = D1 + D2 + D3;
+            const padding = 40;
+            const barW = 120;
+            const startX = (canvas.width - barW) / 2;
+            let y = canvas.height - padding;
+
+            ctx.font = '12px monospace';
+            ctx.textAlign = 'left';
+
+            layers.forEach((layer, i) => {
+                const h = (layer.thick / totalThick) * (canvas.height - 2 * padding);
+                ctx.fillStyle = layer.color;
+                ctx.fillRect(startX, y - h, barW, h);
+                ctx.fillStyle = '#fff';
+                ctx.fillText(`${layer.name}: ${layer.thick.toFixed(1)}"`, startX + barW + 10, y - h/2 + 4);
+                ctx.fillText(`SN = ${layer.sn.toFixed(2)}`, startX + barW + 10, y - h/2 + 20);
+                y -= h;
+            });
+
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(startX + barW + 10, padding);
+            ctx.lineTo(startX + barW + 10, canvas.height - padding);
+            ctx.stroke();
+        }
+
+        // Rigid Pavement Design
+        function calcRigid() {
+            const life = parseFloat(document.getElementById('rigidLife').value);
+            const rel = parseFloat(document.getElementById('rigidRel').value);
+            const so = parseFloat(document.getElementById('rigidSo').value);
+            const po = parseFloat(document.getElementById('rigidPo').value);
+            const pt = parseFloat(document.getElementById('rigidPt').value);
+            const Sc = parseFloat(document.getElementById('modRupture').value);
+            const Ec = parseFloat(document.getElementById('ecc').value);
+            const k = parseFloat(document.getElementById('kValue').value);
+            const J = parseFloat(document.getElementById('loadTransfer').value);
+            const Cd = parseFloat(document.getElementById('rigidCd').value);
+
+            const zrTable = { 50: 0, 60: 0.253, 70: 0.524, 75: 0.674, 80: 0.842, 85: 1.036, 90: 1.282, 95: 1.645, 99: 2.327 };
+            const zr = zrTable[rel] || 1.645;
+            const W18 = 5e6;
+
+            // Iterative solution for D (simplified)
+            let D = 8;
+            for (let i = 0; i < 30; i++) {
+                const term1 = zr * so;
+                const term2 = 7.35 * Math.log10(D + 1) - 0.06;
+                const term3 = Math.log10((po - pt) / 3.0);
+                const term4 = (4.22 - 0.32 * pt) * Math.log10(
+                    (Sc * Cd * (Math.pow(D, 0.75) - 1.132)) / 
+                    (215.63 * J * (Math.pow(D, 0.75) - 18.42 / Math.pow(Ec / k, 0.25)))
+                );
+                const rhs = term1 + term2 + term3 + term4;
+                const lhs = Math.log10(W18);
+                const diff = lhs - rhs;
+                if (Math.abs(diff) < 0.001) break;
+                D = D * Math.pow(10, diff / (7.35 / (D + 1) / Math.LN10));
+            }
+
+            document.getElementById('rSlabD').textContent = D.toFixed(1) + ' in';
+            document.getElementById('rRigidW18').textContent = (W18/1e6).toFixed(1) + 'M';
+            document.getElementById('rJoint').textContent = Math.min(D * 2.5, 15).toFixed(0) + ' ft';
+
+            drawRigidChart(D);
+            document.getElementById('rigidPlaceholder').style.display = 'none';
+            document.getElementById('rigidResults').style.display = 'block';
+        }
+
+        function drawRigidChart(D) {
+            const canvas = document.getElementById('rigidChart');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 250;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const w18Vals = [1e5, 5e5, 1e6, 5e6, 1e7, 5e7, 1e8];
+            const thicknesses = w18Vals.map(w => {
+                // Quick approximation
+                return 5 + 3 * Math.log10(w / 1e5);
+            });
+
+            const padding = 40;
+            const w = canvas.width - 2 * padding;
+            const h = canvas.height - 2 * padding;
+            const maxW18 = 1e8;
+            const maxD = 14;
+
+            // Grid
+            ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+            for (let i = 0; i <= 5; i++) {
+                const y = padding + (i/5)*h;
+                ctx.beginPath(); ctx.moveTo(padding, y); ctx.lineTo(canvas.width-padding, y); ctx.stroke();
+                const x = padding + (i/5)*w;
+                ctx.beginPath(); ctx.moveTo(x, padding); ctx.lineTo(x, canvas.height-padding); ctx.stroke();
+            }
+
+            // Curve
+            ctx.strokeStyle = 'var(--accent-orange)';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            w18Vals.forEach((w, i) => {
+                const x = padding + (Math.log10(w) - 5) / 3 * w;
+                const y = canvas.height - padding - (thicknesses[i]/maxD)*h;
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+
+            // Design point
+            const dx = padding + (Math.log10(5e6) - 5) / 3 * w;
+            const dy = canvas.height - padding - (D/maxD)*h;
+            ctx.fillStyle = 'var(--accent-orange)';
+            ctx.beginPath(); ctx.arc(dx, dy, 6, 0, Math.PI*2); ctx.fill();
+        }
+
+        // ESAL Calculator
+        const eqFactors = {
+            4: 0.50,   // Buses
+            5: 0.40,   // 2-axle SU
+            6: 0.80,   // 3-axle SU
+            7: 1.20,   // 4+ axle SU
+            8: 0.85,   // 4-axle ST
+            9: 1.20,   // 5-axle ST
+            10: 1.55,  // 6+ axle ST
+            11: 1.80,  // 5-axle MT
+            12: 2.20   // 6+ axle MT
+        };
+
+        function calcESALs() {
+            const aadt = parseFloat(document.getElementById('aadt').value);
+            const growth = parseFloat(document.getElementById('growthRate').value) / 100;
+            const life = parseFloat(document.getElementById('trafficLife').value);
+            const dir = parseFloat(document.getElementById('dirDist').value);
+            const lane = parseFloat(document.getElementById('laneDist').value);
+            const truckPct = parseFloat(document.getElementById('truckPct').value) / 100;
+
+            // Growth factor
+            let gf = life;
+            if (growth > 0) {
+                gf = (Math.pow(1 + growth, life) - 1) / growth;
+            }
+
+            const classes = [4,5,6,7,8,9,10,11,12];
+            const pcts = classes.map(c => parseFloat(document.getElementById('cls'+c).value) || 0);
+            const totalPct = pcts.reduce((a,b) => a+b, 0);
+
+            let totalW18 = 0;
+            const tbody = document.getElementById('esalTable');
+            tbody.innerHTML = '';
+
+            classes.forEach((cls, i) => {
+                const pct = (pcts[i] / totalPct) * 100;
+                const ef = eqFactors[cls];
+                const w18 = aadt * dir * lane * truckPct * (pct/100) * ef * 365 * gf;
+                totalW18 += w18;
+
+                const nameMap = {4:'Buses',5:'2-Axle SU',6:'3-Axle SU',7:'4+ Axle SU',8:'4-Axle ST',9:'5-Axle ST',10:'6+ Axle ST',11:'5-Axle MT',12:'6+ Axle MT'};
+                tbody.innerHTML += `<tr>
+                    <td>Class ${cls} (${nameMap[cls]})</td>
+                    <td style="text-align:center">${pct.toFixed(1)}%</td>
+                    <td style="text-align:center">${ef.toFixed(2)}</td>
+                    <td style="text-align:right">${w18.toLocaleString()}</td>
+                </tr>`;
+            });
+
+            document.getElementById('rTotalW18').textContent = (totalW18/1e6).toFixed(2) + 'M';
+            document.getElementById('rDailyESAL').textContent = (totalW18/life/365).toLocaleString();
+            document.getElementById('rTruckFactor').textContent = (totalW18 / (aadt * 365 * life * dir * lane * truckPct * 365 * gf)).toFixed(3);
+
+            document.getElementById('esalResults').style.display = 'block';
+        }
+
+        // Report Generator
+        function genReport() {
+            const report = `
+PAVEMENT DESIGN REPORT — AASHTO 1993
+=====================================
+
+Project: ${document.getElementById('projName').value}
+Route: ${document.getElementById('routeName').value}
+Location: ${document.getElementById('location').value}
+Designer: ${document.getElementById('designer').value}
+Agency: ${document.getElementById('agency').value}
+Date: ${new Date().toLocaleDateString()}
+
+DESIGN PARAMETERS:
+- Design Life: ${document.getElementById('designLife').value} years
+- Reliability: ${document.getElementById('reliability').value}%
+- Std Deviation: ${document.getElementById('stdDev').value}
+- po: ${document.getElementById('po').value}, pt: ${document.getElementById('pt').value}
+- Subgrade Mr: ${document.getElementById('mr').value} psi
+- Drainage Coeff: ${document.getElementById('drainCoeff').value}
+
+FLEXIBLE PAVEMENT DESIGN:
+- Required SN: ${document.getElementById('rReqSN').textContent}
+- Total W18: ${document.getElementById('rW18').textContent}
+- Total Thickness: ${document.getElementById('rTotalThick').textContent}
+
+LAYER THICKNESSES:
+${Array.from(document.querySelectorAll('#flexTable tr')).map(r => {
+    const cells = r.querySelectorAll('td');
+    return cells.length ? cells[0].textContent + ': ' + cells[3].textContent + ' in' : '';
+}).filter(x=>x).join('\n')}
+
+TRAFFIC ANALYSIS:
+- Initial AADT: ${document.getElementById('aadt').value}
+- Growth Rate: ${document.getElementById('growthRate').value}%
+- Design Life: ${document.getElementById('trafficLife').value} years
+- Truck %: ${document.getElementById('truckPct').value}%
+- Total W18: ${document.getElementById('rTotalW18').textContent}
+- Daily ESALs: ${document.getElementById('rDailyESAL').textContent}
+
+RIGID PAVEMENT DESIGN:
+- Slab Thickness: ${document.getElementById('rSlabD').textContent}
+- Joint Spacing: ${document.getElementById('rJoint').textContent}
+
+NOTES:
+1. Design per AASHTO Guide for Design of Pavement Structures (1993).
+2. Verify with local agency requirements.
+3. Construction QC/QA per ASTM C94, AASHTO T 166, T 269.
+4. Subgrade preparation per AASHTO M 145 classification.
+
+Generated by smartLAB AI Pavement Designer
+            `.trim();
+
+            document.getElementById('reportText').textContent = report;
+            document.getElementById('reportPlaceholder').style.display = 'none';
+            document.getElementById('reportOutput').style.display = 'block';
+        }
+
+        function printReport() {
+            window.print();
+        }
+
+        // Initialize
+        populateMaterials();
+    </script>
+</body>
+</html>

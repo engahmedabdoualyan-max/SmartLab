@@ -1,0 +1,159 @@
+/**
+ * SmartLab Theme: Minimalist Light
+ * Direction: Left-to-Right (English)
+ * Based on logo: Clean, simple, optimized for performance
+ */
+:root {
+    /* Minimalist Palette */
+    --primary: #0f172a;
+    --primary-light: #1e293b;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --accent-glow: rgba(59, 130, 246, 0.1);
+    --success: #059669;
+    --danger: #dc2626;
+    --warning: #d97706;
+    --surface: #ffffff;
+    --surface-alt: #f9fafb;
+    --border: #e5e7eb;
+    --text: #111827;
+    --text-muted: #6b7280;
+    --text-light: #9ca3af;
+    --radius: 6px;
+    --radius-sm: 4px;
+    --radius-lg: 10px;
+    --bg-card: #ffffff;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+    --shadow: 0 2px 8px rgba(0,0,0,0.08);
+    --shadow-lg: 0 4px 20px rgba(0,0,0,0.1);
+    --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.08);
+}
+
+/* Minimal logo: clean, sharp edges */
+.logo-minimal {
+    background: var(--accent);
+    border-radius: var(--radius-sm);
+    width: 48px; height: 48px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Minimal clean panels */
+.panel-minimal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+}
+
+.panel-minimal:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+    border-color: var(--accent);
+}
+
+/* Minimal cards with subtle indentation */
+.card-minimal {
+    background: var(--surface);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Minimal buttons with clean appearance */
+.btn-minimal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 16px;
+    font-weight: 500;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-minimal:hover {
+    background: var(--surface-alt);
+    border-color: var(--accent);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-minimal.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+}
+
+.btn-minimal.primary:hover {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+}
+
+/* Minimal typography */
+.heading-minimal {
+    color: var(--text);
+    font-weight: 600;
+    font-family: 'Segoe UI', 'Cairo', sans-serif;
+}
+
+.subheading-minimal {
+    color: var(--text-muted);
+    font-weight: 500;
+    font-family: 'Segoe UI', 'Cairo', sans-serif;
+}
+
+/* Minimal progress bars */
+.progress-minimal {
+    background: var(--surface-alt);
+    border-radius: var(--radius-full);
+    height: 4px;
+    overflow: hidden;
+}
+
+.progress-fill-minimal {
+    background: var(--accent);
+    height: 100%;
+    border-radius: var(--radius-full);
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
+}
+
+/* Simple scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--surface-alt);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--text-light);
+    border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+/* RTL support */
+[data-dir="ltr"] { direction: ltr; text-align: left; }
+
+/* Accent utility classes */
+.accent-subtle { color: var(--accent); }
+.accent-subtle-bg { background-color: var(--accent-glow); }
+
+/* Minimal glass effect */
+.glass-minimal {
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(0,0,0,0.05);
+    border-radius: var(--radius);
+}
+
+/* Logo reference: minimal clean design */
+.logo-minimal-flat {
+    background: var(--accent);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow);
+}

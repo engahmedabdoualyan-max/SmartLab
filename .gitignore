@@ -1,4 +1,82 @@
-# .gitignore
+node_modules/
+pnpm-debug.log
+yarn-debug.log
+.yarn-integrity
+package-lock.json
 
-### Node.js / Package Management\nnode_modules/\npnpm-debug.log\nyarn-debug.log\n.yarn-integrity\npackage-lock.json\n\n### Environment Variables\n.env\n.env.local\n.env.development.local\n.env.test.local\n.env.production.local\n\n### Build Outputs\ndist/\nbuild/\n!.gitignore\n\n### Logs & Temporary Files\n*.log\nlogs/\ntmp/\ntmp/\n\n### IDE & Editor Files\n.vscode/\n.idea/\n*.swp\n*.swo\n*~\n\n### OS & System Files\n.DS_Store\nThumbs.db\n*\*.DS_Store\n\n### Configuration\nsettings.json\nsettings.ini\n*.cfg\n\n### Personal Files\n*.key\n*.pem\n\n### Archive Files\n*.zip\n*.tar.gz\n*.7z\n\n### Web Assets (if generated)\n*.manifest\n*.service-worker.js\n\n### Test Outputs\n.coverage\n.nyc_output/\n\n### IDE/backups\n*.bak\n\n### OS temporary\n/tmp/\nvar/\n\n### Runtime\n*.runtime-cache\n\n### Capacitor/Cordova\ncapacitor.config.json\n\n### SwiftUI preview\n.preview/\n\n
+# Environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build
+dist/
+build/
+!.gitignore
+
+# Logs
+*.log
+logs/
+
+# Temp
+tmp/
+/tmp/
+var/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+*.DS_Store
+
+# Config
+settings.json
+settings.ini
+*.cfg
+
+# Secrets
+*.key
+*.pem
+
+# Archives
+*.zip
+*.tar.gz
+*.7z
+
+# Web
+*.manifest
+*.service-worker.js
+
+# Test coverage
+.coverage
+.nyc_output/
+
+# Backups
+*.bak
+
+# Runtime
+*.runtime-cache
+
+# Capacitor
+capacitor.config.json
+
+# Preview
+.preview/
+
+# Vercel
 .vercel
+
+# Firebase
+.firebaserc
+firebase.json
+
+# CI
+.github/workflows/deploy.yml

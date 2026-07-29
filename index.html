@@ -1126,6 +1126,222 @@
             display: none;
         }
         .fab-backdrop.show { display: block; }
+
+        /* === MODALS === */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(6px);
+            z-index: 11000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-overlay.active { display: flex; }
+
+        .modal-box {
+            background: var(--bg-card, #1a1a2e);
+            border: 1px solid var(--border-glass, rgba(255,255,255,0.08));
+            border-radius: 16px;
+            width: 100%;
+            max-height: 85vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+            animation: modalIn 0.3s ease;
+        }
+        @keyframes modalIn {
+            from { transform: translateY(30px) scale(0.96); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+
+        .modal-box-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--border-glass, rgba(255,255,255,0.08));
+        }
+        .modal-box-header h2 {
+            margin: 0;
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text-primary, #fff);
+        }
+        .modal-box-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary, #aaa);
+            font-size: 26px;
+            cursor: pointer;
+            padding: 0 4px;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+        .modal-box-close:hover { color: #ef4444; }
+
+        .modal-box-body {
+            padding: 20px 22px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .modal-box.wide { max-width: 700px; }
+        .modal-box.narrow { max-width: 440px; }
+        .modal-box.medium { max-width: 500px; }
+
+        /* === RATING === */
+        .rate-body { text-align: center; }
+        .rate-stars {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 20px 0 14px;
+        }
+        .rate-star {
+            background: none;
+            border: none;
+            font-size: 42px;
+            color: var(--text-tertiary, #444);
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+            transition: color 0.2s, transform 0.2s;
+        }
+        .rate-star:hover,
+        .rate-star.active { color: #f59e0b; transform: scale(1.15); }
+        .rate-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #f59e0b;
+            min-height: 22px;
+            margin-bottom: 18px;
+        }
+        .rate-note {
+            font-size: 14px;
+            color: var(--text-secondary, #bbb);
+            margin-bottom: 20px;
+        }
+        .rate-submit {
+            background: linear-gradient(135deg, #f59e0b, #f97316) !important;
+            width: 100%;
+        }
+
+        /* === FEATURES TOC === */
+        .features-list { padding: 0; }
+        .features-list .feat-item {
+            border: 1px solid var(--border-glass, rgba(255,255,255,0.06));
+            border-radius: 10px;
+            margin-bottom: 8px;
+            overflow: hidden;
+        }
+        .feat-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 13px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary, #fff);
+            background: rgba(255,255,255,0.03);
+            cursor: pointer;
+            user-select: none;
+            margin: 0;
+            transition: background 0.2s;
+        }
+        .feat-title:hover { background: rgba(59,130,246,0.08); }
+        .feat-title svg:first-child { color: var(--accent-blue, #3b82f6); flex-shrink: 0; }
+        .feat-title span { flex: 1; }
+        .feat-arrow {
+            color: var(--text-secondary, #888);
+            transition: transform 0.3s;
+            flex-shrink: 0;
+        }
+        .feat-title.open .feat-arrow { transform: rotate(180deg); }
+        .feat-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease, padding 0.3s ease;
+            padding: 0 16px;
+        }
+        .feat-title.open + .feat-body {
+            max-height: 2000px;
+            padding: 10px 16px 14px;
+        }
+        .feat-body ul {
+            margin: 0;
+            padding-left: 18px;
+            list-style: none;
+        }
+        .feat-body li {
+            font-size: 13px;
+            color: var(--text-secondary, #ccc);
+            padding: 3px 0;
+            position: relative;
+        }
+        .feat-body li::before {
+            content: "›";
+            position: absolute;
+            left: -14px;
+            color: var(--accent-blue, #3b82f6);
+            font-weight: bold;
+        }
+        .feat-body p {
+            font-size: 13px;
+            color: var(--text-secondary, #ccc);
+            margin: 4px 0;
+            line-height: 1.6;
+        }
+
+        /* === CONTACT FORM === */
+        .contact-form .cf-group {
+            margin-bottom: 16px;
+        }
+        .contact-form label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary, #fff);
+            margin-bottom: 6px;
+        }
+        .contact-form input,
+        .contact-form textarea,
+        .contact-form select {
+            width: 100%;
+            padding: 11px 13px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-glass, rgba(255,255,255,0.1));
+            border-radius: 10px;
+            color: var(--text-primary, #fff);
+            font-family: inherit;
+            font-size: 13px;
+            box-sizing: border-box;
+        }
+        .contact-form input:focus,
+        .contact-form textarea:focus {
+            outline: none;
+            border-color: var(--accent-blue, #3b82f6);
+        }
+        .contact-form textarea { resize: vertical; }
+        .phone-row {
+            display: flex;
+            gap: 10px;
+        }
+        .phone-row select {
+            width: 130px;
+            flex-shrink: 0;
+        }
+        .phone-row input { flex: 1; }
+        .contact-status {
+            font-size: 13px;
+            margin-top: 4px;
+        }
+        .contact-status.success { color: #10b981; }
+        .contact-status.error { color: #ef4444; }
+        .contact-submit { width: 100%; }
     </style>
 </head>
 <body>
@@ -2453,25 +2669,272 @@ translatePage(currentLang);
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape' && isOpen) close();
             });
+        })();
+    </script>
 
-            function scrollTo(el) {
-                close();
-                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    <!-- FEATURES MODAL -->
+    <div class="modal-overlay" id="features-modal" onclick="if(event.target===this)window.featuresModalClose()">
+        <div class="modal-box wide">
+            <div class="modal-box-header">
+                <h2>مميزات سمارت لاب</h2>
+                <button class="modal-box-close" onclick="window.featuresModalClose()">&times;</button>
+            </div>
+            <div class="modal-box-body">
+                <div class="features-list">
+                    <div class="feat-item">
+                        <h3 class="feat-title" onclick="this.classList.toggle('open')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                            <span>نظرة عامة</span>
+                            <svg class="feat-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                        </h3>
+                        <div class="feat-body"><p>سمارت لاب هو نظام متكامل لأتمتة معامل اختبار مواد البناء يدمج بين الذكاء الاصطناعي والحوسبة السحابية وإنترنت الأشياء لتقديم حلول مبتكرة لإدارة وتشغيل معامل الخرسانة والتربة والأسفلت.</p></div>
+                    </div>
+                    <div class="feat-item">
+                        <h3 class="feat-title" onclick="this.classList.toggle('open')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                            <span>وحدة الخرسانة</span>
+                            <svg class="feat-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                        </h3>
+                        <div class="feat-body"><ul><li>إدارة اختبارات الهبوط (Slump)</li><li>مراقبة درجة الحرارة</li><li>تتبع مقاومة الضغط</li><li>تقارير الأسطوانات / المكعبات</li><li>مكتبة تصاميم الخلطات</li></ul></div>
+                    </div>
+                    <div class="feat-item">
+                        <h3 class="feat-title" onclick="this.classList.toggle('open')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                            <span>اختبارات وضبط جودة</span>
+                            <svg class="feat-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                        </h3>
+                        <div class="feat-body"><ul><li>اختبار المكافئ الرملي</li><li>اختبارات الركام (منخل، كثافة، امتصاص)</li><li>اختبار مقاومة الضغط</li><li>اختبار الأسمنت (زمن الشك، النعومة)</li><li>تحليل المياه والإضافات</li></ul></div>
+                    </div>
+                    <div class="feat-item">
+                        <h3 class="feat-title" onclick="this.classList.toggle('open')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            <span>إدارة الإنتاج</span>
+                            <svg class="feat-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                        </h3>
+                        <div class="feat-body"><ul><li>نظام إدارة التذاكر</li><li>تتبع الأسطول والشاحنات</li><li>أتمتة الخلطات</li><li>لوحات المعلومات الفورية</li></ul></div>
+                    </div>
+                    <div class="feat-item">
+                        <h3 class="feat-title" onclick="this.classList.toggle('open')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                            <span>المخزون والمشتريات</span>
+                            <svg class="feat-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                        </h3>
+                        <div class="feat-body"><ul><li>تتبع مخزون المواد</li><li>إدارة الموردين</li><li>إنشاء أوامر الشراء</li><li>تنبيهات إعادة الطلب التلقائية</li></ul></div>
+                    </div>
+                    <div class="feat-item">
+                        <h3 class="feat-title" onclick="this.classList.toggle('open')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                            <span>الإشعارات والتنبيهات</span>
+                            <svg class="feat-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+                        </h3>
+                        <div class="feat-body"><ul><li>تنبيهات النظام الفورية</li><li>إشعارات البريد الإلكتروني / SMS</li><li>تحذيرات الحدود المسموحة</li></ul></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RATING MODAL -->
+    <div class="modal-overlay" id="rating-modal" onclick="if(event.target===this)window.ratingModalClose()">
+        <div class="modal-box narrow">
+            <div class="modal-box-header">
+                <h2>قيمنا</h2>
+                <button class="modal-box-close" onclick="window.ratingModalClose()">&times;</button>
+            </div>
+            <div class="modal-box-body rate-body">
+                <p class="rate-note">ما رأيك في سمارت لاب؟</p>
+                <div class="rate-stars" id="rate-stars">
+                    <button class="rate-star" data-val="1">&#9733;</button>
+                    <button class="rate-star" data-val="2">&#9733;</button>
+                    <button class="rate-star" data-val="3">&#9733;</button>
+                    <button class="rate-star" data-val="4">&#9733;</button>
+                    <button class="rate-star" data-val="5">&#9733;</button>
+                </div>
+                <div class="rate-label" id="rate-label"></div>
+                <button class="btn-primary rate-submit" id="rate-submit">إرسال التقييم</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTACT MODAL -->
+    <div class="modal-overlay" id="contact-modal" onclick="if(event.target===this)window.contactModalClose()">
+        <div class="modal-box medium">
+            <div class="modal-box-header">
+                <h2>اتصل بنا</h2>
+                <button class="modal-box-close" onclick="window.contactModalClose()">&times;</button>
+            </div>
+            <div class="modal-box-body">
+                <form class="contact-form" id="contact-form">
+                    <div class="cf-group">
+                        <label for="cf-email">البريد الإلكتروني</label>
+                        <input type="email" id="cf-email" required placeholder="your@email.com">
+                    </div>
+                    <div class="cf-group">
+                        <label for="cf-phone">رقم الموبايل</label>
+                        <div class="phone-row">
+                            <select id="cf-country">
+                                <option value="+20">🇪🇬 +20</option>
+                                <option value="+966">🇸🇦 +966</option>
+                                <option value="+971">🇦🇪 +971</option>
+                                <option value="+965">🇰🇼 +965</option>
+                                <option value="+974">🇶🇦 +974</option>
+                                <option value="+973">🇧🇭 +973</option>
+                                <option value="+968">🇴🇲 +968</option>
+                                <option value="+1">🇺🇸 +1</option>
+                                <option value="+44">🇬🇧 +44</option>
+                            </select>
+                            <input type="tel" id="cf-phone" required placeholder="500000000">
+                        </div>
+                    </div>
+                    <div class="cf-group">
+                        <label for="cf-msg">الرسالة</label>
+                        <textarea id="cf-msg" rows="4" required placeholder="اكتب رسالتك هنا..."></textarea>
+                    </div>
+                    <div class="contact-status" id="cf-status"></div>
+                    <button type="submit" class="btn-primary contact-submit">إرسال</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            /* === FEATURES MODAL === */
+            function openFeatures() {
+                document.getElementById('features-modal').classList.add('active');
+                document.body.style.overflow = 'hidden';
             }
+            function closeFeatures() {
+                document.getElementById('features-modal').classList.remove('active');
+                document.body.style.overflow = '';
+            }
+            window.featuresModalOpen = openFeatures;
+            window.featuresModalClose = closeFeatures;
 
+            /* === RATING MODAL === */
+            var currentRate = 0;
+            var rateLabels = ['', 'سيء', 'ضعيف', 'جيد', 'جيد جداً', 'ممتاز'];
+
+            function openRating() {
+                document.getElementById('rating-modal').classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+            function closeRating() {
+                document.getElementById('rating-modal').classList.remove('active');
+                document.body.style.overflow = '';
+            }
+            window.ratingModalOpen = openRating;
+            window.ratingModalClose = closeRating;
+
+            var stars = document.querySelectorAll('.rate-star');
+            function highlightStars(n) {
+                stars.forEach(function(s, i) {
+                    s.style.color = i < n ? '#f59e0b' : '';
+                });
+            }
+            function resetStars() {
+                stars.forEach(function(s, i) {
+                    s.style.color = i < currentRate ? '#f59e0b' : '';
+                    s.classList.toggle('active', i < currentRate);
+                });
+            }
+            stars.forEach(function(s) {
+                s.addEventListener('mouseenter', function() { highlightStars(parseInt(this.dataset.val)); });
+                s.addEventListener('mouseleave', resetStars);
+                s.addEventListener('click', function() {
+                    currentRate = parseInt(this.dataset.val);
+                    resetStars();
+                    document.getElementById('rate-label').textContent = rateLabels[currentRate] + ' (' + currentRate + '/5)';
+                });
+            });
+            document.getElementById('rate-submit').addEventListener('click', function() {
+                if (!currentRate) return;
+                var btn = this;
+                btn.textContent = '✓ شكراً لك!';
+                btn.style.background = 'linear-gradient(135deg, #10b981, #059669) !important';
+                setTimeout(function() {
+                    closeRating();
+                    btn.textContent = 'إرسال التقييم';
+                    btn.style.background = '';
+                    currentRate = 0;
+                    resetStars();
+                    document.getElementById('rate-label').textContent = '';
+                }, 1500);
+            });
+
+            /* === CONTACT MODAL === */
+            function openContact() {
+                document.getElementById('contact-modal').classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+            function closeContact() {
+                document.getElementById('contact-modal').classList.remove('active');
+                document.body.style.overflow = '';
+            }
+            window.contactModalOpen = openContact;
+            window.contactModalClose = closeContact;
+
+            document.getElementById('contact-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                var email = document.getElementById('cf-email').value.trim();
+                var country = document.getElementById('cf-country').value;
+                var phone = document.getElementById('cf-phone').value.trim();
+                var msg = document.getElementById('cf-msg').value.trim();
+                var status = document.getElementById('cf-status');
+                var btn = this.querySelector('.contact-submit');
+
+                if (!email || !phone || !msg) {
+                    status.className = 'contact-status error';
+                    status.textContent = 'يرجى ملء جميع الحقول المطلوبة.';
+                    return;
+                }
+
+                btn.disabled = true;
+                btn.textContent = 'جاري الإرسال...';
+
+                var mailto = 'mailto:info@fimtosoft.com'
+                    + '?subject=' + encodeURIComponent('اتصال من سمارت لاب - ' + email)
+                    + '&body=' + encodeURIComponent('البريد: ' + email + '\nالهاتف: ' + country + ' ' + phone + '\n\nالرسالة:\n' + msg);
+
+                setTimeout(function() {
+                    window.location.href = mailto;
+                    status.className = 'contact-status success';
+                    status.textContent = '✓ جاري فتح بريدك الإلكتروني...';
+                    btn.textContent = 'إرسال';
+                    btn.disabled = false;
+                    setTimeout(function() {
+                        closeContact();
+                        document.getElementById('contact-form').reset();
+                        status.textContent = '';
+                    }, 2000);
+                }, 800);
+            });
+
+            /* === WIRE FAB MENU TO MODALS === */
             document.getElementById('fab-values').addEventListener('click', function(e) {
                 e.preventDefault();
-                scrollTo(document.getElementById('about-section'));
+                closeFab();
+                openRating();
             });
             document.getElementById('fab-features').addEventListener('click', function(e) {
                 e.preventDefault();
-                scrollTo(document.getElementById('domains-hero-target'));
+                closeFab();
+                openFeatures();
             });
             document.getElementById('fab-contact').addEventListener('click', function(e) {
                 e.preventDefault();
-                var footer = document.querySelector('.app-footer');
-                scrollTo(footer);
+                closeFab();
+                openContact();
             });
+
+            function closeFab() {
+                var fab = document.getElementById('fab');
+                var menu = document.getElementById('fab-menu');
+                var backdrop = document.getElementById('fab-backdrop');
+                fab.classList.remove('open');
+                menu.classList.remove('open');
+                backdrop.classList.remove('show');
+            }
         })();
     </script>
 

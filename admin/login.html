@@ -40,6 +40,29 @@
     </div>
     <script src="config.js"></script>
     <script>
+        try {
+            var saved = localStorage.getItem('smartlab_settings');
+            if (saved) {
+                var s = JSON.parse(saved);
+                if (s.logo && s.logo.indexOf('data:') === 0) {
+                    var img = document.querySelector('.auth-logo img');
+                    if (img) img.src = s.logo;
+                }
+                if (s.favicon && s.favicon.indexOf('data:') === 0) {
+                    var link = document.querySelector('link[rel="icon"]');
+                    if (link) link.href = s.favicon;
+                }
+                if (s.siteName) {
+                    var h1 = document.querySelector('.auth-logo h1');
+                    if (h1) {
+                        var parts = s.siteName.split('LAB');
+                        h1.innerHTML = (parts[0] || s.siteName) + '<span>LAB</span>';
+                    }
+                }
+            }
+        } catch(e) {}
+    </script>
+    <script>
         if (sessionStorage.getItem('smartlab_admin_session')) {
             window.location.href = 'panel.html';
         }

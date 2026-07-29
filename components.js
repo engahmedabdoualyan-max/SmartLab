@@ -239,10 +239,56 @@
             }
         });
     }
+    function applySiteConfig() {
+        try {
+            var cfg = window.SITE_CONFIG;
+            if (!cfg) {
+                var saved = localStorage.getItem('smartlab_settings');
+                if (saved) {
+                    var p = JSON.parse(saved);
+                    cfg = {
+                        logo: (p.logo && p.logo.indexOf('data:') === 0) ? p.logo : (p.logo && p.logo !== '../assets/logo.png' ? p.logo : '/assets/logo.png'),
+                        siteName: p.siteName || 'smartLAB',
+                        siteNameAr: p.siteNameAr || 'سمارت لاب'
+                    };
+                } else {
+                    cfg = { logo: '/assets/logo.png', siteName: 'smartLAB', siteNameAr: 'سمارت لاب' };
+                }
+            }
+            /* Apply logo to header images */
+            var imgs = document.querySelectorAll('.header-logo img');
+            for (var i = 0; i < imgs.length; i++) {
+                imgs[i].src = cfg.logo;
+            }
+            /* Apply logo to index.html inline text logo — replace text span with img if custom logo */
+            var logoSpans = document.querySelectorAll('.header-logo .logo-svg, .logo-box .logo-svg, .slab-banner-logo');
+            var isCustom = cfg.logo && cfg.logo.indexOf('data:') === 0;
+            for (var j = 0; j < logoSpans.length; j++) {
+                var span = logoSpans[j];
+                if (isCustom) {
+                    var img = document.createElement('img');
+                    img.src = cfg.logo;
+                    img.alt = cfg.siteName;
+                    img.style.cssText = 'width:42px;height:42px;object-fit:contain;border-radius:10px;box-shadow:0 0 20px rgba(59,130,246,0.25)';
+                    span.parentNode.replaceChild(img, span);
+                }
+            }
+            /* Favicon */
+            if (cfg.favicon) {
+                var link = document.querySelector('link[rel="icon"]');
+                if (link) link.href = cfg.favicon;
+            }
+        } catch(e) { console.warn('[smartLAB] applySiteConfig error:', e); }
+    }
+
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', loadHeaderFooter);
+        document.addEventListener('DOMContentLoaded', function() {
+            loadHeaderFooter();
+            setTimeout(applySiteConfig, 100);
+        });
     } else {
         loadHeaderFooter();
+        setTimeout(applySiteConfig, 100);
     }
 
     /* ========== MIX CLASS DEFINITIONS ========== */
@@ -717,6 +763,248 @@ var DOMPurify = (function() {
         el.innerHTML = '';
         return el;
     }
+    /* ========== Floating Action Button Injection ========== */
+    (function injectFAB() {
+        if (document.getElementById('fab-global')) return;
+
+        var style = document.createElement('style');
+        style.textContent = `
+.fab-global{position:fixed;bottom:32px;right:32px;width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#10b981);box-shadow:0 6px 24px rgba(59,130,246,0.35);z-index:10000;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.3s cubic-bezier(0.4,0,0.2,1);animation:fabFloat 3s ease-in-out infinite;border:none;outline:none}
+.fab-global:hover{transform:scale(1.08) rotate(45deg);box-shadow:0 10px 32px rgba(59,130,246,0.5)}
+.fab-global.open{background:linear-gradient(135deg,#ef4444,#f97316);transform:rotate(45deg);animation:none}
+.fab-global-icon{width:26px;height:26px;color:#fff;transition:transform 0.3s ease}
+.fab-global.open .fab-global-icon{transform:rotate(45deg)}
+@keyframes fabFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.fab-menu-global{position:fixed;bottom:102px;right:32px;width:270px;background:var(--bg-card,#1a1a2e);border:1px solid var(--border-glass,rgba(255,255,255,0.08));border-radius:14px;box-shadow:0 16px 48px rgba(0,0,0,0.5);padding:14px;z-index:9999;opacity:0;visibility:hidden;transform:translateY(16px) scale(0.95);transition:all 0.25s cubic-bezier(0.4,0,0.2,1);transform-origin:bottom right}
+.fab-menu-global.open{opacity:1;visibility:visible;transform:translateY(0) scale(1)}
+.fab-menu-header-global{display:flex;align-items:center;gap:10px;padding-bottom:12px;margin-bottom:8px;border-bottom:1px solid var(--border-glass,rgba(255,255,255,0.08))}
+.fab-menu-icon-global{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#10b981);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.fab-menu-icon-global svg{width:14px;height:14px;color:#fff}
+.fab-menu-title-global{font-size:15px;font-weight:700;color:var(--text-primary,#fff)}
+.fab-menu-items-global{display:flex;flex-direction:column;gap:6px}
+.fab-menu-item-global{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:transparent;border:none;color:var(--text-secondary,#bbb);font-size:13px;font-weight:500;cursor:pointer;transition:all 0.2s ease;text-decoration:none}
+.fab-menu-item-global:hover{background:rgba(59,130,246,0.08);color:var(--text-primary,#fff);transform:translateX(3px)}
+.fab-menu-item-global svg{width:18px;height:18px;color:var(--accent-blue,#3b82f6);flex-shrink:0}
+.fab-menu-item-global span{flex:1}
+.fab-backdrop-global{position:fixed;inset:0;z-index:9998;background:transparent;display:none}
+.fab-backdrop-global.show{display:block}
+
+/* modals global */
+.m-overlay-global{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(6px);z-index:11000;justify-content:center;align-items:center;padding:20px}
+.m-overlay-global.active{display:flex}
+.m-box-global{background:var(--bg-card,#1a1a2e);border:1px solid var(--border-glass,rgba(255,255,255,0.08));border-radius:16px;width:100%;max-height:85vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 25px 60px rgba(0,0,0,0.5);animation:modalIn 0.3s ease}
+@keyframes modalIn{from{transform:translateY(30px) scale(0.96);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+.m-box-global-header{display:flex;justify-content:space-between;align-items:center;padding:18px 22px;border-bottom:1px solid var(--border-glass,rgba(255,255,255,0.08))}
+.m-box-global-header h2{margin:0;font-size:17px;font-weight:700;color:var(--text-primary,#fff)}
+.m-box-global-close{background:none;border:none;color:var(--text-secondary,#aaa);font-size:26px;cursor:pointer;padding:0 4px;line-height:1;transition:color 0.2s}
+.m-box-global-close:hover{color:#ef4444}
+.m-box-global-body{padding:20px 22px;overflow-y:auto;flex:1;text-align:right}
+.m-box-global.wide{max-width:700px}
+.m-box-global.narrow{max-width:440px}
+.m-box-global.medium{max-width:500px}
+
+/* features */
+.f-list-global{padding:0}
+.f-item-global{border:1px solid var(--border-glass,rgba(255,255,255,0.06));border-radius:10px;margin-bottom:8px;overflow:hidden}
+.f-title-global{display:flex;align-items:center;gap:10px;padding:13px 16px;font-size:14px;font-weight:600;color:var(--text-primary,#fff);background:rgba(255,255,255,0.03);cursor:pointer;user-select:none;margin:0;transition:background 0.2s}
+.f-title-global:hover{background:rgba(59,130,246,0.08)}
+.f-title-global svg:first-child{color:var(--accent-blue,#3b82f6);flex-shrink:0}
+.f-title-global span{flex:1}
+.f-arrow-global{color:var(--text-secondary,#888);transition:transform 0.3s;flex-shrink:0}
+.f-title-global.open .f-arrow-global{transform:rotate(180deg)}
+.f-body-global{max-height:0;overflow:hidden;transition:max-height 0.35s ease,padding 0.3s ease;padding:0 16px}
+.f-title-global.open+.f-body-global{max-height:2000px;padding:10px 16px 14px}
+.f-body-global ul{margin:0;padding-right:18px;list-style:none}
+.f-body-global li{font-size:13px;color:var(--text-secondary,#ccc);padding:3px 0;position:relative}
+.f-body-global li::before{content:"‹";position:absolute;right:-14px;color:var(--accent-blue,#3b82f6);font-weight:bold}
+.f-body-global p{font-size:13px;color:var(--text-secondary,#ccc);margin:4px 0;line-height:1.6}
+
+/* rating */
+.r-body-global{text-align:center}
+.r-stars-global{display:flex;justify-content:center;gap:8px;margin:20px 0 14px}
+.r-star-global{background:none;border:none;font-size:42px;color:var(--text-tertiary,#444);cursor:pointer;padding:0;line-height:1;transition:color 0.2s,transform 0.2s}
+.r-star-global:hover,.r-star-global.active{color:#f59e0b;transform:scale(1.15)}
+.r-label-global{font-size:14px;font-weight:600;color:#f59e0b;min-height:22px;margin-bottom:18px}
+.r-note-global{font-size:14px;color:var(--text-secondary,#bbb);margin-bottom:20px}
+.r-submit-global{background:linear-gradient(135deg,#f59e0b,#f97316)!important;width:100%}
+
+/* contact */
+.c-form-global .c-group-global{margin-bottom:16px}
+.c-form-global label{display:block;font-size:13px;font-weight:600;color:var(--text-primary,#fff);margin-bottom:6px}
+.c-form-global input,.c-form-global textarea,.c-form-global select{width:100%;padding:11px 13px;background:rgba(255,255,255,0.05);border:1px solid var(--border-glass,rgba(255,255,255,0.1));border-radius:10px;color:var(--text-primary,#fff);font-family:inherit;font-size:13px;box-sizing:border-box}
+.c-form-global input:focus,.c-form-global textarea:focus{outline:none;border-color:var(--accent-blue,#3b82f6)}
+.c-form-global textarea{resize:vertical}
+.phone-row-global{display:flex;gap:10px}
+.phone-row-global select{width:130px;flex-shrink:0}
+.phone-row-global input{flex:1}
+.c-status-global{font-size:13px;margin-top:4px}
+.c-status-global.success{color:#10b981}
+.c-status-global.error{color:#ef4444}
+.c-submit-global{width:100%}
+`;
+        document.head.appendChild(style);
+
+        var html = `
+<div class="fab-backdrop-global" id="fab-backdrop-global"></div>
+<button class="fab-global" id="fab-global" aria-label="Quick actions">
+  <svg class="fab-global-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+    <line x1="12" y1="5" x2="12" y2="19"></line>
+    <line x1="5" y1="12" x2="19" y2="12"></line>
+  </svg>
+</button>
+<div class="fab-menu-global" id="fab-menu-global">
+  <div class="fab-menu-header-global">
+    <div class="fab-menu-icon-global"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></div>
+    <div class="fab-menu-title-global">Quick Actions</div>
+  </div>
+  <div class="fab-menu-items-global">
+    <a class="fab-menu-item-global" id="g-fab-features"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>المميزات</span></a>
+    <a class="fab-menu-item-global" id="g-fab-values"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg><span>قيمنا</span></a>
+    <a class="fab-menu-item-global" id="g-fab-contact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>اتصل بنا</span></a>
+  </div>
+</div>
+
+<!-- Features Modal -->
+<div class="m-overlay-global" id="g-modal-features">
+  <div class="m-box-global wide">
+    <div class="m-box-global-header"><h2>مميزات سمارت لاب</h2><button class="m-box-global-close" id="g-close-features">&times;</button></div>
+    <div class="m-box-global-body"><div class="f-list-global">
+      <div class="f-item-global"><h3 class="f-title-global open" onclick="this.classList.toggle('open')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>لوحة التحكم الرئيسية</span><svg class="f-arrow-global" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg></h3><div class="f-body-global"><p>لوحة تحكم شاملة تعرض إحصائيات فورية عن كل اختبارات الموقع، أحدث النتائج، مؤشرات الأداء، وملخص سريع لنشاط المستخدمين.</p></div></div>
+      <div class="f-item-global"><h3 class="f-title-global" onclick="this.classList.toggle('open')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>اختبارات الخرسانة</span><svg class="f-arrow-global" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg></h3><div class="f-body-global"><ul><li>Slump test - اختبار الهبوط</li><li>Compressive Strength - مقاومة الضغط</li><li>Unit Weight - وزن الوحدة</li><li>Temperature - درجة الحرارة</li><li>مع إمكانية تنزيل التقارير (PDF) والمراجع والبروتوكولات</li></ul></div></div>
+      <div class="f-item-global"><h3 class="f-title-global" onclick="this.classList.toggle('open')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>اختبارات التربة</span><svg class="f-arrow-global" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg></h3><div class="f-body-global"><ul><li>Atterberg Limits (LL, PL, PI)</li><li>Sieve Analysis - التحليل المنخلي</li><li>Proctor (Standard & Modified)</li><li>CBR (California Bearing Ratio)</li><li>Triaxial Test</li><li>Direct Shear Test</li></ul></div></div>
+      <div class="f-item-global"><h3 class="f-title-global" onclick="this.classList.toggle('open')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg><span>اختبارات الأسفلت</span><svg class="f-arrow-global" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg></h3><div class="f-body-global"><ul><li>Marshall Test</li><li>Extraction - استخلاص</li><li>Penetration - الاختراق</li><li>Softening Point - نقطة التليين</li><li>Viscosity - اللزوجة</li><li>مع ملفات دعم للتحميل (إجراءات، مراجع، تقارير)</li></ul></div></div>
+      <div class="f-item-global"><h3 class="f-title-global" onclick="this.classList.toggle('open')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg><span>التقارير والملفات</span><svg class="f-arrow-global" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg></h3><div class="f-body-global"><p>لكل اختبار في الموقع تجد: تقرير (Report) للتحميل بصيغة PDF، بروتوكول (Procedure) شرح خطوات الاختبار، ومراجع (References) علمية.</p></div></div>
+    </div></div>
+  </div>
+</div>
+
+<!-- Rating Modal -->
+<div class="m-overlay-global" id="g-modal-rating">
+  <div class="m-box-global narrow">
+    <div class="m-box-global-header"><h2>قيمنا</h2><button class="m-box-global-close" id="g-close-rating">&times;</button></div>
+    <div class="m-box-global-body r-body-global">
+      <p class="r-note-global">ما رأيك في سمارت لاب؟</p>
+      <div class="r-stars-global" id="g-stars">
+        <button class="r-star-global" data-val="1">&#9733;</button>
+        <button class="r-star-global" data-val="2">&#9733;</button>
+        <button class="r-star-global" data-val="3">&#9733;</button>
+        <button class="r-star-global" data-val="4">&#9733;</button>
+        <button class="r-star-global" data-val="5">&#9733;</button>
+      </div>
+      <div class="r-label-global" id="g-rate-label"></div>
+      <button class="btn-primary r-submit-global" id="g-rate-submit">إرسال التقييم</button>
+    </div>
+  </div>
+</div>
+
+<!-- Contact Modal -->
+<div class="m-overlay-global" id="g-modal-contact">
+  <div class="m-box-global medium">
+    <div class="m-box-global-header"><h2>اتصل بنا</h2><button class="m-box-global-close" id="g-close-contact">&times;</button></div>
+    <div class="m-box-global-body">
+      <form class="c-form-global" id="g-contact-form">
+        <div class="c-group-global"><label for="g-email">البريد الإلكتروني</label><input type="email" id="g-email" required placeholder="your@email.com"></div>
+        <div class="c-group-global"><label for="g-phone">رقم الموبايل</label><div class="phone-row-global"><select id="g-country"><option value="+20">🇪🇬 +20</option><option value="+966">🇸🇦 +966</option><option value="+971">🇦🇪 +971</option><option value="+1">🇺🇸 +1</option><option value="+44">🇬🇧 +44</option></select><input type="tel" id="g-phone" required placeholder="500000000"></div></div>
+        <div class="c-group-global"><label for="g-msg">الرسالة</label><textarea id="g-msg" rows="4" required placeholder="اكتب رسالتك هنا..."></textarea></div>
+        <div class="c-status-global" id="g-contact-status"></div>
+        <button type="submit" class="btn-primary c-submit-global">إرسال</button>
+      </form>
+    </div>
+  </div>
+</div>`;
+
+        var wrapper = document.createElement('div');
+        wrapper.innerHTML = html;
+        document.body.appendChild(wrapper);
+
+        var fabBtn = document.getElementById('fab-global');
+        var fabMenu = document.getElementById('fab-menu-global');
+        var fabBackdrop = document.getElementById('fab-backdrop-global');
+        var fabOpen = false;
+
+        function openFab() { fabOpen = true; fabBtn.classList.add('open'); fabMenu.classList.add('open'); fabBackdrop.classList.add('show'); }
+        function closeFab() { fabOpen = false; fabBtn.classList.remove('open'); fabMenu.classList.remove('open'); fabBackdrop.classList.remove('show'); }
+        fabBtn.addEventListener('click', function() { fabOpen ? closeFab() : openFab(); });
+        fabBackdrop.addEventListener('click', closeFab);
+        document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && fabOpen) closeFab(); });
+
+        function modalOpen(id) { document.getElementById(id).classList.add('active'); document.body.style.overflow = 'hidden'; closeFab(); }
+        function modalClose(id) { document.getElementById(id).classList.remove('active'); document.body.style.overflow = ''; }
+
+        document.getElementById('g-fab-features').addEventListener('click', function(e) { e.preventDefault(); modalOpen('g-modal-features'); });
+        document.getElementById('g-fab-values').addEventListener('click', function(e) { e.preventDefault(); modalOpen('g-modal-rating'); });
+        document.getElementById('g-fab-contact').addEventListener('click', function(e) { e.preventDefault(); modalOpen('g-modal-contact'); });
+
+        document.getElementById('g-close-features').addEventListener('click', function() { modalClose('g-modal-features'); });
+        document.getElementById('g-close-rating').addEventListener('click', function() { modalClose('g-modal-rating'); });
+        document.getElementById('g-close-contact').addEventListener('click', function() { modalClose('g-modal-contact'); });
+
+        document.getElementById('g-modal-features').addEventListener('click', function(e) { if (e.target === this) modalClose('g-modal-features'); });
+        document.getElementById('g-modal-rating').addEventListener('click', function(e) { if (e.target === this) modalClose('g-modal-rating'); });
+        document.getElementById('g-modal-contact').addEventListener('click', function(e) { if (e.target === this) modalClose('g-modal-contact'); });
+
+        /* rating logic */
+        var gCurrentRate = 0;
+        var gLabels = ['', 'سيء', 'ضعيف', 'جيد', 'جيد جداً', 'ممتاز'];
+        var gStars = document.querySelectorAll('#g-stars .r-star-global');
+        function gHighlight(n) { gStars.forEach(function(s, i) { s.style.color = i < n ? '#f59e0b' : ''; }); }
+        function gReset() { gStars.forEach(function(s, i) { s.style.color = i < gCurrentRate ? '#f59e0b' : ''; s.classList.toggle('active', i < gCurrentRate); }); }
+        gStars.forEach(function(s) {
+            s.addEventListener('mouseenter', function() { gHighlight(parseInt(this.dataset.val)); });
+            s.addEventListener('mouseleave', gReset);
+            s.addEventListener('click', function() {
+                gCurrentRate = parseInt(this.dataset.val);
+                gReset();
+                document.getElementById('g-rate-label').textContent = gLabels[gCurrentRate] + ' (' + gCurrentRate + '/5)';
+            });
+        });
+        document.getElementById('g-rate-submit').addEventListener('click', function() {
+            if (!gCurrentRate) return;
+            var btn = this;
+            btn.textContent = '✓ شكراً لك!';
+            btn.style.background = 'linear-gradient(135deg, #10b981, #059669) !important';
+            setTimeout(function() {
+                modalClose('g-modal-rating');
+                btn.textContent = 'إرسال التقييم';
+                btn.style.background = '';
+                gCurrentRate = 0;
+                gReset();
+                document.getElementById('g-rate-label').textContent = '';
+            }, 1500);
+        });
+
+        /* contact logic */
+        document.getElementById('g-contact-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var email = document.getElementById('g-email').value.trim();
+            var country = document.getElementById('g-country').value;
+            var phone = document.getElementById('g-phone').value.trim();
+            var msg = document.getElementById('g-msg').value.trim();
+            var status = document.getElementById('g-contact-status');
+            var btn = this.querySelector('.c-submit-global');
+            if (!email || !phone || !msg) {
+                status.className = 'c-status-global error';
+                status.textContent = 'يرجى ملء جميع الحقول المطلوبة.';
+                return;
+            }
+            btn.disabled = true;
+            btn.textContent = 'جاري الإرسال...';
+            var mailto = 'mailto:info@fimtosoft.com?subject=' + encodeURIComponent('اتصال من سمارت لاب - ' + email) + '&body=' + encodeURIComponent('البريد: ' + email + '\nالهاتف: ' + country + ' ' + phone + '\n\nالرسالة:\n' + msg);
+            setTimeout(function() {
+                window.location.href = mailto;
+                status.className = 'c-status-global success';
+                status.textContent = '✓ جاري فتح بريدك الإلكتروني...';
+                btn.textContent = 'إرسال';
+                btn.disabled = false;
+                setTimeout(function() {
+                    modalClose('g-modal-contact');
+                    document.getElementById('g-contact-form').reset();
+                    status.textContent = '';
+                }, 2000);
+            }, 800);
+        });
+    })();
+
     return {
         sanitize: function(text) {
             if (!text) return '';

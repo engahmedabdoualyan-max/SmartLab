@@ -2252,12 +2252,30 @@ function renderSettings() {
         '<input type="text" id="set-siteNameAr" value="' + escapeHtml(s.siteNameAr || '') + '" onchange="App.saveSettings()">' +
         '</div>' +
         '<div class="form-group">' +
-        '<label>Logo URL</label>' +
-        '<input type="text" id="set-logo" value="' + escapeHtml(s.logo || '') + '" placeholder="https://..." onchange="App.saveSettings()">' +
+        '<label>Logo</label>' +
+        '<div class="logo-upload-row">' +
+        '<div class="logo-preview" id="logo-preview">' +
+        (s.logo && s.logo.indexOf('data:') === 0 ? '<img src="' + s.logo + '" alt="logo">' : '<span>' + (s.siteName || 'SL').charAt(0).toUpperCase() + '</span>') +
+        '</div>' +
+        '<div class="logo-upload-actions">' +
+        '<label class="btn btn-sm btn-outline" style="cursor:pointer">📁 اختر صورة<input type="file" accept="image/*" style="display:none" id="set-logo-file" onchange="App.uploadLogo(this)"></label>' +
+        (s.logo && s.logo.indexOf('data:') === 0 ? '<button class="btn btn-sm btn-danger" onclick="App.removeLogo()">✕ حذف</button>' : '') +
+        '</div>' +
+        '</div>' +
+        '<input type="hidden" id="set-logo" value="' + (s.logo || '') + '">' +
         '</div>' +
         '<div class="form-group">' +
-        '<label>Favicon URL</label>' +
-        '<input type="text" id="set-favicon" value="' + escapeHtml(s.favicon || '') + '" placeholder="https://..." onchange="App.saveSettings()">' +
+        '<label>Favicon</label>' +
+        '<div class="logo-upload-row">' +
+        '<div class="logo-preview fav-preview" id="fav-preview">' +
+        (s.favicon && s.favicon.indexOf('data:') === 0 ? '<img src="' + s.favicon + '" alt="favicon">' : '<span>' + (s.siteName || 'SL').charAt(0).toUpperCase() + '</span>') +
+        '</div>' +
+        '<div class="logo-upload-actions">' +
+        '<label class="btn btn-sm btn-outline" style="cursor:pointer">📁 اختر صورة<input type="file" accept="image/*" style="display:none" id="set-favicon-file" onchange="App.uploadFavicon(this)"></label>' +
+        (s.favicon && s.favicon.indexOf('data:') === 0 ? '<button class="btn btn-sm btn-danger" onclick="App.removeFavicon()">✕ حذف</button>' : '') +
+        '</div>' +
+        '</div>' +
+        '<input type="hidden" id="set-favicon" value="' + (s.favicon || '') + '">' +
         '</div>' +
         '</div></div>';
 
@@ -2331,6 +2349,54 @@ function renderSettings() {
 
     html += '</div></div>';
     mainContent.innerHTML = html;
+}
+
+function uploadLogo(input) {
+    if (!input.files || !input.files[0]) return;
+    var file = input.files[0];
+    if (file.size > 2 * 1024 * 1024) { showToast('الملف كبير جداً (حد أقصى 2MB)', 'error'); return; }
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var dataUrl = e.target.result;
+        document.getElementById('set-logo').value = dataUrl;
+        var preview = document.getElementById('logo-preview');
+        if (preview) preview.innerHTML = '<img src="' + dataUrl + '" alt="logo">';
+        showToast('✓ تم رفع الشعار');
+        App.saveSettings();
+    };
+    reader.readAsDataURL(file);
+}
+
+function removeLogo() {
+    document.getElementById('set-logo').value = '/assets/logo.png';
+    var preview = document.getElementById('logo-preview');
+    if (preview) preview.innerHTML = '<span>' + (settings.siteName || 'SL').charAt(0).toUpperCase() + '</span>';
+    showToast('تم العودة للشعار الافتراضي');
+    App.saveSettings();
+}
+
+function uploadFavicon(input) {
+    if (!input.files || !input.files[0]) return;
+    var file = input.files[0];
+    if (file.size > 2 * 1024 * 1024) { showToast('الملف كبير جداً (حد أقصى 2MB)', 'error'); return; }
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var dataUrl = e.target.result;
+        document.getElementById('set-favicon').value = dataUrl;
+        var preview = document.getElementById('fav-preview');
+        if (preview) preview.innerHTML = '<img src="' + dataUrl + '" alt="favicon">';
+        showToast('✓ تم رفع الأيقونة');
+        App.saveSettings();
+    };
+    reader.readAsDataURL(file);
+}
+
+function removeFavicon() {
+    document.getElementById('set-favicon').value = '/favicon.ico';
+    var preview = document.getElementById('fav-preview');
+    if (preview) preview.innerHTML = '<span>F</span>';
+    showToast('تم العودة للأيقونة الافتراضية');
+    App.saveSettings();
 }
 
 function saveSettings() {
@@ -2771,13 +2837,38 @@ window.App = {
     openHtmlEditor: openHtmlEditor,
     formatHtml: formatHtml,
     previewHtml: previewHtml,
-    toggleHtmlPathType: toggleHtmlPathType
+    toggleHtmlPathType: toggleHtmlPathType,
+    uploadLogo: uploadLogo,
+    removeLogo: removeLogo,
+    uploadFavicon: uploadFavicon,
+    removeFavicon: removeFavicon
 };
+
+/* ===== APPLY ADMIN CONFIG ===== */
+function applyAdminConfig() {
+    try {
+        var logo = settings.logo || '';
+        var logoImg = document.querySelector('.sidebar-header img');
+        if (logoImg) {
+            if (logo && logo.indexOf('data:') === 0) {
+                logoImg.src = logo;
+            } else {
+                logoImg.src = logo || '../assets/logo.png';
+            }
+        }
+        var fav = settings.favicon || '';
+        if (fav && fav.indexOf('data:') === 0) {
+            var link = document.querySelector('link[rel="icon"]');
+            if (link) link.href = fav;
+        }
+    } catch(e) {}
+}
 
 /* ===== INIT ===== */
 try {
     renderSidebar();
     renderMain();
+    applyAdminConfig();
 } catch(e) {
     console.error('[smartLAB Admin] Init error:', e);
     var mc = document.getElementById('mainContent');

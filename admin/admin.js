@@ -1576,52 +1576,1075 @@ function saveContentField(sectionKey, fieldKey, value) {
     localStorage.setItem('smartlab_content', JSON.stringify(content));
 }
 
-/* ===== PAGE DESIGNER ===== */
-function renderDesigner() {
-    var sections = structure || [];
+/* ===== VISUAL PAGE BUILDER (Page Designer v2) ===== */
+var pageBuilder = {
+    currentPage: '',
+    currentDevice: 'desktop',
+    zoom: 1,
+    selectedWidget: null,
+    draggedWidget: null,
+    dropTarget: null,
+    history: [],
+    historyIndex: -1,
+    gridSize: 12,
+    rows: [],
+    widgets: {},
+    deviceWidths: { mobile: 375, tablet: 768, desktop: 1200 },
 
-    var html = '<div class="designer-panel">' +
-        '<div class="designer-section-select">' +
-        '<h3>Select Section</h3>' +
-        '<div class="designer-section-list">';
+    initDragDrop: function() {
+        var self = this;
+        
+        // Widget panel drag start
+        document.addEventListener('dragstart', function(e) {
+            var item = e.target.closest('.pb-widget-item');
+            if (item) {
+                self.draggedWidget = {
+                    id: item.dataset.widgetId,
+                    name: item.dataset.widgetName,
+                    icon: item.dataset.widgetIcon,
+                    desc: item.dataset.widgetDesc
+                };
+                item.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'copy';
+                e.dataTransfer.setData('text/plain', item.dataset.widgetId);
+            }
+        });
 
-    if (sections.length === 0) {
-        html += '<p class="empty-state">No sections available. Add a section first.</p>';
-    }
+        document.addEventListener('dragend', function(e) {
+            var item = e.target.closest('.pb-widget-item');
+            if (item) {
+                item.classList.remove('dragging');
+            }
+            self.draggedWidget = null;
+        });
 
-    for (var i = 0; i < sections.length; i++) {
-        var sec = sections[i];
-        html += '<button class="designer-section-card" onclick="App.addDesignerItem(\'' + sec.id + '\')">' +
-            '<span class="dsc-icon" style="background:' + (sec.color || '#3b82f6') + '">' + (sec.icon || '📁') + '</span>' +
-            '<span class="dsc-name">' + escapeHtml(sec.name) + '</span>' +
-            '<span class="dsc-count">' + (sec.items ? sec.items.length : 0) + ' tests</span>' +
-            '</button>';
-    }
+        // Canvas drop zone
+        var canvas = document.getElementById('pb-page-content');
+        if (canvas) {
+            canvas.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'copy';
+                
+                var col = e.target.closest('.pb-col');
+                if (col && self.draggedWidget) {
+                    document.querySelectorAll('.pb-col').forEach(function(c) {
+                        c.classList.remove('drop-target');
+                    });
+                    col.classList.add('drop-target');
+                    self.dropTarget = col;
+                } else {
+                    document.querySelectorAll('.pb-col').forEach(function(c) {
+                        c.classList.remove('drop-target');
+                    });
+                    self.dropTarget = null;
+                }
+            });
 
-    html += '</div></div>' +
-        '<div class="designer-items-area" id="designerItemsArea">' +
-        '<p class="empty-state">Select a section above to configure test page layouts.</p>' +
-        '</div></div>';
+            canvas.addEventListener('dragleave', function(e) {
+                if (!canvas.contains(e.relatedTarget)) {
+                    document.querySelectorAll('.pb-col').forEach(function(c) {
+                        c.classList.remove('drop-target');
+                    });
+                    self.dropTarget = null;
+                }
+            });
 
-    mainContent.innerHTML = html;
-}
+            canvas.addEventListener('drop', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('.pb-col').forEach(function(c) {
+                    c.classList.remove('drop-target');
+                });
+                
+                if (self.draggedWidget && self.dropTarget) {
+                    self.addWidgetToColumn(self.dropTarget, self.draggedWidget);
+                    self.saveState();
+                }
+                self.draggedWidget = null;
+                self.dropTarget = null;
+            });
+        }
 
-function renderDesignerForItem(secId, itemId) {
-    var area = document.getElementById('designerItemsArea');
-    if (!area) return;
+        // Widget selection
+        canvas.addEventListener('click', function(e) {
+            var widget = e.target.closest('.pb-widget');
+            if (widget) {
+                e.stopPropagation();
+                self.selectWidget(widget);
+            } else if (!e.target.closest('.pb-widget-action-btn')) {
+                self.deselectWidget();
+            }
+        });
 
-    var sec = findSection(secId);
-    if (!sec) return;
+        // Column resizing
+        document.addEventListener('mousedown', function(e) {
+            var resizer = e.target.closest('.pb-col-resizer');
+            if (resizer) {
+                e.preventDefault();
+                var leftCol = resizer.parentElement;
+                var rightCol = leftCol.nextElementSibling;
+                if (!rightCol) return;
+                
+                var startX = e.clientX;
+                var leftWidth = leftCol.offsetWidth;
+                var rightWidth = rightCol.offsetWidth;
+                var containerWidth = leftCol.parentElement.offsetWidth;
 
-    var item = null;
-    if (sec.items) {
-        for (var i = 0; i < sec.items.length; i++) {
-            if (sec.items[i].id === itemId) {
-                item = sec.items[i];
+                function onMouseMove(e) {
+                    var delta = e.clientX - startX;
+                    var newLeftWidth = leftWidth + delta;
+                    var newRightWidth = rightWidth - delta;
+                    
+                    if (newWidth < 60 || newRightWidth < 60) return;
+                    
+                    var leftPercent = (newLeftWidth / containerWidth) * 100;
+                    var rightPercent = (newRightWidth / containerWidth) * 100;
+                    
+                    leftCol.style.flex = '0 0 ' + leftPercent + '%';
+                    rightCol.style.flex = '0 0 ' + rightPercent + '%';
+                }
+
+                function onMouseUp() {
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.removeEventListener('mouseup', onMouseUp);
+                    pageBuilder.saveState();
+                }
+
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            }
+        });
+
+        // Row controls
+        document.addEventListener('click', function(e) {
+            var btn = e.target.closest('.pb-row-control-btn');
+            if (!btn) return;
+            
+            var row = btn.closest('.pb-row');
+            if (!row) return;
+
+            var action = btn.dataset.action;
+            if (action === 'add-col') {
+                pageBuilder.addColumnToRow(row);
+            } else if (action === 'remove-col') {
+                pageBuilder.removeColumnFromRow(row);
+            } else if (action === 'delete-row') {
+                pageBuilder.deleteRow(row);
+            } else if (action === 'duplicate-row') {
+                pageBuilder.duplicateRow(row);
+            } else if (action === 'move-up') {
+                pageBuilder.moveRow(row, -1);
+            } else if (action === 'move-down') {
+                pageBuilder.moveRow(row, 1);
+            }
+            pageBuilder.saveState();
+        });
+    },
+
+    renderGrid: function() {
+        var content = document.getElementById('pb-page-content');
+        if (!content) return;
+
+        if (this.rows.length === 0) {
+            content.innerHTML = '<div class="pb-empty-canvas" style="padding:60px 20px;text-align:center;color:var(--text-muted);">' +
+                '<div style="font-size:48px;margin-bottom:16px;">📐</div>' +
+                '<h3 style="margin-bottom:8px;color:var(--text-sec);">Empty Canvas</h3>' +
+                '<p style="font-size:13px;max-width:300px;margin:0 auto;">Drag layout widgets from the sidebar to start building your page</p>' +
+                '</div>';
+            return;
+        }
+
+        var html = '';
+        this.rows.forEach(function(row, rowIndex) {
+            html += '<div class="pb-row" data-row-index="' + rowIndex + '">';
+            html += '<div class="pb-row-controls">';
+            html += '<button class="pb-row-control-btn" data-action="add-col" title="Add Column">+</button>';
+            html += '<button class="pb-row-control-btn" data-action="remove-col" title="Remove Column">−</button>';
+            html += '<button class="pb-row-control-btn" data-action="duplicate-row" title="Duplicate Row">⎘</button>';
+            html += '<button class="pb-row-control-btn" data-action="move-up" title="Move Up">↑</button>';
+            html += '<button class="pb-row-control-btn" data-action="move-down" title="Move Down">↓</button>';
+            html += '<button class="pb-row-control-btn" data-action="delete-row" title="Delete Row">✕</button>';
+            html += '</div>';
+
+            row.cols.forEach(function(col, colIndex) {
+                var colFlex = col.flex || (100 / row.cols.length);
+                html += '<div class="pb-col" data-col-index="' + colIndex + '" style="flex:0 0 ' + colFlex + '%">';
+                html += '<div class="pb-col-resizer"></div>';
+                
+                if (col.widgets && col.widgets.length > 0) {
+                    col.widgets.forEach(function(widget) {
+                        html += pageBuilder.renderWidget(widget);
+                    });
+                }
+                html += '</div>';
+            });
+            html += '</div>';
+        });
+
+        var content = document.getElementById('pb-page-content');
+        if (content) {
+            content.innerHTML = html;
+            this.updateWidgetCount();
+        }
+    },
+
+    addRow: function(layout) {
+        var row = { cols: [] };
+        var layouts = {
+            'row-1': [{ flex: 100 }],
+            'row-2': [{ flex: 50 }, { flex: 50 }],
+            'row-3': [{ flex: 33.33 }, { flex: 33.33 }, { flex: 33.34 }],
+            'row-4': [{ flex: 25 }, { flex: 25 }, { flex: 25 }, { flex: 25 }],
+            'row-2-1': [{ flex: 66.66 }, { flex: 33.34 }],
+            'row-1-2': [{ flex: 33.34 }, { flex: 66.66 }],
+            'row-3-1': [{ flex: 75 }, { flex: 25 }],
+            'row-1-3': [{ flex: 25 }, { flex: 75 }]
+        };
+
+        var layoutCols = layouts[layout];
+        if (layoutCols) {
+            layoutCols.forEach(function(col) {
+                row.cols.push({ flex: col.flex, widgets: [] });
+            });
+        }
+
+        this.rows.push(row);
+        this.renderGrid();
+        this.saveState();
+    },
+
+    addWidgetToColumn: function(colElement, widgetData) {
+        var colIndex = parseInt(colElement.dataset.colIndex);
+        var rowElement = colElement.closest('.pb-row');
+        var rowIndex = parseInt(rowElement.dataset.rowIndex);
+        
+        var row = this.rows[rowIndex];
+        if (!row) return;
+
+        var widget = {
+            id: 'widget_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+            type: widgetData.id,
+            name: widgetData.name,
+            icon: widgetData.icon,
+            settings: this.getDefaultSettings(widgetData.id)
+        };
+
+        if (!row.cols[colIndex].widgets) {
+            row.cols[colIndex].widgets = [];
+        }
+        row.cols[colIndex].widgets.push(widget);
+        this.renderGrid();
+    },
+
+    getDefaultSettings: function(widgetId) {
+        var defaults = {
+            'widget-text': { content: '<p>Enter your text here...</p>' },
+            'widget-heading': { level: 2, content: 'Heading', align: 'left' },
+            'widget-divider': { style: 'solid', color: '#e2e8f0', thickness: 1 },
+            'widget-spacer': { height: 40 },
+            'widget-image': { src: '', alt: '', link: '', width: '100%' },
+            'widget-video': { type: 'youtube', url: '', autoplay: false, muted: true },
+            'widget-gallery': { images: [], columns: 3, gap: 16 },
+            'widget-button': { text: 'Click Me', link: '#', style: 'primary', size: 'md', align: 'center' },
+            'widget-file-upload': { accept: '*/*', maxSize: 10, multiple: false, action: '' },
+            'widget-form': { fields: [], submitText: 'Submit', action: '', method: 'POST' },
+            'widget-tabs': { tabs: [{ title: 'Tab 1', content: 'Content 1' }, { title: 'Tab 2', content: 'Content 2' }] },
+            'widget-accordion': { items: [{ title: 'Item 1', content: 'Content 1' }, { title: 'Item 2', content: 'Content 2' }] },
+            'widget-table': { columns: [], data: [], sortable: true, searchable: true },
+            'widget-chart': { type: 'bar', data: {}, options: {} },
+            'widget-stats': { stats: [{ label: 'Stat', value: '0', icon: '📊' }] },
+            'widget-test-list': { section: '', limit: 10, showCategory: true }
+        };
+        return defaults[widgetId] || {};
+    },
+
+    renderWidget: function(widget) {
+        var type = widget.type;
+        var settings = widget.settings || {};
+        var content = '';
+
+        switch(type) {
+            case 'widget-text':
+                content = '<div class="pb-widget-content" style="font-size:13px;line-height:1.6;">' + (settings.content || '<p>Enter your text here...</p>') + '</div>';
                 break;
+            case 'widget-heading':
+                var level = settings.level || 2;
+                var align = settings.align || 'left';
+                content = '<h' + level + ' style="text-align:' + align + ';margin:0;font-weight:600;color:var(--text-primary);">' + (settings.content || 'Heading') + '</h' + level + '>';
+                break;
+            case 'widget-divider':
+                content = '<hr style="border:0;border-top:' + (settings.thickness || 1) + 'px ' + (settings.style || 'solid') + ' ' + (settings.color || '#e2e8f0') + ';margin:16px 0;">';
+                break;
+            case 'widget-spacer':
+                content = '<div style="height:' + (settings.height || 40) + 'px;"></div>';
+                break;
+            case 'widget-image':
+                var src = settings.src || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200"><rect fill="%23e2e8f0" width="100%" height="100%"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%2394a3b8" font-size="14">Image Placeholder</text></svg>';
+                content = '<img src="' + src + '" alt="' + (settings.alt || '') + '" style="width:' + (settings.width || '100%') + ';height:auto;border-radius:var(--radius-sm);" ' + (settings.link ? 'onclick="window.location.href=\'' + settings.link + '\'" style="cursor:pointer;"' : '') + '>';
+                break;
+            case 'widget-video':
+                if (settings.type === 'youtube' && settings.url) {
+                    var videoId = settings.url.split('v=')[1]?.split('&')[0] || settings.url;
+                    content = '<iframe width="100%" height="315" src="https://www.youtube.com/embed/' + videoId + '" frameborder="0" allowfullscreen style="border-radius:var(--radius-sm);"></iframe>';
+                } else if (settings.url) {
+                    content = '<video width="100%" height="315" controls style="border-radius:var(--radius-sm);"><source src="' + settings.url + '" type="video/mp4"></video>';
+                } else {
+                    content = '<div style="aspect-ratio:16/9;background:#1e293b;display:flex;align-items:center;justify-content:center;color:#64748b;border-radius:var(--radius-sm);">Video Placeholder</div>';
+                }
+                break;
+            case 'widget-button':
+                var styleClass = settings.style || 'primary';
+                var sizeClass = settings.size || 'md';
+                var align = settings.align || 'center';
+                var style = 'background:' + (styleClass === 'primary' ? 'var(--accent)' : styleClass === 'secondary' ? 'var(--bg-input)' : 'transparent') + ';color:' + (styleClass === 'outline' ? 'var(--accent)' : '#fff') + ';border:' + (styleClass === 'outline' ? '1px solid var(--accent)' : 'none') + ';';
+                var padding = sizeClass === 'sm' ? '8px 16px' : sizeClass === 'lg' ? '16px 32px' : '12px 24px';
+                content = '<button class="pb-widget-button" style="' + style + 'padding:' + padding + ';border-radius:var(--radius-sm);font-weight:600;cursor:pointer;width:' + (align === 'center' ? 'auto' : '100%') + ';margin:' + (align === 'center' ? '0 auto' : align === 'right' ? '0 0 0 auto' : '0') + ';" onclick="alert(\'Button: ' + (settings.text || 'Click Me') + '\')">' + (settings.text || 'Click Me') + '</button>';
+                if (align === 'center') content = '<div style="text-align:center;">' + content + '</div>';
+                else if (align === 'right') content = '<div style="text-align:right;">' + content + '</div>';
+                break;
+            case 'widget-file-upload':
+                content = '<div class="pb-widget-file-upload" style="border:2px dashed var(--border);border-radius:var(--radius);padding:24px;text-align:center;background:var(--bg-input);cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor=\'var(--accent)\';this.style.background=\'rgba(59,130,246,0.05)\'" onmouseout="this.style.borderColor=\'var(--border)\';this.style.background=\'var(--bg-input)\'">' +
+                    '<div style="font-size:32px;margin-bottom:8px;">📤</div>' +
+                    '<div style="font-size:13px;color:var(--text-sec);">Drag & drop files here or click to browse</div>' +
+                    '<div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Max ' + (settings.maxSize || 10) + 'MB • ' + (settings.accept || 'All files') + '</div>' +
+                    '<input type="file" style="display:none;" ' + (settings.multiple ? 'multiple' : '') + ' accept="' + (settings.accept || '*/*') + '">' +
+                    '</div>';
+                break;
+            case 'widget-gallery':
+                content = '<div style="display:grid;grid-template-columns:repeat(' + (settings.columns || 3) + ',1fr);gap:' + (settings.gap || 16) + 'px;">' +
+                    '<div style="aspect-ratio:1;background:var(--bg-input);border:2px dashed var(--border);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;color:var(--text-muted);">Gallery Item 1</div>' +
+                    '<div style="aspect-ratio:1;background:var(--bg-input);border:2px dashed var(--border);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;color:var(--text-muted);">Gallery Item 2</div>' +
+                    '<div style="aspect-ratio:1;background:var(--bg-input);border:2px dashed var(--border);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;color:var(--text-muted);">Gallery Item 3</div>' +
+                    '</div>';
+                break;
+            default:
+                content = '<div style="padding:16px;color:var(--text-muted);text-align:center;">' + (widget.name || 'Widget') + '</div>';
+        }
+
+        return '<div class="pb-widget" data-widget-id="' + widget.id + '" draggable="true">' +
+            '<div class="pb-widget-header">' +
+            '<span class="pb-widget-type">' + (widget.icon || '📦') + ' ' + (widget.name || 'Widget') + '</span>' +
+            '<div class="pb-widget-actions">' +
+            '<button class="pb-widget-action-btn" onclick="pageBuilder.editWidget(this.closest(\'.pb-widget\'))" title="Edit">✎</button>' +
+            '<button class="pb-widget-action-btn" onclick="pageBuilder.duplicateWidget(this.closest(\'.pb-widget\'))" title="Duplicate">⎘</button>' +
+            '<button class="pb-widget-action-btn delete" onclick="pageBuilder.removeWidget(this.closest(\'.pb-widget\'))" title="Delete">✕</button>' +
+            '</div>' +
+            '</div>' +
+            '<div class="pb-widget-content">' + content + '</div>' +
+            '</div>';
+        },
+
+    selectWidget: function(widgetElement) {
+        if (this.selectedWidget) {
+            this.selectedWidget.classList.remove('selected');
+        }
+        this.selectedWidget = widgetElement;
+        widgetElement.classList.add('selected');
+        this.showWidgetSettings(widgetElement);
+    },
+
+    deselectWidget: function() {
+        if (this.selectedWidget) {
+            this.selectedWidget.classList.remove('selected');
+            this.selectedWidget = null;
+        }
+        var settingsContent = document.getElementById('pb-settings-content');
+        var settingsWidget = document.getElementById('pb-settings-widget');
+        if (settingsContent) settingsContent.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:20px;">Select a widget to edit its settings</p>';
+        if (settingsWidget) settingsWidget.textContent = 'No widget selected';
+    },
+
+    showWidgetSettings: function(widgetElement) {
+        var widgetId = widgetElement.dataset.widgetId;
+        var widget = this.findWidgetById(widgetId);
+        if (!widget) return;
+
+        var settingsWidget = document.getElementById('pb-settings-widget');
+        var settingsContent = document.getElementById('pb-settings-content');
+        if (settingsWidget) settingsWidget.textContent = widget.name;
+        
+        var settings = widget.settings || {};
+        var html = '<div class="pb-setting-group">' +
+            '<label class="pb-setting-label">Widget ID</label>' +
+            '<input class="pb-setting-input" type="text" value="' + widget.id + '" readonly>' +
+            '</div>';
+
+        // Common settings for all widgets
+        html += '<div class="pb-setting-group">' +
+            '<label class="pb-setting-label">Custom CSS Class</label>' +
+            '<input class="pb-setting-input" type="text" value="' + (settings.className || '') + '" placeholder="custom-class" onchange="pageBuilder.updateWidgetSetting(\'' + widget.id + '\', \'className\', this.value)">' +
+            '</div>';
+
+        // Widget-specific settings
+        switch(widget.type) {
+            case 'widget-text':
+                html += '<div class="pb-setting-group">' +
+                    '<label class="pb-setting-label">Content</label>' +
+                    '<textarea class="pb-setting-input pb-setting-textarea" onchange="pageBuilder.updateWidgetSetting(\'' + widget.id + '\', \'content\', this.value)">' + (settings.content || '') + '</textarea>' +
+                    '</div>';
+                break;
+            case 'widget-heading':
+                html += '<div class="pb-setting-group">' +
+                    '<label class="pb-setting-label">Heading Level</label>' +
+                    '<select class="pb-setting-input" onchange="pageBuilder.updateWidgetSetting(\'' + widget.id + '\', \'level\', this.value)">' +
+                    '<option value="1"' + (settings.level === 1 ? ' selected' : '') + '>H1</option>' +
+                    '<option value="2"' + (settings.level === 2 ? ' selected' : '') + '>H2</option>' +
+                    '<option value="3"' + (settings.level === 3 ? ' selected' : '') + '>H3</option>' +
+                    '<option value="4"' + (settings.level === 4 ? ' selected' : '') + '>H4</option>' +
+                    '<option value="5"' + (settings.level === 5 ? ' selected' : '') + '>H5</option>' +
+                    '<option value="6"' + (settings.level === 6 ? ' selected' : '') + '>H6</option>' +
+                    '</select>' +
+                    '</div>' +
+                    '<div class="pb-setting-group">' +
+                    '<label class="pb-setting-label">Content</label>' +
+                    '<input class="pb-setting-input" type="text" value="' + escapeHtml(settings.content || 'Heading') + '" onchange="pageBuilder.updateWidgetSetting(\'' + widget.id + '\', \'content\', this.value)">' +
+                    '</div>' +
+                    '<div class="pb-setting-group">' +
+                    '<label class="pb-setting-label">Alignment</label>' +
+                    '<select class="pb-setting-input" onchange="pageBuilder.updateWidgetSetting(\'' + widget.id + '\', \'align\', this.value)">' +
+                    '<option value="left"' + (settings.align === 'left' ? ' selected' : '') + '>Left</option>' +
+                    '<option value="center"' + (settings.align === 'center' ? ' selected' : '') + '>Center</option>' +
+                    '<option value="right"' + (settings.align === 'right' ? ' selected' : '') + '>Right</option>' +
+                    '</select>' +
+                    '</div>';
+                break;
+            case 'widget-image':
+                html += '<div class="pb-setting-group">' +
+                    '<label class="pb-setting-label">Image URL</label>' +
+                    '<input class="pb-setting-input" type="text" value="' + escapeHtml(settings.src || '') + '" placeholder="https://..." onchange="pageBuilder.updateWidgetSetting(\'' + widget.id + '\', \'src\', this.value)">' +
+                    '</div>' +
+                    '<div class="pb-setting-group">' +
+                    '<label class="pb-setting-label">Alt Text</label>' +
+                    '<input class="pb-setting-input" type="text" value="' + escapeHtml(settings.alt || '') + '" onchange="pageBuilder.updateWidgetSetting(\'' + widget.id + '\', \'alt\', this.value)">' +
+                    '</div>' +
+                    '<div class="pb-setting-group">' +
+                    '<label class="pb-setting-label">Link URL (optional)</label>' +
+                    '<input class="pb-setting-input" type="text" value="' + escapeHtml(settings.link || '') + '" placeholder="https://..." onchange="pageBuilder.updateWidgetSetting(\'' + widget.id + '\', \'link\', this.value)">' +
+                    '</div>' +
+                    '<div class="pb-setting-group">' +
+                    '<label class="pb-setting-label">Width</label>' +
+                    '<input class="pb-setting-input" type="text" value="' + escapeHtml(settings.width || '100%') + '" onchange="pageBuilder.updateWidgetSetting(\'' + widget.id + '\', \'width\', this.value)">' +
+                    '</div>';
+                break;
+            case 'widget-video':
+                html += '<div class="pb-setting-group">' +
+                    '<label class="pb-setting-label">Video Type</label>' +
+                    '<select class="pb-setting-input" onchange="pageBuilder.updateWidgetSetting(\'' + widget.id + '\', \'type\', this.value)">' +
+                    '<option value="youtube"' + (settings.type === 'youtube' ? ' selected' : '') + '>YouTube</option>' +
+                    '<option value="vimeo"' + (settings.type === 'vimeo' ? ' selected' : '') + '>Vimeo</option>' +
+                    '<option value="file"' + (settings.type === 'file' ? ' selected' : '') + '>Uploaded File</option>' +
+                    '</select>' +
+                    '</div>' +
+                    '<div class="pb-setting-group">' +
+                    '<label class="pb-setting-label">Video URL / ID</label>' +
+                    '<input class="pb-setting-input" type="text" value="' + escapeHtml(settings.url || '') + '" placeholder="YouTube URL or video ID" onchange="pageBuilder.updateWidgetSetting(\'' + widget.id + '\', \'url\', this.value)">' +
+                    '</div>' +
+                    '<div class="pb-setting-group">' +
+                    '<label class="pb-setting-label"><input type="checkbox" ' + (settings.autoplay ? 'checked' : '') + ' onchange="pageBuilder.updateWidgetSetting(\'' + widget.id + '\', \'autoplay\', this.checked)"> Autoplay</label>' +
+                    '</div>' +
+                    '<div class="pb-setting-group">' +
+                    '<label class="pb-setting-label"><input type="checkbox" ' + (settings.muted ? 'checked' : '') + ' onchange="pageBuilder.updateWidgetSetting(\'' + widget.id + '\', \'muted\', this.checked)"> Muted</label>' +
+                    '</div>';
+                break;
+            case 'widget-button':
+                html += '<div class="pb-setting-group">' +
+                    '<label class="pb-setting-label">Button Text</label>' +
+                    '<input class="pb-setting-input" type="text" value="' + escapeHtml(settings.text || 'Click Me') + '" onchange="pageBuilder.updateWidgetSetting(\'' + widget.id + '\', \'text\', this.value)">' +
+                    '</div>' +
+                    '<div class="pb-setting-group">' +
+                    '<label class="pb-setting-label">Link URL</label>' +
+                    '<input class="pb-setting-input" type="text" value="' + escapeHtml(settings.link || '#') + '" onchange="pageBuilder.updateWidgetSetting(\'' + widget.id + '\', \'link\', this.value)">' +
+                    '</div>' +
+                    '<div class="pb-setting-group">' +
+                    '<label class="pb-setting-label">Style</label>' +
+                    '<select class="pb-setting-input" onchange="pageBuilder.updateWidgetSetting(\'' + widget.id + '\', \'style\', this.value)">' +
+                    '<option value="primary"' + (settings.style === 'primary' ? ' selected' : '') + '>Primary</option>' +
+                    '<option value="secondary"' + (settings.style === 'secondary' ? ' selected' : '') + '>Secondary</option>' +
+                    '<option value="outline"' + (settings.style === 'outline' ? ' selected' : '') + '>Outline</option>' +
+                    '</select>' +
+                    '</div>' +
+                    '<div class="pb-setting-group">' +
+                    '<label class="pb-setting-label">Size</label>' +
+                    '<select class="pb-setting-input" onchange="pageBuilder.updateWidgetSetting(\'' + widget.id + '\', \'size\', this.value)">' +
+                    '<option value="sm"' + (settings.size === 'sm' ? ' selected' : '') + '>Small</option>' +
+                    '<option value="md"' + (settings.size === 'md' ? ' selected' : '') + '>Medium</option>' +
+                    '<option value="lg"' + (settings.size === 'lg' ? ' selected' : '') + '>Large</option>' +
+                    '</select>' +
+                    '</div>' +
+                    '<div class="pb-setting-group">' +
+                    '<label class="pb-setting-label">Alignment</label>' +
+                    '<select class="pb-setting-input" onchange="pageBuilder.updateWidgetSetting(\'' + widget.id + '\', \'align\', this.value)">' +
+                    '<option value="left"' + (settings.align === 'left' ? ' selected' : '') + '>Left</option>' +
+                    '<option value="center"' + (settings.align === 'center' ? ' selected' : '') + '>Center</option>' +
+                    '<option value="right"' + (settings.align === 'right' ? ' selected' : '') + '>Right</option>' +
+                    '</select>' +
+                    '</div>';
+                break;
+            case 'widget-file-upload':
+                html += '<div class="pb-setting-group">' +
+                    '<label class="pb-setting-label">Accepted File Types</label>' +
+                    '<input class="pb-setting-input" type="text" value="' + escapeHtml(settings.accept || '*/*') + '" onchange="pageBuilder.updateWidgetSetting(\'' + widget.id + '\', \'accept\', this.value)">' +
+                    '</div>' +
+                    '<div class="pb-setting-group">' +
+                    '<label class="pb-setting-label">Max File Size (MB)</label>' +
+                    '<input class="pb-setting-input" type="number" value="' + (settings.maxSize || 10) + '" min="1" max="100" onchange="pageBuilder.updateWidgetSetting(\'' + widget.id + '\', \'maxSize\', parseInt(this.value))">' +
+                    '</div>' +
+                    '<div class="pb-setting-group">' +
+                    '<label class="pb-setting-label"><input type="checkbox" ' + (settings.multiple ? 'checked' : '') + ' onchange="pageBuilder.updateWidgetSetting(\'' + widget.id + '\', \'multiple\', this.checked)"> Allow Multiple Files</label>' +
+                    '</div>' +
+                    '<div class="pb-setting-group">' +
+                    '<label class="pb-setting-label">Upload Action URL</label>' +
+                    '<input class="pb-setting-input" type="text" value="' + escapeHtml(settings.action || '') + '" placeholder="/api/upload" onchange="pageBuilder.updateWidgetSetting(\'' + widget.id + '\', \'action\', this.value)">' +
+                    '</div>';
+                break;
+            case 'widget-divider':
+                html += '<div class="pb-setting-group">' +
+                    '<label class="pb-setting-label">Style</label>' +
+                    '<select class="pb-setting-input" onchange="pageBuilder.updateWidgetSetting(\'' + widget.id + '\', \'style\', this.value)">' +
+                    '<option value="solid"' + (settings.style === 'solid' ? ' selected' : '') + '>Solid</option>' +
+                    '<option value="dashed"' + (settings.style === 'dashed' ? ' selected' : '') + '>Dashed</option>' +
+                    '<option value="dotted"' + (settings.style === 'dotted' ? ' selected' : '') + '>Dotted</option>' +
+                    '<option value="double"' + (settings.style === 'double' ? ' selected' : '') + '>Double</option>' +
+                    '</select>' +
+                    '</div>' +
+                    '<div class="pb-setting-group">' +
+                    '<label class="pb-setting-label">Color</label>' +
+                    '<input class="pb-setting-input pb-color-picker" type="color" value="' + (settings.color || '#e2e8f0') + '" onchange="pageBuilder.updateWidgetSetting(\'' + widget.id + '\', \'color\', this.value)">' +
+                    '</div>' +
+                    '<div class="pb-setting-group">' +
+                    '<label class="pb-setting-label">Thickness (px)</label>' +
+                    '<input class="pb-setting-input" type="number" value="' + (settings.thickness || 1) + '" min="1" max="10" onchange="pageBuilder.updateWidgetSetting(\'' + widget.id + '\', \'thickness\', parseInt(this.value))">' +
+                    '</div>';
+                break;
+            case 'widget-spacer':
+                html += '<div class="pb-setting-group">' +
+                    '<label class="pb-setting-label">Height (px)</label>' +
+                    '<input class="pb-setting-input" type="number" value="' + (settings.height || 40) + '" min="0" max="500" onchange="pageBuilder.updateWidgetSetting(\'' + widget.id + '\', \'height\', parseInt(this.value))">' +
+                    '</div>';
+                break;
+        }
+
+        var settingsContent = document.getElementById('pb-settings-content');
+        if (settingsContent) settingsContent.innerHTML = html;
+    },
+
+    updateWidgetSetting: function(widgetId, key, value) {
+        var widget = this.findWidgetById(widgetId);
+        if (widget) {
+            widget.settings = widget.settings || {};
+            widget.settings[key] = value;
+            this.renderGrid();
+            this.saveState();
+        }
+    },
+
+    findWidgetById: function(widgetId) {
+        for (var i = 0; i < this.rows.length; i++) {
+            var row = this.rows[i];
+            for (var j = 0; j < row.cols.length; j++) {
+                var col = row.cols[j];
+                if (col.widgets) {
+                    for (var k = 0; k < col.widgets.length; k++) {
+                        if (col.widgets[k].id === widgetId) {
+                            return col.widgets[k];
+                        }
+                    }
+                }
             }
         }
+        return null;
+    },
+
+    editWidget: function(widgetElement) {
+        this.selectWidget(widgetElement);
+    },
+
+    duplicateWidget: function(widgetElement) {
+        var widgetId = widgetElement.dataset.widgetId;
+        var widget = this.findWidgetById(widgetId);
+        if (!widget) return;
+
+        var newWidget = {
+            id: 'widget_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+            type: widget.type,
+            name: widget.name,
+            icon: widget.icon,
+            settings: JSON.parse(JSON.stringify(widget.settings || {}))
+        };
+
+        // Find the column this widget is in and add the duplicate
+        for (var i = 0; i < this.rows.length; i++) {
+            var row = this.rows[i];
+            for (var j = 0; j < row.cols.length; j++) {
+                var col = row.cols[j];
+                if (col.widgets) {
+                    var idx = col.widgets.findIndex(function(w) { return w.id === widgetId; });
+                    if (idx !== -1) {
+                        col.widgets.splice(idx + 1, 0, newWidget);
+                        this.renderGrid();
+                        this.saveState();
+                        return;
+                    }
+                }
+            }
+        }
+    },
+
+    removeWidget: function(widgetElement) {
+        if (!confirm('Delete this widget?')) return;
+        var widgetId = widgetElement.dataset.widgetId;
+        
+        for (var i = 0; i < this.rows.length; i++) {
+            var row = this.rows[i];
+            for (var j = 0; j < row.cols.length; j++) {
+                var col = row.cols[j];
+                if (col.widgets) {
+                    var idx = col.widgets.findIndex(function(w) { return w.id === widgetId; });
+                    if (idx !== -1) {
+                        col.widgets.splice(idx, 1);
+                        this.renderGrid();
+                        this.saveState();
+                        if (this.selectedWidget === widgetElement) this.deselectWidget();
+                        return;
+                    }
+                }
+            }
+        }
+    },
+
+    addColumnToRow: function(rowElement) {
+        var rowIndex = parseInt(rowElement.dataset.rowIndex);
+        var row = this.rows[rowIndex];
+        if (!row) return;
+
+        var numCols = row.cols.length;
+        if (numCols >= 6) { showToast('Maximum 6 columns per row'); return; }
+
+        var newFlex = 100 / (numCols + 1);
+        row.cols.forEach(function(col) { col.flex = newFlex; });
+        row.cols.push({ flex: newFlex, widgets: [] });
+        
+        this.renderGrid();
+        this.saveState();
+    },
+
+    removeColumnFromRow: function(rowElement) {
+        var rowIndex = parseInt(rowElement.dataset.rowIndex);
+        var row = this.rows[rowIndex];
+        if (!row || row.cols.length <= 1) { showToast('Row must have at least 1 column'); return; }
+
+        var lastCol = row.cols[row.cols.length - 1];
+        if (lastCol.widgets && lastCol.widgets.length > 0) {
+            if (!confirm('Last column has widgets. Remove anyway?')) return;
+        }
+        
+        row.cols.pop();
+        var newFlex = 100 / row.cols.length;
+        row.cols.forEach(function(col) { col.flex = newFlex; });
+        
+        this.renderGrid();
+        this.saveState();
+    },
+
+    deleteRow: function(rowElement) {
+        if (!confirm('Delete this entire row?')) return;
+        var rowIndex = parseInt(rowElement.dataset.rowIndex);
+        this.rows.splice(rowIndex, 1);
+        this.renderGrid();
+        this.saveState();
+    },
+
+    duplicateRow: function(rowElement) {
+        var rowIndex = parseInt(rowElement.dataset.rowIndex);
+        var row = this.rows[rowIndex];
+        var newRow = JSON.parse(JSON.stringify(row));
+        newRow.cols = newRow.cols.map(function(col) {
+            return { flex: col.flex, widgets: (col.widgets || []).map(function(w) {
+                return { ...w, id: 'widget_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9) };
+            })};
+        });
+        this.rows.splice(rowIndex + 1, 0, newRow);
+        this.renderGrid();
+        this.saveState();
+    },
+
+    moveRow: function(rowElement, direction) {
+        var rowIndex = parseInt(rowElement.dataset.rowIndex);
+        var newIndex = rowIndex + direction;
+        if (newIndex < 0 || newIndex >= this.rows.length) return;
+        
+        var temp = this.rows[rowIndex];
+        this.rows[rowIndex] = this.rows[newIndex];
+        this.rows[newIndex] = temp;
+        this.renderGrid();
+        this.saveState();
+    },
+
+    loadPage: function(pageId) {
+        if (!pageId) {
+            this.currentPage = '';
+            this.rows = [];
+            this.renderGrid();
+            var title = document.getElementById('pb-canvas-title');
+            if (title) title.textContent = 'Canvas - Select a page to start designing';
+            return;
+        }
+
+        this.currentPage = pageId;
+        var saved = localStorage.getItem('pb_page_' + pageId);
+        if (saved) {
+            try {
+                var data = JSON.parse(saved);
+                this.rows = data.rows || [];
+                this.zoom = data.zoom || 1;
+            } catch(e) {
+                this.rows = [];
+            }
+        } else {
+            this.rows = [];
+        }
+
+        this.renderGrid();
+        
+        var title = document.getElementById('pb-canvas-title');
+        var pages = getAllSitePages();
+        var page = pages.find(function(p) { return p.id === pageId; });
+        if (title && page) title.textContent = 'Editing: ' + page.name;
+        
+        var select = document.getElementById('pb-page-select');
+        if (select) select.value = pageId;
+    },
+
+    savePage: function() {
+        if (!this.currentPage) {
+            showToast('Select a page first');
+            return;
+        }
+
+        var data = {
+            rows: this.rows,
+            zoom: this.zoom,
+            device: this.currentDevice,
+            updated: new Date().toISOString()
+        };
+
+        localStorage.setItem('pb_page_' + this.currentPage, JSON.stringify(data));
+        showToast('Page saved successfully!');
+    },
+
+    clearPage: function() {
+        if (!confirm('Clear all content on this page?')) return;
+        this.rows = [];
+        this.renderGrid();
+        this.saveState();
+    },
+
+    previewPage: function() {
+        if (!this.currentPage) {
+            showToast('Select a page first');
+            return;
+        }
+        
+        var preview = window.open('', '_blank');
+        var html = this.generatePageHTML();
+        preview.document.write(html);
+        preview.document.close();
+    },
+
+    generatePageHTML: function() {
+        var css = document.querySelector('style')?.innerHTML || '';
+        var pageCSS = `
+            <style>
+                * { box-sizing: border-box; }
+                body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; }
+                .pb-row { display: flex; width: 100%; }
+                .pb-col { padding: 16px; box-sizing: border-box; }
+                .pb-widget { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+                .pb-widget-header { display: none; }
+                .pb-widget-button { display: inline-block; }
+                .pb-widget-file-upload { border: 2px dashed #cbd5e1; border-radius: 8px; padding: 32px; text-align: center; }
+                @media (max-width: 768px) {
+                    .pb-col { flex: 0 0 100% !important; max-width: 100% !important; }
+                }
+            </style>
+        `;
+
+        var bodyHTML = this.rows.map(function(row) {
+            var colsHTML = row.cols.map(function(col) {
+                var widgetsHTML = (col.widgets || []).map(function(w) {
+                    return pageBuilder.renderWidget(w);
+                }).join('');
+                return '<div class="pb-col" style="flex:0 0 ' + col.flex + '%">' + widgetsHTML + '</div>';
+            }).join('');
+            return '<div class="pb-row" style="display:flex;">' + colsHTML + '</div>';
+        }).join('');
+
+        return '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Page Preview</title>' + pageCSS + '</head><body style="padding:20px;max-width:1200px;margin:0 auto;">' + bodyHTML + '</body></html>';
+    },
+
+    setDevice: function(device) {
+        this.currentDevice = device;
+        var frame = document.getElementById('pb-page-frame');
+        if (frame) {
+            frame.className = 'pb-page-frame ' + device;
+        }
+        document.querySelectorAll('.pb-device-btn').forEach(function(btn) {
+            btn.classList.toggle('active', btn.dataset.device === device);
+        });
+    },
+
+    zoom: function(delta) {
+        this.zoom = Math.max(0.25, Math.min(2, this.zoom + delta));
+        var canvas = document.getElementById('pb-canvas');
+        var zoomValue = document.getElementById('pb-zoom-value');
+        if (canvas) canvas.style.transform = 'scale(' + this.zoom + ')';
+        if (zoomValue) zoomValue.textContent = Math.round(this.zoom * 100) + '%';
+    },
+
+    setZoom: function(zoom) {
+        this.zoom = Math.max(0.25, Math.min(2, zoom));
+        var canvas = document.getElementById('pb-canvas');
+        var zoomValue = document.getElementById('pb-zoom-value');
+        if (canvas) canvas.style.transform = 'scale(' + this.zoom + ')';
+        if (zoomValue) zoomValue.textContent = Math.round(this.zoom * 100) + '%';
+    },
+
+    saveState: function() {
+        var state = JSON.stringify(this.rows);
+        this.history = this.history.slice(0, this.historyIndex + 1);
+        this.history.push(state);
+        if (this.history.length > 50) this.history.shift();
+        else this.historyIndex++;
+    },
+
+    undo: function() {
+        if (this.historyIndex <= 0) return;
+        this.historyIndex--;
+        this.rows = JSON.parse(this.history[this.historyIndex]);
+        this.renderGrid();
+    },
+
+    redo: function() {
+        if (this.historyIndex >= this.history.length - 1) return;
+        this.historyIndex++;
+        this.rows = JSON.parse(this.history[this.historyIndex]);
+        this.renderGrid();
+    },
+
+    switchWidgetTab: function(btn, category) {
+        document.querySelectorAll('.pb-sidebar-tab').forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        document.querySelectorAll('.pb-widgets-panel').forEach(function(p) {
+            p.classList.toggle('active', p.dataset.category === category);
+        });
+    },
+
+    updateWidgetCount: function() {
+        var count = 0;
+        this.rows.forEach(function(row) {
+            row.cols.forEach(function(col) {
+                if (col.widgets) count += col.widgets.length;
+            });
+        });
+        var el = document.getElementById('pb-widget-count');
+        if (el) el.textContent = count + ' widget' + (count !== 1 ? 's' : '');
     }
+};
+
+function getAllSitePages() {
+    var pages = [
+        { id: 'index', name: 'Home (index.html)', category: 'Main' },
+        { id: 'library', name: 'Library (library.html)', category: 'Main' },
+        { id: 'dashboard', name: 'Dashboard (dashboard/)', category: 'Main' },
+        { id: 'asphalt', name: 'Asphalt (asphalt/asphalt.html)', category: 'Asphalt' },
+        { id: 'asphalt-library', name: 'Asphalt Library (asphalt/library.html)', category: 'Asphalt' },
+        { id: 'concrete', name: 'Concrete (concrete/concrete.html)', category: 'Concrete' },
+        { id: 'concrete-library', name: 'Concrete Library (concrete/library.html)', category: 'Concrete' },
+        { id: 'soil', name: 'Soil (soil/soil.html)', category: 'Soil' },
+        { id: 'soil-library', name: 'Soil Library (soil/library.html)', category: 'Soil' },
+        { id: 'test-runner', name: 'Test Runner (test-runner.html)', category: 'Tests' }
+    ];
+    
+    if (structure && structure.sections) {
+        structure.sections.forEach(function(sec) {
+            var basePath = sec.path || '';
+            if (sec.items) {
+                sec.items.forEach(function(item) {
+                    var testPath = (basePath ? basePath + '/' : '') + 'tests/test-' + item.id + '.html';
+                    pages.push({
+                        id: 'test-' + item.id,
+                        name: item.name + ' Test (' + testPath + ')',
+                        category: sec.name
+                    });
+                });
+            }
+            if (sec.designs) {
+                sec.designs.forEach(function(d) {
+                    var designPath = (basePath ? basePath + '/' : '') + 'design/design-' + d.id + '.html';
+                    pages.push({
+                        id: 'design-' + d.id,
+                        name: d.name + ' Design (' + designPath + ')',
+                        category: sec.name
+                    });
+                });
+            }
+            if (sec.clients) {
+                sec.clients.forEach(function(c) {
+                    var clientPath = (basePath ? basePath + '/' : '') + 'client/client-' + c.id + '.html';
+                    pages.push({
+                        id: 'client-' + c.id,
+                        name: c.name + ' Client (' + clientPath + ')',
+                        category: sec.name
+                    });
+                });
+            }
+        });
+    }
+    return pages;
+}
+
+function renderDesigner() {
+    var pages = getAllSitePages();
+    var pageOptions = pages.map(function(p) {
+        return '<option value="' + p.id + '" data-category="' + p.category + '">' + p.name + '</option>';
+    }).join('');
+
+    var widgetCategories = {
+        layout: [
+            { id: 'row-1', name: '1 Column Row', icon: '⬜', desc: 'Single full-width column' },
+            { id: 'row-2', name: '2 Column Row', icon: '⬛⬜', desc: 'Two equal columns (50/50)' },
+            { id: 'row-3', name: '3 Column Row', icon: '⬜⬜⬜', desc: 'Three equal columns (33/33/33)' },
+            { id: 'row-4', name: '4 Column Row', icon: '⬜⬜⬜⬜', desc: 'Four equal columns (25/25/25/25)' },
+            { id: 'row-2-1', name: 'Sidebar Right (2/1)', icon: '⬛⬜', desc: 'Main 66% + Sidebar 33%' },
+            { id: 'row-1-2', name: 'Sidebar Left (1/2)', icon: '⬜⬛', desc: 'Sidebar 33% + Main 66%' },
+            { id: 'row-3-1', name: 'Sidebar Right (3/1)', icon: '⬛⬜', desc: 'Main 75% + Sidebar 25%' },
+            { id: 'row-1-3', name: 'Sidebar Left (1/3)', icon: '⬜⬛', desc: 'Sidebar 25% + Main 75%' }
+        ],
+        content: [
+            { id: 'widget-text', name: 'Text Block', icon: '📝', desc: 'Rich text, headings, paragraphs' },
+            { id: 'widget-heading', name: 'Heading', icon: '📰', desc: 'H1-H6 headings with styling' },
+            { id: 'widget-divider', name: 'Divider', icon: '➖', desc: 'Horizontal rule / separator' },
+            { id: 'widget-spacer', name: 'Spacer', icon: '⬜', desc: 'Vertical spacing element' }
+        ],
+        media: [
+            { id: 'widget-image', name: 'Image', icon: '🖼️', desc: 'Single image with link option' },
+            { id: 'widget-video', name: 'Video', icon: '🎬', desc: 'YouTube, Vimeo, or uploaded video' },
+            { id: 'widget-gallery', name: 'Image Gallery', icon: '🖼️🖼️', desc: 'Grid of images with lightbox' }
+        ],
+        interactive: [
+            { id: 'widget-button', name: 'Button / Link', icon: '🔘', desc: 'CTA buttons, navigation links' },
+            { id: 'widget-file-upload', name: 'File Upload', icon: '📤', desc: 'File drop zone with progress' },
+            { id: 'widget-form', name: 'Form', icon: '📋', desc: 'Contact forms, input fields' },
+            { id: 'widget-tabs', name: 'Tabs', icon: '📑', desc: 'Tabbed content sections' },
+            { id: 'widget-accordion', name: 'Accordion', icon: '📂', desc: 'Collapsible content panels' }
+        ],
+        data: [
+            { id: 'widget-table', name: 'Data Table', icon: '📊', desc: 'Sortable, filterable data table' },
+            { id: 'widget-chart', name: 'Chart', icon: '📈', desc: 'Bar, line, pie charts' },
+            { id: 'widget-stats', name: 'Stat Cards', icon: '🔢', desc: 'Key metrics display' },
+            { id: 'widget-test-list', name: 'Test List', icon: '🧪', desc: 'Dynamic test listing from structure' }
+        ]
+    };
+
+    var widgetPanelsHtml = '';
+    var firstCategory = true;
+    for (var cat in widgetCategories) {
+        var widgets = widgetCategories[cat];
+        widgetPanelsHtml += '<div class="pb-widgets-panel' + (firstCategory ? ' active' : '') + '" data-category="' + cat + '">';
+        widgetPanelsHtml += '<div class="pb-widget-category-title">' + cat.charAt(0).toUpperCase() + cat.slice(1) + '</div>';
+        widgets.forEach(function(w) {
+            widgetPanelsHtml += '<div class="pb-widget-item" draggable="true" data-widget-id="' + w.id + '" data-widget-name="' + escapeHtml(w.name) + '" data-widget-icon="' + w.icon + '" data-widget-desc="' + escapeHtml(w.desc) + '">' +
+                '<span class="pb-widget-icon">' + w.icon + '</span>' +
+                '<div>' +
+                '<div class="pb-widget-name">' + escapeHtml(w.name) + '</div>' +
+                '<div class="pb-widget-desc">' + escapeHtml(w.desc) + '</div>' +
+                '</div>' +
+                '</div>';
+        });
+        widgetPanelsHtml += '</div>';
+        firstCategory = false;
+    }
+
+    var html = '<div class="pb-container">' +
+        '<div class="pb-toolbar">' +
+        '<div class="pb-toolbar-left">' +
+        '<span class="pb-toolbar-title">🎨 Visual Page Builder</span>' +
+        '<div class="pb-toolbar-divider"></div>' +
+        '<div class="pb-page-selector">' +
+        '<select id="pb-page-select" onchange="pageBuilder.loadPage(this.value)">' +
+        '<option value="">-- Select Page to Edit --</option>' + pageOptions +
+        '</select>' +
+        '</div>' +
+        '</div>' +
+        '<div class="pb-toolbar-right">' +
+        '<div class="pb-device-buttons" style="margin:0 8px;">' +
+        '<button class="pb-device-btn active" data-device="desktop" onclick="pageBuilder.setDevice(\'desktop\')" title="Desktop">🖥️</button>' +
+        '<button class="pb-device-btn" data-device="tablet" onclick="pageBuilder.setDevice(\'tablet\')" title="Tablet">📱</button>' +
+        '<button class="pb-device-btn" data-device="mobile" onclick="pageBuilder.setDevice(\'mobile\')" title="Mobile">📱</button>' +
+        '</div>' +
+        '<div class="pb-toolbar-divider"></div>' +
+        '<div class="pb-zoom">' +
+        '<button class="pb-zoom-btn" onclick="pageBuilder.zoom(-0.1)" title="Zoom Out">−</button>' +
+        '<span class="pb-zoom-value" id="pb-zoom-value">100%</span>' +
+        '<button class="pb-zoom-btn" onclick="pageBuilder.zoom(0.1)" title="Zoom In">+</button>' +
+        '</div>' +
+        '<button class="pb-toolbar-btn" onclick="pageBuilder.undo()">↶ Undo</button>' +
+        '<button class="pb-toolbar-btn" onclick="pageBuilder.redo()">↷ Redo</button>' +
+        '<button class="pb-toolbar-btn primary" onclick="pageBuilder.savePage()">💾 Save Page</button>' +
+        '<button class="pb-toolbar-btn" onclick="pageBuilder.previewPage()">👁️ Preview</button>' +
+        '<button class="pb-toolbar-btn danger" onclick="pageBuilder.clearPage()">🗑️ Clear</button>' +
+        '</div>' +
+        '</div>' +
+
+        '<div class="pb-main">' +
+        '<aside class="pb-sidebar">' +
+        '<div class="pb-sidebar-header"><span>Widgets</span><span id="pb-widget-count">0 widgets</span></div>' +
+        '<div class="pb-sidebar-tabs">' +
+        '<button class="pb-sidebar-tab active" onclick="pageBuilder.switchWidgetTab(this, \'layout\')">Layout</button>' +
+        '<button class="pb-sidebar-tab" onclick="pageBuilder.switchWidgetTab(this, \'content\')">Content</button>' +
+        '<button class="pb-sidebar-tab" onclick="pageBuilder.switchWidgetTab(this, \'media\')">Media</button>' +
+        '<button class="pb-sidebar-tab" onclick="pageBuilder.switchWidgetTab(this, \'interactive\')">Interactive</button>' +
+        '<button class="pb-sidebar-tab" onclick="pageBuilder.switchWidgetTab(this, \'data\')">Data</button>' +
+        '</div>' +
+        '<div id="pb-widgets-panels">' + widgetPanelsHtml + '</div>' +
+        '</aside>' +
+
+        '<div class="pb-canvas-area" id="pb-canvas-area">' +
+        '<div class="pb-canvas-toolbar">' +
+        '<span class="pb-canvas-title" id="pb-canvas-title">Canvas - Select a page to start designing</span>' +
+        '<div class="pb-canvas-actions">' +
+        '<div class="pb-device-buttons" style="margin:0 16px 0 0;">' +
+        '<button class="pb-device-btn active" data-device="desktop" onclick="pageBuilder.setDevice(\'desktop\')" title="Desktop (1200px)">🖥️ Desktop</button>' +
+        '<button class="pb-device-btn" data-device="tablet" onclick="pageBuilder.setDevice(\'tablet\')" title="Tablet (768px)">📱 Tablet</button>' +
+        '<button class="pb-device-btn" data-device="mobile" onclick="pageBuilder.setDevice(\'mobile\')" title="Mobile (375px)">📱 Mobile</button>' +
+        '</div>' +
+        '</div>' +
+        '</div>' +
+        '<div class="pb-canvas-wrapper" id="pb-canvas-wrapper">' +
+        '<div class="pb-canvas" id="pb-canvas">' +
+        '<div class="pb-grid-overlay" id="pb-grid-overlay"></div>' +
+        '<div class="pb-page-frame desktop" id="pb-page-frame">' +
+        '<div class="pb-page-content" id="pb-page-content"></div>' +
+        '</div>' +
+        '</div>' +
+        '</div>' +
+        '</div>' +
+
+        '<aside class="pb-settings-panel" id="pb-settings-panel">' +
+        '<div class="pb-settings-header"><span>Widget Settings</span><span id="pb-settings-widget">No widget selected</span></div>' +
+        '<div class="pb-settings-content" id="pb-settings-content"></div>' +
+        '</aside>' +
+        '</div>';
+
+    mainContent.innerHTML = html;
+
+    pageBuilder.initDragDrop();
+    pageBuilder.renderGrid();
+    pageBuilder.updateWidgetCount();
+}
+
+function loadPageBuilderStyles() {
+    // Additional inline styles for dynamic elements
+}
     if (!item) return;
 
     var designKey = secId + '_' + itemId;

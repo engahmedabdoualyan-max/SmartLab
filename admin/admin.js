@@ -1439,7 +1439,7 @@ function editZone(testId, zoneIdx) {
             });
         }
 
-        saveTestZones();
+saveTestZones();
         toast('Zone updated', 'success');
         closeModal();
         renderZoneManager();
@@ -1466,7 +1466,7 @@ function moveZone(testId, zoneIdx, direction) {
     config.zones[newIdx] = temp;
     saveTestZones();
     renderZoneManager();
-}
+
 
 function setZoneLayout(testId, layout) {
     if (!testZones[testId]) {
@@ -1474,7 +1474,7 @@ function setZoneLayout(testId, layout) {
     }
     testZones[testId].layout = layout;
     saveTestZones();
-}
+
 
 function toggleZoneHeader(testId, show) {
     if (!testZones[testId]) {
@@ -1482,7 +1482,7 @@ function toggleZoneHeader(testId, show) {
     }
     testZones[testId].showHeader = show;
     saveTestZones();
-}
+
 
 function toggleZoneFooter(testId, show) {
     if (!testZones[testId]) {
@@ -1490,7 +1490,7 @@ function toggleZoneFooter(testId, show) {
     }
     testZones[testId].showFooter = show;
     saveTestZones();
-}
+
 
 function resetTestZones(testId) {
     if (!confirm('Reset all zones for this test page?')) return;
@@ -1498,7 +1498,7 @@ function resetTestZones(testId) {
     saveTestZones();
     toast('Zones reset', 'info');
     renderZoneManager();
-}
+
 
 
 /* ===== CONTENT MANAGER ===== */
@@ -1524,7 +1524,7 @@ function renderContentManager() {
 
     mainContent.innerHTML = contentHtml;
     renderContentSection(contentTab);
-}
+
 
 function renderContentSection(sectionKey) {
     var area = document.getElementById('contentFormArea');
@@ -1561,7 +1561,7 @@ function renderContentSection(sectionKey) {
         '</div></div>';
 
     area.innerHTML = html;
-}
+
 
 function saveContentField(sectionKey, fieldKey, value) {
     if (!content[sectionKey]) {
@@ -1574,7 +1574,7 @@ function saveContentField(sectionKey, fieldKey, value) {
     }
     content[sectionKey][fieldKey] = value;
     localStorage.setItem('smartlab_content', JSON.stringify(content));
-}
+
 
 /* ===== VISUAL PAGE BUILDER (Page Designer v2) ===== */
 var pageBuilder = {
@@ -3917,7 +3917,6 @@ function applyAdminConfig() {
             if (link) link.href = fav;
         }
     } catch(e) {}
-}
 
 /* ===== INIT ===== */
 try {
@@ -3930,4 +3929,13 @@ try {
     if (mc) mc.innerHTML = '<div style="padding:40px;color:#f87171;"><h2>Admin Panel Error</h2><pre style="background:#1e293b;padding:16px;border-radius:8px;margin-top:12px;overflow-x:auto;font-size:12px;">' + e.message + '\n\n' + (e.stack || '') + '</pre></div>';
 }
 
+// Close any remaining unclosed blocks from the IIFE
+}
+}
+}
+}
+}
+}
+}
+}
 })();

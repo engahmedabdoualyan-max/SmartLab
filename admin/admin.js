@@ -2231,6 +2231,22 @@ function deleteUser(userId) {
 function renderSettings() {
     var s = settings || {};
 
+    var logoPreviewHtml = '';
+    if (s.logo && s.logo.indexOf('data:') === 0) {
+        logoPreviewHtml = '<img src="' + s.logo + '" alt="logo">';
+    } else {
+        var initial = (s.siteName || 'SL');
+        logoPreviewHtml = '<span>' + initial.charAt(0).toUpperCase() + '</span>';
+    }
+
+    var faviconPreviewHtml = '';
+    if (s.favicon && s.favicon.indexOf('data:') === 0) {
+        faviconPreviewHtml = '<img src="' + s.favicon + '" alt="favicon">';
+    } else {
+        var initial = (s.siteName || 'SL');
+        faviconPreviewHtml = '<span>' + initial.charAt(0).toUpperCase() + '</span>';
+    }
+
     var html = '<div class="settings-panel">' +
         '<div class="settings-header">' +
         '<h2>Settings</h2>' +
@@ -2252,30 +2268,28 @@ function renderSettings() {
         '<input type="text" id="set-siteNameAr" value="' + escapeHtml(s.siteNameAr || '') + '" onchange="App.saveSettings()">' +
         '</div>' +
         '<div class="form-group">' +
-        '<label>Logo</label>' +
+        '<label>Logo URL (أو تحميل صورة)</label>' +
         '<div class="logo-upload-row">' +
-        '<div class="logo-preview" id="logo-preview">' +
-        (s.logo && s.logo.indexOf('data:') === 0 ? '<img src="' + s.logo + '" alt="logo">' : '<span>' + (s.siteName || 'SL').charAt(0).toUpperCase() + '</span>') +
-        '</div>' +
+        '<div class="logo-preview" id="logo-preview">' + logoPreviewHtml + '</div>' +
         '<div class="logo-upload-actions">' +
-        '<label class="btn btn-sm btn-outline" style="cursor:pointer">📁 اختر صورة<input type="file" accept="image/*" style="display:none" id="set-logo-file" onchange="App.uploadLogo(this)"></label>' +
+        '<label class="btn btn-sm btn-outline logo-upload-label">📁 تحميل<input type="file" accept="image/*" class="logo-upload-input" id="set-logo-file" onchange="App.uploadLogo(this)"></label>' +
         (s.logo && s.logo.indexOf('data:') === 0 ? '<button class="btn btn-sm btn-danger" onclick="App.removeLogo()">✕ حذف</button>' : '') +
         '</div>' +
         '</div>' +
-        '<input type="hidden" id="set-logo" value="' + (s.logo || '') + '">' +
+        '<div style="margin-top:8px;font-size:12px;color:#94a3b8;">رابط الشعار أو قم بتحميل ملف صورة</div>' +
+        '<input type="hidden" id="set-logo" value="' + escapeHtml(s.logo || '') + '">' +
         '</div>' +
         '<div class="form-group">' +
-        '<label>Favicon</label>' +
+        '<label>Favicon URL (أو تحميل صورة)</label>' +
         '<div class="logo-upload-row">' +
-        '<div class="logo-preview fav-preview" id="fav-preview">' +
-        (s.favicon && s.favicon.indexOf('data:') === 0 ? '<img src="' + s.favicon + '" alt="favicon">' : '<span>' + (s.siteName || 'SL').charAt(0).toUpperCase() + '</span>') +
-        '</div>' +
+        '<div class="logo-preview fav-preview" id="fav-preview">' + faviconPreviewHtml + '</div>' +
         '<div class="logo-upload-actions">' +
-        '<label class="btn btn-sm btn-outline" style="cursor:pointer">📁 اختر صورة<input type="file" accept="image/*" style="display:none" id="set-favicon-file" onchange="App.uploadFavicon(this)"></label>' +
+        '<label class="btn btn-sm btn-outline logo-upload-label">📁 تحميل<input type="file" accept="image/*" class="logo-upload-input" id="set-favicon-file" onchange="App.uploadFavicon(this)"></label>' +
         (s.favicon && s.favicon.indexOf('data:') === 0 ? '<button class="btn btn-sm btn-danger" onclick="App.removeFavicon()">✕ حذف</button>' : '') +
         '</div>' +
         '</div>' +
-        '<input type="hidden" id="set-favicon" value="' + (s.favicon || '') + '">' +
+        '<div style="margin-top:8px;font-size:12px;color:#94a3b8;">رابط الأيقونة أو قم بتحميل ملف صورة</div>' +
+        '<input type="hidden" id="set-favicon" value="' + escapeHtml(s.favicon || '') + '">' +
         '</div>' +
         '</div></div>';
 
@@ -2354,14 +2368,20 @@ function renderSettings() {
 function uploadLogo(input) {
     if (!input.files || !input.files[0]) return;
     var file = input.files[0];
-    if (file.size > 2 * 1024 * 1024) { showToast('الملف كبير جداً (حد أقصى 2MB)', 'error'); return; }
+    if (file.size > 2 * 1024 * 1024) {
+        showToast('Logo file must be under 2MB', 'error');
+        return;
+    }
     var reader = new FileReader();
     reader.onload = function(e) {
         var dataUrl = e.target.result;
         document.getElementById('set-logo').value = dataUrl;
         var preview = document.getElementById('logo-preview');
-        if (preview) preview.innerHTML = '<img src="' + dataUrl + '" alt="logo">';
-        showToast('✓ تم رفع الشعار');
+        if (preview) {
+            preview.innerHTML = '<img src="' + dataUrl + '" alt="logo">';
+            preview.classList.add('has-logo');
+        }
+        showToast('Logo uploaded', 'success');
         App.saveSettings();
     };
     reader.readAsDataURL(file);
@@ -2370,22 +2390,31 @@ function uploadLogo(input) {
 function removeLogo() {
     document.getElementById('set-logo').value = '/assets/logo.png';
     var preview = document.getElementById('logo-preview');
-    if (preview) preview.innerHTML = '<span>' + (settings.siteName || 'SL').charAt(0).toUpperCase() + '</span>';
-    showToast('تم العودة للشعار الافتراضي');
+    if (preview) {
+        preview.innerHTML = '<span>' + (settings.siteName || 'SL').charAt(0).toUpperCase() + '</span>';
+        preview.classList.remove('has-logo');
+    }
+    showToast('Logo reverted to default', 'info');
     App.saveSettings();
 }
 
 function uploadFavicon(input) {
     if (!input.files || !input.files[0]) return;
     var file = input.files[0];
-    if (file.size > 2 * 1024 * 1024) { showToast('الملف كبير جداً (حد أقصى 2MB)', 'error'); return; }
+    if (file.size > 2 * 1024 * 1024) {
+        showToast('Favicon file must be under 2MB', 'error');
+        return;
+    }
     var reader = new FileReader();
     reader.onload = function(e) {
         var dataUrl = e.target.result;
         document.getElementById('set-favicon').value = dataUrl;
         var preview = document.getElementById('fav-preview');
-        if (preview) preview.innerHTML = '<img src="' + dataUrl + '" alt="favicon">';
-        showToast('✓ تم رفع الأيقونة');
+        if (preview) {
+            preview.innerHTML = '<img src="' + dataUrl + '" alt="favicon">';
+            preview.classList.add('has-favicon');
+        }
+        showToast('Favicon uploaded', 'success');
         App.saveSettings();
     };
     reader.readAsDataURL(file);
@@ -2394,8 +2423,11 @@ function uploadFavicon(input) {
 function removeFavicon() {
     document.getElementById('set-favicon').value = '/favicon.ico';
     var preview = document.getElementById('fav-preview');
-    if (preview) preview.innerHTML = '<span>F</span>';
-    showToast('تم العودة للأيقونة الافتراضية');
+    if (preview) {
+        preview.innerHTML = '<span>F</span>';
+        preview.classList.remove('has-favicon');
+    }
+    showToast('Favicon reverted to default', 'info');
     App.saveSettings();
 }
 

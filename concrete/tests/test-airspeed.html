@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Air Content Test</title>
+    <link rel="icon" href="../../favicon.ico">
+    <link rel="stylesheet" href="test-common.css">
+    <link rel="stylesheet" href="../../test-zones.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    <div class="page">
+        <a href="../concrete.html" class="back-link">
+            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Back to Concrete Tests
+        </a>
+
+        <h1 class="page-title">Air <span>Content</span></h1>
+        <p class="page-sub">Pressure / volumetric air content in fresh concrete per ASTM C231 / C173</p>
+
+        <div class="level-top">
+            <span class="lt-label">Test Level</span>
+            <div class="lt-btns">
+                <button class="lt-btn active" data-level="quick">&#9889; Quick</button>
+                <button class="lt-btn" data-level="unofficial">&#127981; Unofficial</button>
+                <button class="lt-btn" data-level="certified">&#128274; Certified</button>
+            </div>
+            <span class="lt-info">Critical for freeze-thaw durability</span>
+        </div>
+
+        <div class="billboard">
+            <div class="bb-inner">
+                <div class="bb-icon">&#129528;</div>
+                <div class="bb-body">
+                    <div class="bb-step-label">STEP 1 / 1</div>
+                    <div class="bb-title">Air Content Test</div>
+                    <div class="bb-desc">Measure total air void content in fresh concrete</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="two-col">
+            <div class="sidebar">
+                <div class="sidebar-title">&#9881; Test Setup</div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Method</label>
+                    <select class="sidebar-input" id="airMethod">
+                        <option value="pressure">Pressure Method (ASTM C231)</option>
+                        <option value="volumetric">Volumetric Method (ASTM C173)</option>
+                    </select>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Container Volume</label>
+                    <input type="number" class="sidebar-input" id="containerVol" value="7000" step="1"><span class="unit">cm&sup3;</span>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Type A Reading (calibration)</label>
+                    <input type="number" class="sidebar-input" id="initialPressure" placeholder="e.g. 20" step="0.1"><span class="unit">psi</span>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Specimen Reading</label>
+                    <input type="number" class="sidebar-input" id="finalPressure" placeholder="e.g. 16" step="0.1"><span class="unit">psi</span>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Meter Calibration Factor</label>
+                    <input type="number" class="sidebar-input" id="calibFactor" value="1.00" step="0.01" min="0.8" max="1.2">
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Coarse Agg. SSD Volume</label>
+                    <input type="number" class="sidebar-input" id="aggVolume" placeholder="e.g. 2000" step="1"><span class="unit">cm&sup3;</span>
+                </div>
+                <button class="btn btn-primary" onclick="runAirTest()">&#129528; Calculate Air Content</button>
+            </div>
+
+            <div>
+                <div id="airResults" style="display:none;">
+                    <h3 style="color:var(--accent-orange);margin-bottom:16px;">&#128203; Air Content Results</h3>
+                    <div class="result-grid">
+                        <div class="result-card"><div class="result-icon">&#129528;</div><div class="result-label">Total Air Content</div><div class="result-value" id="rTotalAir">--</div><div class="result-unit">% vol.</div></div>
+                        <div class="result-card"><div class="result-icon">&#128171;</div><div class="result-label">Air from Admixture</div><div class="result-value" id="rAirAdmix">--</div><div class="result-unit">% vol.</div></div>
+                        <div class="result-card"><div class="result-icon">&#9989;</div><div class="result-label">Target Compliance</div><div class="result-value" id="rCompliance">--</div><div class="result-unit"></div></div>
+                    </div>
+                </div>
+                <div id="airPlaceholder" style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+                    <div style="font-size:48px;margin-bottom:16px;">&#129528;</div>
+                    <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Enter Air Content Parameters</div>
+                    <div style="font-size:13px;">Enter initial and final pressure readings to calculate total air content.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="notes-section">
+            <div class="notes-title">&#128221; Standards</div>
+            <ul class="notes-list">
+                <li>ASTM C231: Standard Test Method for Air Content of Freshly Mixed Concrete by the Pressure Method</li>
+                <li>ASTM C173: Standard Test Method for Air Content of Freshly Mixed Concrete by the Volumetric Method</li>
+                <li>Pressure method: air = (1 - reading/type A reading) x calibration factor x 100%</li>
+                <li>Typical air content for non-air-entrained: 1-3%; air-entrained: 4-8%</li>
+                <li>Correction for coarse aggregate: subtract V_agg / V_total from reading</li>
+            </ul>
+        </div>
+    </div>
+    <div id="footer-placeholder"></div>
+    <script src="../../components.js"></script>
+    <script src="../../test-zone.js"></script>
+    <script>
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() { TestZones.init('test-airspeed'); });
+        } else {
+            TestZones.init('test-airspeed');
+        }
+    </script>
+    <script>
+        function runAirTest() {
+            const method = document.getElementById('airMethod').value;
+            const containerVol = parseFloat(document.getElementById('containerVol').value);
+            const initialP = parseFloat(document.getElementById('initialPressure').value);
+            const finalP = parseFloat(document.getElementById('finalPressure').value);
+            const calib = parseFloat(document.getElementById('calibFactor').value);
+            const aggVol = parseFloat(document.getElementById('aggVolume').value);
+
+            if (isNaN(initialP) || isNaN(finalP) || initialP <= 0) { alert('Please enter valid pressure readings.'); return; }
+            if (finalP >= initialP) { alert('Final pressure must be less than initial pressure.'); return; }
+            if (containerVol <= 0) { alert('Container volume must be greater than zero.'); return; }
+
+            // Pressure method: air% = (1 - finalP/initialP) * calib * 100
+            let totalAir = (1 - (finalP / initialP)) * calib * 100;
+
+            // Subtract air equivalent of coarse aggregate volume
+            // ASTM C231: correction = V_agg / V_container * aggregate specific gravity factor
+            const aggAirCorrection = aggVol ? (aggVol / containerVol * 1.0) : 0;
+            const netAir = Math.max(0, totalAir - aggAirCorrection);
+
+            // Air from air-entraining admixture (typically 2-6%)
+            const airFromAdmix = Math.max(0, netAir - 1.5);
+
+            const targetAir = 5.5; // typical target for air-entrained
+            const compliance = Math.abs(netAir - targetAir) <= 1.5 ? 'PASS' : 'MARGINAL';
+
+            document.getElementById('airPlaceholder').style.display = 'none';
+            document.getElementById('airResults').style.display = 'block';
+            document.getElementById('rTotalAir').textContent = netAir.toFixed(1);
+            document.getElementById('rAirAdmix').textContent = airFromAdmix.toFixed(1);
+            document.getElementById('rCompliance').textContent = compliance;
+            document.getElementById('rCompliance').style.color = compliance === 'PASS' ? 'var(--accent-emerald)' : 'var(--accent-amber)';
+        }
+    </script>
+</body>
+</html>

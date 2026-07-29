@@ -6,6 +6,7 @@
     <title>smartLAB — Field Density Test</title>
     <link rel="icon" href="../favicon.ico">
     <link rel="stylesheet" href="test-common.css">
+    <link rel="stylesheet" href="../test-zones.css">
 </head>
 <body>
     <div id="header-placeholder"></div>
@@ -113,6 +114,14 @@
     </div>
     <div id="footer-placeholder"></div>
     <script src="../components.js"></script>
+    <script src="../test-zone.js"></script>
+    <script>
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() { TestZones.init('test-density'); });
+        } else {
+            TestZones.init('test-density');
+        }
+    </script>
     <script>
         function calcDensity() {
             const fieldWet = parseFloat(document.getElementById('fieldWetDensity').value);

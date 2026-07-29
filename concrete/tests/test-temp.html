@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Temperature Test</title>
+    <link rel="icon" href="../../favicon.ico">
+    <link rel="stylesheet" href="test-common.css">
+    <link rel="stylesheet" href="../../test-zones.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    <div class="page">
+        <a href="../concrete.html" class="back-link">
+            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Back to Concrete Tests
+        </a>
+
+        <h1 class="page-title">Fresh Concrete <span>Temperature</span></h1>
+        <p class="page-sub">Temperature of freshly mixed concrete per ASTM C1064 / EN 12350-4</p>
+
+        <div class="level-top">
+            <span class="lt-label">Test Level</span>
+            <div class="lt-btns">
+                <button class="lt-btn active" data-level="quick">&#9889; Quick</button>
+                <button class="lt-btn" data-level="unofficial">&#127981; Unofficial</button>
+                <button class="lt-btn" data-level="certified">&#128274; Certified</button>
+            </div>
+            <span class="lt-info">Placement &amp; curing control</span>
+        </div>
+
+        <div class="billboard">
+            <div class="bb-inner">
+                <div class="bb-icon">&#127777;&#65039;</div>
+                <div class="bb-body">
+                    <div class="bb-step-label">STEP 1 / 1</div>
+                    <div class="bb-title">Fresh Concrete Temperature</div>
+                    <div class="bb-desc">Verify concrete is within placement temperature limits</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="two-col">
+            <div class="sidebar">
+                <div class="sidebar-title">&#9881; Temperature Reading</div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Concrete Temperature</label>
+                    <input type="number" class="sidebar-input" id="concreteTemp" placeholder="e.g. 23" step="0.1"><span class="unit">&deg;C</span>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Ambient Temperature</label>
+                    <input type="number" class="sidebar-input" id="ambientTemp" placeholder="e.g. 28" step="0.1"><span class="unit">&deg;C</span>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Aggregate Temperature</label>
+                    <input type="number" class="sidebar-input" id="aggTemp" placeholder="e.g. 25" step="0.1"><span class="unit">&deg;C</span>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Water Temperature</label>
+                    <input type="number" class="sidebar-input" id="waterTemp" placeholder="e.g. 20" step="0.1"><span class="unit">&deg;C</span>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Thermometer Type</label>
+                    <select class="sidebar-input" id="thermType">
+                        <option value="dial">Dial Thermometer</option>
+                        <option value="digital">Digital Thermometer</option>
+                        <option value="infrared">Infrared (Non-Contact)</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="runTempTest()">&#127777;&#65039; Evaluate Temperature</button>
+            </div>
+
+            <div>
+                <div id="tempResults" style="display:none;">
+                    <h3 style="color:var(--accent-orange);margin-bottom:16px;">&#128203; Temperature Results</h3>
+                    <div class="result-grid">
+                        <div class="result-card"><div class="result-icon">&#127777;&#65039;</div><div class="result-label">Concrete Temperature</div><div class="result-value" id="rConcTemp">--</div><div class="result-unit">&deg;C</div></div>
+                        <div class="result-card"><div class="result-icon">&#9989;</div><div class="result-label">Range Compliance</div><div class="result-value" id="rCompliance">--</div><div class="result-unit">10-30 &deg;C</div></div>
+                        <div class="result-card"><div class="result-icon">&#128167;</div><div class="result-label">Thermal Gradient</div><div class="result-value" id="rGradient">--</div><div class="result-unit">&deg;C</div></div>
+                        <div class="result-card"><div class="result-icon">&#128176;</div><div class="result-label">Estimated Set Time</div><div class="result-value" id="rSetTime">--</div><div class="result-unit">hours (approx)</div></div>
+                    </div>
+                </div>
+                <div id="tempPlaceholder" style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+                    <div style="font-size:48px;margin-bottom:16px;">&#127777;&#65039;</div>
+                    <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Enter Temperature Readings</div>
+                    <div style="font-size:13px;">Enter concrete, ambient, and material temperatures to evaluate compliance.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="notes-section">
+            <div class="notes-title">&#128221; Standards</div>
+            <ul class="notes-list">
+                <li>ASTM C1064: Standard Test Method for Temperature of Freshly Mixed Hydraulic-Cement Concrete</li>
+                <li>EN 12350-4: Testing fresh concrete - Temperature</li>
+                <li>Acceptable range: 10&deg;C to 30&deg;C (typical specification)</li>
+                <li>Thermometer stem must be immersed at least 50 mm into concrete</li>
+                <li>High temperature (&gt;30&deg;C) accelerates setting and reduces ultimate strength</li>
+            </ul>
+        </div>
+    </div>
+    <div id="footer-placeholder"></div>
+    <script src="../../components.js"></script>
+    <script src="../../test-zone.js"></script>
+    <script>
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() { TestZones.init('test-temp'); });
+        } else {
+            TestZones.init('test-temp');
+        }
+    </script>
+    <script>
+        function runTempTest() {
+            const concTemp = parseFloat(document.getElementById('concreteTemp').value);
+            const ambTemp = parseFloat(document.getElementById('ambientTemp').value);
+            const aggTemp = parseFloat(document.getElementById('aggTemp').value);
+            const waterTemp = parseFloat(document.getElementById('waterTemp').value);
+
+            if (isNaN(concTemp)) { alert('Please enter concrete temperature.'); return; }
+
+            // Compliance check (10-30 C typical)
+            const inRange = concTemp >= 10 && concTemp <= 30;
+            const compliance = inRange ? 'WITHIN RANGE' : 'OUT OF RANGE';
+
+            // Thermal gradient (difference from ambient)
+            const gradient = isNaN(ambTemp) ? '—' : Math.abs(concTemp - ambTemp).toFixed(1);
+
+            // Material temperature differential (ASTM C1064 recommends max 11°C difference)
+            let maxDiff = 0;
+            let diffSource = '';
+            if (!isNaN(aggTemp)) { const d = Math.abs(concTemp - aggTemp); if (d > maxDiff) { maxDiff = d; diffSource = 'aggregate'; } }
+            if (!isNaN(waterTemp)) { const d = Math.abs(concTemp - waterTemp); if (d > maxDiff) { maxDiff = d; diffSource = 'water'; } }
+            const matDiffText = diffSource ? maxDiff.toFixed(1) + '°C (' + diffSource + ')' : '—';
+            const matDiffOk = diffSource ? (maxDiff <= 11 ? 'OK' : 'HIGH') : '';
+
+            // Approximate setting time based on temperature (Saul's law approximation)
+            // Setting time ~ 12 hours at 20C, adjusted by maturity
+            const estSetTime = 12 * Math.exp(-0.07 * (concTemp - 20));
+            const setRange = concTemp <= 15 ? '(retarded)' : concTemp >= 28 ? '(accelerated)' : '(normal)';
+
+            document.getElementById('tempPlaceholder').style.display = 'none';
+            document.getElementById('tempResults').style.display = 'block';
+            document.getElementById('rConcTemp').textContent = concTemp.toFixed(1);
+            document.getElementById('rCompliance').textContent = compliance;
+            document.getElementById('rCompliance').style.color = inRange ? 'var(--accent-emerald)' : 'var(--accent-red)';
+            document.getElementById('rGradient').textContent = gradient + (typeof gradient === 'string' && gradient !== '—' ? ' °C' : '');
+            document.getElementById('rSetTime').textContent = estSetTime.toFixed(1) + 'h ' + setRange;
+        }
+    </script>
+</body>
+</html>

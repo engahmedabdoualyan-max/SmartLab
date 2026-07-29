@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /private/
+
+# H crawl delay to respect server resources
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://smartlab.fimtosoft.com/sitemap.xml
+
+# Host header preference
+Host: https://smartlab.fimtosoft.com

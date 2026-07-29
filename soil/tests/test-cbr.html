@@ -10,6 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <link rel="stylesheet" href="test-common.css">
+    <link rel="stylesheet" href="../test-zones.css">
 </head>
 <body>
     <div id="header-placeholder"></div>
@@ -142,6 +143,14 @@
     </div>
     <div id="footer-placeholder"></div>
     <script src="../components.js"></script>
+    <script src="../test-zone.js"></script>
+    <script>
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() { TestZones.init('test-cbr'); });
+        } else {
+            TestZones.init('test-cbr');
+        }
+    </script>
     <script>
         function connectDevice() {
             document.getElementById('connStatus').className = 'conn-status connected';

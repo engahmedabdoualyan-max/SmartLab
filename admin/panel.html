@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Admin Panel</title>
+    <link rel="icon" href="../favicon.ico">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div class="panel-layout">
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <img src="../assets/logo.png" alt="smartLAB">
+                <h2>smart<span>LAB</span></h2>
+            </div>
+            <nav class="sidebar-nav" id="sidebarNav"></nav>
+            <div class="sidebar-footer">
+                <div style="margin-bottom:10px;font-size:11px;color:var(--text-muted);">
+                    <span id="adminEmail"></span>
+                </div>
+                <button class="logout-btn" onclick="App.logout()">🚪 Sign Out</button>
+            </div>
+        </aside>
+
+        <!-- MAIN -->
+        <main class="main-content" id="mainContent"></main>
+    </div>
+
+    <!-- MODAL -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-head">
+                <h2 id="modalTitle">Add Item</h2>
+                <button class="modal-close" onclick="App.closeModal()">✕</button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+            <div class="modal-foot" id="modalFoot"></div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>

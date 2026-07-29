@@ -4,7 +4,7 @@
 /* ========== i18n Translations (common) ========== */
     var defaultTranslations = {
         'en': {
-            'home': 'Home', 'about': ' about', 'services': 'Services', 'contact': 'Contact',
+            'home': 'Home', 'about': 'about', 'services': 'Services', 'contact': 'Contact',
             'Enter Lab': 'Enter Lab', 'Guest': 'Guest', 'Sign Out': 'Sign Out',
             'Fimto Soft': 'Fimto <span>Soft</span>',
             'Integrated Tech Solutions': 'Integrated Tech Solutions',
@@ -37,12 +37,12 @@
             'Fimto Soft': 'Fimto <span>Soft</span>',
             'Integrated Tech Solutions': 'Integrierte Technologielösungen',
             'Schnelle Links': 'Schnelle Links', 'Unsere Standorte': 'Unsere Standorte',
-            'Wir bieten umfassende Softwarelösungen, einschließlich fortgeschrittener interaktiver ERP-Systeme...': 'Wir bieten umfassende Softwarelösungen, einschließlich fortgeschrittener interaktiver ERP-System Systems...',
+            'Wir bieten umfassende Softwarelösungen, einschließlich fortgeschrittener interaktiver ERP-Systeme...': 'Wir bieten umfassende Softwarelösungen, einschließlich fortgeschrittener interaktiver ERP-Systeme...',
             // Urdu
             'اہم': 'اہم', 'کے بارے میں': 'کے بارے میں', 'خدمات': 'خدمات', 'رابطہ': 'رابطہ',
             'لیبار میں داخل ہوں': 'لیبار میں داخل ہوں', 'مہمان': 'مہمان', 'باہر جاؤ': 'باہر جاؤ',
             'Fimto Soft': 'Fimto <span>Soft</span>',
-            'Integrated Tech Solutions': 'انٹیگریٹڈ ٹیکنولوجی解決ات',
+            'Integrated Tech Solutions': 'انٹیگریٹڈ ٹیکنولوجی حل',
             'فوری لنکس': 'فوری لنکس', 'ہمارے مقامات': 'ہمارے مقامات',
             'ہم جامع سافٹ ویئر حل فراہم کرتے ہیں، بشمول اعلی درجے کے انٹرایکٹو ERP سسٹمز، تیارآمد ریڈی میکس کنکری پلانٹس، ویب ڈیزائن اور ڈیویلپمنٹ، تمیز دار ڈیجیٹل مارکیٹنگ، تحری رجن اور تیارآمد سکیورٹی اینڈ سوریلنس سسٹمز، تیارآمد اینڈ ڈیولوپمنٹ شمولس اینڈ بینائے انفراسٹراکچر انٹیگریشن، تیارآمد اینڈ ڈیویلپمنٹ کے ایپلیکنیشنز کی بنانی اینڈ تیارآمد اینڈ ہوم سویسم سسٹمز۔': 'ہم جامع سافٹ ویئر حل فراہم کرتے ہیں، بشمول اعلی درجے کے انٹرایکٹو ERP سسٹمز، تیارآمد ریڈی میکس کنکری پلانٹس، ویب ڈیزائن اور ڈیویلپمنٹ، تمیز دار ڈیجیٹل مارکیٹنگ، تحریج رجن اور تیارآمد سکیورٹی اینڈ سوریلنس سسٹمز، تیارآمد اینڈ ڈیولوپمنٹ شمولس اینڈ بینائے انفراسٹراکچر اینٹیگریشن، تیارآمد اینڈ ڈیویلپمنٹ کے ایپلیکنیشنز کی بنانی اینڈ تیارآمد اینڈ ہوم سویسم سسٹمز۔',
             // Italian
@@ -68,6 +68,7 @@
     
     // Initialize all supported languages
     const languages = ['en', 'ar', 'fr', 'zh', 'ru', 'de', 'ur', 'it', 'hi'];
+    const langLabels = { en: 'EN', ar: 'AR', fr: 'FR', zh: 'ZH', ru: 'RU', de: 'DE', ur: 'UR', it: 'IT', hi: 'HI' };
     for (var lang of languages) {
         if (!window.translations[lang]) window.translations[lang] = {};
     }
@@ -158,21 +159,25 @@
             }
         }
         var btn = document.getElementById('lang-toggle');
-        if (btn) btn.innerHTML = '<span class="lang-dot"></span> ' + (lang === 'ar' ? 'AR' : 'EN');
+        if (btn) btn.innerHTML = '<span class="lang-dot"></span> ' + (langLabels[lang] || lang.toUpperCase());
     };
 
     /* ========== Header / Footer loader ========== */
-    function loadHTML(url, placeholderId, callback) {
+    function loadHTML(relativeUrl, placeholderId, callback) {
+        var url = relativeUrl.startsWith('/') ? relativeUrl : '/' + relativeUrl;
         var el = document.getElementById(placeholderId);
-        if (!el) return;
+        if (!el) { console.warn('[smartLAB] Placeholder not found:', placeholderId); return; }
         var xhr = new XMLHttpRequest();
         xhr.open('GET', url, true);
         xhr.onload = function () {
             if (xhr.status >= 200 && xhr.status < 400) {
-                el.outerHTML = xhr.responseText;
+                el.innerHTML = xhr.responseText;
                 if (callback) callback();
+            } else {
+                console.error('[smartLAB] Failed to load:', url, xhr.status);
             }
         };
+        xhr.onerror = function() { console.error('[smartLAB] Network error loading:', url); };
         xhr.send();
     }
 
@@ -181,9 +186,10 @@
         if (!btn) return;
         btn.addEventListener('click', function () {
             var current = localStorage.getItem('smartlab_lang') || 'en';
-            var next = current === 'en' ? 'ar' : 'en';
+            var idx = languages.indexOf(current);
+            var next = languages[(idx + 1) % languages.length];
             localStorage.setItem('smartlab_lang', next);
-            document.body.classList.toggle('rtl', next === 'ar');
+            document.body.classList.toggle('rtl', next === 'ar' || next === 'ur');
             if (typeof translatePage === 'function') translatePage();
         });
     }
@@ -194,13 +200,50 @@
         if (typeof translatePage === 'function') translatePage();
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
-        loadHTML('/header.html', 'header-placeholder', function () {
+    function loadHeaderFooter() {
+        loadHTML('header.html', 'header-placeholder', function () {
             initLangToggle();
             applySavedLang();
         });
-        loadHTML('/footer.html', 'footer-placeholder');
-    });
+        loadHTML('footer.html', 'footer-placeholder', function() {
+            setTimeout(initEgyptFlag, 100);
+        });
+        setTimeout(initEgyptFlag, 300);
+    }
+
+    var egyptClickCount = 0;
+    var egyptClickTimer = null;
+    var egyptFlagInitialized = false;
+    function initEgyptFlag() {
+        if (egyptFlagInitialized) return;
+        var flag = document.getElementById('egypt-flag');
+        if (!flag) return;
+        egyptFlagInitialized = true;
+        flag.style.transition = 'transform 0.15s';
+        flag.addEventListener('mouseenter', function() { this.style.transform = 'scale(1.3)'; });
+        flag.addEventListener('mouseleave', function() { this.style.transform = 'scale(1)'; });
+        flag.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            egyptClickCount++;
+            flag.style.transform = 'scale(0.9)';
+            setTimeout(function() { flag.style.transform = 'scale(1.3)'; }, 100);
+            if (egyptClickTimer) clearTimeout(egyptClickTimer);
+            egyptClickTimer = setTimeout(function() { egyptClickCount = 0; }, 3000);
+            if (egyptClickCount >= 5) {
+                egyptClickCount = 0;
+                flag.style.transform = 'scale(1.5)';
+                setTimeout(function() {
+                    window.location.href = '/admin/login.html';
+                }, 300);
+            }
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadHeaderFooter);
+    } else {
+        loadHeaderFooter();
+    }
 
     /* ========== MIX CLASS DEFINITIONS ========== */
     const MIX_CLASSES = {

@@ -6,6 +6,7 @@
     <title>smartLAB — Specific Gravity Test</title>
     <link rel="icon" href="../favicon.ico">
     <link rel="stylesheet" href="test-common.css">
+    <link rel="stylesheet" href="../test-zones.css">
 </head>
 <body>
     <div id="header-placeholder"></div>
@@ -103,6 +104,14 @@
     </div>
     <div id="footer-placeholder"></div>
     <script src="../components.js"></script>
+    <script src="../test-zone.js"></script>
+    <script>
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() { TestZones.init('test-specific'); });
+        } else {
+            TestZones.init('test-specific');
+        }
+    </script>
     <script>
         function calcSpecificGravity() {
             const w1 = parseFloat(document.getElementById('wOvenDry').value); // oven dry

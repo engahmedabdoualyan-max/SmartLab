@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>smartLAB — Soil & Roads</title>
-    <link rel="icon" href="favicon.ico">
-    <link rel="stylesheet" href="soil/soil.css">
+    <link rel="icon" href="../favicon.ico">
+    <link rel="stylesheet" href="soil.css">
 </head>
 <body>
     <div id="header-placeholder"></div>
@@ -24,60 +24,68 @@
         <section class="vhalf active" id="panel-tests">
             <h2 data-i18n="Tests">Tests</h2>
             <div class="card-grid design-grid">
-                <a href="soil/tests/test-cbr.html" target="_blank" class="design-card">
-                    <div class="dc-icon">💪</div>
-                    <div class="dc-body">
-                        <div class="dc-name" data-i18n="CBR Test">CBR Test</div>
-                        <div class="dc-desc">California Bearing Ratio for subgrade & base evaluation per ASTM D1883</div>
-                    </div>
-                </a>
-                <a href="soil/tests/test-proctor.html" target="_blank" class="design-card">
-                    <div class="dc-icon">🔨</div>
-                    <div class="dc-body">
-                        <div class="dc-name" data-i18n="Proctor Compaction">Proctor Compaction</div>
-                        <div class="dc-desc">Standard & modified Proctor for max dry density per ASTM D698 / D1557</div>
-                    </div>
-                </a>
-                <a href="soil/tests/test-moisture.html" target="_blank" class="design-card">
+                <!-- 1. Moisture Content - Basic property -->
+                <a href="tests/test-moisture.html" target="_blank" class="design-card">
                     <div class="dc-icon">💧</div>
                     <div class="dc-body">
                         <div class="dc-name" data-i18n="Moisture Content">Moisture Content</div>
                         <div class="dc-desc">Oven-dry & rapid moisture methods per ASTM D2216</div>
                     </div>
                 </a>
-                <a href="soil/tests/test-grain.html" target="_blank" class="design-card">
-                    <div class="dc-icon">🪨</div>
-                    <div class="dc-body">
-                        <div class="dc-name" data-i18n="Grain Size Distribution">Grain Size Distribution</div>
-                        <div class="dc-desc">Sieve & hydrometer analysis per ASTM D6913 / D7928</div>
-                    </div>
-                </a>
-                <a href="soil/tests/test-plasticity.html" target="_blank" class="design-card">
-                    <div class="dc-icon">🤲</div>
-                    <div class="dc-body">
-                        <div class="dc-name" data-i18n="Atterberg Limits">Atterberg Limits</div>
-                        <div class="dc-desc">Liquid limit, plastic limit & plasticity index per ASTM D4318</div>
-                    </div>
-                </a>
-                <a href="soil/tests/test-density.html" target="_blank" class="design-card">
-                    <div class="dc-icon">⚖️</div>
-                    <div class="dc-body">
-                        <div class="dc-name" data-i18n="Field Density">Field Density</div>
-                        <div class="dc-desc">Sand cone & nuclear gauge for compaction verification per ASTM D1556</div>
-                    </div>
-                </a>
-                <a href="soil/tests/test-specific.html" target="_blank" class="design-card">
+                <!-- 2. Specific Gravity - Fundamental property -->
+                <a href="tests/test-specific.html" target="_blank" class="design-card">
                     <div class="dc-icon">🔬</div>
                     <div class="dc-body">
                         <div class="dc-name" data-i18n="Specific Gravity">Specific Gravity</div>
                         <div class="dc-desc">Particle density & water absorption per ASTM D854</div>
                     </div>
                 </a>
-                <a href="soil/tests/test-limits.html" target="_blank" class="design-card">
+                <!-- 3. Grain Size Distribution - Classification -->
+                <a href="tests/test-grain.html" target="_blank" class="design-card">
+                    <div class="dc-icon">🪨</div>
+                    <div class="dc-body">
+                        <div class="dc-name" data-i18n="Grain Size Distribution">Grain Size Distribution</div>
+                        <div class="dc-desc">Sieve & hydrometer analysis per ASTM D6913 / D7928</div>
+                    </div>
+                </a>
+                <!-- 4. Atterberg Limits - Classification -->
+                <a href="tests/test-plasticity.html" target="_blank" class="design-card">
+                    <div class="dc-icon">🤲</div>
+                    <div class="dc-body">
+                        <div class="dc-name" data-i18n="Atterberg Limits">Atterberg Limits</div>
+                        <div class="dc-desc">Liquid limit, plastic limit & plasticity index per ASTM D4318</div>
+                    </div>
+                </a>
+                <!-- 5. Soil Classification - Uses 3 & 4 -->
+                <a href="tests/test-limits.html" target="_blank" class="design-card">
                     <div class="dc-icon">📏</div>
                     <div class="dc-body">
                         <div class="dc-name" data-i18n="Soil Classification">Soil Classification</div>
                         <div class="dc-desc">USCS & AASHTO classification from lab data per ASTM D2487</div>
+                    </div>
+                </a>
+                <!-- 6. Proctor Compaction - Design parameter -->
+                <a href="tests/test-proctor.html" target="_blank" class="design-card">
+                    <div class="dc-icon">🔨</div>
+                    <div class="dc-body">
+                        <div class="dc-name" data-i18n="Proctor Compaction">Proctor Compaction</div>
+                        <div class="dc-desc">Standard & modified Proctor for max dry density per ASTM D698 / D1557</div>
+                    </div>
+                </a>
+                <!-- 7. Field Density - Field verification -->
+                <a href="tests/test-density.html" target="_blank" class="design-card">
+                    <div class="dc-icon">⚖️</div>
+                    <div class="dc-body">
+                        <div class="dc-name" data-i18n="Field Density">Field Density</div>
+                        <div class="dc-desc">Sand cone & nuclear gauge for compaction verification per ASTM D1556</div>
+                    </div>
+                </a>
+                <!-- 8. CBR Test - Design parameter -->
+                <a href="tests/test-cbr.html" target="_blank" class="design-card">
+                    <div class="dc-icon">💪</div>
+                    <div class="dc-body">
+                        <div class="dc-name" data-i18n="CBR Test">CBR Test</div>
+                        <div class="dc-desc">California Bearing Ratio for subgrade & base evaluation per ASTM D1883</div>
                     </div>
                 </a>
             </div>
@@ -87,42 +95,42 @@
         <section class="vhalf" id="panel-design">
             <h2 data-i18n="Design">Design</h2>
             <div class="card-grid design-grid">
-                <a href="soil/design/design-pavement.html" class="design-card">
+                <a href="design/design-pavement.html" class="design-card">
                     <div class="dc-icon">🛣️</div>
                     <div class="dc-body">
                         <div class="dc-name" data-i18n="Pavement Design">Pavement Design</div>
                         <div class="dc-desc">AASHTO 1993 flexible pavement layer thickness design</div>
                     </div>
                 </a>
-                <a href="soil/design/design-classification.html" class="design-card">
+                <a href="design/design-classification.html" class="design-card">
                     <div class="dc-icon">📊</div>
                     <div class="dc-body">
                         <div class="dc-name" data-i18n="Classification Chart">Classification Chart</div>
                         <div class="dc-desc">USCS & AASHTO dual classification from sieve + Atterberg</div>
                     </div>
                 </a>
-                <a href="soil/design/design-compaction.html" class="design-card">
+                <a href="design/design-compaction.html" class="design-card">
                     <div class="dc-icon">📈</div>
                     <div class="dc-body">
                         <div class="dc-name" data-i18n="Compaction Curve">Compaction Curve</div>
                         <div class="dc-desc">Proctor curve plotting, OMC & max dry density determination</div>
                     </div>
                 </a>
-                <a href="soil/design/design-gradation.html" class="design-card">
+                <a href="design/design-gradation.html" class="design-card">
                     <div class="dc-icon">📉</div>
                     <div class="dc-body">
                         <div class="dc-name" data-i18n="Gradation Chart">Gradation Chart</div>
                         <div class="dc-desc">0.45 power chart, D10/D30/D60, Cu & Cc coefficients</div>
                     </div>
                 </a>
-                <a href="soil/design/design-filter.html" class="design-card">
+                <a href="design/design-filter.html" class="design-card">
                     <div class="dc-icon">🔍</div>
                     <div class="dc-body">
                         <div class="dc-name" data-i18n="Filter Design">Filter Design</div>
                         <div class="dc-desc">Terzaghi & USDA filter criteria for drainage layers</div>
                     </div>
                 </a>
-                <a href="soil/design/design-earthwork.html" class="design-card">
+                <a href="design/design-earthwork.html" class="design-card">
                     <div class="dc-icon">🏗️</div>
                     <div class="dc-body">
                         <div class="dc-name" data-i18n="Earthwork Calculator">Earthwork Calculator</div>
@@ -136,39 +144,74 @@
         <section class="vhalf" id="panel-library">
             <h2 data-i18n="Library">Library</h2>
             <div class="card-grid design-grid">
-                <a href="soil/library/library.html" class="design-card">
+                <a href="../library.html" target="_blank" class="design-card">
                     <div class="dc-icon">📚</div>
                     <div class="dc-body">
                         <div class="dc-name" data-i18n="Standards Library">Standards Library</div>
-                        <div class="dc-desc">AASHTO, ASTM, BS, ECP — soil testing & pavement design standards</div>
+                        <div class="dc-desc">ASTM, AASHTO, BS, EN standards for soil & pavement testing</div>
+                    </div>
+                </a>
+                <a href="../library.html#equipment" target="_blank" class="design-card">
+                    <div class="dc-icon">🔧</div>
+                    <div class="dc-body">
+                        <div class="dc-name" data-i18n="Equipment Catalog">Equipment Catalog</div>
+                        <div class="dc-desc">Lab & field testing equipment specifications & suppliers</div>
+                    </div>
+                </a>
+                <a href="../library.html#references" target="_blank" class="design-card">
+                    <div class="dc-icon">📐</div>
+                    <div class="dc-body">
+                        <div class="dc-name" data-i18n="Reference Data">Reference Data</div>
+                        <div class="dc-desc">Soil properties, correlations & typical values database</div>
                     </div>
                 </a>
             </div>
         </section>
 
-        <!-- ===== CLIENT ===== -->
+        <!-- ===== CLIENT SPACE ===== -->
         <section class="vhalf" id="panel-client">
             <h2 data-i18n="Client Space">Client Space</h2>
             <div class="card-grid design-grid">
-                <a href="soil/client/client-analytics.html" class="design-card">
+                <a href="../client/client-projects.html" target="_blank" class="design-card">
+                    <div class="dc-icon">📁</div>
+                    <div class="dc-body">
+                        <div class="dc-name" data-i18n="Projects">Projects</div>
+                        <div class="dc-desc">View & manage your geotechnical projects</div>
+                    </div>
+                </a>
+                <a href="../client/client-reports.html" target="_blank" class="design-card">
+                    <div class="dc-icon">📊</div>
+                    <div class="dc-body">
+                        <div class="dc-name" data-i18n="Reports">Test Reports</div>
+                        <div class="dc-desc">Access certified test reports & certificates</div>
+                    </div>
+                </a>
+                <a href="../client/client-schedule.html" target="_blank" class="design-card">
+                    <div class="dc-icon">📅</div>
+                    <div class="dc-body">
+                        <div class="dc-name" data-i18n="Schedule">Test Schedule</div>
+                        <div class="dc-desc">Track testing progress & timelines</div>
+                    </div>
+                </a>
+                <a href="../client/client-team.html" target="_blank" class="design-card">
+                    <div class="dc-icon">👥</div>
+                    <div class="dc-body">
+                        <div class="dc-name" data-i18n="Team">Project Team</div>
+                        <div class="dc-desc">Contact your assigned engineers & technicians</div>
+                    </div>
+                </a>
+                <a href="../client/client-equipment.html" target="_blank" class="design-card">
+                    <div class="dc-icon">🔧</div>
+                    <div class="dc-body">
+                        <div class="dc-name" data-i18n="Equipment">Equipment Status</div>
+                        <div class="dc-desc">Monitor lab equipment calibration & availability</div>
+                    </div>
+                </a>
+                <a href="../client/client-analytics.html" target="_blank" class="design-card">
                     <div class="dc-icon">📈</div>
                     <div class="dc-body">
                         <div class="dc-name" data-i18n="Analytics">Analytics</div>
-                        <div class="dc-desc">Client project analytics and performance metrics</div>
-                    </div>
-                </a>
-                <a href="soil/client/client-team.html" class="design-card">
-                    <div class="dc-icon">👥</div>
-                    <div class="dc-body">
-                        <div class="dc-name" data-i18n="Team Management">Team Management</div>
-                        <div class="dc-desc">Project team assignments and contacts</div>
-                    </div>
-                </a>
-                <a href="soil/client/client-equipment.html" class="design-card">
-                    <div class="dc-icon">🔧</div>
-                    <div class="dc-body">
-                        <div class="dc-name" data-i18n="Equipment">Equipment</div>
-                        <div class="dc-desc">Project equipment listings and availability</div>
+                        <div class="dc-desc">Project statistics & quality metrics</div>
                     </div>
                 </a>
             </div>
@@ -176,57 +219,7 @@
     </main>
 
     <div id="footer-placeholder"></div>
-
-    <script>
-        function switchTab(tabName, event) {
-            document.querySelectorAll('.vhalf').forEach(section => {
-                section.classList.remove('active');
-                section.style.display = 'none';
-            });
-            document.querySelectorAll('.section-tab').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            const activeSection = document.getElementById('panel-' + tabName);
-            if (activeSection) {
-                activeSection.classList.add('active');
-                activeSection.style.display = 'block';
-            }
-            if (event && event.currentTarget) {
-                event.currentTarget.classList.add('active');
-            }
-        }
-    </script>
-
-    <script>
-        window.translations = {
-            'en': {
-                'Soil & Roads': 'Soil <span>& Roads</span>',
-                'Tests': 'Tests', 'Design': 'Design', 'Library': 'Library', 'Client Space': 'Client Space',
-                'CBR Test': 'CBR Test', 'Proctor Compaction': 'Proctor Compaction',
-                'Moisture Content': 'Moisture Content', 'Grain Size Distribution': 'Grain Size Distribution',
-                'Atterberg Limits': 'Atterberg Limits', 'Field Density': 'Field Density',
-                'Specific Gravity': 'Specific Gravity', 'Soil Classification': 'Soil Classification',
-                'Pavement Design': 'Pavement Design', 'Classification Chart': 'Classification Chart',
-                'Compaction Curve': 'Compaction Curve', 'Gradation Chart': 'Gradation Chart',
-                'Filter Design': 'Filter Design', 'Earthwork Calculator': 'Earthwork Calculator',
-                'Standards Library': 'Standards Library',
-                'Analytics': 'Analytics', 'Team Management': 'Team Management', 'Equipment': 'Equipment'
-            },
-            'ar': {
-                'Soil & Roads': 'التربة <span>والطرق</span>',
-                'Tests': 'الاختبارات', 'Design': 'التصميم', 'Library': 'المكتبة', 'Client Space': 'مساحة العميل',
-                'CBR Test': 'اختبار CBR', 'Proctor Compaction': 'اختبار بروكتور',
-                'Moisture Content': 'المحتوى الرطبي', 'Grain Size Distribution': 'تدرج حبيبات التربة',
-                'Atterberg Limits': 'حدود أتربرج', 'Field Density': 'الكثافة الميدانية',
-                'Specific Gravity': 'الوزن النوعي', 'Soil Classification': 'تصنيف التربة',
-                'Pavement Design': 'تصميم الرصف', 'Classification Chart': 'جدول التصنيف',
-                'Compaction Curve': 'منحنى الدمك', 'Gradation Chart': 'جدول التدرج',
-                'Filter Design': 'تصميم المرشحات', 'Earthwork Calculator': 'حاسبة أعمال الحفر',
-                'Standards Library': 'مكتبة المعايير',
-                'Analytics': 'التحليلات', 'Team Management': 'إدارة الفريق', 'Equipment': 'المعدات'
-            }
-        };
-    </script>
-    <script src="components.js"></script>
+    <script src="../components.js"></script>
+    <script src="soil.js"></script>
 </body>
 </html>

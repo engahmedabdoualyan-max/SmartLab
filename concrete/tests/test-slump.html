@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Slump Test</title>
+    <link rel="icon" href="../../favicon.ico">
+    <link rel="stylesheet" href="test-common.css">
+    <link rel="stylesheet" href="../../test-zones.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    <div class="page">
+        <a href="../concrete.html" class="back-link">
+            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Back to Concrete Tests
+        </a>
+
+        <h1 class="page-title">Slump <span>Test</span></h1>
+        <p class="page-sub">Workability / consistency of fresh concrete per ASTM C143 / EN 12350-2</p>
+
+        <div class="level-top">
+            <span class="lt-label">Test Level</span>
+            <div class="lt-btns">
+                <button class="lt-btn active" data-level="quick">&#9889; Quick</button>
+                <button class="lt-btn" data-level="unofficial">&#127981; Unofficial</button>
+                <button class="lt-btn" data-level="certified">&#128274; Certified</button>
+            </div>
+            <span class="lt-info">Essential field test</span>
+        </div>
+
+        <div class="billboard">
+            <div class="bb-inner">
+                <div class="bb-icon">&#128424;</div>
+                <div class="bb-body">
+                    <div class="bb-step-label">STEP 1 / 1</div>
+                    <div class="bb-title">Slump Test</div>
+                    <div class="bb-desc">Measure consistency and workability of fresh concrete</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="two-col">
+            <div class="sidebar">
+                <div class="sidebar-title">&#9881; Test Parameters</div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Slump (mm)</label>
+                    <input type="number" class="sidebar-input" id="slumpValue" placeholder="e.g. 80" step="1"><span class="unit">mm</span>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Slump Shape</label>
+                    <select class="sidebar-input" id="slumpShape">
+                        <option value="true">True Slump (uniform)</option>
+                        <option value="shear">Shear Slump</option>
+                        <option value="collapse">Collapse Slump</option>
+                    </select>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Target Class</label>
+                    <select class="sidebar-input" id="targetClass">
+                        <option value="S1">S1: 10 - 40 mm (Very Low)</option>
+                        <option value="S2">S2: 50 - 90 mm (Low)</option>
+                        <option value="S3" selected>S3: 100 - 150 mm (Medium)</option>
+                        <option value="S4">S4: 160 - 210 mm (High)</option>
+                        <option value="S5">S5: &ge; 220 mm (Very High)</option>
+                    </select>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Ambient Temperature</label>
+                    <input type="number" class="sidebar-input" id="ambientTemp" value="25" step="0.1" disabled><span class="unit">&deg;C (info)</span>
+                </div>
+                <button class="btn btn-primary" onclick="runSlumpTest()">&#128424; Evaluate Slump</button>
+            </div>
+
+            <div>
+                <div id="slumpResults" style="display:none;">
+                    <h3 style="color:var(--accent-orange);margin-bottom:16px;">&#128203; Slump Evaluation</h3>
+                    <div class="result-grid">
+                        <div class="result-card"><div class="result-icon">&#128424;</div><div class="result-label">Slump Value</div><div class="result-value" id="rSlump">--</div><div class="result-unit">mm</div></div>
+                        <div class="result-card"><div class="result-icon">&#127919;</div><div class="result-label">Consistency Class</div><div class="result-value" id="rClass">--</div><div class="result-unit">EN 206</div></div>
+                        <div class="result-card"><div class="result-icon">&#9989;</div><div class="result-label">Target Match</div><div class="result-value" id="rMatch">--</div><div class="result-unit">pass / fail</div></div>
+                        <div class="result-card"><div class="result-icon">&#127777;</div><div class="result-label">Shape Assessment</div><div class="result-value" id="rShape">--</div><div class="result-unit"></div></div>
+                    </div>
+                </div>
+                <div id="slumpPlaceholder" style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+                    <div style="font-size:48px;margin-bottom:16px;">&#128424;</div>
+                    <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Enter Slump Measurement</div>
+                    <div style="font-size:13px;">Enter the measured slump value and select shape type to evaluate.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="notes-section">
+            <div class="notes-title">&#128221; Standards</div>
+            <ul class="notes-list">
+                <li>ASTM C143: Standard Test Method for Slump of Hydraulic-Cement Concrete</li>
+                <li>EN 12350-2: Testing fresh concrete - Slump test</li>
+                <li>Slump classes: S1 (10-40 mm), S2 (50-90), S3 (100-150), S4 (160-210), S5 (&ge;220)</li>
+                <li>Shear or collapse slumps indicate segregation; test should be repeated</li>
+                <li>Cone lift: 15-75 mm vertical lift in 5-10 seconds</li>
+            </ul>
+        </div>
+    </div>
+    <div id="footer-placeholder"></div>
+    <script src="../../components.js"></script>
+    <script src="../../test-zone.js"></script>
+    <script>
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() { TestZones.init('test-slump'); });
+        } else {
+            TestZones.init('test-slump');
+        }
+    </script>
+    <script>
+        function runSlumpTest() {
+            const slump = parseFloat(document.getElementById('slumpValue').value);
+            const shape = document.getElementById('slumpShape').value;
+            const target = document.getElementById('targetClass').value;
+            if (isNaN(slump) || slump < 0) { alert('Please enter a valid slump value.'); return; }
+
+            const classes = [
+                { name: 'S1', min: 10, max: 40 },
+                { name: 'S2', min: 50, max: 90 },
+                { name: 'S3', min: 100, max: 150 },
+                { name: 'S4', min: 160, max: 210 },
+                { name: 'S5', min: 220, max: 999 }
+            ];
+            let measuredClass = 'S5';
+            for (const c of classes) {
+                if (slump >= c.min && slump <= c.max) { measuredClass = c.name; break; }
+                if (slump < c.min) { measuredClass = c.name; break; }
+            }
+
+            const matchTarget = measuredClass === target ? 'PASS' : 'Mismatch';
+            const shapeText = shape === 'true' ? 'True (OK)' : shape === 'shear' ? 'Shear (Repeat)' : 'Collapse (Repeat)';
+
+            document.getElementById('slumpPlaceholder').style.display = 'none';
+            document.getElementById('slumpResults').style.display = 'block';
+            document.getElementById('rSlump').textContent = slump.toFixed(0);
+            document.getElementById('rClass').textContent = measuredClass;
+            document.getElementById('rMatch').textContent = matchTarget;
+            document.getElementById('rMatch').style.color = matchTarget === 'PASS' ? 'var(--accent-emerald)' : 'var(--accent-red)';
+            document.getElementById('rShape').textContent = shapeText;
+        }
+    </script>
+</body>
+</html>

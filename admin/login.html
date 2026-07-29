@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Admin Login</title>
+    <link rel="icon" href="../favicon.ico">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body class="auth-page">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <img src="../assets/logo.png" alt="smartLAB" width="56" height="56">
+                <h1>smart<span>LAB</span></h1>
+                <p>Admin Control Panel</p>
+            </div>
+            <form id="loginForm" onsubmit="return handleLogin(event)">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="email" placeholder="admin@smartlab.com" required autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="password-field">
+                        <input type="password" id="password" placeholder="••••••••" required>
+                        <button type="button" class="toggle-pass" onclick="togglePassword()">👁️</button>
+                    </div>
+                </div>
+                <div id="loginError" class="error-msg" style="display:none;"></div>
+                <button type="submit" class="btn-auth" id="loginBtn">
+                    <span>Sign In</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
+            </form>
+            <div class="auth-footer">
+                <a href="../index.html">← Back to smartLAB</a>
+            </div>
+        </div>
+    </div>
+    <script src="config.js"></script>
+    <script>
+        if (sessionStorage.getItem('smartlab_admin_session')) {
+            window.location.href = 'panel.html';
+        }
+        function togglePassword() {
+            var p = document.getElementById('password');
+            p.type = p.type === 'password' ? 'text' : 'password';
+        }
+        function handleLogin(e) {
+            e.preventDefault();
+            var email = document.getElementById('email').value.trim();
+            var pass = document.getElementById('password').value;
+            var errEl = document.getElementById('loginError');
+            var btn = document.getElementById('loginBtn');
+            errEl.style.display = 'none';
+            if (email !== ADMIN_CONFIG.email || pass !== ADMIN_CONFIG.password) {
+                errEl.textContent = 'Invalid email or password';
+                errEl.style.display = 'block';
+                return false;
+            }
+            btn.innerHTML = '<span>Sending code...</span><div class="spinner"></div>';
+            btn.disabled = true;
+            var code = '';
+            for (var i = 0; i < ADMIN_CONFIG.verificationCodeLength; i++) {
+                code += Math.floor(Math.random() * 10);
+            }
+            sessionStorage.setItem('smartlab_admin_code', code);
+            sessionStorage.setItem('smartlab_admin_email', email);
+            sessionStorage.setItem('smartlab_admin_code_time', Date.now().toString());
+            setTimeout(function() {
+                window.location.href = 'verify.html';
+            }, 1500);
+            return false;
+        }
+    </script>
+</body>
+</html>

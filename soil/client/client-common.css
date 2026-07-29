@@ -29,6 +29,16 @@ body {
 .lang-btn { display: flex; align-items: center; gap: 6px; padding: 7px 14px; background: rgba(255,255,255,0.04); border: 1px solid var(--border-glass); border-radius: var(--radius-sm); color: var(--text-secondary); font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; text-transform: uppercase; }
 .lang-btn:hover { background: rgba(255,255,255,0.08); color: var(--text-primary); }
 .lang-btn .lang-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-emerald); display: inline-block; }
+.header-user { display: flex; align-items: center; gap: 8px; padding-left: 12px; border-left: 1px solid var(--border-glass); }
+.header-user .user-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-glass); }
+.header-user .user-avatar.fallback { display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--accent-blue), var(--accent-gold)); color: #fff; font-weight: 700; font-size: 14px; }
+.header-user .user-name { font-size: 13px; font-weight: 500; color: var(--text-secondary); max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.header-guest-badge { display: none; align-items: center; gap: 5px; padding: 4px 12px; background: rgba(251,191,54,0.08); border: 1px solid rgba(251,191,54,0.2); border-radius: 20px; font-size: 11px; font-weight: 600; color: var(--accent-gold); }
+.header-guest-badge.visible { display: flex; }
+.header-guest-badge .dot { width: 5px; height: 5px; background: var(--accent-gold); border-radius: 50%; }
+.btn-signout { display: flex; align-items: center; gap: 6px; padding: 7px 14px; background: transparent; border: 1px solid rgba(239,68,68,0.25); border-radius: var(--radius-sm); color: var(--accent-red); font-family: inherit; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+.btn-signout:hover { background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.4); }
+.btn-signout svg { width: 15px; height: 15px; }
 body.rtl { direction: rtl; text-align: right; }
 body.rtl .app-header .header-left { flex-direction: row-reverse; }
 body.rtl .app-header .header-right { flex-direction: row-reverse; }

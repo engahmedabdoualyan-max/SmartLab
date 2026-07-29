@@ -10,6 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <link rel="stylesheet" href="test-common.css">
+    <link rel="stylesheet" href="../test-zones.css">
 </head>
 <body>
     <div id="header-placeholder"></div>
@@ -2108,6 +2109,14 @@
             }
         };
     </script>
-    <script src="../../components.js"></script>
+    <script src="../components.js"></script>
+    <script src="../test-zone.js"></script>
+    <script>
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() { TestZones.init('test-density'); });
+        } else {
+            TestZones.init('test-density');
+        }
+    </script>
 </body>
 </html>

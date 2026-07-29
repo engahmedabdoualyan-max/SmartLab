@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>smartLAB — My Projects</title>
+    <title>smartLAB — Equipment</title>
     <link rel="icon" href="../favicon.ico">
     <link rel="stylesheet" href="client-common.css">
 
@@ -17,252 +17,103 @@
             <span data-i18n="Back to Asphalt">Back to Asphalt & Marshall</span>
         </a>
 
-        <h1 class="page-title" data-i18n="My Projects">My <span>Projects</span></h1>
-        <p class="page-sub" data-i18n="Projects desc">Manage your asphalt projects, track progress, and access test data</p>
+        <h1 class="page-title" data-i18n="Equipment">Equip<span>ment</span></h1>
+        <p class="page-sub" data-i18n="Equipment desc">Project equipment listings and availability</p>
 
         <div class="section">
-            <div class="section-title"><span class="st-icon">📁</span> <span data-i18n="Active Projects">Active Projects</span></div>
-            <div class="card-grid" id="activeProjectsGrid">
-                <!-- Injected by JS -->
-            </div>
-        </div>
+            <div class="section-title"><span class="st-icon">🔧</span> <span data-i18n="Lab Equipment">Lab Equipment</span></div>
+            <div class="card-grid">
+                <div class="card">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+                        <div>
+                            <div style="font-weight:600;font-size:15px;margin-bottom:4px;">Compression Machine</div>
+                            <div style="color:var(--text-muted,#888);font-size:13px;">Model: ELE 2000kN</div>
+                        </div>
+                        <span style="padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600;background:rgba(74,222,128,0.15);color:#4ade80;">Operational</span>
+                    </div>
+                    <div style="font-size:13px;color:var(--text-muted,#888);margin-top:8px;padding-top:10px;border-top:1px solid var(--border,#333);">
+                        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                            <span>Last Calibration</span>
+                            <span style="color:var(--text,#eee);">2026-06-15</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;">
+                            <span>Next Calibration</span>
+                            <span style="color:#4ade80;">2026-09-15</span>
+                        </div>
+                    </div>
+                </div>
 
-        <div class="section">
-            <div class="section-title"><span class="st-icon">✅</span> <span data-i18n="Completed Projects">Completed Projects</span></div>
-            <div class="card-grid" id="completedProjectsGrid">
-                <!-- Injected by JS -->
-            </div>
-        </div>
+                <div class="card">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+                        <div>
+                            <div style="font-weight:600;font-size:15px;margin-bottom:4px;">Slump Cone Set</div>
+                            <div style="color:var(--text-muted,#888);font-size:13px;">Standard ASTM C143</div>
+                        </div>
+                        <span style="padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600;background:rgba(74,222,128,0.15);color:#4ade80;">Operational</span>
+                    </div>
+                    <div style="font-size:13px;color:var(--text-muted,#888);margin-top:8px;padding-top:10px;border-top:1px solid var(--border,#333);">
+                        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                            <span>Last Calibration</span>
+                            <span style="color:var(--text,#eee);">2026-05-20</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;">
+                            <span>Next Calibration</span>
+                            <span style="color:#4ade80;">2026-11-20</span>
+                        </div>
+                    </div>
+                </div>
 
-        <div class="section">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-                <div class="section-title" style="margin:0;"><span class="st-icon">➕</span> <span data-i18n="Create New Project">Create New Project</span></div>
-                <button class="btn-lg btn-primary" onclick="openCreateModal()">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-                    <span data-i18n="New Project">New Project</span>
-                </button>
+                <div class="card">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+                        <div>
+                            <div style="font-weight:600;font-size:15px;margin-bottom:4px;">Marshall Press</div>
+                            <div style="color:var(--text-muted,#888);font-size:13px;">Controls Group Matest</div>
+                        </div>
+                        <span style="padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600;background:rgba(250,204,21,0.15);color:#facc15;">Maintenance</span>
+                    </div>
+                    <div style="font-size:13px;color:var(--text-muted,#888);margin-top:8px;padding-top:10px;border-top:1px solid var(--border,#333);">
+                        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                            <span>Last Calibration</span>
+                            <span style="color:var(--text,#eee);">2026-04-10</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;">
+                            <span>Next Calibration</span>
+                            <span style="color:#facc15;">2026-08-10 (due soon)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+                        <div>
+                            <div style="font-weight:600;font-size:15px;margin-bottom:4px;">Core Cutter</div>
+                            <div style="color:var(--text-muted,#888);font-size:13px;">100mm Diameter Diamond</div>
+                        </div>
+                        <span style="padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600;background:rgba(74,222,128,0.15);color:#4ade80;">Operational</span>
+                    </div>
+                    <div style="font-size:13px;color:var(--text-muted,#888);margin-top:8px;padding-top:10px;border-top:1px solid var(--border,#333);">
+                        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                            <span>Last Calibration</span>
+                            <span style="color:var(--text,#eee);">2026-07-01</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;">
+                            <span>Next Calibration</span>
+                            <span style="color:#4ade80;">2027-01-01</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-
-    <!-- Create Project Modal -->
-    <div id="createModal" class="modal" style="display:none;">
-        <div class="modal-overlay" onclick="closeCreateModal()"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 data-i18n="New Project">New Project</h3>
-                <button class="modal-close" onclick="closeCreateModal()">×</button>
-            </div>
-            <form id="createProjectForm">
-                <div class="form-group">
-                    <label data-i18n="Project Name">Project Name</label>
-                    <input type="text" id="projectName" required placeholder="e.g. Highway 40 - Section 3">
-                </div>
-                <div class="form-group">
-                    <label data-i18n="Location">Location</label>
-                    <input type="text" id="projectLocation" placeholder="e.g. Cairo - Alexandria Desert Road, Km 45">
-                </div>
-                <div class="form-group">
-                    <label data-i18n="Client">Client</label>
-                    <input type="text" id="projectClient" placeholder="e.g. General Authority for Roads & Bridges">
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label data-i18n="Start Date">Start Date</label>
-                        <input type="date" id="projectStart">
-                    </div>
-                    <div class="form-group">
-                        <label data-i18n="Expected End">Expected End</label>
-                        <input type="date" id="projectEnd">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label data-i18n="Tests Required">Tests Required</label>
-                    <div class="test-checkboxes" id="testCheckboxes">
-                        <!-- Injected by JS -->
-                    </div>
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn-sm btn-secondary" onclick="closeCreateModal()" data-i18n="Cancel">Cancel</button>
-                    <button type="submit" class="btn-sm btn-primary" data-i18n="Create Project">Create Project</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-
 
     <script>
-        var projects = JSON.parse(localStorage.getItem('asphalt_projects') || '[]');
-        var lang = localStorage.getItem('smartlab_lang') || 'en';
-
-        var testTypes = [
-            { id: 'marshall', name: 'Marshall Stability', icon: '🧪' },
-            { id: 'flow', name: 'Flow Value', icon: '💧' },
-            { id: 'extraction', name: 'Bitumen Extraction', icon: '🏭' },
-            { id: 'density', name: 'Density & Voids', icon: '⚗️' },
-            { id: 'gradation', name: 'Aggregate Gradation', icon: '🌍' },
-            { id: 'ignition', name: 'Ignition Method', icon: '🔥' }
-        ];
-
-        function renderProjects() {
-            var active = projects.filter(function(p) { return p.status === 'active'; });
-            var completed = projects.filter(function(p) { return p.status === 'completed'; });
-
-            renderGrid('activeProjectsGrid', active, true);
-            renderGrid('completedProjectsGrid', completed, false);
-
-            if (active.length === 0) {
-                document.getElementById('activeProjectsGrid').innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="icon">📁</div><h3 data-i18n="No Active Projects">No Active Projects</h3><p data-i18n="Start your first project">Create your first asphalt project to begin tracking tests and progress.</p></div>';
-            }
-            if (completed.length === 0) {
-                document.getElementById('completedProjectsGrid').innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="icon">✅</div><h3 data-i18n="No Completed Projects">No Completed Projects</h3><p data-i18n="Completed will appear here">Finished projects will appear here with full test reports.</p></div>';
-            }
-        }
-
-        function renderGrid(gridId, list, showActions) {
-            var grid = document.getElementById(gridId);
-            if (!grid) return;
-            if (list.length === 0) { grid.innerHTML = ''; return; }
-            grid.innerHTML = list.map(function(p) {
-                var testsHtml = (p.tests || []).map(function(t) {
-                    var tt = testTypes.find(function(x) { return x.id === t; });
-                    return '<span class="test-tag">' + (tt ? tt.icon + ' ' + tt.name : t) + '</span>';
-                }).join('');
-                var statusClass = p.status === 'active' ? 'status-active' : p.status === 'pending' ? 'status-pending' : 'status-completed';
-                var statusText = p.status === 'active' ? (lang==='ar'?'نشط':'Active') : p.status === 'pending' ? (lang==='ar'?'قيد الانتظار':'Pending') : (lang==='ar'?'مكتمل':'Completed');
-                return '<div class="project-card" onclick="openProject(\'' + p.id + '\')">' +
-                    '<div class="project-header">' +
-                        '<span class="project-name">' + p.name + '</span>' +
-                        '<span class="project-status ' + statusClass + '">' + statusText + '</span>' +
-                    '</div>' +
-                    '<div class="project-meta">' +
-                        '<span>📍 ' + (p.location || '-') + '</span>' +
-                        '<span>🏢 ' + (p.client || '-') + '</span>' +
-                        '<span>📅 ' + (p.startDate || '') + ' → ' + (p.endDate || '') + '</span>' +
-                    '</div>' +
-                    '<div class="project-tests">' + testsHtml + '</div>' +
-                    (showActions ? '<div class="project-actions">' +
-                        '<button class="btn-sm btn-primary" onclick="event.stopPropagation(); openProject(\'' + p.id + '\')" data-i18n="Open">Open</button>' +
-                        '<button class="btn-sm btn-secondary" onclick="event.stopPropagation(); duplicateProject(\'' + p.id + '\')" data-i18n="Duplicate">Duplicate</button>' +
-                    '</div>' : '') +
-                '</div>';
-            }).join('');
-        }
-
-        function openCreateModal() {
-            document.getElementById('testCheckboxes').innerHTML = testTypes.map(function(t) {
-                return '<label class="test-checkbox"><input type="checkbox" name="tests" value="' + t.id + '"> ' + t.icon + ' ' + t.name + '</label>';
-            }).join('');
-            document.getElementById('createModal').style.display = 'block';
-            setTimeout(function() { document.getElementById('projectName').focus(); }, 100);
-        }
-
-        function closeCreateModal() {
-            document.getElementById('createModal').style.display = 'none';
-            document.getElementById('createProjectForm').reset();
-        }
-
-        document.getElementById('createProjectForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            var tests = Array.from(document.querySelectorAll('#testCheckboxes input:checked')).map(function(cb) { return cb.value; });
-            var project = {
-                id: 'PRJ-' + Date.now().toString(36).toUpperCase(),
-                name: document.getElementById('projectName').value,
-                location: document.getElementById('projectLocation').value,
-                client: document.getElementById('projectClient').value,
-                startDate: document.getElementById('projectStart').value,
-                endDate: document.getElementById('projectEnd').value,
-                tests: tests,
-                status: 'active',
-                createdAt: new Date().toISOString()
-            };
-            projects.unshift(project);
-            localStorage.setItem('asphalt_projects', JSON.stringify(projects));
-            closeCreateModal();
-            renderProjects();
-        });
-
-        function openProject(id) {
-            localStorage.setItem('currentProjectId', id);
-            window.location.href = 'client-reports.html?project=' + id;
-        }
-
-        function duplicateProject(id) {
-            event.stopPropagation();
-            var p = projects.find(function(x) { return x.id === id; });
-            if (!p) return;
-            var np = { ...p, id: 'PRJ-' + Date.now().toString(36).toUpperCase(), name: p.name + ' (Copy)', status: 'active', createdAt: new Date().toISOString() };
-            projects.unshift(np);
-            localStorage.setItem('asphalt_projects', JSON.stringify(projects));
-            renderProjects();
-        }
-
-        // Language toggle
         document.getElementById('langToggle').addEventListener('click', function() {
-            lang = lang === 'en' ? 'ar' : 'en';
+            var lang = localStorage.getItem('smartlab_lang') === 'ar' ? 'en' : 'ar';
             localStorage.setItem('smartlab_lang', lang);
             this.innerHTML = '<span class="lang-dot"></span> ' + lang.toUpperCase();
-            renderProjects();
         });
-        document.getElementById('langToggle').innerHTML = '<span class="lang-dot"></span> ' + lang.toUpperCase();
-
-        // Init
-        renderProjects();
-    </script>
-    <script>
-        window.translations = {
-            'en': {
-                'Back to Asphalt': 'Back to Asphalt & Marshall',
-                'My Projects': 'My <span>Projects</span>',
-                'Projects desc': 'Manage your asphalt projects, track progress, and access test data',
-                'Active Projects': 'Active Projects',
-                'Completed Projects': 'Completed Projects',
-                'Create New Project': 'Create New Project',
-                'New Project': 'New Project',
-                'Project Name': 'Project Name',
-                'Location': 'Location',
-                'Client': 'Client',
-                'Start Date': 'Start Date',
-                'Expected End': 'Expected End',
-                'Tests Required': 'Tests Required',
-                'Cancel': 'Cancel',
-                'Create Project': 'Create Project',
-                'No Active Projects': 'No Active Projects',
-                'Start your first project': 'Create your first asphalt project to begin tracking tests and progress.',
-                'No Completed Projects': 'No Completed Projects',
-                'Completed will appear here': 'Finished projects will appear here with full test reports.',
-                'Open': 'Open',
-                'Duplicate': 'Duplicate',
-                'Asphalt & Marshall': 'Asphalt & Marshall',
-                'Tests': 'Tests', 'Design': 'Design'
-            },
-            'ar': {
-                'Back to Asphalt': 'العودة إلى الأسفلت ومارشال',
-                'My Projects': 'مشاريعي <span>الخاصة</span>',
-                'Projects desc': 'إدارة مشاريع الأسفلت، تتبع التقدم، والوصول لبيانات الاختبارات',
-                'Active Projects': 'مشاريع نشطة',
-                'Completed Projects': 'مشاريع مكتملة',
-                'Create New Project': 'إنشاء مشروع جديد',
-                'New Project': 'مشروع جديد',
-                'Project Name': 'اسم المشروع',
-                'Location': 'الموقع',
-                'Client': 'العميل',
-                'Start Date': 'تاريخ البدء',
-                'Expected End': 'التاريخ المتوقع للانتهاء',
-                'Tests Required': 'الاختبارات المطلوبة',
-                'Cancel': 'إلغاء',
-                'Create Project': 'إنشاء المشروع',
-                'No Active Projects': 'لا توجد مشاريع نشطة',
-                'Start your first project': 'أنشئ أول مشروع أسفلت لبدء تتبع الاختبارات والتقدم.',
-                'No Completed Projects': 'لا توجد مشاريع مكتملة',
-                'Completed will appear here': 'ستظهر المشاريع المنجزة هنا مع تقارير الاختبارات الكاملة.',
-                'Open': 'فتح',
-                'Duplicate': 'نسخ',
-                'Asphalt & Marshall': 'الأسفلت <span>ومارشال</span>',
-                'Tests': 'الاختبارات', 'Design': 'التصميم'
-            }
-        };
+        var currentLang = localStorage.getItem('smartlab_lang') || 'en';
+        document.getElementById('langToggle').innerHTML = '<span class="lang-dot"></span> ' + currentLang.toUpperCase();
     </script>
 
     <div id="footer-placeholder"></div>

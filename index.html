@@ -991,363 +991,141 @@
             .app-footer { padding: 32px 20px 24px; }
         }
 
-        /* === FLOATING BUTTON */
-        .floating-btn {
+
+        /* === FLOATING BUTTON === */
+        .fab {
             position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #3b82f6, #10b981);
+            bottom: 32px;
+            right: 32px;
+            width: 58px;
+            height: 58px;
             border-radius: 50%;
-            box-shadow: 0 8px 25px rgba(59,130,246,0.3);
-            cursor: pointer;
+            background: linear-gradient(135deg, #3b82f6, #10b981);
+            box-shadow: 0 6px 24px rgba(59,130,246,0.35);
             z-index: 10000;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s ease;
-            animation: floatAnimation 3s ease-in-out infinite;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: fabFloat 3s ease-in-out infinite;
+            border: none;
+            outline: none;
+        }
+        .fab:hover {
+            transform: scale(1.08) rotate(45deg);
+            box-shadow: 0 10px 32px rgba(59,130,246,0.5);
+        }
+        .fab.open {
+            background: linear-gradient(135deg, #ef4444, #f97316);
+            transform: rotate(45deg);
+            animation: none;
+        }
+        .fab-icon {
+            width: 26px;
+            height: 26px;
+            color: #fff;
+            transition: transform 0.3s ease;
+        }
+        .fab.open .fab-icon { transform: rotate(45deg); }
+        @keyframes fabFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
         }
 
-        .floating-btn:hover {
-            transform: scale(1.1) rotate(45deg);
-            box-shadow: 0 12px 35px rgba(59,130,246,0.5);
-        }
-
-        .floating-btn.open {
-            background: linear-gradient(135deg, #ef4444, #fb923c);
-        }
-
-        .floating-btn-icon {
-            width: 28px;
-            height: 28px;
-            color: white;
-        }
-
-        .floating-menu {
+        .fab-menu {
             position: fixed;
-            bottom: 100px;
-            right: 30px;
-            width: 280px;
-            background: var(--bg-card);
-            border: 1px solid var(--border-glass);
-            border-radius: var(--radius-lg);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-            padding: 16px;
+            bottom: 102px;
+            right: 32px;
+            width: 270px;
+            background: var(--bg-card, #1a1a2e);
+            border: 1px solid var(--border-glass, rgba(255,255,255,0.08));
+            border-radius: 14px;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+            padding: 14px;
             z-index: 9999;
             opacity: 0;
             visibility: hidden;
-            transform: translateY(20px);
-            transition: all 0.3s ease;
+            transform: translateY(16px) scale(0.95);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: bottom right;
+        }
+        .fab-menu.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
         }
 
-        .floating-menu.open {
-        }
-
-        .floating-menu-header {
-        .floating-menu-header {
+        .fab-menu-header {
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 12px;
             padding-bottom: 12px;
-            border-bottom: 1px solid var(--border-glass);
-        }
-
-        .floating-menu-icon {
-            width: 24px;
-            height: 24px;
-            background: linear-gradient(135deg, #3b82f6, #10b981);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .floating-menu-icon svg {
-            width: 14px;
-            height: 14px;
-            color: white;
-        }
-
-        .floating-menu-title {
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .floating-menu-items {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .floating-menu-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 14px;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid var(--border-glass);
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            transition: all 0.2s;
-            text-decoration: none;
-            color: var(--text-secondary);
-        }
-
-        .floating-menu-item:hover {
-            background: rgba(59,130,246,0.08);
-            border-color: rgba(59,130,246,0.3);
-            transform: translateX(-2px);
-        }
-
-        .floating-menu-item svg {
-            width: 18px;
-            height: 18px;
-            color: var(--accent-blue);
-        }
-
-        .floating-menu-item span {
-            font-size: 13px;
-            font-weight: 500;
-        }
-
-        @keyframes floatAnimation {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-        }
-
-        /* === MODAL OVERLAY === */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(6px);
-            z-index: 11000;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            animation: fadeIn 0.25s ease;
-        }
-        .modal-overlay.active { display: flex; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-        .modal-container {
-            background: var(--bg-card, #1a1a2e);
-            border: 1px solid var(--border-glass, rgba(255,255,255,0.08));
-            border-radius: var(--radius-lg, 16px);
-            width: 100%;
-            max-height: 85vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.5);
-            animation: slideUp 0.3s ease;
-        }
-        .features-modal-container { max-width: 700px; }
-        .rating-modal-container { max-width: 440px; }
-        .contact-modal-container { max-width: 500px; }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 24px;
+            margin-bottom: 8px;
             border-bottom: 1px solid var(--border-glass, rgba(255,255,255,0.08));
         }
-        .modal-header h2 {
-            margin: 0;
-            font-size: 18px;
+        .fab-menu-icon {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #10b981);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .fab-menu-icon svg {
+            width: 14px;
+            height: 14px;
+            color: #fff;
+        }
+        .fab-menu-title {
+            font-size: 15px;
             font-weight: 700;
             color: var(--text-primary, #fff);
         }
-        .modal-close {
-            background: none;
-            border: none;
-            color: var(--text-secondary, #aaa);
-            font-size: 26px;
-            cursor: pointer;
-            line-height: 1;
-            padding: 0 4px;
-            transition: color 0.2s;
-        }
-        .modal-close:hover { color: #ef4444; }
 
-        .modal-body {
-            padding: 20px 24px;
-            overflow-y: auto;
-            flex: 1;
+        .fab-menu-items {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
         }
-
-        /* === FEATURES TOC === */
-        .features-toc .toc-section {
-            margin-bottom: 8px;
-            border: 1px solid var(--border-glass, rgba(255,255,255,0.06));
-            border-radius: var(--radius-sm, 8px);
-            overflow: hidden;
-        }
-        .toc-title {
+        .fab-menu-item {
             display: flex;
             align-items: center;
             gap: 10px;
-            margin: 0;
-            padding: 14px 16px;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-primary, #fff);
-            background: rgba(255,255,255,0.03);
+            padding: 10px 12px;
+            border-radius: 10px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary, #bbb);
+            font-size: 13px;
+            font-weight: 500;
             cursor: pointer;
-            user-select: none;
-            transition: background 0.2s;
+            transition: all 0.2s ease;
+            text-decoration: none;
         }
-        .toc-title:hover { background: rgba(59,130,246,0.08); }
-        .toc-title svg:first-child { color: var(--accent-blue, #3b82f6); flex-shrink: 0; }
-        .toc-title span { flex: 1; }
-        .toc-arrow {
-            color: var(--text-secondary, #888);
-            transition: transform 0.3s;
+        .fab-menu-item:hover {
+            background: rgba(59,130,246,0.08);
+            color: var(--text-primary, #fff);
+            transform: translateX(3px);
+        }
+        .fab-menu-item svg {
+            width: 18px;
+            height: 18px;
+            color: var(--accent-blue, #3b82f6);
             flex-shrink: 0;
         }
-        .toc-title.open .toc-arrow { transform: rotate(180deg); }
-        .toc-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.35s ease, padding 0.3s ease;
-            padding: 0 16px;
-        }
-        .toc-title.open + .toc-content {
-            max-height: 2000px;
-            padding: 12px 16px 16px;
-        }
-        .toc-content h4 {
-            margin: 12px 0 6px;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--accent-blue, #3b82f6);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .toc-content ul {
-            margin: 0;
-            padding-left: 18px;
-            list-style: none;
-        }
-        .toc-content li {
-            font-size: 13px;
-            color: var(--text-secondary, #ccc);
-            padding: 3px 0;
-            position: relative;
-        }
-        .toc-content li::before {
-            content: "›";
-            position: absolute;
-            left: -14px;
-            color: var(--accent-blue, #3b82f6);
-            font-weight: bold;
-        }
-        .toc-content p {
-            font-size: 13px;
-            color: var(--text-secondary, #ccc);
-            margin: 4px 0;
-            line-height: 1.6;
-        }
+        .fab-menu-item span { flex: 1; }
 
-        /* === RATING === */
-        .rating-body { text-align: center; }
-        .rating-subtitle {
-            font-size: 15px;
-            color: var(--text-secondary, #ccc);
-            margin-bottom: 20px;
+        .fab-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 9998;
+            background: transparent;
+            display: none;
         }
-        .rating-stars {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-        .star-btn {
-            background: none;
-            border: none;
-            font-size: 42px;
-            color: var(--text-tertiary, #444);
-            cursor: pointer;
-            transition: color 0.2s, transform 0.2s;
-            padding: 0;
-            line-height: 1;
-        }
-        .star-btn:hover,
-        .star-btn.active {
-            color: #f59e0b;
-            transform: scale(1.15);
-        }
-        .rating-label {
-            font-size: 14px;
-            font-weight: 600;
-            color: #f59e0b;
-            min-height: 22px;
-            margin-bottom: 16px;
-        }
-        .rating-feedback {
-            width: 100%;
-            padding: 12px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid var(--border-glass, rgba(255,255,255,0.1));
-            border-radius: var(--radius-sm, 8px);
-            color: var(--text-primary, #fff);
-            font-family: inherit;
-            font-size: 13px;
-            resize: vertical;
-            margin-bottom: 16px;
-        }
-        .rating-feedback:focus { outline: none; border-color: #f59e0b; }
-        .rating-submit {
-            background: linear-gradient(135deg, #f59e0b, #f97316) !important;
-        }
-
-        /* === CONTACT === */
-        .contact-body .form-group {
-            margin-bottom: 16px;
-        }
-        .contact-body label {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-primary, #fff);
-            margin-bottom: 6px;
-        }
-        .contact-body input,
-        .contact-body textarea {
-            width: 100%;
-            padding: 12px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid var(--border-glass, rgba(255,255,255,0.1));
-            border-radius: var(--radius-sm, 8px);
-            color: var(--text-primary, #fff);
-            font-family: inherit;
-            font-size: 14px;
-            transition: border-color 0.2s;
-            box-sizing: border-box;
-        }
-        .contact-body input:focus,
-        .contact-body textarea:focus {
-            outline: none;
-            border-color: var(--accent-blue, #3b82f6);
-        }
-        .contact-body textarea { resize: vertical; }
-        .contact-status {
-            font-size: 13px;
-            margin-bottom: 12px;
-            min-height: 20px;
-            text-align: center;
-        }
-        .contact-status.success { color: #10b981; }
-        .contact-status.error { color: #ef4444; }
-        .contact-submit { width: 100%; }
+        .fab-backdrop.show { display: block; }
     </style>
 </head>
 <body>
@@ -1366,7 +1144,7 @@
                 <a href="#" data-i18n="home" onclick="event.preventDefault(); window.showScreen('domains');">Home</a>
                 <a href="#" data-i18n="about" onclick="event.preventDefault(); document.getElementById('about-section').scrollIntoView({behavior:'smooth',block:'start'});">About</a>
                 <a href="#" data-i18n="services" onclick="event.preventDefault(); document.getElementById('domains-hero-target').scrollIntoView({behavior:'smooth',block:'start'});">Services</a>
-                <a href="#" data-i18n="contact" onclick="event.preventDefault(); openContactModal();">Contact</a>
+                <a href="#" data-i18n="contact" onclick="event.preventDefault();">Contact</a>
                 <a href="#" class="nav-enter" onclick="event.preventDefault(); document.getElementById('domains-hero-target').scrollIntoView({behavior:'smooth',block:'start'});" data-i18n="Enter Lab">Enter Lab</a>
             </nav>
         </div>
@@ -2585,155 +2363,6 @@ translatePage(currentLang);
         };
     </script>
 
-    <script>
-        function toggleFloatingMenu() {
-            var btn = document.getElementById('floating-btn');
-            var menu = document.getElementById('floating-menu');
-            btn.classList.toggle('open');
-            menu.classList.toggle('open');
-        }
-        function closeFloatingMenu() {
-            var btn = document.getElementById('floating-btn');
-            var menu = document.getElementById('floating-menu');
-            btn.classList.remove('open');
-            menu.classList.remove('open');
-        }
-
-        /* === FEATURES MODAL === */
-        function openFeaturesModal() {
-            document.getElementById('features-modal').classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-        function closeFeaturesModal() {
-            document.getElementById('features-modal').classList.remove('active');
-            document.body.style.overflow = '';
-        }
-        function toggleTocSection(el) {
-            el.classList.toggle('open');
-        }
-
-        /* === RATING MODAL === */
-        var currentRating = 0;
-        var ratingLabels = ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'];
-        function openRatingModal() {
-            document.getElementById('rating-modal').classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-        function closeRatingModal() {
-            document.getElementById('rating-modal').classList.remove('active');
-            document.body.style.overflow = '';
-        }
-        function hoverStar(n) {
-            var stars = document.querySelectorAll('.star-btn');
-            stars.forEach(function(s, i) {
-                s.style.color = i < n ? '#f59e0b' : '';
-            });
-        }
-        function resetStars() {
-            var stars = document.querySelectorAll('.star-btn');
-            stars.forEach(function(s, i) {
-                s.style.color = i < currentRating ? '#f59e0b' : '';
-                s.classList.toggle('active', i < currentRating);
-            });
-        }
-        function setRating(n) {
-            currentRating = n;
-            resetStars();
-            document.getElementById('rating-label').textContent = ratingLabels[n] + ' (' + n + '/5)';
-        }
-        function submitRating() {
-            if (!currentRating) return;
-            var feedback = document.getElementById('rating-feedback').value;
-            console.log('Rating:', currentRating, 'Feedback:', feedback);
-            var btn = document.querySelector('.rating-submit');
-            btn.textContent = '✓ Thank You!';
-            btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
-            setTimeout(function() {
-                closeRatingModal();
-                btn.textContent = 'Submit Rating';
-                btn.style.background = '';
-                currentRating = 0;
-                resetStars();
-                document.getElementById('rating-label').textContent = '';
-                document.getElementById('rating-feedback').value = '';
-            }, 2000);
-        }
-
-        /* === CONTACT MODAL === */
-        function openContactModal() {
-            document.getElementById('contact-modal').classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-        function closeContactModal() {
-            document.getElementById('contact-modal').classList.remove('active');
-            document.body.style.overflow = '';
-        }
-        function submitContact() {
-            var name = document.getElementById('contact-name').value.trim();
-            var email = document.getElementById('contact-email').value.trim();
-            var phone = document.getElementById('contact-phone').value.trim();
-            var message = document.getElementById('contact-message').value.trim();
-            var status = document.getElementById('contact-status');
-            var btn = document.getElementById('contact-submit-btn');
-
-            if (!name || !email || !message) {
-                status.className = 'contact-status error';
-                status.textContent = 'Please fill in all required fields.';
-                return;
-            }
-
-            btn.disabled = true;
-            btn.textContent = 'Sending...';
-
-            var mailtoLink = 'mailto:info@fimtosoft.com'
-                + '?subject=' + encodeURIComponent('Contact from smartLAB - ' + name)
-                + '&body=' + encodeURIComponent('Name: ' + name + '\nEmail: ' + email + '\nPhone: ' + phone + '\n\nMessage:\n' + message);
-
-            setTimeout(function() {
-                window.location.href = mailtoLink;
-                status.className = 'contact-status success';
-                status.textContent = '✓ Opening your email client...';
-                btn.textContent = 'Send Message';
-                btn.disabled = false;
-                setTimeout(function() {
-                    closeContactModal();
-                    document.getElementById('contact-form').reset();
-                    status.textContent = '';
-                }, 2000);
-            }, 800);
-        }
-    </script>
-
-    <!-- FLOATING ACTION BUTTON -->
-    <div class="floating-btn" id="floating-btn" onclick="toggleFloatingMenu()">
-        <svg class="floating-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-    </div>
-    <div class="floating-menu" id="floating-menu">
-        <div class="floating-menu-header">
-            <div class="floating-menu-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-            </div>
-            <div class="floating-menu-title" data-i18n="Quick Actions">Quick Actions</div>
-        </div>
-        <div class="floating-menu-items">
-            <a class="floating-menu-item" href="#" onclick="event.preventDefault(); closeFloatingMenu(); openFeaturesModal();">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                <span data-i18n="Features">Features</span>
-            </a>
-            <a class="floating-menu-item" href="#" onclick="event.preventDefault(); closeFloatingMenu(); openRatingModal();">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                <span data-i18n="Rating">Rating</span>
-            </a>
-            <a class="floating-menu-item" href="#" onclick="event.preventDefault(); closeFloatingMenu(); openContactModal();">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                <span data-i18n="Contact Us">Contact Us</span>
-            </a>
-        </div>
-    </div>
-
     <!-- FOOTER -->
     <footer class="app-footer">
         <div class="footer-inner">
@@ -2764,220 +2393,69 @@ translatePage(currentLang);
         <div class="footer-divider">&copy; 2026 Fimto Soft. All rights reserved.</div>
     </footer>
 
-    <!-- FEATURES MODAL -->
-    <div class="modal-overlay" id="features-modal" onclick="if(event.target===this)closeFeaturesModal()">
-        <div class="modal-container features-modal-container">
-            <div class="modal-header">
-                <h2 data-i18n="Project Features">Project Features</h2>
-                <button class="modal-close" onclick="closeFeaturesModal()">&times;</button>
+    <!-- FLOATING ACTION BUTTON -->
+    <div class="fab-backdrop" id="fab-backdrop"></div>
+    <button class="fab" id="fab" aria-label="Quick actions">
+        <svg class="fab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+    </button>
+    <div class="fab-menu" id="fab-menu">
+        <div class="fab-menu-header">
+            <div class="fab-menu-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
             </div>
-            <div class="modal-body features-toc">
-                <div class="toc-section">
-                    <h3 class="toc-title" onclick="toggleTocSection(this)">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-                        <span data-i18n="General Overview">General Overview</span>
-                        <svg class="toc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
-                    </h3>
-                    <div class="toc-content">
-                        <p data-i18n="features_overview">smartLAB is an integrated laboratory management platform for construction materials testing. It covers Concrete, Soil, and Asphalt domains with automated calculations, standards compliance, and multilingual support.</p>
-                    </div>
-                </div>
-
-                <div class="toc-section">
-                    <h3 class="toc-title" onclick="toggleTocSection(this)">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                        <span data-i18n="Concrete Module">Concrete Module</span>
-                        <svg class="toc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
-                    </h3>
-                    <div class="toc-content">
-                        <h4 data-i18n="Tests">Tests</h4>
-                        <ul>
-                            <li data-i18n="Compressive Strength (ASTM C39)">Compressive Strength (ASTM C39)</li>
-                            <li data-i18n="Slump Test (ASTM C143)">Slump Test (ASTM C143)</li>
-                            <li data-i18n="Air Content (ASTM C231)">Air Content (ASTM C231)</li>
-                            <li data-i18n="Unit Weight (ASTM C138)">Unit Weight (ASTM C138)</li>
-                            <li data-i18n="Temperature (ASTM C1064)">Temperature (ASTM C1064)</li>
-                            <li data-i18n="Cylinder Preparation (ASTM C31/C192)">Cylinder Preparation (ASTM C31/C192)</li>
-                            <li data-i18n="Rebound Hammer (ASTM C805)">Rebound Hammer (ASTM C805)</li>
-                            <li data-i18n="UPV Test (BS 1881-203)">UPV Test (BS 1881-203)</li>
-                        </ul>
-                        <h4 data-i18n="Design Tools">Design Tools</h4>
-                        <ul>
-                            <li data-i18n="Mix Design (ACI 211)">Mix Design (ACI 211)</li>
-                            <li data-i18n="Break Schedule Generator">Break Schedule Generator</li>
-                            <li data-i18n="Strength vs Age Curves">Strength vs Age Curves</li>
-                            <li data-i18n="Durability Design">Durability Design</li>
-                            <li data-i18n="Admixtures Calculator">Admixtures Calculator</li>
-                            <li data-i18n="Batch Weights Calculator">Batch Weights Calculator</li>
-                        </ul>
-                        <h4 data-i18n="Library">Library</h4>
-                        <p data-i18n="ACI, ASTM, BS, ECP standards database with search & filters.">ACI, ASTM, BS, ECP standards database with search & filters.</p>
-                        <h4 data-i18n="Client Space">Client Space</h4>
-                        <ul>
-                            <li data-i18n="Project Analytics">Project Analytics</li>
-                            <li data-i18n="Team Management">Team Management</li>
-                            <li data-i18n="Equipment Tracking">Equipment Tracking</li>
-                            <li data-i18n="Project Management">Project Management</li>
-                            <li data-i18n="Reports & Documents">Reports & Documents</li>
-                            <li data-i18n="Curing Schedule">Curing Schedule</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="toc-section">
-                    <h3 class="toc-title" onclick="toggleTocSection(this)">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                        <span data-i18n="Soil & Roads Module">Soil & Roads Module</span>
-                        <svg class="toc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
-                    </h3>
-                    <div class="toc-content">
-                        <h4 data-i18n="Tests">Tests</h4>
-                        <ul>
-                            <li data-i18n="CBR Test (ASTM D1883)">CBR Test (ASTM D1883)</li>
-                            <li data-i18n="Proctor Compaction (ASTM D698/D1557)">Proctor Compaction (ASTM D698/D1557)</li>
-                            <li data-i18n="Moisture Content (ASTM D2216)">Moisture Content (ASTM D2216)</li>
-                            <li data-i18n="Grain Size Distribution (ASTM D6913)">Grain Size Distribution (ASTM D6913)</li>
-                            <li data-i18n="Atterberg Limits (ASTM D4318)">Atterberg Limits (ASTM D4318)</li>
-                            <li data-i18n="Field Density (ASTM D1556)">Field Density (ASTM D1556)</li>
-                            <li data-i18n="Specific Gravity (ASTM D854)">Specific Gravity (ASTM D854)</li>
-                            <li data-i18n="Soil Classification (ASTM D2487)">Soil Classification (ASTM D2487)</li>
-                        </ul>
-                        <h4 data-i18n="Design Tools">Design Tools</h4>
-                        <ul>
-                            <li data-i18n="Pavement Design (AASHTO 1993)">Pavement Design (AASHTO 1993)</li>
-                            <li data-i18n="Classification Chart (USCS/AASHTO)">Classification Chart (USCS/AASHTO)</li>
-                            <li data-i18n="Compaction Curve">Compaction Curve</li>
-                            <li data-i18n="Gradation Chart">Gradation Chart</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="toc-section">
-                    <h3 class="toc-title" onclick="toggleTocSection(this)">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                        <span data-i18n="Asphalt & Marshall Module">Asphalt & Marshall Module</span>
-                        <svg class="toc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
-                    </h3>
-                    <div class="toc-content">
-                        <h4 data-i18n="Tests">Tests</h4>
-                        <ul>
-                            <li data-i18n="Marshall Stability">Marshall Stability</li>
-                            <li data-i18n="Flow Value">Flow Value</li>
-                            <li data-i18n="Bitumen Extraction">Bitumen Extraction</li>
-                            <li data-i18n="Density & Voids">Density & Voids</li>
-                            <li data-i18n="Aggregate Gradation">Aggregate Gradation</li>
-                            <li data-i18n="Ignition Method">Ignition Method</li>
-                        </ul>
-                        <h4 data-i18n="Design Tools">Design Tools</h4>
-                        <ul>
-                            <li data-i18n="Mix Design (ACI/Marshall/Superpave)">Mix Design (ACI/Marshall/Superpave)</li>
-                            <li data-i18n="Design Your Mix (Upload & Optimize)">Design Your Mix (Upload & Optimize)</li>
-                            <li data-i18n="Gradation Design & Blending">Gradation Design & Blending</li>
-                            <li data-i18n="Stability & Flow Design">Stability & Flow Design</li>
-                            <li data-i18n="Temperature Control">Temperature Control</li>
-                            <li data-i18n="Equipment Catalog">Equipment Catalog</li>
-                            <li data-i18n="Specimen Preparation Guide">Specimen Preparation Guide</li>
-                            <li data-i18n="Guideline Mix Tables">Guideline Mix Tables</li>
-                            <li data-i18n="Layer Thickness Calculator">Layer Thickness Calculator</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="toc-section">
-                    <h3 class="toc-title" onclick="toggleTocSection(this)">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-                        <span data-i18n="Dashboard & Tools">Dashboard & Tools</span>
-                        <svg class="toc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
-                    </h3>
-                    <div class="toc-content">
-                        <ul>
-                            <li data-i18n="Lab Statistics Dashboard">Lab Statistics Dashboard</li>
-                            <li data-i18n="QR Specimen Tracking">QR Specimen Tracking</li>
-                            <li data-i18n="Break Schedule Generator">Break Schedule Generator</li>
-                            <li data-i18n="Global Standards Library">Global Standards Library</li>
-                            <li data-i18n="Test Runner (Hardware Integration)">Test Runner (Hardware Integration)</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="toc-section">
-                    <h3 class="toc-title" onclick="toggleTocSection(this)">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-                        <span data-i18n="Advanced Features">Advanced Features</span>
-                        <svg class="toc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
-                    </h3>
-                    <div class="toc-content">
-                        <ul>
-                            <li data-i18n="Multi-language (9 Languages): EN, AR, FR, ZH, RU, DE, UR, IT, HI">Multi-language (9 Languages): EN, AR, FR, ZH, RU, DE, UR, IT, HI</li>
-                            <li data-i18n="Firebase Authentication (Email, Google, Guest)">Firebase Authentication (Email, Google, Guest)</li>
-                            <li data-i18n="Hardware Integration (USB, WebSocket, Bluetooth)">Hardware Integration (USB, WebSocket, Bluetooth)</li>
-                            <li data-i18n="PDF Report Generation">PDF Report Generation</li>
-                            <li data-i18n="QR Code Specimen Tracking">QR Code Specimen Tracking</li>
-                            <li data-i18n="Equipment Calibration Manager">Equipment Calibration Manager</li>
-                            <li data-i18n="Design File Upload (JSON, PDF, Excel, CSV)">Design File Upload (JSON, PDF, Excel, CSV)</li>
-                            <li data-i18n="Dark/Light Theme">Dark/Light Theme</li>
-                            <li data-i18n="Responsive Design (Mobile, Tablet, Desktop)">Responsive Design (Mobile, Tablet, Desktop)</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
+            <div class="fab-menu-title">Quick Actions</div>
+        </div>
+        <div class="fab-menu-items">
+            <a class="fab-menu-item" id="fab-features">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                <span>Features</span>
+            </a>
+            <a class="fab-menu-item" id="fab-rating">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <span>Rating</span>
+            </a>
+            <a class="fab-menu-item" id="fab-contact">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                <span>Contact</span>
+            </a>
         </div>
     </div>
 
-    <!-- RATING MODAL -->
-    <div class="modal-overlay" id="rating-modal" onclick="if(event.target===this)closeRatingModal()">
-        <div class="modal-container rating-modal-container">
-            <div class="modal-header">
-                <h2 data-i18n="Rate smartLAB">Rate smartLAB</h2>
-                <button class="modal-close" onclick="closeRatingModal()">&times;</button>
-            </div>
-            <div class="modal-body rating-body">
-                <p class="rating-subtitle" data-i18n="How would you rate your experience?">How would you rate your experience?</p>
-                <div class="rating-stars" id="rating-stars">
-                    <button class="star-btn" data-rating="1" onmouseenter="hoverStar(1)" onmouseleave="resetStars()" onclick="setRating(1)">&#9733;</button>
-                    <button class="star-btn" data-rating="2" onmouseenter="hoverStar(2)" onmouseleave="resetStars()" onclick="setRating(2)">&#9733;</button>
-                    <button class="star-btn" data-rating="3" onmouseenter="hoverStar(3)" onmouseleave="resetStars()" onclick="setRating(3)">&#9733;</button>
-                    <button class="star-btn" data-rating="4" onmouseenter="hoverStar(4)" onmouseleave="resetStars()" onclick="setRating(4)">&#9733;</button>
-                    <button class="star-btn" data-rating="5" onmouseenter="hoverStar(5)" onmouseleave="resetStars()" onclick="setRating(5)">&#9733;</button>
-                </div>
-                <div class="rating-label" id="rating-label"></div>
-                <textarea class="rating-feedback" id="rating-feedback" rows="3" data-i18n-placeholder="Tell us more (optional)...">Tell us more (optional)...</textarea>
-                <button class="btn-primary rating-submit" onclick="submitRating()" data-i18n="Submit Rating">Submit Rating</button>
-            </div>
-        </div>
-    </div>
+    <script>
+        (function() {
+            var fab = document.getElementById('fab');
+            var menu = document.getElementById('fab-menu');
+            var backdrop = document.getElementById('fab-backdrop');
+            var isOpen = false;
 
-    <!-- CONTACT MODAL -->
-    <div class="modal-overlay" id="contact-modal" onclick="if(event.target===this)closeContactModal()">
-        <div class="modal-container contact-modal-container">
-            <div class="modal-header">
-                <h2 data-i18n="Contact Us">Contact Us</h2>
-                <button class="modal-close" onclick="closeContactModal()">&times;</button>
-            </div>
-            <div class="modal-body contact-body">
-                <form id="contact-form" onsubmit="event.preventDefault(); submitContact();">
-                    <div class="form-group">
-                        <label for="contact-name" data-i18n="Full Name">Full Name</label>
-                        <input type="text" id="contact-name" required placeholder="John Doe">
-                    </div>
-                    <div class="form-group">
-                        <label for="contact-email" data-i18n="Email">Email</label>
-                        <input type="email" id="contact-email" required placeholder="you@example.com">
-                    </div>
-                    <div class="form-group">
-                        <label for="contact-phone" data-i18n="Phone Number">Phone Number</label>
-                        <input type="tel" id="contact-phone" placeholder="+20 100 123 4567">
-                    </div>
-                    <div class="form-group">
-                        <label for="contact-message" data-i18n="Message">Message</label>
-                        <textarea id="contact-message" rows="4" required placeholder="How can we help you?"></textarea>
-                    </div>
-                    <div class="contact-status" id="contact-status"></div>
-                    <button type="submit" class="btn-primary contact-submit" id="contact-submit-btn" data-i18n="Send Message">Send Message</button>
-                </form>
-            </div>
-        </div>
-    </div>
+            function open() {
+                isOpen = true;
+                fab.classList.add('open');
+                menu.classList.add('open');
+                backdrop.classList.add('show');
+            }
+            function close() {
+                isOpen = false;
+                fab.classList.remove('open');
+                menu.classList.remove('open');
+                backdrop.classList.remove('show');
+            }
+            function toggle() {
+                isOpen ? close() : open();
+            }
+
+            fab.addEventListener('click', toggle);
+            backdrop.addEventListener('click', close);
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && isOpen) close();
+            });
+        })();
+    </script>
 
 </body>
 </html>
+

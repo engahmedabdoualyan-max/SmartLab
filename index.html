@@ -2409,17 +2409,17 @@ translatePage(currentLang);
             <div class="fab-menu-title">Quick Actions</div>
         </div>
         <div class="fab-menu-items">
+            <a class="fab-menu-item" id="fab-values">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+                <span>قيمنا</span>
+            </a>
             <a class="fab-menu-item" id="fab-features">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                <span>Features</span>
-            </a>
-            <a class="fab-menu-item" id="fab-rating">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                <span>Rating</span>
+                <span>المميزات</span>
             </a>
             <a class="fab-menu-item" id="fab-contact">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                <span>Contact</span>
+                <span>اتصل بنا</span>
             </a>
         </div>
     </div>
@@ -2452,6 +2452,25 @@ translatePage(currentLang);
 
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape' && isOpen) close();
+            });
+
+            function scrollTo(el) {
+                close();
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            document.getElementById('fab-values').addEventListener('click', function(e) {
+                e.preventDefault();
+                scrollTo(document.getElementById('about-section'));
+            });
+            document.getElementById('fab-features').addEventListener('click', function(e) {
+                e.preventDefault();
+                scrollTo(document.getElementById('domains-hero-target'));
+            });
+            document.getElementById('fab-contact').addEventListener('click', function(e) {
+                e.preventDefault();
+                var footer = document.querySelector('.app-footer');
+                scrollTo(footer);
             });
         })();
     </script>

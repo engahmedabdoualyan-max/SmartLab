@@ -168,7 +168,7 @@
         var el = document.getElementById(placeholderId);
         if (!el) { console.warn('[smartLAB] Placeholder not found:', placeholderId); return; }
         var xhr = new XMLHttpRequest();
-        xhr.open('GET', url, true);
+        xhr.open('GET', url + '?v=' + Date.now(), true);
         xhr.onload = function () {
             if (xhr.status >= 200 && xhr.status < 400) {
                 el.innerHTML = xhr.responseText;
@@ -200,6 +200,24 @@
         if (typeof translatePage === 'function') translatePage();
     }
 
+    function initFooterLangToggle() {
+        var btn = document.getElementById('lang-toggle-footer');
+        if (!btn) return;
+        var lang = localStorage.getItem('smartlab_lang') || 'en';
+        var langLabels = { en: 'EN', ar: 'AR', fr: 'FR', zh: 'ZH', ru: 'RU', de: 'DE', ur: 'UR', it: 'IT', hi: 'HI' };
+        btn.innerHTML = '<span class="lang-dot"></span> ' + (langLabels[lang] || 'EN');
+        btn.addEventListener('click', function () {
+            var current = localStorage.getItem('smartlab_lang') || 'en';
+            var languages = ['en', 'ar', 'fr', 'zh', 'ru', 'de', 'ur', 'it', 'hi'];
+            var idx = languages.indexOf(current);
+            var next = languages[(idx + 1) % languages.length];
+            localStorage.setItem('smartlab_lang', next);
+            document.body.classList.toggle('rtl', next === 'ar' || next === 'ur');
+            btn.innerHTML = '<span class="lang-dot"></span> ' + (langLabels[next] || 'EN');
+            if (typeof translatePage === 'function') translatePage();
+        });
+    }
+
     function loadHeaderFooter() {
         loadHTML('header.html', 'header-placeholder', function () {
             initLangToggle();
@@ -207,6 +225,7 @@
         });
         loadHTML('footer.html', 'footer-placeholder', function() {
             setTimeout(initEgyptFlag, 100);
+            initFooterLangToggle();
         });
         setTimeout(initEgyptFlag, 300);
     }
@@ -247,7 +266,7 @@
                 if (saved) {
                     var p = JSON.parse(saved);
                     cfg = {
-                        logo: (p.logo && p.logo.indexOf('data:') === 0) ? p.logo : (p.logo && p.logo !== '../assets/logo.png' ? p.logo : '/assets/logo.png'),
+                        logo: (p.logo && p.logo.indexOf('data:') === 0) ? p.logo : (p.logo && p.logo !== '../assets/logo.png' && p.logo !== '/assets/logo.png' ? p.logo : '/assets/logo.png'),
                         siteName: p.siteName || 'smartLAB',
                         siteNameAr: p.siteNameAr || 'سمارت لاب'
                     };

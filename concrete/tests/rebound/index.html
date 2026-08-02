@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Rebound Hammer Test</title>
+    <link rel="icon" href="/favicon.ico">
+    <link rel="stylesheet" href="../test-common.css">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <link rel="stylesheet" href="../../../test-zones.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    <div class="page">
+        <a href="../../concrete.html" class="back-link">
+            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Back to Concrete Tests
+        </a>
+
+        <h1 class="page-title">Rebound <span>Hammer</span></h1>
+        <p class="page-sub">Non-destructive strength estimation per ASTM C805 / EN 12504-2</p>
+
+                <!-- TAB BAR: Normal / SmartLab -->
+        <div class="test-tab-bar" id="testTabBar">
+            <button class="test-tab active" data-mode="normal">&#x1F9EA; <span data-i18n="Normal Test">Normal Test</span> <span style="font-weight:400;font-size:11px;">(&#x0627;&#x0644;&#x0627;&#x062E;&#x062A;&#x0628;&#x0627;&#x0631; &#x0627;&#x0644;&#x0639;&#x0627;&#x062F;&#x064A;)</span></button>
+            <button class="test-tab" data-mode="smartlab">&#x1F916; <span data-i18n="SmartLab Test">SmartLab Test</span> <span style="font-weight:400;font-size:11px;">(&#x0627;&#x062E;&#x062A;&#x0628;&#x0627;&#x0631; &#x0633;&#x0645;&#x0627;&#x0631;&#x062A; &#x0644;&#x0627;&#x0628;)</span></button>
+        </div>
+
+        <div id="normalTestMode">
+            <div id="manualAlert" class="manual-alert" style="display:none;"></div>
+
+<div class="level-top">
+            <span class="lt-label">Test Level</span>
+            <div class="lt-btns">
+                <button class="lt-btn active" data-level="quick">&#9889; Quick</button>
+                <button class="lt-btn" data-level="unofficial">&#127981; Unofficial</button>
+                <button class="lt-btn" data-level="certified">&#128274; Certified</button>
+            </div>
+            <span class="lt-info">Non-destructive screening</span>
+        </div>
+
+        <div class="billboard">
+            <div class="bb-inner">
+                <div class="bb-icon">&#128296;</div>
+                <div class="bb-body">
+                    <div class="bb-step-label">STEP 1 / 1</div>
+                    <div class="bb-title">Rebound Hammer (Schmidt Hammer)</div>
+                    <div class="bb-desc">Estimate surface hardness and compressive strength non-destructively</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="two-col">
+            <div class="sidebar">
+                <div class="sidebar-title">&#9881; Hammer Setup</div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Rebound Number (RN) - Average of 12</label>
+                    <input type="text" class="sidebar-input" id="rnValues" placeholder="e.g. 35,37,36,38,35,37,36,34,37,36,35,37">
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Impact Direction</label>
+                    <select class="sidebar-input" id="impactDir">
+                        <option value="horizontal">Horizontal (side of structure)</option>
+                        <option value="vertical_down">Vertical Down (floor)</option>
+                        <option value="vertical_up">Vertical Up (soffit)</option>
+                        <option value="sloped">Sloped / Inclined</option>
+                    </select>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Surface Condition</label>
+                    <select class="sidebar-input" id="surfaceCond">
+                        <option value="dry">Dry, Hardened Surface</option>
+                        <option value="damp">Damp Surface</option>
+                        <option value="wet">Wet Surface</option>
+                        <option value="carbonated">Carbonated Surface</option>
+                    </select>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Concrete Age (days)</label>
+                    <input type="number" class="sidebar-input" id="concAge" value="28" step="1"><span class="unit">days</span>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Curing History</label>
+                    <select class="sidebar-input" id="curingHistory">
+                        <option value="standard">Standard Moist Cured</option>
+                        <option value="dry_air">Dry Air Cured</option>
+                        <option value="unknown">Unknown / Site</option>
+                    </select>
+                </div>
+                
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Required Strength</label>
+                    <input type="number" class="sidebar-input" id="targetStrength" placeholder="e.g. 30" step="0.1"><span class="unit">MPa</span>
+                </div>
+<button class="btn btn-primary" onclick="runReboundTest()">&#128296; Estimate Strength</button>
+            </div>
+
+            <div>
+                <div id="reboundResults" style="display:none;">
+                    <h3 style="color:var(--accent-orange);margin-bottom:16px;">&#128203; Rebound Hammer Results</h3>
+                    <div class="result-grid">
+                        <div class="result-card"><div class="result-icon">&#128296;</div><div class="result-label">Mean Rebound Number</div><div class="result-value" id="rMeanRN">--</div><div class="result-unit">RN</div></div>
+                        <div class="result-card"><div class="result-icon">&#128200;</div><div class="result-label">Estimated Strength</div><div class="result-value" id="rEstStrength">--</div><div class="result-unit">MPa</div></div>
+                        <div class="result-card"><div class="result-icon">&#128168;</div><div class="result-label">Standard Deviation</div><div class="result-value" id="rStdDev">--</div><div class="result-unit">RN</div></div>
+                        <div class="result-card"><div class="result-icon">&#9888;&#65039;</div><div class="result-label">Correlation Confidence</div><div class="result-value" id="rConfidence">--</div><div class="result-unit"></div></div>
+                    </div>
+                </div>
+                <div id="reboundPlaceholder" style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+                    <div style="font-size:48px;margin-bottom:16px;">&#128296;</div>
+                    <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Enter Rebound Readings</div>
+                    <div style="font-size:13px;">Enter 12 rebound numbers (comma-separated) to estimate compressive strength.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="notes-section">
+            <div class="notes-title">&#128221; Standards</div>
+            <ul class="notes-list">
+                <li>ASTM C805: Standard Test Method for Rebound Number of Hardened Concrete</li>
+                <li>EN 12504-2: Non-destructive determination of rebound number</li>
+                <li>Take 12 readings, discard outliers &gt;15% from mean, average remaining</li>
+                <li>Correlation is approximate; calibrate against core tests for specific mixes</li>
+                <li>Do not use on: green concrete (&lt;3 days), carbonated surfaces, or near reinforcement</li>
+            </ul>
+        </div>
+
+            <div class="section" id="manualResultsSection" style="display:none;">
+                <div class="section-title"><span class="st-icon">&#x1F4CA;</span> <span>Calculated Results <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(&#x0627;&#x0644;&#x0646;&#x062A;&#x0627;&#x0626;&#x062C; &#x0627;&#x0644;&#x0645;&#x062D;&#x0633;&#x0648;&#x0628;&#x0629;)</span></span></div>
+                <div class="results-two-col">
+                    <table class="results-table" id="manualResultsTable">
+                        <thead><tr><th>Parameter <span style="font-weight:400;">(&#x0627;&#x0644;&#x0642;&#x064A;&#x0627;&#x0633;)</span></th><th style="text-align:right;">Value <span style="font-weight:400;">(&#x0627;&#x0644;&#x0642;&#x064A;&#x0645;&#x0629;)</span></th><th style="text-align:center;">Status <span style="font-weight:400;">(&#x0627;&#x0644;&#x062D;&#x0627;&#x0644;&#x0629;)</span></th></tr></thead>
+                        <tbody id="manualResultsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="section" id="manualReportSection" style="display:none;">
+                <div class="section-title"><span class="st-icon">&#x1F4C4;</span> <span>Test Report <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(&#x062A;&#x0642;&#x0631;&#x064A;&#x0631; &#x0627;&#x0644;&#x0627;&#x062E;&#x062A;&#x0628;&#x0627;&#x0631;)</span></span></div>
+                <div class="report-input-row">
+                    <div class="manual-field"><label>Lab Name <span style="font-weight:400;">(&#x0627;&#x0633;&#x0645; &#x0627;&#x0644;&#x0645;&#x062E;&#x062A;&#x0628;&#x0631;)</span></label><input type="text" id="m-labName" value="smartLAB Testing Lab"></div>
+                    <div class="manual-field"><label>Sample # <span style="font-weight:400;">(&#x0631;&#x0642;&#x0645; &#x0627;&#x0644;&#x0639;&#x064A;&#x0646;&#x0629;)</span></label><input type="text" id="m-sampleNo" placeholder="e.g. S-2026-001"></div>
+                    <div class="manual-field"><label>Specifications <span style="font-weight:400;">(&#x0627;&#x0644;&#x0645;&#x0648;&#x0627;&#x0635;&#x0641;&#x0627;&#x062A;)</span></label><input type="text" id="m-specs" placeholder="e.g. 150mm cube, 28d"></div>
+                    <div class="manual-field"><label>Technician <span style="font-weight:400;">(&#x0627;&#x0644;&#x0641;&#x0646;&#x064A;)</span></label><input type="text" id="m-tech" placeholder="Name"></div>
+                    <div class="manual-field"><label>Engineer <span style="font-weight:400;">(&#x0627;&#x0644;&#x0645;&#x0647;&#x0646;&#x062F;&#x0633;)</span></label><input type="text" id="m-eng" placeholder="Name"></div>
+                </div>
+                <div style="padding:6px 0;font-size:12px;color:var(--text-muted);margin-bottom:8px;">Export the results as an Excel, PDF or printed report.</div>
+                <div class="btn-row" style="justify-content:flex-start;gap:8px;">
+                    <button class="btn btn-blue" id="btnManualExcel">&#x1F4C4; Excel</button>
+                    <button class="btn btn-red" id="btnManualPdf">&#x1F4C4; PDF</button>
+                    <button class="btn btn-gold" id="btnManualPrint">&#x1F5A8; Print <span style="font-weight:400;">(&#x0637;&#x0628;&#x0627;&#x0639;&#x0629;)</span></button>
+                </div>
+            </div>
+
+        </div><!-- /normalTestMode -->
+
+        <!-- ===== SMARTLAB CONTENT ===== -->
+        <div id="smartlabContent">
+            <div class="sl-sub-tabs">
+                <button class="sl-sub-tab active" data-sub="stages">&#x1F4CB; Stages <span style="font-weight:400;">(&#x0627;&#x0644;&#x0645;&#x0631;&#x0627;&#x062D;&#x0644;)</span></button>
+                <button class="sl-sub-tab" data-sub="hardware">&#x1F527; Hardware Guide <span style="font-weight:400;">(&#x062F;&#x0644;&#x064A;&#x0644; &#x0627;&#x0644;&#x0647;&#x0627;&#x0631;&#x062F;&#x0648;&#x064A;&#x0631;)</span></button>
+            </div>
+            <div id="slStagesContent">
+                <div class="section">
+                    <div class="section-title"><span class="st-icon">&#x1F916;</span> <span>SmartLab Stages <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(&#x0645;&#x0631;&#x0627;&#x062D;&#x0644; &#x0633;&#x0645;&#x0627;&#x0631;&#x062A; &#x0644;&#x0627;&#x0628;)</span></span></div>
+                    <div style="padding:10px 0;font-size:13px;color:var(--text-muted);line-height:1.7;">
+                        <p>Connect your SmartLab device and follow the guided stages to run this test automatically.</p>
+                        <p style="font-size:12px;margin-top:8px;">&#x1F4A1; The SmartLab content below is managed through the <strong>Test Zones</strong> system (available to administrators).</p>
+                    </div>
+                </div>
+                <div id="zoneContainer" class="zone-container"></div>
+            </div><!-- /slStagesContent -->
+            <div id="slHardwareContent" style="display:none;">
+                <div class="section">
+                    <div class="section-title"><span class="st-icon">&#x1F527;</span> <span>Hardware Guide <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(&#x062F;&#x0644;&#x064A;&#x0644; &#x0627;&#x0644;&#x0647;&#x0627;&#x0631;&#x062F;&#x0648;&#x064A;&#x0631;)</span></span></div>
+                    <div style="padding:24px;font-size:13px;color:var(--text-muted);text-align:center;">
+                        <p style="font-size:28px;margin-bottom:10px;">&#x1F4C4;</p>
+                        <p>Hardware guide file will be loaded here.</p>
+                        <p style="font-size:11px;margin-top:6px;">Place a <code style="background:rgba(0,0,0,0.2);padding:2px 6px;border-radius:4px;">hardware-guide.html</code> file in the test folder.</p>
+                    </div>
+                </div>
+            </div>
+        </div><!-- /smartlabContent -->
+
+    </div>
+    <div id="footer-placeholder"></div>
+    <script src="../../../components.js"></script>
+    <script src="../../../test-zone.js"></script>
+    <script src="../test-manual.js"></script>
+    <script>
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() { TestZones.init('test-rebound'); });
+        } else {
+            TestZones.init('test-rebound');
+        }
+    </script>
+        <script>
+var manualResults = null;
+var manualTestTitleStr = "Rebound Hammer Test";
+
+function bindManualExports() {
+    var be = document.getElementById('btnManualExcel');
+    var bp = document.getElementById('btnManualPdf');
+    var br = document.getElementById('btnManualPrint');
+    if (be) be.addEventListener('click', manualExportExcel);
+    if (bp) bp.addEventListener('click', manualExportPdf);
+    if (br) br.addEventListener('click', manualExportPrint);
+}
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bindManualExports);
+} else {
+    bindManualExports();
+}
+
+
+function runReboundTest() {
+    const rnStr = document.getElementById('rnValues').value;
+    const dir = document.getElementById('impactDir').value;
+    const surfCond = document.getElementById('surfaceCond').value;
+    const age = parseInt(document.getElementById('concAge').value);
+    const curing = document.getElementById('curingHistory').value;
+    const target = parseFloat(document.getElementById('targetStrength').value);
+
+    const values = rnStr.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
+    if (values.length < 3) { manualAlert('warning', 'Please enter at least 3 rebound numbers.'); return; }
+
+    const mean = values.reduce((a, b) => a + b, 0) / values.length;
+    const filtered = values.filter(v => Math.abs(v - mean) / mean <= 0.15);
+    const filteredMean = filtered.length >= 3
+        ? filtered.reduce((a, b) => a + b, 0) / filtered.length
+        : mean;
+    const variance = filtered.reduce((sum, v) => sum + Math.pow(v - filteredMean, 2), 0) / Math.max(1, filtered.length - 1);
+    const stdDev = Math.sqrt(variance);
+
+    let dirCorr = 0;
+    if (dir === 'vertical_up') dirCorr = +5;
+    else if (dir === 'vertical_down') dirCorr = -5;
+    else if (dir === 'sloped') dirCorr = +3;
+    const adjustedRN = mean + dirCorr;
+
+    let surfCorr = 0;
+    if (surfCond === 'damp') surfCorr = +1;
+    else if (surfCond === 'wet') surfCorr = +2;
+    else if (surfCond === 'carbonated') surfCorr = -3;
+    const correctedRN = adjustedRN + surfCorr;
+
+    let strength = 0.0103 * Math.pow(correctedRN, 2.37);
+    if (curing === 'dry_air') strength *= 0.85;
+    if (curing === 'unknown') strength *= 0.90;
+    if (age < 7) strength *= 0.80;
+    else if (age < 14) strength *= 0.90;
+
+    const confidence = stdDev <= 2 ? 'HIGH' : stdDev <= 4 ? 'MODERATE' : 'LOW';
+    const confStatus = stdDev <= 2 ? 'pass' : stdDev <= 4 ? 'marginal' : 'fail';
+    const ok = isNaN(target) || strength >= target;
+
+    document.getElementById('reboundPlaceholder').style.display = 'none';
+    document.getElementById('reboundResults').style.display = 'block';
+    document.getElementById('rMeanRN').textContent = correctedRN.toFixed(1);
+    document.getElementById('rEstStrength').textContent = strength.toFixed(1);
+    document.getElementById('rStdDev').textContent = stdDev.toFixed(1);
+    document.getElementById('rConfidence').textContent = confidence;
+    document.getElementById('rConfidence').style.color = confidence === 'HIGH' ? 'var(--accent-emerald)' : confidence === 'MODERATE' ? 'var(--accent-amber)' : 'var(--accent-red)';
+
+    window.manualResults = [
+        { label: 'Mean Rebound Number', value: mean.toFixed(1), unit: 'RN', status: '' },
+        { label: 'Direction Correction', value: (dirCorr >= 0 ? '+' : '') + dirCorr, unit: 'RN', status: '' },
+        { label: 'Surface Correction', value: (surfCorr >= 0 ? '+' : '') + surfCorr, unit: 'RN', status: '' },
+        { label: 'Corrected Rebound Number', value: correctedRN.toFixed(1), unit: 'RN', status: '' },
+        { label: 'Standard Deviation', value: stdDev.toFixed(1), unit: 'RN', status: confStatus },
+        { label: 'Estimated Strength', value: strength.toFixed(1), unit: 'MPa', status: ok ? 'pass' : 'fail' },
+        { label: 'Correlation Confidence', value: confidence, unit: '', status: confStatus }
+    ];
+    manualRenderResults();
+    manualAlert('success', 'Calculation complete');
+}
+
+    </script>
+</body>
+</html>

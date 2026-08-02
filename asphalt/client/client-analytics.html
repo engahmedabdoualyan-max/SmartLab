@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>smartLAB — Analytics</title>
-    <link rel="icon" href="../favicon.ico">
+    <link rel="icon" href="../../favicon.ico">
     <link rel="stylesheet" href="client-common.css">
 
 </head>
@@ -123,13 +123,7 @@
     </div>
 
     <script>
-        document.getElementById('langToggle').addEventListener('click', function() {
-            var lang = localStorage.getItem('smartlab_lang') === 'ar' ? 'en' : 'ar';
-            localStorage.setItem('smartlab_lang', lang);
-            this.innerHTML = '<span class="lang-dot"></span> ' + lang.toUpperCase();
-        });
-        var currentLang = localStorage.getItem('smartlab_lang') || 'en';
-        document.getElementById('langToggle').innerHTML = '<span class="lang-dot"></span> ' + currentLang.toUpperCase();
+        
     </script>
 
     <div id="footer-placeholder"></div>

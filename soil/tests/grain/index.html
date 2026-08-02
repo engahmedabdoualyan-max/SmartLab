@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Grain Size Distribution</title>
+    <link rel="icon" href="/favicon.ico">
+    <link rel="stylesheet" href="../test-common.css">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <link rel="stylesheet" href="../../../test-zones.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    <div class="page">
+        <a href="../../soil.html" class="back-link">
+            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Back to Soil Tests
+        </a>
+
+        <h1 class="page-title">Grain Size <span>Distribution</span></h1>
+        <p class="page-sub">Sieve & hydrometer analysis per ASTM D6913 / D7928</p>
+
+                <!-- TAB BAR: Normal / SmartLab -->
+        <div class="test-tab-bar" id="testTabBar">
+            <button class="test-tab active" data-mode="normal">&#x1F9EA; <span data-i18n="Normal Test">Normal Test</span> <span style="font-weight:400;font-size:11px;">(&#x0627;&#x0644;&#x0627;&#x062E;&#x062A;&#x0628;&#x0627;&#x0631; &#x0627;&#x0644;&#x0639;&#x0627;&#x062F;&#x064A;)</span></button>
+            <button class="test-tab" data-mode="smartlab">&#x1F916; <span data-i18n="SmartLab Test">SmartLab Test</span> <span style="font-weight:400;font-size:11px;">(&#x0627;&#x062E;&#x062A;&#x0628;&#x0627;&#x0631; &#x0633;&#x0645;&#x0627;&#x0631;&#x062A; &#x0644;&#x0627;&#x0628;)</span></button>
+        </div>
+
+        <div id="normalTestMode">
+            <div id="manualAlert" class="manual-alert" style="display:none;"></div>
+
+<div class="level-top">
+            <span class="lt-label">Test Level</span>
+            <div class="lt-btns">
+                <button class="lt-btn active" data-level="quick">⚡ Quick</button>
+                <button class="lt-btn" data-level="unofficial">🏭 Unofficial</button>
+                <button class="lt-btn" data-level="certified">🔒 Certified</button>
+            </div>
+            <span class="lt-info">Classification critical</span>
+        </div>
+
+        <div class="billboard">
+            <div class="bb-inner">
+                <div class="bb-icon">🪨</div>
+                <div class="bb-body">
+                    <div class="bb-step-label">STEP 1/3</div>
+                    <div class="bb-title">Sieve Analysis Test</div>
+                    <div class="bb-desc">Enter retained weights to generate gradation curve & coefficients</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="two-col">
+            <div class="sidebar">
+                <div class="sidebar-title">⚖ Test Inputs</div>
+                
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Sample Weight (g)</label>
+                    <input type="number" class="sidebar-input" id="sampleWeight" value="500" min="50" max="5000" step="1"><span class="unit">g</span>
+                </div>
+
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Test Method</label>
+                    <select class="sidebar-input" id="testMethod">
+                        <option value="sieve">Sieve Only (D6913)</option>
+                        <option value="combined" selected>Combined Sieve + Hydrometer (D6913/D7928)</option>
+                    </select>
+                </div>
+
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Sieve Shaking Time</label>
+                    <input type="number" class="sidebar-input" id="shakeTime" value="10" min="5" max="30"><span class="unit">min</span>
+                </div>
+
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Hydrometer Type</label>
+                    <select class="sidebar-input" id="hydrometerType">
+                        <option value="152h" selected>152H (Standard)</option>
+                        <option value="151h">151H</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-primary" onclick="calcGradation()">📊 Calculate</button>
+            </div>
+
+            <div>
+                <div id="gradationResults" style="display:none;">
+                    <h3 style="color:var(--accent-orange);margin-bottom:16px;">📋 Gradation Results</h3>
+
+                    <div class="result-grid">
+                        <div class="result-card"><div class="result-icon">📏</div><div class="result-label">D10</div><div class="result-value" id="rD10">--</div></div>
+                        <div class="result-card"><div class="result-icon">📏</div><div class="result-label">D30</div><div class="result-value" id="rD30">--</div></div>
+                        <div class="result-card"><div class="result-icon">📏</div><div class="result-label">D60</div><div class="result-value" id="rD60">--</div></div>
+                        <div class="result-card"><div class="result-icon">📐</div><div class="result-label">Cu</div><div class="result-value" id="rCu">--</div></div>
+                        <div class="result-card"><div class="result-icon">📐</div><div class="result-label">Cc</div><div class="result-value" id="rCc">--</div></div>
+                    </div>
+
+                    <div class="chart-section" style="margin-top:24px;">
+                        <div class="chart-title">📈 Gradation Curve</div>
+                        <canvas class="chart-canvas" id="gradationChart"></canvas>
+                    </div>
+
+                    <div class="spec-grid" style="margin-top:24px;">
+                        <div class="spec-item">
+                            <div class="spec-title">🎯 Soil Type</div>
+                            <div class="spec-desc" id="soilTypeDesc">Well-graded sand (SW) or gravel (GW)</div>
+                        </div>
+                        <div class="spec-item">
+                            <div class="spec-title">📋 AASHTO / USCS</div>
+                            <div class="spec-desc" id="classDesc">Based on gradation + Atterberg limits</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:24px;">
+                        <div class="chart-title">📊 Sieve Data Table</div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Sieve Size</th>
+                                        <th>Retained (g)</th>
+                                        <th>% Retained</th>
+                                        <th>% Passing</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="sieveTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="gradationPlaceholder" style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+                    <div style="font-size:48px;margin-bottom:16px;">🪨</div>
+                    <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Enter Sieve Data</div>
+                    <div style="font-size:13px;max-width:400px;">Input retained weights on each sieve to generate gradation curve, D10/D30/D60, Cu & Cc.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="notes-section">
+            <div class="notes-title">📝 ASTM D6913 / D7928 Method</div>
+            <ul class="notes-list">
+                <li>Sieve analysis: Stack sieves, shake 10 min (mechanical), weigh retained</li>
+                <li>Hydrometer: For fines <0.075mm, readings at 0.5, 1, 2, 5, 15, 30, 60, 240, 1440 min</li>
+                <li>D10, D30, D60 = particle diameters at 10%, 30%, 60% passing</li>
+                <li>Cu = D60/D10 (Uniformity), Cc = (D30)²/(D10×D60) (Curvature)</li>
+                <li>Well-graded: Cu ≥ 4 (gravel), Cu ≥ 6 (sand) AND 1 ≤ Cc ≤ 3</li>
+            </ul>
+        </div>
+
+            <div class="section" id="manualResultsSection" style="display:none;">
+                <div class="section-title"><span class="st-icon">&#x1F4CA;</span> <span>Calculated Results <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(&#x0627;&#x0644;&#x0646;&#x062A;&#x0627;&#x0626;&#x062C; &#x0627;&#x0644;&#x0645;&#x062D;&#x0633;&#x0648;&#x0628;&#x0629;)</span></span></div>
+                <div class="results-two-col">
+                    <table class="results-table" id="manualResultsTable">
+                        <thead><tr><th>Parameter <span style="font-weight:400;">(&#x0627;&#x0644;&#x0642;&#x064A;&#x0627;&#x0633;)</span></th><th style="text-align:right;">Value <span style="font-weight:400;">(&#x0627;&#x0644;&#x0642;&#x064A;&#x0645;&#x0629;)</span></th><th style="text-align:center;">Status <span style="font-weight:400;">(&#x0627;&#x0644;&#x062D;&#x0627;&#x0644;&#x0629;)</span></th></tr></thead>
+                        <tbody id="manualResultsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="section" id="manualReportSection" style="display:none;">
+                <div class="section-title"><span class="st-icon">&#x1F4C4;</span> <span>Test Report <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(&#x062A;&#x0642;&#x0631;&#x064A;&#x0631; &#x0627;&#x0644;&#x0627;&#x062E;&#x062A;&#x0628;&#x0627;&#x0631;)</span></span></div>
+                <div class="report-input-row">
+                    <div class="manual-field"><label>Lab Name <span style="font-weight:400;">(&#x0627;&#x0633;&#x0645; &#x0627;&#x0644;&#x0645;&#x062E;&#x062A;&#x0628;&#x0631;)</span></label><input type="text" id="m-labName" value="smartLAB Testing Lab"></div>
+                    <div class="manual-field"><label>Sample # <span style="font-weight:400;">(&#x0631;&#x0642;&#x0645; &#x0627;&#x0644;&#x0639;&#x064A;&#x0646;&#x0629;)</span></label><input type="text" id="m-sampleNo" placeholder="e.g. S-2026-001"></div>
+                    <div class="manual-field"><label>Specifications <span style="font-weight:400;">(&#x0627;&#x0644;&#x0645;&#x0648;&#x0627;&#x0635;&#x0641;&#x0627;&#x062A;)</span></label><input type="text" id="m-specs" placeholder="e.g. 150mm cube, 28d"></div>
+                    <div class="manual-field"><label>Technician <span style="font-weight:400;">(&#x0627;&#x0644;&#x0641;&#x0646;&#x064A;)</span></label><input type="text" id="m-tech" placeholder="Name"></div>
+                    <div class="manual-field"><label>Engineer <span style="font-weight:400;">(&#x0627;&#x0644;&#x0645;&#x0647;&#x0646;&#x062F;&#x0633;)</span></label><input type="text" id="m-eng" placeholder="Name"></div>
+                </div>
+                <div style="padding:6px 0;font-size:12px;color:var(--text-muted);margin-bottom:8px;">Export the results as an Excel, PDF or printed report.</div>
+                <div class="btn-row" style="justify-content:flex-start;gap:8px;">
+                    <button class="btn btn-blue" id="btnManualExcel">&#x1F4C4; Excel</button>
+                    <button class="btn btn-red" id="btnManualPdf">&#x1F4C4; PDF</button>
+                    <button class="btn btn-gold" id="btnManualPrint">&#x1F5A8; Print <span style="font-weight:400;">(&#x0637;&#x0628;&#x0627;&#x0639;&#x0629;)</span></button>
+                </div>
+            </div>
+
+        </div><!-- /normalTestMode -->
+
+        <!-- ===== SMARTLAB CONTENT ===== -->
+        <div id="smartlabContent">
+            <div class="sl-sub-tabs">
+                <button class="sl-sub-tab active" data-sub="stages">&#x1F4CB; Stages <span style="font-weight:400;">(&#x0627;&#x0644;&#x0645;&#x0631;&#x0627;&#x062D;&#x0644;)</span></button>
+                <button class="sl-sub-tab" data-sub="hardware">&#x1F527; Hardware Guide <span style="font-weight:400;">(&#x062F;&#x0644;&#x064A;&#x0644; &#x0627;&#x0644;&#x0647;&#x0627;&#x0631;&#x062F;&#x0648;&#x064A;&#x0631;)</span></button>
+            </div>
+            <div id="slStagesContent">
+                <div class="section">
+                    <div class="section-title"><span class="st-icon">&#x1F916;</span> <span>SmartLab Stages <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(&#x0645;&#x0631;&#x0627;&#x062D;&#x0644; &#x0633;&#x0645;&#x0627;&#x0631;&#x062A; &#x0644;&#x0627;&#x0628;)</span></span></div>
+                    <div style="padding:10px 0;font-size:13px;color:var(--text-muted);line-height:1.7;">
+                        <p>Connect your SmartLab device and follow the guided stages to run this test automatically.</p>
+                        <p style="font-size:12px;margin-top:8px;">&#x1F4A1; The SmartLab content below is managed through the <strong>Test Zones</strong> system (available to administrators).</p>
+                    </div>
+                </div>
+                <div id="zoneContainer" class="zone-container"></div>
+            </div><!-- /slStagesContent -->
+            <div id="slHardwareContent" style="display:none;">
+                <div class="section">
+                    <div class="section-title"><span class="st-icon">&#x1F527;</span> <span>Hardware Guide <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(&#x062F;&#x0644;&#x064A;&#x0644; &#x0627;&#x0644;&#x0647;&#x0627;&#x0631;&#x062F;&#x0648;&#x064A;&#x0631;)</span></span></div>
+                    <div style="padding:24px;font-size:13px;color:var(--text-muted);text-align:center;">
+                        <p style="font-size:28px;margin-bottom:10px;">&#x1F4C4;</p>
+                        <p>Hardware guide file will be loaded here.</p>
+                        <p style="font-size:11px;margin-top:6px;">Place a <code style="background:rgba(0,0,0,0.2);padding:2px 6px;border-radius:4px;">hardware-guide.html</code> file in the test folder.</p>
+                    </div>
+                </div>
+            </div>
+        </div><!-- /smartlabContent -->
+
+    </div>
+    <div id="footer-placeholder"></div>
+    <script src="../../../components.js"></script>
+    <script src="../../../test-zone.js"></script>
+    <script src="../test-manual.js"></script>
+    <script>
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() { TestZones.init('soil-grain'); });
+        } else {
+            TestZones.init('soil-grain');
+        }
+    </script>
+        <script>
+var manualResults = null;
+var manualTestTitleStr = "Grain Size Distribution Test";
+
+function bindManualExports() {
+    var be = document.getElementById('btnManualExcel');
+    var bp = document.getElementById('btnManualPdf');
+    var br = document.getElementById('btnManualPrint');
+    if (be) be.addEventListener('click', manualExportExcel);
+    if (bp) bp.addEventListener('click', manualExportPdf);
+    if (br) br.addEventListener('click', manualExportPrint);
+}
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bindManualExports);
+} else {
+    bindManualExports();
+}
+
+
+const standardSieves = [
+    { size: 75, label: "75 mm" },
+    { size: 50, label: "50 mm" },
+    { size: 37.5, label: "37.5 mm" },
+    { size: 25, label: "25 mm" },
+    { size: 19, label: "19 mm" },
+    { size: 12.5, label: "12.5 mm" },
+    { size: 9.5, label: "9.5 mm" },
+    { size: 4.75, label: "4.75 mm" },
+    { size: 2, label: "2 mm" },
+    { size: 0.85, label: "850 \u03BCm" },
+    { size: 0.425, label: "425 \u03BCm" },
+    { size: 0.25, label: "250 \u03BCm" },
+    { size: 0.15, label: "150 \u03BCm" },
+    { size: 0.075, label: "75 \u03BCm (#200)" }
+];
+
+function calcGradation() {
+    const totalWeight = parseFloat(document.getElementById('sampleWeight').value);
+    if (!totalWeight || totalWeight <= 0) { manualAlert('warning', 'Enter sample weight'); return; }
+
+    let retainedData = [];
+    let cumulative = 0;
+
+    standardSieves.forEach((sieve, i) => {
+        const input = document.getElementById('retained_' + sieve.size);
+        const retained = input ? parseFloat(input.value) || 0 : 0;
+        cumulative += retained;
+        const pctRetained = (retained / totalWeight) * 100;
+        const pctPassing = 100 - (cumulative / totalWeight) * 100;
+        retainedData.push({
+            size: sieve.size,
+            label: sieve.label,
+            retained: retained,
+            pctRetained: pctRetained,
+            pctPassing: Math.max(0, pctPassing)
+        });
+    });
+
+    calcCoefficients(retainedData);
+    renderTable(retainedData);
+    drawChart(retainedData);
+
+    document.getElementById('gradationPlaceholder').style.display = 'none';
+    document.getElementById('gradationResults').style.display = 'block';
+}
+
+function calcCoefficients(data) {
+    const getD = (pct) => {
+        for (let i = 0; i < data.length - 1; i++) {
+            if (data[i].pctPassing >= pct && data[i+1].pctPassing <= pct) {
+                const p1 = data[i].pctPassing;
+                const p2 = data[i+1].pctPassing;
+                const d1 = data[i].size;
+                const d2 = data[i+1].size;
+                if (p1 === p2) return d1;
+                const ratio = (pct - p1) / (p2 - p1);
+                return d1 * Math.pow(d2/d1, ratio);
+            }
+        }
+        return data[data.length-1].size;
+    };
+
+    const D10 = getD(10);
+    const D30 = getD(30);
+    const D60 = getD(60);
+    const Cu = D10 > 0 ? D60 / D10 : 0;
+    const Cc = (D10 > 0 && D60 > 0) ? (D30 * D30) / (D10 * D60) : 0;
+
+    document.getElementById('rD10').textContent = D10.toFixed(3) + ' mm';
+    document.getElementById('rD30').textContent = D30.toFixed(3) + ' mm';
+    document.getElementById('rD60').textContent = D60.toFixed(3) + ' mm';
+    document.getElementById('rCu').textContent = Cu.toFixed(2);
+    document.getElementById('rCc').textContent = Cc.toFixed(2);
+
+    let type = '';
+    let badge = '';
+    if (Cu >= 6 && Cc >= 1 && Cc <= 3) { type = 'Well-graded sand (SW)'; badge = 'pass'; }
+    else if (Cu >= 4 && Cc >= 1 && Cc <= 3) { type = 'Well-graded gravel (GW)'; badge = 'pass'; }
+    else if (Cc < 1 || Cc > 3) { type = 'Gap-graded or borderline'; badge = 'marginal'; }
+    else { type = 'Poorly-graded (SP/GP)'; badge = 'marginal'; }
+
+    document.getElementById('soilTypeDesc').textContent = type;
+    document.getElementById('classDesc').textContent = 'USCS: ' + type + ' | Add Atterberg for full classification';
+
+    const p200 = data.length ? data[data.length-1].pctPassing : 0;
+
+    window.manualResults = [
+        { label: 'D10', value: D10.toFixed(3), unit: 'mm', status: '' },
+        { label: 'D30', value: D30.toFixed(3), unit: 'mm', status: '' },
+        { label: 'D60', value: D60.toFixed(3), unit: 'mm', status: '' },
+        { label: 'Uniformity Coefficient (Cu)', value: Cu.toFixed(2), unit: '', status: '' },
+        { label: 'Curvature Coefficient (Cc)', value: Cc.toFixed(2), unit: '', status: '' },
+        { label: 'Fines Passing #200', value: p200.toFixed(1), unit: '%', status: '' },
+        { label: 'Soil Type', value: type, unit: '', status: badge }
+    ];
+    manualRenderResults();
+}
+
+function renderTable(data) {
+    const tbody = document.getElementById('sieveTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = data.map(d =>
+        '<tr><td>' + d.label + '</td><td>' + d.retained.toFixed(1) + '</td><td>' + d.pctRetained.toFixed(1) + '%</td><td>' + d.pctPassing.toFixed(1) + '%</td></tr>'
+    ).join('');
+}
+
+function drawChart(data) {
+    const canvas = document.getElementById('gradationChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    canvas.width = canvas.offsetWidth;
+    canvas.height = 300;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const margin = 50;
+    const w = canvas.width - 2 * margin;
+    const h = canvas.height - 2 * margin;
+
+    ctx.strokeStyle = 'var(--border-glass)';
+    ctx.lineWidth = 0.5;
+
+    const sizes = [100, 50, 25, 10, 5, 2, 1, 0.5, 0.25, 0.1, 0.075, 0.05, 0.025, 0.01, 0.005, 0.001];
+    sizes.forEach(s => {
+        const x = margin + w * (1 - (Math.log10(s) - Math.log10(0.001)) / (Math.log10(100) - Math.log10(0.001)));
+        ctx.beginPath(); ctx.moveTo(x, margin); ctx.lineTo(x, canvas.height - margin); ctx.stroke();
+    });
+    [10, 20, 30, 40, 50, 60, 70, 80, 90, 100].forEach(p => {
+        const y = margin + h * (1 - p / 100);
+        ctx.beginPath(); ctx.moveTo(margin, y); ctx.lineTo(canvas.width - margin, y); ctx.stroke();
+    });
+
+    ctx.strokeStyle = 'var(--accent-orange)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    data.forEach((d, i) => {
+        if (d.size <= 0) return;
+        const x = margin + w * (1 - (Math.log10(d.size) - Math.log10(0.001)) / (Math.log10(100) - Math.log10(0.001)));
+        const y = margin + h * (1 - d.pctPassing / 100);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    ctx.fillStyle = 'var(--accent-orange)';
+    data.forEach(d => {
+        if (d.size <= 0) return;
+        const x = margin + w * (1 - (Math.log10(d.size) - Math.log10(0.001)) / (Math.log10(100) - Math.log10(0.001)));
+        const y = margin + h * (1 - d.pctPassing / 100);
+        ctx.beginPath(); ctx.arc(x, y, 4, 0, 2 * Math.PI); ctx.fill();
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.querySelector('.sidebar');
+    if (!sidebar) return;
+    const btn = sidebar.querySelector('button');
+    standardSieves.forEach(sieve => {
+        const field = document.createElement('div');
+        field.className = 'sidebar-field';
+        field.innerHTML = '<label class="sidebar-label">' + sieve.label + '</label>' +
+            '<input type="number" class="sidebar-input" id="retained_' + sieve.size + '" value="0" min="0" step="0.1"><span class="unit">g</span>';
+        sidebar.insertBefore(field, btn);
+    });
+});
+
+    </script>
+</body>
+</html>

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>smartLAB — Pavement Design (AASHTO 1993)</title>
-    <link rel="icon" href="../favicon.ico">
+    <link rel="icon" href="../../favicon.ico">
     <link rel="stylesheet" href="design-common.css">
     <style>
         :root { --accent-page: #fb923c; }
@@ -366,8 +366,10 @@ Cd = drainage coefficient
         <a href="../soil.html" class="back-btn">← Back to Soil & Roads</a>
     </div>
     <div id="footer-placeholder"></div>
-    <script src="../components.js"></script>
+    <script src="../../components.js"></script>
     <script>
+        var lastTotalW18 = null;
+
         function switchTab(tabId, btn) {
             document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -415,37 +417,42 @@ Cd = drainage coefficient
             const mr = parseFloat(document.getElementById('mr').value);
             const m = parseFloat(document.getElementById('drainCoeff').value);
 
-            // Reliability factor Zr
-            const zrTable = { 50: 0, 60: 0.253, 70: 0.524, 75: 0.674, 80: 0.842, 85: 1.036, 90: 1.282, 95: 1.645, 99: 2.327 };
-            const zr = zrTable[rel] || 1.282;
+            // Reliability factor Zr (AASHTO 1993 uses NEGATIVE Zr for R > 50%)
+            const zrTable = { 50: 0, 60: -0.253, 70: -0.524, 75: -0.674, 80: -0.842, 85: -1.037, 90: -1.282, 95: -1.645, 99: -2.327 };
+            const zr = zrTable[rel] !== undefined ? zrTable[rel] : -1.282;
 
-            // W18 from traffic tab (or estimate)
-            // Use default for now - will be linked later
-            const W18 = 5e6; // placeholder
+            // W18 from traffic tab if computed, else default
+            const W18 = (typeof lastTotalW18 === 'number' && lastTotalW18 > 0) ? lastTotalW18 : 5e6;
 
-            // AASHTO 1993 Flexible Eq: log10(W18) = Zr*So + 9.36*log10(SN+1) - 0.20 + log10(ΔPSI/(4.2-1.5)) + 2.32*log10(Mr) - 8.07
-            // Solve for SN iteratively
+            // AASHTO 1993 Flexible Eq: log10(W18) = Zr*So + 9.36*log10(SN+1) - 0.20 + log10(ΔPSI/(po-1.5)) + 2.32*log10(Mr) - 8.07
             const deltaPSI = po - pt;
-            const logTerm = Math.log10(deltaPSI / 2.7);
+            if (!(mr > 0) || !(deltaPSI > 0) || !(po > 1.5)) {
+                manualAlert('error', 'Check inputs: Mr must be positive, pt < po, po > 1.5');
+                return;
+            }
+            const logTerm = Math.log10(deltaPSI / (po - 1.5));
             const mrTerm = 2.32 * Math.log10(mr) - 8.07;
 
-            // Iterate for SN
+            // Solve for SN by Newton iteration on f(SN) = log10(W18) - rhs(SN)
             let SN = 4.0;
-            for (let i = 0; i < 20; i++) {
+            for (let i = 0; i < 60; i++) {
                 const lhs = Math.log10(W18);
                 const rhs = zr * so + 9.36 * Math.log10(SN + 1) - 0.20 + logTerm + mrTerm;
                 const diff = lhs - rhs;
                 if (Math.abs(diff) < 0.001) break;
-                SN = SN * Math.pow(10, diff / (9.36 / (SN + 1) / Math.LN10));
+                SN = SN + diff * (SN + 1) * Math.LN10 / 9.36;
+                if (SN < 0.5 || SN > 30) break;
             }
 
-            // Layer design (example)
+            // Layer design (AASHTO minimum surface thickness by traffic)
             const a1 = 0.44, a2 = 0.14, a3 = 0.11;
             const m2 = m, m3 = m;
-            // Distribute SN: typical D1=3-4", D2=6-10", D3=6-12"
-            const D1 = 4;
+            let D1 = 4;
+            if (W18 < 1e4) D1 = 2.5;
+            else if (W18 < 1e5) D1 = 3.0;
+            else if (W18 < 1e6) D1 = 3.5;
             const remSN = SN - a1 * D1;
-            const D2 = Math.min(Math.max(remSN * 0.6 / (a2 * m2), 6), 10);
+            const D2 = remSN > 0 ? Math.min(Math.max(remSN * 0.6 / (a2 * m2), 6), 10) : 6;
             const D3 = Math.max((remSN - a2 * m2 * D2) / (a3 * m3), 6);
 
             document.getElementById('rReqSN').textContent = SN.toFixed(2);
@@ -517,37 +524,50 @@ Cd = drainage coefficient
             const J = parseFloat(document.getElementById('loadTransfer').value);
             const Cd = parseFloat(document.getElementById('rigidCd').value);
 
-            const zrTable = { 50: 0, 60: 0.253, 70: 0.524, 75: 0.674, 80: 0.842, 85: 1.036, 90: 1.282, 95: 1.645, 99: 2.327 };
-            const zr = zrTable[rel] || 1.645;
-            const W18 = 5e6;
+            const zrTable = { 50: 0, 60: -0.253, 70: -0.524, 75: -0.674, 80: -0.842, 85: -1.037, 90: -1.282, 95: -1.645, 99: -2.327 };
+            const zr = zrTable[rel] !== undefined ? zrTable[rel] : -1.645;
+            const W18 = (typeof lastTotalW18 === 'number' && lastTotalW18 > 0) ? lastTotalW18 : 5e6;
 
-            // Iterative solution for D (simplified)
-            let D = 8;
-            for (let i = 0; i < 30; i++) {
-                const term1 = zr * so;
-                const term2 = 7.35 * Math.log10(D + 1) - 0.06;
-                const term3 = Math.log10((po - pt) / 3.0);
-                const term4 = (4.22 - 0.32 * pt) * Math.log10(
-                    (Sc * Cd * (Math.pow(D, 0.75) - 1.132)) / 
+            const deltaPSI = po - pt;
+            if (!(Sc > 0) || !(Ec > 0) || !(k > 0) || !(J > 0) || !(deltaPSI > 0)) {
+                manualAlert('error', 'Check inputs: Sc, Ec, k, J and (po - pt) must be positive');
+                return;
+            }
+
+            // AASHTO 1993 rigid equation rhs(D)
+            const rhs = function(D) {
+                const t1 = zr * so;
+                const t2 = 7.35 * Math.log10(D + 1) - 0.06;
+                const t3 = Math.log10(deltaPSI / 3.0);
+                const t4 = (4.22 - 0.32 * pt) * Math.log10(
+                    (Sc * Cd * (Math.pow(D, 0.75) - 1.132)) /
                     (215.63 * J * (Math.pow(D, 0.75) - 18.42 / Math.pow(Ec / k, 0.25)))
                 );
-                const rhs = term1 + term2 + term3 + term4;
-                const lhs = Math.log10(W18);
-                const diff = lhs - rhs;
+                return t1 + t2 + t3 + t4;
+            };
+
+            // Solve for D by Newton iteration with numerical derivative
+            let D = 8;
+            for (let i = 0; i < 80; i++) {
+                const diff = Math.log10(W18) - rhs(D);
                 if (Math.abs(diff) < 0.001) break;
-                D = D * Math.pow(10, diff / (7.35 / (D + 1) / Math.LN10));
+                const h = Math.max(0.001, D * 0.001);
+                const slope = (rhs(D + h) - rhs(D - h)) / (2 * h);
+                if (!isFinite(slope) || Math.abs(slope) < 1e-12) break;
+                D = D + diff / slope;
+                if (D < 3 || D > 25) break;
             }
 
             document.getElementById('rSlabD').textContent = D.toFixed(1) + ' in';
             document.getElementById('rRigidW18').textContent = (W18/1e6).toFixed(1) + 'M';
             document.getElementById('rJoint').textContent = Math.min(D * 2.5, 15).toFixed(0) + ' ft';
 
-            drawRigidChart(D);
+            drawRigidChart(D, W18);
             document.getElementById('rigidPlaceholder').style.display = 'none';
             document.getElementById('rigidResults').style.display = 'block';
         }
 
-        function drawRigidChart(D) {
+        function drawRigidChart(D, W18) {
             const canvas = document.getElementById('rigidChart');
             const ctx = canvas.getContext('2d');
             canvas.width = canvas.offsetWidth;
@@ -587,7 +607,7 @@ Cd = drainage coefficient
             ctx.stroke();
 
             // Design point
-            const dx = padding + (Math.log10(5e6) - 5) / 3 * w;
+            const dx = padding + (Math.log10(W18 || 5e6) - 5) / 3 * w;
             const dy = canvas.height - padding - (D/maxD)*h;
             ctx.fillStyle = 'var(--accent-orange)';
             ctx.beginPath(); ctx.arc(dx, dy, 6, 0, Math.PI*2); ctx.fill();
@@ -645,7 +665,9 @@ Cd = drainage coefficient
 
             document.getElementById('rTotalW18').textContent = (totalW18/1e6).toFixed(2) + 'M';
             document.getElementById('rDailyESAL').textContent = (totalW18/life/365).toLocaleString();
-            document.getElementById('rTruckFactor').textContent = (totalW18 / (aadt * 365 * life * dir * lane * truckPct * 365 * gf)).toFixed(3);
+            const truckDenominator = aadt * dir * lane * truckPct * 365 * gf;
+            document.getElementById('rTruckFactor').textContent = (truckDenominator > 0 ? totalW18 / truckDenominator : 0).toFixed(3);
+            lastTotalW18 = totalW18;
 
             document.getElementById('esalResults').style.display = 'block';
         }

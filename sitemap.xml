@@ -2,295 +2,422 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
         <loc>https://smartlab.fimtosoft.com</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
         <priority>1.0</priority>
     </url>
-    
-    <!-- Dashboard -->
+
     <url>
-        <loc>https://smartlab.fimtosoft.com/dashboard</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
-        <priority>0.9</priority>
+        <loc>https://smartlab.fimtosoft.com/asphalt/asphalt.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.6</priority>
     </url>
-    
-    <!-- Laboratory Sections -->
+
     <url>
-        <loc>https://smartlab.fimtosoft.com/asphalt</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
-        <priority>0.9</priority>
-    </url>
-    
-    <url>
-        <loc>https://smartlab.fimtosoft.com/concrete</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
-        <priority>0.9</priority>
-    </url>
-    
-    <url>
-        <loc>https://smartlab.fimtosoft.com/soil</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
-        <priority>0.9</priority>
-    </url>
-    
-    <!-- Asphalt Tests -->
-    <url>
-        <loc>https://smartlab.fimtosoft.com/asphalt/test-density</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
-        <priority>0.8</priority>
-    </url>
-    
-    <url>
-        <loc>https://smartlab.fimtosoft.com/asphalt/test-extraction</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
-        <priority>0.8</priority>
-    </url>
-    
-    <url>
-        <loc>https://smartlab.fimtosoft.com/asphalt/test-flow</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
-        <priority>0.8</priority>
-    </url>
-    
-    <url>
-        <loc>https://smartlab.fimtosoft.com/asphalt/test-gradation</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
-        <priority>0.8</priority>
-    </url>
-    
-    <url>
-        <loc>https://smartlab.fimtosoft.com/asphalt/test-ignition</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
-        <priority>0.8</priority>
-    </url>
-    
-    <url>
-        <loc>https://smartlab.fimtosoft.com/asphalt/test-marshall</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
-        <priority>0.8</priority>
-    </url>
-    
-    <!-- Asphalt Design -->
-    <url>
-        <loc>https://smartlab.fimtosoft.com/asphalt/design-mix</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
-        <priority>0.8</priority>
-    </url>
-    
-    <url>
-        <loc>https://smartlab.fimtosoft.com/asphalt/design-gradation</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
-        <priority>0.8</priority>
-    </url>
-    
-    <url>
-        <loc>https://smartlab.fimtosoft.com/asphalt/design-stability</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
-        <priority>0.8</priority>
-    </url>
-    
-    <!-- Asphalt Client Pages -->
-    <url>
-        <loc>https://smartlab.fimtosoft.com/asphalt/client-analytics</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
+        <loc>https://smartlab.fimtosoft.com/asphalt/client/client-analytics.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
         <priority>0.7</priority>
     </url>
-    
+
     <url>
-        <loc>https://smartlab.fimtosoft.com/asphalt/client-equipment</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
+        <loc>https://smartlab.fimtosoft.com/asphalt/client/client-equipment.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
         <priority>0.7</priority>
     </url>
-    
+
     <url>
-        <loc>https://smartlab.fimtosoft.com/asphalt/client-projects</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
+        <loc>https://smartlab.fimtosoft.com/asphalt/client/client-projects.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
         <priority>0.7</priority>
     </url>
-    
+
     <url>
-        <loc>https://smartlab.fimtosoft.com/asphalt/client-schedule</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
+        <loc>https://smartlab.fimtosoft.com/asphalt/client/client-reports.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
         <priority>0.7</priority>
     </url>
-    
+
     <url>
-        <loc>https://smartlab.fimtosoft.com/asphalt/client-reports</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
+        <loc>https://smartlab.fimtosoft.com/asphalt/client/client-schedule.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
         <priority>0.7</priority>
     </url>
-    
-    <!-- Concrete Tests -->
+
     <url>
-        <loc>https://smartlab.fimtosoft.com/concrete/test-density</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
-        <priority>0.8</priority>
-    </url>
-    
-    <url>
-        <loc>https://smartlab.fimtosoft.com/concrete/test-extraction</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
-        <priority>0.8</priority>
-    </url>
-    
-    <url>
-        <loc>https://smartlab.fimtosoft.com/concrete/test-flow</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
-        <priority>0.8</priority>
-    </url>
-    
-    <url>
-        <loc>https://smartlab.fimtosoft.com/concrete/test-gradation</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
-        <priority>0.8</priority>
-    </url>
-    
-    <url>
-        <loc>https://smartlab.fimtosoft.com/concrete/test-ignition</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
-        <priority>0.8</priority>
-    </url>
-    
-    <url>
-        <loc>https://smartlab.fimtosoft.com/concrete/test-marshall</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
-        <priority>0.8</priority>
-    </url>
-    
-    <!-- Concrete Design -->
-    <url>
-        <loc>https://smartlab.fimtosoft.com/concrete/design-mix</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
-        <priority>0.8</priority>
-    </url>
-    
-    <url>
-        <loc>https://smartlab.fimtosoft.com/concrete/design-strengthage</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
-        <priority>0.8</priority>
-    </url>
-    
-    <!-- Concrete Client Pages -->
-    <url>
-        <loc>https://smartlab.fimtosoft.com/concrete/client-analytics</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
+        <loc>https://smartlab.fimtosoft.com/asphalt/client/client-team.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
         <priority>0.7</priority>
     </url>
-    
+
     <url>
-        <loc>https://smartlab.fimtosoft.com/concrete/client-equipment</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
+        <loc>https://smartlab.fimtosoft.com/asphalt/design/design-equipment.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/asphalt/design/design-gradation.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/asphalt/design/design-guideline.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/asphalt/design/design-layerthickness.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/asphalt/design/design-mix.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/asphalt/design/design-specimen.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/asphalt/design/design-stability.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/asphalt/design/design-temperature.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/asphalt/design/design-yourmix.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/asphalt/library.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
         <priority>0.7</priority>
     </url>
-    
+
     <url>
-        <loc>https://smartlab.fimtosoft.com/concrete/client-projects</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
+        <loc>https://smartlab.fimtosoft.com/asphalt/tests/density/</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/asphalt/tests/extraction/</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/asphalt/tests/flow/</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/asphalt/tests/gradation/</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/asphalt/tests/ignition/</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/asphalt/tests/marshall/</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/concrete/client/client-analytics.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
         <priority>0.7</priority>
     </url>
-    
+
     <url>
-        <loc>https://smartlab.fimtosoft.com/concrete/client-reports</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
+        <loc>https://smartlab.fimtosoft.com/concrete/client/client-equipment.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
         <priority>0.7</priority>
     </url>
-    
+
     <url>
-        <loc>https://smartlab.fimtosoft.com/concrete/client-schedule</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
+        <loc>https://smartlab.fimtosoft.com/concrete/client/client-projects.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
         <priority>0.7</priority>
     </url>
-    
+
     <url>
-        <loc>https://smartlab.fimtosoft.com/concrete/client-team</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
+        <loc>https://smartlab.fimtosoft.com/concrete/client/client-reports.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
         <priority>0.7</priority>
     </url>
-    
-    <!-- Soil Tests -->
+
     <url>
-        <loc>https://smartlab.fimtosoft.com/soil/test-atterberg</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
+        <loc>https://smartlab.fimtosoft.com/concrete/client/client-schedule.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.7</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/concrete/client/client-team.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.7</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/concrete/concrete.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.6</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/concrete/design/design-admixtures.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
         <priority>0.8</priority>
     </url>
-    
+
     <url>
-        <loc>https://smartlab.fimtosoft.com/soil/test-cbr</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
+        <loc>https://smartlab.fimtosoft.com/concrete/design/design-batchweights.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
         <priority>0.8</priority>
     </url>
-    
+
     <url>
-        <loc>https://smartlab.fimtosoft.com/soil/test-classification</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
+        <loc>https://smartlab.fimtosoft.com/concrete/design/design-break.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
         <priority>0.8</priority>
     </url>
-    
+
     <url>
-        <loc>https://smartlab.fimtosoft.com/soil/test-density</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
+        <loc>https://smartlab.fimtosoft.com/concrete/design/design-durability.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
         <priority>0.8</priority>
     </url>
-    
+
     <url>
-        <loc>https://smartlab.fimtosoft.com/soil/test-gradation</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
+        <loc>https://smartlab.fimtosoft.com/concrete/design/design-filter.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
         <priority>0.8</priority>
     </url>
-    
+
     <url>
-        <loc>https://smartlab.fimtosoft.com/soil/test-moisture</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
+        <loc>https://smartlab.fimtosoft.com/concrete/design/design-mix.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
         <priority>0.8</priority>
     </url>
-    
+
     <url>
-        <loc>https://smartlab.fimtosoft.com/soil/test-proctor</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
+        <loc>https://smartlab.fimtosoft.com/concrete/design/design-strengthage.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
         <priority>0.8</priority>
     </url>
-    
+
     <url>
-        <loc>https://smartlab.fimtosoft.com/soil/test-specificgravity</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
+        <loc>https://smartlab.fimtosoft.com/concrete/library/library.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.7</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/concrete/tests/airspeed/</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
         <priority>0.8</priority>
     </url>
-    
-    <!-- Soil Design -->
+
     <url>
-        <loc>https://smartlab.fimtosoft.com/soil/design-classification</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
+        <loc>https://smartlab.fimtosoft.com/concrete/tests/compressive/</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
         <priority>0.8</priority>
     </url>
-    
+
     <url>
-        <loc>https://smartlab.fimtosoft.com/soil/design-compaction</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
+        <loc>https://smartlab.fimtosoft.com/concrete/tests/cylinder/</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
         <priority>0.8</priority>
     </url>
-    
+
     <url>
-        <loc>https://smartlab.fimtosoft.com/soil/design-gradation</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
+        <loc>https://smartlab.fimtosoft.com/concrete/tests/density/</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
         <priority>0.8</priority>
     </url>
-    
+
     <url>
-        <loc>https://smartlab.fimtosoft.com/soil/design-pavement</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
+        <loc>https://smartlab.fimtosoft.com/concrete/tests/rebound/</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
         <priority>0.8</priority>
     </url>
-    
-    <!-- AI/Core Tools -->
+
     <url>
-        <loc>https://smartlab.fimtosoft.com/tools/dynamic-engine</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
-        <priority>0.9</priority>
-    </url>
-    
-    <!-- Library Pages -->
-    <url>
-        <loc>https://smartlab.fimtosoft.com/library</loc>
-        <lastmod>2025-07-27T10:00:00+00:00</lastmod>
+        <loc>https://smartlab.fimtosoft.com/concrete/tests/slump/</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
         <priority>0.8</priority>
     </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/concrete/tests/temp/</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/concrete/tests/upt/</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/dashboard/break-schedule.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.6</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/dashboard/lab-stats.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.6</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/dashboard/qr-tracking.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.6</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/soil/client/client-analytics.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.7</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/soil/client/client-equipment.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.7</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/soil/client/client-projects.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.7</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/soil/client/client-reports.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.7</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/soil/client/client-schedule.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.7</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/soil/client/client-team.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.7</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/soil/design/design-classification.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/soil/design/design-compaction.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/soil/design/design-gradation.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/soil/design/design-pavement.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/soil/library/library.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.7</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/soil/soil.html</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.6</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/soil/tests/cbr/</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/soil/tests/density/</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/soil/tests/grain/</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/soil/tests/limits/</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/soil/tests/moisture/</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/soil/tests/plasticity/</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/soil/tests/proctor/</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://smartlab.fimtosoft.com/soil/tests/specific/</loc>
+        <lastmod>2026-07-31T00:00:00+00:00</lastmod>
+        <priority>0.8</priority>
+    </url>
+
 </urlset>

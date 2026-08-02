@@ -1,18 +1,8 @@
 /* smartLAB — Admin Configuration
-   Change credentials and site structure here */
-var ADMIN_CONFIG = {
-    email: 'eng.ahmedabdoualyan@gmail.com',
-    password: 'fimto@ata',
-    sessionTimeout: 30 * 60 * 1000,
-    verificationCodeLength: 6,
-    flagClicksRequired: 5,
-    flagClickTimeout: 3000,
-    emailjs: {
-        publicKey: '',
-        serviceId: '',
-        templateId: ''
-    }
-};
+   Site structure and zone defaults. Admin credentials are NOT stored here;
+   they are validated server-side by the /api serverless functions using
+   the ADMIN_EMAIL / ADMIN_PASSWORD / AUTH_SECRET environment variables
+   (see .env.example and the Vercel dashboard). */
 
 /* Zone configuration for test pages */
 var ZONE_CONFIG = {
@@ -47,14 +37,14 @@ var SITE_STRUCTURE = {
             color: '#fb923c',
             path: '/concrete/',
             tests: [
-                { id: 'test-compressive', name: 'Compressive Strength', nameAr: 'القوة الانضغاطية', icon: '💪', path: '/concrete/tests/test-compressive.html', standard: 'ASTM C39', status: 'active' },
-                { id: 'test-slump', name: 'Slump Test', nameAr: 'اختبار الانهيار', icon: '🔬', path: '/concrete/tests/test-slump.html', standard: 'ASTM C143', status: 'active' },
-                { id: 'test-density', name: 'Unit Weight', nameAr: 'الوزن الحجمي', icon: '⚖️', path: '/concrete/tests/test-density.html', standard: 'ASTM C138', status: 'active' },
-                { id: 'test-airspeed', name: 'Air Content', nameAr: 'محتوى الهواء', icon: '💨', path: '/concrete/tests/test-airspeed.html', standard: 'ASTM C231', status: 'active' },
-                { id: 'test-temp', name: 'Temperature', nameAr: 'الحرارة', icon: '🌡️', path: '/concrete/tests/test-temp.html', standard: 'ASTM C1064', status: 'active' },
-                { id: 'test-cylinder', name: 'Cylinder Prep', nameAr: 'تحضير الأسطوانات', icon: '🧱', path: '/concrete/tests/test-cylinder.html', standard: 'ASTM C31', status: 'active' },
-                { id: 'test-rebound', name: 'Rebound Hammer', nameAr: 'مطرقة الارتداد', icon: '🔨', path: '/concrete/tests/test-rebound.html', standard: 'ASTM C805', status: 'active' },
-                { id: 'test-upt', name: 'Ultrasonic Pulse', nameAr: 'الموجات فوق الصوتية', icon: '📡', path: '/concrete/tests/test-upt.html', standard: 'ASTM C597', status: 'active' }
+                { id: 'test-compressive', name: 'Compressive Strength', nameAr: 'القوة الانضغاطية', icon: '💪', path: '/concrete/tests/compressive/index.html', standard: 'ASTM C39', status: 'active' },
+                { id: 'test-slump', name: 'Slump Test', nameAr: 'اختبار الانهيار', icon: '🔬', path: '/concrete/tests/slump/index.html', standard: 'ASTM C143', status: 'active' },
+                { id: 'test-density', name: 'Unit Weight', nameAr: 'الوزن الحجمي', icon: '⚖️', path: '/concrete/tests/density/index.html', standard: 'ASTM C138', status: 'active' },
+                { id: 'test-airspeed', name: 'Air Content', nameAr: 'محتوى الهواء', icon: '💨', path: '/concrete/tests/airspeed/index.html', standard: 'ASTM C231', status: 'active' },
+                { id: 'test-temp', name: 'Temperature', nameAr: 'الحرارة', icon: '🌡️', path: '/concrete/tests/temp/index.html', standard: 'ASTM C1064', status: 'active' },
+                { id: 'test-cylinder', name: 'Cylinder Prep', nameAr: 'تحضير الأسطوانات', icon: '🧱', path: '/concrete/tests/cylinder/index.html', standard: 'ASTM C31', status: 'active' },
+                { id: 'test-rebound', name: 'Rebound Hammer', nameAr: 'مطرقة الارتداد', icon: '🔨', path: '/concrete/tests/rebound/index.html', standard: 'ASTM C805', status: 'active' },
+                { id: 'test-upt', name: 'Ultrasonic Pulse', nameAr: 'الموجات فوق الصوتية', icon: '📡', path: '/concrete/tests/upt/index.html', standard: 'ASTM C597', status: 'active' }
             ],
             designs: [
                 { id: 'design-mix', name: 'Mix Design', icon: '🧪', path: '/concrete/design/design-mix.html' },
@@ -82,12 +72,12 @@ var SITE_STRUCTURE = {
             color: '#3b82f6',
             path: '/asphalt/',
             tests: [
-                { id: 'asphalt-marshall', name: 'Marshall Stability', nameAr: 'استقرار مارشال', icon: '🔨', path: '/asphalt/tests/test-marshall.html', standard: 'AASHTO T 245', status: 'active' },
-                { id: 'asphalt-flow', name: 'Flow Test', nameAr: 'اختبار التدفق', icon: '🌊', path: '/asphalt/tests/test-flow.html', standard: 'AASHTO T 245', status: 'active' },
-                { id: 'asphalt-density', name: 'Density Test', nameAr: 'اختبار الكثافة', icon: '⚖️', path: '/asphalt/tests/test-density.html', standard: 'AASHTO T 166', status: 'active' },
-                { id: 'asphalt-extraction', name: 'Extraction', nameAr: 'الاستخلاص', icon: '🧪', path: '/asphalt/tests/test-extraction.html', standard: 'AASHTO T 164', status: 'active' },
-                { id: 'asphalt-ignition', name: 'Ignition', nameAr: 'الاشتعال', icon: '🔥', path: '/asphalt/tests/test-ignition.html', standard: 'AASHTO T 308', status: 'active' },
-                { id: 'asphalt-gradation', name: 'Gradation', nameAr: 'التدريج', icon: '📊', path: '/asphalt/tests/test-gradation.html', standard: 'AASHTO T 27', status: 'active' }
+                { id: 'asphalt-marshall', name: 'Marshall Stability', nameAr: 'استقرار مارشال', icon: '🔨', path: '/asphalt/tests/marshall/index.html', standard: 'AASHTO T 245', status: 'active' },
+                { id: 'asphalt-flow', name: 'Flow Test', nameAr: 'اختبار التدفق', icon: '🌊', path: '/asphalt/tests/flow/index.html', standard: 'AASHTO T 245', status: 'active' },
+                { id: 'asphalt-density', name: 'Density Test', nameAr: 'اختبار الكثافة', icon: '⚖️', path: '/asphalt/tests/density/index.html', standard: 'AASHTO T 166', status: 'active' },
+                { id: 'asphalt-extraction', name: 'Extraction', nameAr: 'الاستخلاص', icon: '🧪', path: '/asphalt/tests/extraction/index.html', standard: 'AASHTO T 164', status: 'active' },
+                { id: 'asphalt-ignition', name: 'Ignition', nameAr: 'الاشتعال', icon: '🔥', path: '/asphalt/tests/ignition/index.html', standard: 'AASHTO T 308', status: 'active' },
+                { id: 'asphalt-gradation', name: 'Gradation', nameAr: 'التدريج', icon: '📊', path: '/asphalt/tests/gradation/index.html', standard: 'AASHTO T 27', status: 'active' }
             ],
             designs: [
                 { id: 'asphalt-design-mix', name: 'Mix Design', icon: '🧪', path: '/asphalt/design/design-mix.html' },
@@ -117,14 +107,14 @@ var SITE_STRUCTURE = {
             color: '#10b981',
             path: '/soil/',
             tests: [
-                { id: 'soil-proctor', name: 'Proctor Test', nameAr: 'اختبار بروكتور', icon: '🔨', path: '/soil/tests/test-proctor.html', standard: 'ASTM D698', status: 'active' },
-                { id: 'soil-plasticity', name: 'Plasticity Index', nameAr: 'مؤشر اللدونة', icon: '💧', path: '/soil/tests/test-plasticity.html', standard: 'ASTM D4318', status: 'active' },
-                { id: 'soil-density', name: 'Field Density', nameAr: 'الكثافة الميدانية', icon: '⚖️', path: '/soil/tests/test-density.html', standard: 'ASTM D1556', status: 'active' },
-                { id: 'soil-cbr', name: 'CBR Test', nameAr: 'اختبار CBR', icon: '🏗️', path: '/soil/tests/test-cbr.html', standard: 'ASTM D1883', status: 'active' },
-                { id: 'soil-limits', name: 'Atterberg Limits', nameAr: 'حدود أتربرج', icon: '🔬', path: '/soil/tests/test-limits.html', standard: 'ASTM D4318', status: 'active' },
-                { id: 'soil-specific', name: 'Specific Gravity', nameAr: 'الوزن النوعي', icon: '🌡️', path: '/soil/tests/test-specific.html', standard: 'ASTM D854', status: 'active' },
-                { id: 'soil-moisture', name: 'Moisture Content', nameAr: 'المحتوى المائي', icon: '💧', path: '/soil/tests/test-moisture.html', standard: 'ASTM D2216', status: 'active' },
-                { id: 'soil-grain', name: 'Grain Size', nameAr: 'حجم الحبيبات', icon: '📊', path: '/soil/tests/test-grain.html', standard: 'ASTM D6913', status: 'active' }
+                { id: 'soil-proctor', name: 'Proctor Test', nameAr: 'اختبار بروكتور', icon: '🔨', path: '/soil/tests/proctor/index.html', standard: 'ASTM D698', status: 'active' },
+                { id: 'soil-plasticity', name: 'Plasticity Index', nameAr: 'مؤشر اللدونة', icon: '💧', path: '/soil/tests/plasticity/index.html', standard: 'ASTM D4318', status: 'active' },
+                { id: 'soil-density', name: 'Field Density', nameAr: 'الكثافة الميدانية', icon: '⚖️', path: '/soil/tests/density/index.html', standard: 'ASTM D1556', status: 'active' },
+                { id: 'soil-cbr', name: 'CBR Test', nameAr: 'اختبار CBR', icon: '🏗️', path: '/soil/tests/cbr/index.html', standard: 'ASTM D1883', status: 'active' },
+                { id: 'soil-limits', name: 'Atterberg Limits', nameAr: 'حدود أتربرج', icon: '🔬', path: '/soil/tests/limits/index.html', standard: 'ASTM D4318', status: 'active' },
+                { id: 'soil-specific', name: 'Specific Gravity', nameAr: 'الوزن النوعي', icon: '🌡️', path: '/soil/tests/specific/index.html', standard: 'ASTM D854', status: 'active' },
+                { id: 'soil-moisture', name: 'Moisture Content', nameAr: 'المحتوى المائي', icon: '💧', path: '/soil/tests/moisture/index.html', standard: 'ASTM D2216', status: 'active' },
+                { id: 'soil-grain', name: 'Grain Size', nameAr: 'حجم الحبيبات', icon: '📊', path: '/soil/tests/grain/index.html', standard: 'ASTM D6913', status: 'active' }
             ],
             designs: [
                 { id: 'soil-design-classification', name: 'Classification', icon: '📋', path: '/soil/design/design-classification.html' },

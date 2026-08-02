@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>smartLAB — Soil Classification</title>
-    <link rel="icon" href="../favicon.ico">
+    <link rel="icon" href="../../favicon.ico">
     <link rel="stylesheet" href="design-common.css">
     <style>
         :root { --accent-page: #fb923c; }
@@ -315,7 +315,7 @@ GI ≥ 0 (negative set to 0)
         <a href="../soil.html" class="back-btn">← Back to Soil & Roads</a>
     </div>
     <div id="footer-placeholder"></div>
-    <script src="../components.js"></script>
+    <script src="../../components.js"></script>
     <script>
         function switchTab(tabId, btn) {
             document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
@@ -329,10 +329,10 @@ GI ≥ 0 (negative set to 0)
             const s = {
                 s3in: parseFloat(document.getElementById('s3in').value),
                 s2in: parseFloat(document.getElementById('s2in').value),
-                s1.5in: parseFloat(document.getElementById('s1.5in').value),
+                's1.5in': parseFloat(document.getElementById('s1.5in').value),
                 s1in: parseFloat(document.getElementById('s1in').value),
-                s34in: parseFloat(document.getElementById('s34in').value),
-                s38in: parseFloat(document.getElementById('s38in').value),
+                's34in': parseFloat(document.getElementById('s34in').value),
+                's38in': parseFloat(document.getElementById('s38in').value),
                 s4: parseFloat(document.getElementById('s4').value),
                 s10: parseFloat(document.getElementById('s10').value),
                 s40: parseFloat(document.getElementById('s40').value),
@@ -424,7 +424,7 @@ GI ≥ 0 (negative set to 0)
             const sieves = [
                 {p: s.s3in, size: 75},
                 {p: s.s2in, size: 50},
-                {p: s.s1.5in, size: 37.5},
+                {p: s['s1.5in'], size: 37.5},
                 {p: s.s1in, size: 25},
                 {p: s.s34in, size: 19},
                 {p: s.s38in, size: 9.5},

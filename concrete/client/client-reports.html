@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>smartLAB — Test Reports</title>
-    <link rel="icon" href="../favicon.ico">
+    <link rel="icon" href="../../favicon.ico">
     <link rel="stylesheet" href="client-common.css">
 </head>
 <body>
@@ -174,13 +174,12 @@
         document.getElementById('statusFilter').addEventListener('change', renderReports);
 
         // Language toggle
-        document.getElementById('langToggle').addEventListener('click', function() {
+        document.addEventListener('click', function(e) {
+        if (!e.target.closest || !e.target.closest('#lang-toggle')) return;
             lang = lang === 'en' ? 'ar' : 'en';
             localStorage.setItem('smartlab_lang', lang);
-            this.innerHTML = '<span class="lang-dot"></span> ' + lang.toUpperCase();
             renderReports();
         });
-        document.getElementById('langToggle').innerHTML = '<span class="lang-dot"></span> ' + lang.toUpperCase();
 
         // Init
         renderReports();

@@ -1,0 +1,140 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 10 10% 6%;
+    --foreground: 210 40% 98%;
+    --card: 10 10% 8%;
+    --card-foreground: 210 40% 98%;
+    --popover: 10 10% 8%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 221 83% 53%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 10 10% 12%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 10 10% 12%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 10 10% 12%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 10 10% 15%;
+    --input: 10 10% 15%;
+    --ring: 221 83% 53%;
+    --radius: 0.625rem;
+
+    /* SmartLab custom colors matching original design */
+    --slab-deep: 10 10% 6%;
+    --slab-card: 10 10% 8%;
+    --slab-border-glass: 215 20% 65% / 0.1;
+    --slab-text-primary: 210 40% 98%;
+    --slab-text-secondary: 215 20% 65%;
+    --slab-text-muted: 215 16% 47%;
+    --slab-accent-blue: 221 83% 53%;
+    --slab-accent-gold: 43 96% 56%;
+    --slab-accent-amber: 36 96% 50%;
+    --slab-accent-emerald: 142 76% 36%;
+    --slab-accent-red: 0 84% 60%;
+    --slab-accent-cyan: 188 95% 43%;
+    --slab-accent-purple: 271 81% 56%;
+  }
+
+  .dark {
+    --background: 10 10% 6%;
+    --foreground: 210 40% 98%;
+    --card: 10 10% 8%;
+    --card-foreground: 210 40% 98%;
+    --popover: 10 10% 8%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 10 10% 6%;
+    --secondary: 10 10% 12%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 10 10% 12%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 10 10% 12%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 10 10% 15%;
+    --input: 10 10% 15%;
+    --ring: 224 76% 48%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Cairo', 'Segoe UI', system-ui, sans-serif;
+    padding-top: 64px;
+    color-scheme: dark;
+    direction: rtl;
+    text-align: right;
+  }
+  html {
+    @apply scroll-smooth;
+  }
+}
+
+@layer utilities {
+  .rtl {
+    direction: rtl;
+    text-align: right;
+  }
+  .ltr {
+    direction: ltr;
+    text-align: left;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Glass morphism utilities */
+  .glass {
+    @apply bg-[rgba(15,23,42,0.65)] backdrop-blur-xl border border-[rgba(148,163,184,0.10)];
+  }
+  .glass-hover:hover {
+    @apply bg-[rgba(20,30,55,0.85)] border-[rgba(148,163,184,0.18)];
+  }
+  
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-gradient-to-r from-slab-accent-blue via-slab-accent-gold to-slab-accent-emerald bg-clip-text text-transparent;
+  }
+  
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-slab-deep;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slab-border-glass-hover rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-slab-text-muted;
+  }
+}
+
+/* RTL Support */
+[dir="rtl"] .app-header .header-left {
+  flex-direction: row-reverse;
+}
+[dir="rtl"] .app-header .header-right {
+  flex-direction: row-reverse;
+}
+[dir="rtl"] .vg-step .vg-text .cursor {
+  margin-right: 2px;
+  margin-left: 0;
+}

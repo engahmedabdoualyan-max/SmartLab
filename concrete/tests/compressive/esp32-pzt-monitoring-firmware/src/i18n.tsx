@@ -1,0 +1,1024 @@
+/* ------------------------------------------------------------------ *
+ *  i18n.tsx — smartLAB multi-language support
+ *
+ *  English is the primary / fallback language.
+ *  Supported: EN · AR · RU · DE · ZH · JA · FR
+ *
+ *  Usage:
+ *    const { t, lang, setLang, dir } = useLang();
+ *    <span>{t("nav.telemetry")}</span>
+ * ------------------------------------------------------------------ */
+
+import {
+  createContext,
+  useContext,
+  useState,
+  type ReactNode,
+} from "react";
+
+export type LangCode = "en" | "ar" | "ru" | "de" | "zh" | "ja" | "fr";
+
+export interface LangMeta {
+  code: LangCode;
+  label: string;     // native name shown in the dropdown
+  flag: string;      // emoji flag
+  dir: "ltr" | "rtl";
+}
+
+export const LANGUAGES: LangMeta[] = [
+  { code: "en", label: "English",    flag: "🇬🇧", dir: "ltr" },
+  { code: "ar", label: "العربية",    flag: "🇸🇦", dir: "rtl" },
+  { code: "ru", label: "Русский",    flag: "🇷🇺", dir: "ltr" },
+  { code: "de", label: "Deutsch",    flag: "🇩🇪", dir: "ltr" },
+  { code: "zh", label: "中文",        flag: "🇨🇳", dir: "ltr" },
+  { code: "ja", label: "日本語",      flag: "🇯🇵", dir: "ltr" },
+  { code: "fr", label: "Français",   flag: "🇫🇷", dir: "ltr" },
+];
+
+/* ── translation dictionary ─────────────────────────────────────── */
+type Dict = Record<string, string>;
+type Translations = Record<LangCode, Dict>;
+
+const T: Translations = {
+  /* ── ENGLISH (primary) ──────────────────────────────────────── */
+  en: {
+    /* nav */
+    "nav.home":          "Home",
+    "nav.client":        "Client Zone",
+    "nav.guide":         "Guide",
+    "nav.telemetry":     "Telemetry",
+    "nav.firmware":      "Firmware",
+    "nav.hardware":      "Hardware",
+    "nav.architecture":  "Architecture",
+    "nav.uplink":        "Uplink",
+
+    /* hero */
+    "hero.kicker":       "Firmware delivery — ESP32-WROOM-32 · Arduino core 3.x",
+    "hero.meta":         "0 blocking calls",
+    "hero.body":         "Production firmware for an embedded piezoelectric patch reading the electromechanical impedance of a concrete specimen — a logarithmic 1–500 kHz sweep, divider-derived R / G / F, an RMSD damage index, and a sub-30 ms ultimate-strength latch, all streamed to fimtosoft.com at 1 Hz without a single delay().",
+    "hero.chip1":        "≈83 kS/s burst ADC",
+    "hero.chip2":        "EMI sweep · 96 log steps",
+    "hero.chip3":        "crush latch < 30 ms",
+    "hero.chip4":        "TLS POST @ 1 Hz",
+    "hero.chip5":        "RMSD damage index",
+    "hero.btn.review":   "Review firmware source ↓",
+    "hero.btn.download": "Download .ino",
+
+    /* section kickers / titles / blurbs */
+    "s01.kicker": "Live node simulation",
+    "s01.title":  "Telemetry bench",
+    "s01.blurb":  "The live node twin carries a 28-day concrete hydration state into every spectrum and telemetry frame. The forensic QA console above can inject fraud, wire-cut, blackout, and acoustic-collapse conditions; this bench shows the resulting raw sweep, divider math, and cloud lineage in real time.",
+
+    "s02.kicker": "Source delivery",
+    "s02.title":  "Firmware — {file}",
+    "s02.blurb":  "The complete production source in ten annotated sections. Every task — ADC burst, sweep dwell, WiFi watchdog, HTTPS POST, LEDs — is a millis()/micros() deadline inside one cooperative loop(); the non-blocking audit below is computed from this exact text.",
+
+    "s03.kicker": "Physical layer",
+    "s03.title":  "Hardware interface",
+    "s03.blurb":  "Single-supply divider sensing: the LEDC sweep drives the patch through a precision series resistor, and the mid-point is burst-sampled on ADC1_CH0. The same three measurements — Vp, divider inversion, argmax over the sweep — yield R, G and the resonant frequency F.",
+
+    "s04.kicker": "System design",
+    "s04.title":  "Architecture & timing",
+    "s04.blurb":  "One loop(), five deadline-driven tasks, and a four-state machine. The failure detector is a peak-hold latch: a spike past 950 counts arms it, three open-line dwells inside 30 ms confirm it, and the fault frame jumps the telemetry queue on the next pass.",
+
+    "s05.kicker": "Cloud contract",
+    "s05.title":  "smartLAB uplink",
+    "s05.blurb":  "One HTTPS POST per second to https://fimtosoft.com — JSON built with ArduinoJson v7 over pinned TLS, bounded by a 2.2 s hard timeout, with exponential backoff and a four-frame offline spool so a dead link never swallows a crush event.",
+
+    /* footer — smartLAB product */
+    "footer.tagline":   "Electromechanical-impedance monitoring for concrete structures — from embedded PZT patch to cloud, on a single ESP32.",
+    "footer.copyright": "© 2026 smartLAB · Fimto Soft — firmware released under MIT",
+    "footer.verified":  "non-blocking verified",
+
+    /* footer — Fimto Soft company */
+    "fimto.name":        "Fimto Soft",
+    "fimto.slogan":      "Integrated Tech Solutions",
+    "fimto.about":       "We provide comprehensive software solutions including advanced interactive ERP systems, maintenance and development of ready-mix concrete plants, web design and development, distinguished digital marketing, creation and development of security and surveillance systems, establishment and development of infrastructure networks, AI applications, and smart home systems.",
+    "fimto.links":       "Quick Links",
+    "fimto.link.home":   "Home",
+    "fimto.link.about":  "About",
+    "fimto.link.services":"Services",
+    "fimto.link.contact":"Contact",
+    "fimto.contact":     "Contact Us",
+    "fimto.locations":   "Our Locations",
+    "fimto.eg":          "Cairo, Egypt",
+    "fimto.ksa":         "Riyadh, Saudi Arabia",
+    "fimto.poweredby":   "Powered by Fimto Soft",
+
+    /* ── User Guide ─────────────────────────────────────────────── */
+    "guide.kicker":      "Interactive walkthrough",
+    "guide.title":       "How to Use the Platform",
+    "guide.subtitle":    "Follow the five steps below to go from hardware setup to certified cloud telemetry in minutes.",
+    "guide.badge.new":   "NEW",
+    "guide.progress":    "Step {n} of {total}",
+    "guide.btn.prev":    "← Previous",
+    "guide.btn.next":    "Next →",
+    "guide.btn.start":   "Start walkthrough",
+    "guide.btn.restart": "Restart",
+    "guide.btn.done":    "Done ✓",
+
+    "guide.s1.tag":   "Step 01",
+    "guide.s1.title": "Flash the Firmware",
+    "guide.s1.body":  "Download the pzt_emi_monitor.ino file and open it in the Arduino IDE (≥ 2.x). Install the ESP32 board package via Boards Manager, set the target to ESP32-WROOM-32, and click Upload. The serial monitor will confirm a successful boot at 921 600 baud.",
+    "guide.s1.tip":   "Tip: hold the BOOT button on the ESP32 during upload if the port does not auto-reset.",
+
+    "guide.s2.tag":   "Step 02",
+    "guide.s2.title": "Wire the PZT Patch",
+    "guide.s2.body":  "Connect the piezoelectric smart-aggregate to the voltage-divider circuit: GPIO25 → Rs 1 kΩ → PZT patch → GND. Tap the midpoint into GPIO36 (ADC1_CH0). Use a twisted-pair cable; tie the shield to the AGND star point only.",
+    "guide.s2.tip":   "Tip: keep the sensing trace away from the LEDC drive trace to avoid coupling noise.",
+
+    "guide.s3.tag":   "Step 03",
+    "guide.s3.title": "Configure Wi-Fi & Cloud",
+    "guide.s3.body":  "Edit WIFI_SSID and WIFI_PASSWORD in the configuration block. The API endpoint is pre-set to https://fimtosoft.com/api/v1/telemetry. For production, paste your root CA PEM into API_ROOT_CA to enable certificate-pinned TLS.",
+    "guide.s3.tip":   "Tip: the node announces its IP address on the serial monitor once the link is established.",
+
+    "guide.s4.tag":   "Step 04",
+    "guide.s4.title": "Monitor the Telemetry Bench",
+    "guide.s4.body":  "Use this page's Telemetry Bench to watch the live EMI sweep, voltage peak, resistance, resonant frequency and RMSD damage index in real time. Run a Load Cycle to simulate progressive hydration, or trigger the QA scenarios to validate the failure-detection logic.",
+    "guide.s4.tip":   "Tip: enable Network Blackout to test the IndexedDB spool and watch the recovery replay when you restore the link.",
+
+    "guide.s5.tag":   "Step 05",
+    "guide.s5.title": "Interpret Results & Certification",
+    "guide.s5.body":  "The AI Diagnostic Deck projects the Day-28 compressive strength from early-age impedance drift. Once the specimen reaches the certification threshold the dashboard shows CERTIFIED. A MIX_ADULTERATION or CONCRETE_CRUSHED event is flagged immediately with a timestamped fault packet.",
+    "guide.s5.tip":   "Tip: export the session log from the Forensic QA console for compliance documentation.",
+
+    /* ── Client Zone ─────────────────────────────────────────────── */
+    "cz.nav":              "Client Zone",
+    "cz.kicker":           "Your workspace",
+    "cz.title":            "Client Zone",
+    "cz.subtitle":         "Manage your projects, connect your device, download the firmware, and run structural health tests — all in one place.",
+
+    "cz.tab.projects":     "My Projects",
+    "cz.tab.connect":      "Device Setup",
+    "cz.tab.readings":     "Live Readings",
+    "cz.tab.reports":      "Test Reports",
+
+    /* projects */
+    "cz.proj.title":       "Project Manager",
+    "cz.proj.new":         "New Project",
+    "cz.proj.empty":       "No projects yet. Create your first project to start testing.",
+    "cz.proj.name":        "Project Name",
+    "cz.proj.location":    "Location / Site",
+    "cz.proj.concrete":    "Concrete Grade",
+    "cz.proj.date":        "Start Date",
+    "cz.proj.notes":       "Notes",
+    "cz.proj.save":        "Save Project",
+    "cz.proj.cancel":      "Cancel",
+    "cz.proj.delete":      "Delete",
+    "cz.proj.select":      "Select",
+    "cz.proj.active":      "Active",
+    "cz.proj.specimens":   "specimens",
+    "cz.proj.created":     "Created",
+    "cz.proj.status.ok":   "Certified",
+    "cz.proj.status.pend": "Pending",
+    "cz.proj.status.fail": "Failed",
+
+    /* device connect */
+    "cz.dev.title":        "Device Connection Wizard",
+    "cz.dev.step1":        "Connect ESP32 via USB",
+    "cz.dev.step1b":       "Plug the ESP32-WROOM-32 board into your computer using a USB-A to Micro-USB data cable (not a charge-only cable).",
+    "cz.dev.step2":        "Install Drivers",
+    "cz.dev.step2b":       "If the port is not detected, install the CP210x or CH340 USB-UART driver for your operating system.",
+    "cz.dev.step3":        "Download & Flash Firmware",
+    "cz.dev.step3b":       "Click the button below to download the firmware file, then open it in Arduino IDE and click Upload.",
+    "cz.dev.step4":        "Verify Connection",
+    "cz.dev.step4b":       "Once flashed, the ESP32 will connect to Wi-Fi and start streaming data to the platform within 30 seconds.",
+    "cz.dev.download":     "Download Firmware (.ino)",
+    "cz.dev.download2":    "Download Setup Guide (PDF)",
+    "cz.dev.connected":    "Device Connected",
+    "cz.dev.notconnected": "Device Not Detected",
+    "cz.dev.simulate":     "Simulate Connected Device",
+    "cz.dev.disconnect":   "Disconnect",
+    "cz.dev.id":           "Device ID",
+    "cz.dev.port":         "Port",
+    "cz.dev.firmware":     "Firmware",
+    "cz.dev.signal":       "Signal",
+    "cz.dev.driver.cp":    "Download CP210x Driver",
+    "cz.dev.driver.ch":    "Download CH340 Driver",
+
+    /* readings */
+    "cz.read.title":       "Live Sensor Readings",
+    "cz.read.start":       "Start Reading",
+    "cz.read.stop":        "Stop Reading",
+    "cz.read.save":        "Save Reading",
+    "cz.read.clear":       "Clear",
+    "cz.read.nodev":       "No device connected. Go to Device Setup to connect your ESP32.",
+    "cz.read.noproj":      "Please select a project first.",
+    "cz.read.specimen":    "Specimen ID",
+    "cz.read.age":         "Specimen Age (days)",
+    "cz.read.label":       "Label / Notes",
+    "cz.read.add":         "Add Specimen",
+    "cz.read.saved":       "Reading saved to project",
+    "cz.read.voltage":     "Voltage Peak",
+    "cz.read.resistance":  "Resistance",
+    "cz.read.frequency":   "Resonant Freq.",
+    "cz.read.conductance": "Conductance",
+    "cz.read.damage":      "Damage Index",
+    "cz.read.strength":    "Est. Strength",
+    "cz.read.cert":        "Certification",
+    "cz.read.history":     "Reading History",
+    "cz.read.export":      "Export CSV",
+
+    /* reports */
+    "cz.rep.title":        "Test Reports",
+    "cz.rep.empty":        "No reports yet. Save readings from the Live Readings tab to generate reports.",
+    "cz.rep.generate":     "Generate Report",
+    "cz.rep.download":     "Download Report",
+    "cz.rep.specimen":     "Specimen",
+    "cz.rep.age":          "Age",
+    "cz.rep.mpa":          "MPa",
+    "cz.rep.cert":         "Cert.",
+    "cz.rep.date":         "Date",
+    "cz.rep.verdict":      "Verdict",
+    "cz.rep.pass":         "PASS",
+    "cz.rep.fail":         "FAIL",
+    "cz.rep.pending":      "PENDING",
+
+    /* ── Token system (EN) ───────────────────────────────────────── */
+    "tok.title":        "Factory Tokens",
+    "tok.available":    "Available",
+    "tok.used":         "Used",
+    "tok.certified":    "Total Issued",
+    "tok.order":        "🛒 Order Genuine Sensors",
+    "tok.order50":      "+50 tokens · Batch Order",
+    "tok.order100":     "+100 tokens · Batch Order",
+    "tok.deduct":       "−1 token · Sensor Session",
+    "tok.rom":          "ROM ID",
+    "tok.badge.cert":   "🔒 Certified Genuine (Factory Calibrated)",
+    "tok.badge.generic":"⚡ Generic (Self-Calibrated)",
+    "tok.badge.short.cert":"PROPRIETARY_CERTIFIED",
+    "tok.badge.short.gen":"GENERIC_RAW",
+    "tok.order.done":   "✓ Order fulfilled — tokens added",
+    "tok.order.proc":   "Processing authorization…",
+    "tok.order.err":    "Insufficient tokens — order more sensors",
+    "tok.history":      "Token Ledger",
+    "tok.low":          "⚠ Low balance",
+    "tok.ordershist":   "Order History",
+    "tok.session.cert": "Certified smartLAB Sensor — 1-Wire ROM verified",
+    "tok.session.gen":  "Generic sensor (self-calibrated, no ROM)",
+    "tok.choose":       "Sensor type",
+
+    /* ── Shipment tracker (EN) ───────────────────────────────────── */
+    "fold.expand":         "Expand",
+    "fold.collapse":       "Collapse",
+    "fold.sum.firmware":   "Collapsed — {lines} lines across {n} annotated sections. Click to expand.",
+    "fold.sum.refs":       "Collapsed — {n} DOI-verified references and standards. Click to expand.",
+
+    "nav.cloud":           "Cloud",
+    "cloud.kicker":        "Time-series backend",
+    "cloud.title":         "InfluxDB 3 Cloud Serverless",
+    "cloud.connected":     "live",
+    "cloud.testing":       "querying…",
+    "cloud.failed":        "failed",
+    "cloud.idle":          "not connected",
+    "cloud.proxy":         "Query proxy endpoint",
+    "cloud.proxy.hint":    "Your deployed /api/influx-query URL. The InfluxDB token stays on the server — it is never sent to this page.",
+    "cloud.session":       "Session ID (node)",
+    "cloud.uselive":       "Use live cloud data",
+    "cloud.uselive.hint":  "Off = local simulation",
+    "cloud.run":           "Run SQL queries",
+    "cloud.warn":          "Never place an InfluxDB token in this dashboard. This app builds to a single public HTML file — any token inside it is readable by every visitor. Queries are proxied server-side by design.",
+    "cloud.m.bins":        "live bins",
+    "cloud.m.base":        "baseline bins",
+    "cloud.m.peak":        "peak Δ at",
+    "cloud.chart1":        "Conductance (µS) vs Frequency — live vs baseline",
+    "cloud.chart2":        "RMSD damage trend — date_bin aggregate",
+    "cloud.sql":           "SQL being executed",
+    "cloud.export":        "Export",
+    "cloud.export.pdf":    "PDF Report",
+    "cloud.export.xlsx":   "Excel",
+    "cloud.export.print":  "Print",
+    "cloud.export.chart":  "chart snapshot included",
+
+    "search.btn":          "Search",
+    "search.title":        "Search the platform",
+    "search.placeholder":  "Search sections, firmware, pins, references…",
+    "search.hint":         "Type to search — or try one of these",
+    "search.none":         "No results for",
+    "search.nav":          "navigate",
+    "search.open":         "open",
+    "search.close":        "close",
+    "search.results":      "results",
+    "search.k.section":    "Section",
+    "search.k.action":     "Action",
+    "search.k.firmware":   "Firmware",
+    "search.k.reference":  "Reference",
+    "search.k.pin":        "Pin",
+    "search.k.glossary":   "Term",
+    "theme.toggle":        "Toggle colour theme",
+    "theme.light":         "Switch to light mode",
+    "theme.dark":          "Switch to dark mode",
+    "top.label":           "Back to top",
+
+    "nav.refs":            "References",
+    "ref.kicker":          "Scientific basis",
+    "ref.title":           "References & Standards",
+    "ref.subtitle":        "Every model in this platform — the EMI admittance sweep, the RMSD damage index, the maturity-based strength projection — traces back to peer-reviewed literature. All DOIs below resolve to the published record.",
+    "ref.entries":         "entries",
+    "ref.seminal":         "Seminal",
+    "ref.bibtex":          "BibTeX",
+    "ref.copied":          "Copied",
+    "ref.copyall":         "Copy all",
+    "ref.search":          "Search title, author, year…",
+    "ref.none":            "No references match your filter.",
+    "ref.publisher":       "Publisher",
+    "ref.footer":          "All entries verified against the live DOI record · not auto-generated",
+    "ref.cat.all":         "All",
+    "ref.cat.foundation":  "EMI Theory",
+    "ref.cat.aggregate":   "Smart Aggregates",
+    "ref.cat.earlyage":    "Early-Age & Hydration",
+    "ref.cat.ai":          "AI / Machine Learning",
+    "ref.cat.standard":    "Standards",
+
+    "cz.rep.print":    "Print",
+    "cz.rep.pdf":      "PDF",
+    "cz.rep.excel":    "Excel",
+    "cz.rep.techsign": "Lab Technician — signature & date",
+    "cz.rep.engsign":  "Certifying Engineer — signature & stamp",
+
+    "ship.title":           "Factory Order & Shipment Tracker",
+    "ship.orders":          "orders",
+    "ship.orderid":         "Order ID",
+    "ship.qty":             "Sensor Qty",
+    "ship.date":            "Order Date",
+    "ship.status":          "Logistics Status",
+    "ship.tracking":        "Tracking",
+    "ship.stage.encap":     "Under Laboratory Encapsulation",
+    "ship.stage.dispatch":  "Dispatched via SMSA Express",
+    "ship.stage.delivered": "Delivered & Credited",
+
+    /* lang picker */
+    "lang.label": "Language",
+    "lang.select": "Select language",
+  },
+
+  /* ── ARABIC ─────────────────────────────────────────────────── */
+  ar: {
+    "nav.home":          "الرئيسية",
+    "nav.client":        "منطقة العميل",
+    "nav.guide":         "دليل الاستخدام",
+    "nav.telemetry":     "القياس عن بُعد",
+    "nav.firmware":      "البرمجيات الثابتة",
+    "nav.hardware":      "المكونات المادية",
+    "nav.architecture":  "البنية والتوقيت",
+    "nav.uplink":        "الاتصال السحابي",
+
+    "hero.kicker":       "تسليم البرنامج الثابت — ESP32-WROOM-32 · Arduino core 3.x",
+    "hero.meta":         "صفر استدعاءات حجب",
+    "hero.body":         "برنامج إنتاجي ثابت لرقعة كهرضغطية مدمجة تقرأ ممانعة كهروميكانيكية لعينة خرسانية — مسح لوغاريتمي من 1 إلى 500 كيلوهرتز، مع مؤشر تلف RMSD، ومسمار قوة نهائي أقل من 30 ملي ثانية، يُبث إلى fimtosoft.com بمعدل 1 هرتز.",
+    "hero.chip1":        "≈83 كيلو عينة/ث ADC",
+    "hero.chip2":        "مسح EMI · 96 خطوة لوغاريتمية",
+    "hero.chip3":        "قفل سحق < 30 مللي ث",
+    "hero.chip4":        "TLS POST @ 1 هرتز",
+    "hero.chip5":        "مؤشر تلف RMSD",
+    "hero.btn.review":   "مراجعة كود البرنامج ↓",
+    "hero.btn.download": "تحميل ملف .ino",
+
+    "s01.kicker": "محاكاة حية للعقدة",
+    "s01.title":  "منضدة القياس عن بُعد",
+    "s01.blurb":  "يحمل التوأم الافتراضي للعقدة حالة إماهة خرسانية مدتها 28 يومًا في كل طيف وإطار قياس. تستطيع وحدة تحكم QA الجنائية حقن الاحتيال وقطع الأسلاك والانقطاع وظروف الانهيار الصوتي.",
+
+    "s02.kicker": "تسليم المصدر",
+    "s02.title":  "البرنامج الثابت — {file}",
+    "s02.blurb":  "المصدر الإنتاجي الكامل في عشرة أقسام مشروحة. كل مهمة — ADC، مسح المسكن، WiFi watchdog، HTTPS POST — هي موعد millis()/micros() داخل حلقة تعاونية واحدة.",
+
+    "s03.kicker": "الطبقة المادية",
+    "s03.title":  "واجهة المكونات المادية",
+    "s03.blurb":  "استشعار مقسم الجهد أحادي الإمداد: يقود مسح LEDC الرقعة عبر مقاومة تسلسلية دقيقة، ويُأخذ عينات من نقطة المنتصف على ADC1_CH0.",
+
+    "s04.kicker": "تصميم النظام",
+    "s04.title":  "البنية والتوقيت",
+    "s04.blurb":  "حلقة واحدة loop()، خمس مهام تعتمد على المواعيد، وآلة ذات أربع حالات. كاشف الأعطال هو قفل ذروة: يُسلح بارتفاع يتجاوز 950 عدًا، ويُؤكَّد بثلاث فترات خمول خلال 30 ملي ثانية.",
+
+    "s05.kicker": "عقد السحابة",
+    "s05.title":  "الاتصال السحابي smartLAB",
+    "s05.blurb":  "طلب HTTPS POST واحد في الثانية إلى https://fimtosoft.com — JSON مبني بـ ArduinoJson v7 عبر TLS ثابت، مع تراجع أسي وخزان مؤقت مكون من أربعة إطارات.",
+
+    "footer.tagline":   "مراقبة الممانعة الكهروميكانيكية للهياكل الخرسانية — من رقعة PZT مدمجة إلى السحابة، على ESP32 واحد.",
+    "footer.copyright": "© 2026 smartLAB · فيمتو سوفت — البرنامج مُصدَّر بموجب MIT",
+    "footer.verified":  "تم التحقق من عدم الحجب",
+
+    "fimto.name":        "فيمتو سوفت",
+    "fimto.slogan":      "حلول تقنية متكاملة",
+    "fimto.about":       "نُقدِّم حلولاً برمجية شاملة تشمل أنظمة ERP تفاعلية متطورة، وصيانة وتطوير محطات الخرسانة الجاهزة، وتصميم وتطوير المواقع الإلكترونية، وتسويقاً رقمياً مميزاً، وأنظمة أمن ومراقبة، وبنية تحتية للشبكات، وتطبيقات الذكاء الاصطناعي، وأنظمة المنازل الذكية.",
+    "fimto.links":       "روابط سريعة",
+    "fimto.link.home":   "الرئيسية",
+    "fimto.link.about":  "من نحن",
+    "fimto.link.services":"خدماتنا",
+    "fimto.link.contact":"اتصل بنا",
+    "fimto.contact":     "تواصل معنا",
+    "fimto.locations":   "مواقعنا",
+    "fimto.eg":          "القاهرة، مصر",
+    "fimto.ksa":         "الرياض، المملكة العربية السعودية",
+    "fimto.poweredby":   "مشغَّل بواسطة فيمتو سوفت",
+
+    /* ── دليل المستخدم (AR) ──────────────────────────────────────── */
+    "guide.kicker":      "جولة تفاعلية",
+    "guide.title":       "كيفية استخدام المنصة",
+    "guide.subtitle":    "اتبع الخطوات الخمس أدناه للانتقال من إعداد الأجهزة إلى القياس السحابي المعتمد في دقائق.",
+    "guide.badge.new":   "جديد",
+    "guide.progress":    "الخطوة {n} من {total}",
+    "guide.btn.prev":    "→ السابق",
+    "guide.btn.next":    "التالي ←",
+    "guide.btn.start":   "ابدأ الجولة",
+    "guide.btn.restart": "إعادة البدء",
+    "guide.btn.done":    "تم ✓",
+
+    "guide.s1.tag":   "الخطوة 01",
+    "guide.s1.title": "تثبيت البرنامج الثابت",
+    "guide.s1.body":  "حمِّل ملف pzt_emi_monitor.ino وافتحه في Arduino IDE (≥ 2.x). ثبِّت حزمة لوحة ESP32 عبر Boards Manager، اختر الهدف ESP32-WROOM-32، ثم انقر Upload. سيؤكد شاشة السيريال الإقلاع الناجح بسرعة 921 600 baud.",
+    "guide.s1.tip":   "نصيحة: اضغط زر BOOT على ESP32 أثناء الرفع إذا لم تُعيَّن المنفذ تلقائيًا.",
+
+    "guide.s2.tag":   "الخطوة 02",
+    "guide.s2.title": "توصيل رقعة PZT",
+    "guide.s2.body":  "وصِّل الركيزة الكهرضغطية الذكية بدائرة مقسِّم الجهد: GPIO25 → Rs 1 kΩ → رقعة PZT → GND. أوصل نقطة المنتصف بـ GPIO36 (ADC1_CH0). استخدم كبلاً مجدولاً وربط الدرع بنقطة AGND فقط.",
+    "guide.s2.tip":   "نصيحة: أبعد خط الاستشعار عن خط تشغيل LEDC لتجنب تضافر الضوضاء.",
+
+    "guide.s3.tag":   "الخطوة 03",
+    "guide.s3.title": "إعداد Wi-Fi والسحابة",
+    "guide.s3.body":  "حرِّر WIFI_SSID و WIFI_PASSWORD في كتلة الإعداد. نقطة نهاية API محددة مسبقًا: https://fimtosoft.com/api/v1/telemetry. للإنتاج، الصق شهادة CA الجذر في API_ROOT_CA لتفعيل TLS المثبَّت.",
+    "guide.s3.tip":   "نصيحة: يُعلن النظام عن عنوان IP على شاشة السيريال عند إنشاء الاتصال.",
+
+    "guide.s4.tag":   "الخطوة 04",
+    "guide.s4.title": "مراقبة منضدة القياس",
+    "guide.s4.body":  "استخدم منضدة القياس في هذه الصفحة لمشاهدة مسح EMI الحي وذروة الجهد والمقاومة وتردد الرنين ومؤشر الضرر RMSD في الوقت الفعلي. نفِّذ دورة تحميل لمحاكاة الإماهة التدريجية، أو ابدأ سيناريوهات QA للتحقق من منطق كشف الأعطال.",
+    "guide.s4.tip":   "نصيحة: فعِّل Blackout الشبكة لاختبار سجل IndexedDB ومشاهدة استعادة البيانات عند استئناف الاتصال.",
+
+    "guide.s5.tag":   "الخطوة 05",
+    "guide.s5.title": "تفسير النتائج والاعتماد",
+    "guide.s5.body":  "يتوقع سطح التشخيص بالذكاء الاصطناعي مقاومة الضغط في اليوم 28 من انجراف الممانعة في المرحلة المبكرة. عند وصول العينة إلى عتبة الاعتماد، تظهر لوحة التحكم CERTIFIED. يُبلَّغ عن حادثة MIX_ADULTERATION أو CONCRETE_CRUSHED فورًا مع حزمة خطأ مُختومة بالتوقيت.",
+    "guide.s5.tip":   "نصيحة: صدِّر سجل الجلسة من وحدة تحكم QA الجنائية لتوثيق الامتثال.",
+
+    /* ── منطقة العميل (AR) ──────────────────────────────────────── */
+    "cz.nav":"منطقة العميل","cz.kicker":"مساحة عملك","cz.title":"منطقة العميل","cz.subtitle":"أدِر مشاريعك، وصِّل جهازك، حمِّل البرنامج، وشغِّل اختبارات السلامة الإنشائية من مكان واحد.",
+    "cz.tab.projects":"مشاريعي","cz.tab.connect":"إعداد الجهاز","cz.tab.readings":"القراءات الحية","cz.tab.reports":"تقارير الاختبار",
+    "cz.proj.title":"إدارة المشاريع","cz.proj.new":"مشروع جديد","cz.proj.empty":"لا توجد مشاريع بعد. أنشئ مشروعك الأول لبدء الاختبار.","cz.proj.name":"اسم المشروع","cz.proj.location":"الموقع / الموقع","cz.proj.concrete":"درجة الخرسانة","cz.proj.date":"تاريخ البدء","cz.proj.notes":"ملاحظات","cz.proj.save":"حفظ المشروع","cz.proj.cancel":"إلغاء","cz.proj.delete":"حذف","cz.proj.select":"تحديد","cz.proj.active":"نشط","cz.proj.specimens":"عينات","cz.proj.created":"تم الإنشاء","cz.proj.status.ok":"معتمد","cz.proj.status.pend":"قيد الانتظار","cz.proj.status.fail":"فاشل",
+    "cz.dev.title":"معالج توصيل الجهاز","cz.dev.step1":"توصيل ESP32 عبر USB","cz.dev.step1b":"وصِّل لوحة ESP32-WROOM-32 بالحاسوب باستخدام كبل USB-A إلى Micro-USB (كبل بيانات لا شحن فقط).","cz.dev.step2":"تثبيت التعريفات","cz.dev.step2b":"إذا لم يُكتشف المنفذ، ثبِّت تعريف CP210x أو CH340 لنظام تشغيلك.","cz.dev.step3":"تنزيل البرنامج وتثبيته","cz.dev.step3b":"اضغط الزر أدناه لتنزيل ملف البرنامج، ثم افتحه في Arduino IDE وانقر Upload.","cz.dev.step4":"التحقق من الاتصال","cz.dev.step4b":"بعد التثبيت، سيتصل ESP32 بالـ Wi-Fi ويبدأ بث البيانات إلى المنصة خلال 30 ثانية.",
+    "cz.dev.download":"تنزيل البرنامج الثابت (.ino)","cz.dev.download2":"تنزيل دليل الإعداد (PDF)","cz.dev.connected":"الجهاز متصل","cz.dev.notconnected":"لم يُكتشف الجهاز","cz.dev.simulate":"محاكاة جهاز متصل","cz.dev.disconnect":"قطع الاتصال","cz.dev.id":"معرِّف الجهاز","cz.dev.port":"المنفذ","cz.dev.firmware":"البرنامج الثابت","cz.dev.signal":"الإشارة","cz.dev.driver.cp":"تنزيل تعريف CP210x","cz.dev.driver.ch":"تنزيل تعريف CH340",
+    "cz.read.title":"القراءات الحية للمستشعر","cz.read.start":"بدء القراءة","cz.read.stop":"إيقاف القراءة","cz.read.save":"حفظ القراءة","cz.read.clear":"مسح","cz.read.nodev":"لا يوجد جهاز متصل. انتقل إلى إعداد الجهاز للاتصال.","cz.read.noproj":"الرجاء تحديد مشروع أولاً.","cz.read.specimen":"معرِّف العينة","cz.read.age":"عمر العينة (أيام)","cz.read.label":"التسمية / ملاحظات","cz.read.add":"إضافة عينة","cz.read.saved":"تم حفظ القراءة في المشروع","cz.read.voltage":"ذروة الجهد","cz.read.resistance":"المقاومة","cz.read.frequency":"تردد الرنين","cz.read.conductance":"الموصلية","cz.read.damage":"مؤشر الضرر","cz.read.strength":"المقاومة المقدَّرة","cz.read.cert":"الاعتماد","cz.read.history":"سجل القراءات","cz.read.export":"تصدير CSV",
+    "cz.rep.title":"تقارير الاختبار","cz.rep.empty":"لا توجد تقارير بعد. احفظ القراءات من تبويب القراءات لإنشاء التقارير.","cz.rep.generate":"إنشاء تقرير","cz.rep.download":"تنزيل التقرير","cz.rep.specimen":"العينة","cz.rep.age":"العمر","cz.rep.mpa":"ميغاباسكال","cz.rep.cert":"الاعتماد","cz.rep.date":"التاريخ","cz.rep.verdict":"الحكم","cz.rep.pass":"ناجح","cz.rep.fail":"راسب","cz.rep.pending":"قيد الانتظار",
+    "tok.title":"رموز المصنع","tok.available":"متاح","tok.used":"مستخدَم","tok.certified":"إجمالي الصادر","tok.order":"🛒 طلب مستشعرات أصلية","tok.order50":"+50 رمز · طلب دفعة","tok.order100":"+100 رمز · طلب دفعة","tok.deduct":"−1 رمز · جلسة مستشعر","tok.rom":"معرِّف ROM","tok.badge.cert":"🔒 أصلية معتمدة (معايرة المصنع)","tok.badge.generic":"⚡ عامة (معايرة ذاتية)","tok.badge.short.cert":"PROPRIETARY_CERTIFIED","tok.badge.short.gen":"GENERIC_RAW","tok.order.done":"✓ تم تنفيذ الطلب — أضيفت الرموز","tok.order.proc":"جاري إجراء التفويض…","tok.order.err":"رصيد غير كافٍ — اطلب المزيد من المستشعرات","tok.history":"سجل الرموز","tok.low":"⚠ رصيد منخفض","tok.ordershist":"سُجل الطلبات","tok.session.cert":"مستشعر smartLAB أصلي — تم التحقق من 1-Wire ROM","tok.session.gen":"مستشعر عام (معايرة ذاتية، بدون ROM)","tok.choose":"نوع المستشعر",
+    "fold.expand":"عرض","fold.collapse":"طي","fold.sum.firmware":"مطوي — {lines} سطراً في {n} أقسام مشروحة. اضغط للعرض.","fold.sum.refs":"مطوي — {n} مرجعاً ومعياراً موثَّقاً بـ DOI. اضغط للعرض.",
+    "nav.cloud":"السحابة","cloud.kicker":"قاعدة السلاسل الزمنية","cloud.title":"InfluxDB 3 Cloud Serverless","cloud.connected":"متصل","cloud.testing":"جارٍ الاستعلام…","cloud.failed":"فشل","cloud.idle":"غير متصل","cloud.proxy":"عنوان وسيط الاستعلام","cloud.proxy.hint":"رابط /api/influx-query المنشور لديك. توكن InfluxDB يبقى على الخادم ولا يُرسل لهذه الصفحة إطلاقاً.","cloud.session":"معرِّف الجلسة (العقدة)","cloud.uselive":"استخدام بيانات السحابة الحية","cloud.uselive.hint":"إيقاف = محاكاة محلية","cloud.run":"تشغيل استعلامات SQL","cloud.warn":"لا تضع توكن InfluxDB في هذه الواجهة إطلاقاً. المشروع يُبنى كملف HTML عام واحد — أي توكن بداخله يقرأه كل زائر. الاستعلامات تمر عبر الخادم بحكم التصميم.","cloud.m.bins":"نقاط حية","cloud.m.base":"نقاط الأساس","cloud.m.peak":"أقصى انحراف عند","cloud.chart1":"الموصلية (µS) مقابل التردد — حي مقابل الأساس","cloud.chart2":"اتجاه مؤشر التلف RMSD — تجميع زمني","cloud.sql":"استعلامات SQL المنفَّذة",
+    "search.btn":"بحث","search.title":"ابحث في المنصة","search.placeholder":"ابحث في الأقسام والبرنامج والمنافذ والمراجع…","search.hint":"اكتب للبحث — أو جرّب أحد هذه","search.none":"لا نتائج لـ","search.nav":"تنقّل","search.open":"فتح","search.close":"إغلاق","search.results":"نتيجة","search.k.section":"قسم","search.k.action":"إجراء","search.k.firmware":"برنامج","search.k.reference":"مرجع","search.k.pin":"منفذ","search.k.glossary":"مصطلح","theme.toggle":"تبديل نمط الألوان","theme.light":"التبديل للوضع الفاتح","theme.dark":"التبديل للوضع الداكن","top.label":"العودة للأعلى",
+    "nav.refs":"المراجع","ref.kicker":"الأساس العلمي","ref.title":"المراجع والمعايير","ref.subtitle":"كل نموذج في هذه المنصة — مسح الممانعة الكهروميكانيكية، ومؤشر التلف RMSD، وتوقّع المقاومة بطريقة النضج — يستند إلى أبحاث محكَّمة. جميع معرِّفات DOI أدناه تؤدي إلى السجل المنشور.","ref.entries":"مرجعاً","ref.seminal":"تأسيسي","ref.bibtex":"BibTeX","ref.copied":"تم النسخ","ref.copyall":"نسخ الكل","ref.search":"ابحث بالعنوان أو المؤلف أو السنة…","ref.none":"لا توجد مراجع مطابقة للفلتر.","ref.publisher":"الناشر","ref.footer":"جميع المُدخلات موثَّقة مقابل سجل DOI الحي · ليست مولَّدة آلياً","ref.cat.all":"الكل","ref.cat.foundation":"نظرية EMI","ref.cat.aggregate":"الركائز الذكية","ref.cat.earlyage":"الإماهة المبكرة","ref.cat.ai":"الذكاء الاصطناعي","ref.cat.standard":"المعايير",
+    "cz.rep.print":"طباعة","cz.rep.pdf":"PDF","cz.rep.excel":"إكسل","cz.rep.techsign":"فني المختبر — التوقيع والتاريخ","cz.rep.engsign":"المهندس المعتمِد — التوقيع والختم",
+    "ship.title":"متتبِّع طلبات وشحنات المصنع","ship.orders":"طلبات","ship.orderid":"رقم الطلب","ship.qty":"عدد المستشعرات","ship.date":"تاريخ الطلب","ship.status":"حالة الشحن","ship.tracking":"التتبع","ship.stage.encap":"قيد التغليف المعملي","ship.stage.dispatch":"تم الشحن عبر سمسا إكسبريس","ship.stage.delivered":"تم التسليم والإضافة",
+    "cloud.export":"تصدير","cloud.export.pdf":"تقرير PDF","cloud.export.xlsx":"إكسل","cloud.export.print":"طباعة","cloud.export.chart":"رسم بياني مرفق",
+    "lang.label": "اللغة",
+    "lang.select": "اختر اللغة",
+  },
+
+  /* ── RUSSIAN ─────────────────────────────────────────────────── */
+  ru: {
+    "nav.home":          "Главная",
+    "nav.client":        "Клиентская зона",
+    "nav.guide":         "Руководство",
+    "nav.telemetry":     "Телеметрия",
+    "nav.firmware":      "Прошивка",
+    "nav.hardware":      "Аппаратура",
+    "nav.architecture":  "Архитектура",
+    "nav.uplink":        "Аплинк",
+
+    "hero.kicker":       "Поставка прошивки — ESP32-WROOM-32 · Arduino core 3.x",
+    "hero.meta":         "0 блокирующих вызовов",
+    "hero.body":         "Производственная прошивка для встроенного пьезоэлектрического патча, считывающего электромеханический импеданс бетонного образца — логарифмическая развёртка 1–500 кГц, индекс повреждения RMSD и защёлка предельной прочности менее 30 мс, передаваемые на fimtosoft.com с частотой 1 Гц.",
+    "hero.chip1":        "≈83 кS/с АЦП",
+    "hero.chip2":        "Свип EMI · 96 шагов",
+    "hero.chip3":        "Фиксация разрушения < 30 мс",
+    "hero.chip4":        "TLS POST @ 1 Гц",
+    "hero.chip5":        "Индекс повреждения RMSD",
+    "hero.btn.review":   "Просмотр исходника ↓",
+    "hero.btn.download": "Скачать .ino",
+
+    "s01.kicker": "Живое моделирование узла",
+    "s01.title":  "Стенд телеметрии",
+    "s01.blurb":  "Виртуальный двойник узла несёт 28-дневное состояние гидратации бетона в каждый спектр и кадр телеметрии. Судебная консоль QA может инжектировать мошенничество, обрыв провода, отключение и акустический коллапс.",
+
+    "s02.kicker": "Поставка исходника",
+    "s02.title":  "Прошивка — {file}",
+    "s02.blurb":  "Полный производственный исходник в десяти аннотированных разделах. Каждая задача — АЦП, дwell, WiFi watchdog, HTTPS POST — является дедлайном millis()/micros() внутри одного кооперативного loop().",
+
+    "s03.kicker": "Физический уровень",
+    "s03.title":  "Аппаратный интерфейс",
+    "s03.blurb":  "Измерение через делитель напряжения с единственным питанием: развёртка LEDC приводит патч через прецизионный резистор, а средняя точка дискретизируется на ADC1_CH0.",
+
+    "s04.kicker": "Системное проектирование",
+    "s04.title":  "Архитектура и тайминг",
+    "s04.blurb":  "Один loop(), пять задач с дедлайнами и четырёхсостояний автомат. Детектор отказа — защёлка пикового удержания: выброс свыше 950 отсчётов взводит её, три мёртвых dwells за 30 мс подтверждают.",
+
+    "s05.kicker": "Облачный контракт",
+    "s05.title":  "Аплинк smartLAB",
+    "s05.blurb":  "Один HTTPS POST в секунду на https://fimtosoft.com — JSON на ArduinoJson v7 через прикреплённый TLS, с экспоненциальным откатом и четырёхкадровым офлайн-буфером.",
+
+    "footer.tagline":   "Мониторинг электромеханического импеданса бетонных конструкций — от встроенного PZT-патча до облака на одном ESP32.",
+    "footer.copyright": "© 2026 smartLAB · Fimto Soft — прошивка выпущена под лицензией MIT",
+    "footer.verified":  "проверено: без блокировок",
+
+    "fimto.name":        "Fimto Soft",
+    "fimto.slogan":      "Интегрированные технологические решения",
+    "fimto.about":       "Мы предоставляем комплексные программные решения: передовые интерактивные ERP-системы, обслуживание заводов товарного бетона, веб-разработку, цифровой маркетинг, системы безопасности и видеонаблюдения, сетевую инфраструктуру, приложения ИИ и системы умного дома.",
+    "fimto.links":       "Быстрые ссылки",
+    "fimto.link.home":   "Главная",
+    "fimto.link.about":  "О нас",
+    "fimto.link.services":"Услуги",
+    "fimto.link.contact":"Контакты",
+    "fimto.contact":     "Свяжитесь с нами",
+    "fimto.locations":   "Наши офисы",
+    "fimto.eg":          "Каир, Египет",
+    "fimto.ksa":         "Эр-Рияд, Саудовская Аравия",
+    "fimto.poweredby":   "Работает на Fimto Soft",
+
+    /* ── Руководство пользователя (RU) ──────────────────────────── */
+    "guide.kicker":      "Интерактивное руководство",
+    "guide.title":       "Как использовать платформу",
+    "guide.subtitle":    "Следуйте пяти шагам ниже — от подключения оборудования до облачной телеметрии за несколько минут.",
+    "guide.badge.new":   "НОВОЕ",
+    "guide.progress":    "Шаг {n} из {total}",
+    "guide.btn.prev":    "← Назад",
+    "guide.btn.next":    "Далее →",
+    "guide.btn.start":   "Начать",
+    "guide.btn.restart": "Перезапустить",
+    "guide.btn.done":    "Готово ✓",
+    "guide.s1.tag":   "Шаг 01", "guide.s1.title": "Загрузка прошивки",
+    "guide.s1.body":  "Скачайте pzt_emi_monitor.ino и откройте в Arduino IDE (≥ 2.x). Установите пакет ESP32 через Boards Manager, выберите ESP32-WROOM-32 и нажмите Upload. Монитор последовательного порта подтвердит успешную загрузку на скорости 921 600 бод.",
+    "guide.s1.tip":   "Совет: удерживайте кнопку BOOT во время загрузки, если порт не сбрасывается автоматически.",
+    "guide.s2.tag":   "Шаг 02", "guide.s2.title": "Подключение PZT-патча",
+    "guide.s2.body":  "Подключите пьезоэлектрический патч к делителю напряжения: GPIO25 → Rs 1 кОм → PZT → GND. Подключите среднюю точку к GPIO36 (ADC1_CH0). Используйте витую пару; экран заземлите только в точке AGND.",
+    "guide.s2.tip":   "Совет: держите линию измерения подальше от линии LEDC во избежание наводок.",
+    "guide.s3.tag":   "Шаг 03", "guide.s3.title": "Настройка Wi-Fi и облака",
+    "guide.s3.body":  "Отредактируйте WIFI_SSID и WIFI_PASSWORD. API-эндпоинт уже настроен на https://fimtosoft.com/api/v1/telemetry. Для продакшена вставьте корневой CA-сертификат в API_ROOT_CA.",
+    "guide.s3.tip":   "Совет: узел сообщит IP-адрес в монитор порта после установки соединения.",
+    "guide.s4.tag":   "Шаг 04", "guide.s4.title": "Мониторинг телеметрии",
+    "guide.s4.body":  "Используйте стенд телеметрии для наблюдения за свипом EMI, пиком напряжения, сопротивлением, резонансной частотой и индексом RMSD в реальном времени. Запустите цикл нагрузки или QA-сценарии.",
+    "guide.s4.tip":   "Совет: включите Network Blackout, чтобы протестировать буфер IndexedDB и восстановление данных.",
+    "guide.s5.tag":   "Шаг 05", "guide.s5.title": "Интерпретация результатов",
+    "guide.s5.body":  "ИИ-диагностика прогнозирует прочность на 28-й день по раннему дрейфу импеданса. При достижении порога сертификации панель покажет CERTIFIED. События MIX_ADULTERATION или CONCRETE_CRUSHED мгновенно фиксируются с временной меткой.",
+    "guide.s5.tip":   "Совет: экспортируйте журнал сессии из консоли QA для документации соответствия.",
+
+    "cz.nav":"Клиентская зона","cz.kicker":"Ваше рабочее пространство","cz.title":"Клиентская зона","cz.subtitle":"Управляйте проектами, подключайте устройство, скачивайте прошивку и проводите испытания.","cz.tab.projects":"Проекты","cz.tab.connect":"Настройка устройства","cz.tab.readings":"Данные в реальном времени","cz.tab.reports":"Отчёты","cz.proj.title":"Менеджер проектов","cz.proj.new":"Новый проект","cz.proj.empty":"Нет проектов. Создайте первый проект для начала тестирования.","cz.proj.name":"Название проекта","cz.proj.location":"Место / Объект","cz.proj.concrete":"Класс бетона","cz.proj.date":"Дата начала","cz.proj.notes":"Примечания","cz.proj.save":"Сохранить","cz.proj.cancel":"Отмена","cz.proj.delete":"Удалить","cz.proj.select":"Выбрать","cz.proj.active":"Активный","cz.proj.specimens":"образцов","cz.proj.created":"Создан","cz.proj.status.ok":"Сертифицирован","cz.proj.status.pend":"Ожидание","cz.proj.status.fail":"Отказ","cz.dev.title":"Мастер подключения","cz.dev.step1":"Подключите ESP32 через USB","cz.dev.step1b":"Подключите плату USB-A к Micro-USB (кабель передачи данных, не зарядный).","cz.dev.step2":"Установите драйверы","cz.dev.step2b":"Если порт не определяется, установите драйвер CP210x или CH340.","cz.dev.step3":"Скачайте и прошейте","cz.dev.step3b":"Нажмите кнопку ниже, скачайте файл и загрузите его через Arduino IDE.","cz.dev.step4":"Проверьте соединение","cz.dev.step4b":"После прошивки ESP32 подключится к Wi-Fi и начнёт передачу данных в течение 30 секунд.","cz.dev.download":"Скачать прошивку (.ino)","cz.dev.download2":"Скачать руководство (PDF)","cz.dev.connected":"Устройство подключено","cz.dev.notconnected":"Устройство не найдено","cz.dev.simulate":"Симулировать устройство","cz.dev.disconnect":"Отключить","cz.dev.id":"ID устройства","cz.dev.port":"Порт","cz.dev.firmware":"Прошивка","cz.dev.signal":"Сигнал","cz.dev.driver.cp":"Скачать CP210x","cz.dev.driver.ch":"Скачать CH340","cz.read.title":"Данные в реальном времени","cz.read.start":"Начать считывание","cz.read.stop":"Стоп","cz.read.save":"Сохранить","cz.read.clear":"Очистить","cz.read.nodev":"Устройство не подключено.","cz.read.noproj":"Сначала выберите проект.","cz.read.specimen":"ID образца","cz.read.age":"Возраст (дни)","cz.read.label":"Метка / Примечания","cz.read.add":"Добавить образец","cz.read.saved":"Данные сохранены в проекте","cz.read.voltage":"Пик напряжения","cz.read.resistance":"Сопротивление","cz.read.frequency":"Резонансная ч.","cz.read.conductance":"Проводимость","cz.read.damage":"Индекс повреждения","cz.read.strength":"Оценка прочности","cz.read.cert":"Сертификация","cz.read.history":"История","cz.read.export":"Экспорт CSV","cz.rep.title":"Отчёты об испытаниях","cz.rep.empty":"Нет отчётов. Сохраните данные во вкладке «Данные».","cz.rep.generate":"Создать отчёт","cz.rep.download":"Скачать отчёт","cz.rep.specimen":"Образец","cz.rep.age":"Возраст","cz.rep.mpa":"МПа","cz.rep.cert":"Серт.","cz.rep.date":"Дата","cz.rep.verdict":"Вердикт","cz.rep.pass":"ГОДЕН","cz.rep.fail":"НЕ ГОДЕН","cz.rep.pending":"ОЖИДАНИЕ",
+    "tok.title":"Заводские токены","tok.available":"Доступно","tok.used":"Использовано","tok.certified":"Всего выдано","tok.order":"🛒 Заказать оригинальные датчики","tok.order50":"+50 токенов · Заказ партии","tok.order100":"+100 токенов · Заказ партии","tok.deduct":"−1 токен · Сеанс датчика","tok.rom":"ROM ID","tok.badge.cert":"🔒 Сертифицировано (заводская калибровка)","tok.badge.generic":"⚡ Универсальный (самокалибровка)","tok.badge.short.cert":"PROPRIETARY_CERTIFIED","tok.badge.short.gen":"GENERIC_RAW","tok.order.done":"✓ Заказ выполнен — токены добавлены","tok.order.proc":"Обработка авторизации…","tok.order.err":"Недостаточно токенов — закажите датчики","tok.history":"Журнал токенов","tok.low":"⚠ Низкий баланс","tok.ordershist":"История заказов","tok.session.cert":"Оригинальный датчик smartLAB — ROM верифицирован","tok.session.gen":"Универсальный датчик (без ROM)","tok.choose":"Тип датчика",
+    "fold.expand":"Развернуть","fold.collapse":"Свернуть","fold.sum.firmware":"Свёрнуто — {lines} строк в {n} разделах. Нажмите, чтобы развернуть.","fold.sum.refs":"Свёрнуто — {n} источников и стандартов с DOI. Нажмите, чтобы развернуть.",
+    "nav.cloud":"Облако","cloud.kicker":"База временных рядов","cloud.title":"InfluxDB 3 Cloud Serverless","cloud.connected":"подключено","cloud.testing":"запрос…","cloud.failed":"ошибка","cloud.idle":"не подключено","cloud.proxy":"Адрес прокси запросов","cloud.proxy.hint":"URL вашего /api/influx-query. Токен InfluxDB остаётся на сервере и никогда не передаётся в браузер.","cloud.session":"ID сессии (узел)","cloud.uselive":"Использовать облачные данные","cloud.uselive.hint":"Выкл = локальная симуляция","cloud.run":"Выполнить SQL","cloud.warn":"Никогда не размещайте токен InfluxDB в этой панели. Приложение собирается в один публичный HTML-файл — любой токен внутри доступен каждому. Запросы идут через сервер.","cloud.m.bins":"точек","cloud.m.base":"базовых точек","cloud.m.peak":"пик Δ на","cloud.chart1":"Проводимость (µS) от частоты — текущая и базовая","cloud.chart2":"Тренд RMSD — агрегация по времени","cloud.sql":"Выполняемый SQL",
+    "search.btn":"Поиск","search.title":"Поиск по платформе","search.placeholder":"Разделы, прошивка, выводы, источники…","search.hint":"Начните вводить — или выберите","search.none":"Ничего не найдено по","search.nav":"навигация","search.open":"открыть","search.close":"закрыть","search.results":"результатов","search.k.section":"Раздел","search.k.action":"Действие","search.k.firmware":"Прошивка","search.k.reference":"Источник","search.k.pin":"Вывод","search.k.glossary":"Термин","theme.toggle":"Переключить тему","theme.light":"Светлая тема","theme.dark":"Тёмная тема","top.label":"Наверх",
+    "nav.refs":"Источники","ref.kicker":"Научная база","ref.title":"Источники и стандарты","ref.subtitle":"Каждая модель платформы — развёртка адмиттанса EMI, индекс RMSD, прогноз прочности по зрелости — опирается на рецензируемую литературу. Все DOI ниже ведут к опубликованной записи.","ref.entries":"записей","ref.seminal":"Основополагающая","ref.bibtex":"BibTeX","ref.copied":"Скопировано","ref.copyall":"Копировать всё","ref.search":"Поиск по названию, автору, году…","ref.none":"Нет источников по фильтру.","ref.publisher":"Издатель","ref.footer":"Все записи сверены с действующим DOI · не сгенерированы автоматически","ref.cat.all":"Все","ref.cat.foundation":"Теория EMI","ref.cat.aggregate":"Умные заполнители","ref.cat.earlyage":"Ранняя гидратация","ref.cat.ai":"ИИ / Обучение","ref.cat.standard":"Стандарты",
+    "cz.rep.print":"Печать","cz.rep.pdf":"PDF","cz.rep.excel":"Excel","cz.rep.techsign":"Лаборант — подпись и дата","cz.rep.engsign":"Инженер-сертификатор — подпись и печать",
+    "ship.title":"Отслеживание заказов и поставок","ship.orders":"заказов","ship.orderid":"№ заказа","ship.qty":"Кол-во датчиков","ship.date":"Дата заказа","ship.status":"Статус логистики","ship.tracking":"Трек","ship.stage.encap":"Лабораторная герметизация","ship.stage.dispatch":"Отправлено через SMSA Express","ship.stage.delivered":"Доставлено и зачислено",
+    "cloud.export":"Экспорт","cloud.export.pdf":"PDF отчёт","cloud.export.xlsx":"Excel","cloud.export.print":"Печать","cloud.export.chart":"график включён",
+    "lang.label": "Язык",
+    "lang.select": "Выберите язык",
+  },
+
+  /* ── GERMAN ──────────────────────────────────────────────────── */
+  de: {
+    "nav.home":          "Startseite",
+    "nav.client":        "Kundenbereich",
+    "nav.guide":         "Anleitung",
+    "nav.telemetry":     "Telemetrie",
+    "nav.firmware":      "Firmware",
+    "nav.hardware":      "Hardware",
+    "nav.architecture":  "Architektur",
+    "nav.uplink":        "Uplink",
+
+    "hero.kicker":       "Firmware-Lieferung — ESP32-WROOM-32 · Arduino Core 3.x",
+    "hero.meta":         "0 blockierende Aufrufe",
+    "hero.body":         "Produktions-Firmware für einen eingebetteten piezoelektrischen Patch, der die elektromechanische Impedanz einer Betonprobe misst — logarithmischer Sweep 1–500 kHz, RMSD-Schadensindex und Bruchlast-Latch unter 30 ms, gestreamt an fimtosoft.com mit 1 Hz.",
+    "hero.chip1":        "≈83 kS/s ADC-Burst",
+    "hero.chip2":        "EMI-Sweep · 96 log. Schritte",
+    "hero.chip3":        "Bruchlatch < 30 ms",
+    "hero.chip4":        "TLS POST @ 1 Hz",
+    "hero.chip5":        "RMSD-Schadensindex",
+    "hero.btn.review":   "Quellcode ansehen ↓",
+    "hero.btn.download": ".ino herunterladen",
+
+    "s01.kicker": "Live-Knotensimulation",
+    "s01.title":  "Telemetrie-Labor",
+    "s01.blurb":  "Der virtuelle Knoten-Zwilling trägt einen 28-tägigen Beton-Hydratationszustand in jedes Spektrum und jeden Telemetrierahmen. Die forensische QA-Konsole kann Betrug, Drahtschnitt, Ausfall und akustischen Kollaps einspritzen.",
+
+    "s02.kicker": "Quellcode-Lieferung",
+    "s02.title":  "Firmware — {file}",
+    "s02.blurb":  "Der vollständige Produktionsquellcode in zehn kommentierten Abschnitten. Jede Aufgabe — ADC-Burst, Sweep-Dwell, WiFi-Watchdog, HTTPS-POST — ist ein millis()/micros()-Termin in einer kooperativen loop().",
+
+    "s03.kicker": "Physikalische Schicht",
+    "s03.title":  "Hardware-Schnittstelle",
+    "s03.blurb":  "Spannungsteiler-Sensing mit Einzelversorgung: Der LEDC-Sweep treibt den Patch über einen Präzisionswiderstand, der Mittelpunkt wird auf ADC1_CH0 abgetastet.",
+
+    "s04.kicker": "Systemdesign",
+    "s04.title":  "Architektur & Timing",
+    "s04.blurb":  "Eine loop(), fünf termingetriebene Aufgaben und ein Vier-Zustands-Automat. Der Fehlerdetektor ist ein Peak-Hold-Latch: Ein Spike über 950 Zähler spannt ihn, drei tote Dwells in 30 ms bestätigen ihn.",
+
+    "s05.kicker": "Cloud-Vertrag",
+    "s05.title":  "smartLAB Uplink",
+    "s05.blurb":  "Ein HTTPS-POST pro Sekunde an https://fimtosoft.com — JSON mit ArduinoJson v7 über gepinntes TLS, mit exponentiellem Backoff und einem Vier-Rahmen-Offline-Spool.",
+
+    "footer.tagline":   "Elektromechanische Impedanzüberwachung für Betonstrukturen — vom eingebetteten PZT-Patch bis zur Cloud auf einem einzigen ESP32.",
+    "footer.copyright": "© 2026 smartLAB · Fimto Soft — Firmware veröffentlicht unter MIT",
+    "footer.verified":  "nicht-blockierend verifiziert",
+
+    "fimto.name":        "Fimto Soft",
+    "fimto.slogan":      "Integrierte Technologielösungen",
+    "fimto.about":       "Wir bieten umfassende Softwarelösungen: fortschrittliche ERP-Systeme, Wartung von Transportbetonanlagen, Webentwicklung, digitales Marketing, Sicherheitssysteme, Netzwerkinfrastruktur, KI-Anwendungen und Smart-Home-Systeme.",
+    "fimto.links":       "Schnelllinks",
+    "fimto.link.home":   "Startseite",
+    "fimto.link.about":  "Über uns",
+    "fimto.link.services":"Leistungen",
+    "fimto.link.contact":"Kontakt",
+    "fimto.contact":     "Kontakt",
+    "fimto.locations":   "Unsere Standorte",
+    "fimto.eg":          "Kairo, Ägypten",
+    "fimto.ksa":         "Riad, Saudi-Arabien",
+    "fimto.poweredby":   "Betrieben von Fimto Soft",
+
+    /* ── Benutzerhandbuch (DE) ───────────────────────────────────── */
+    "guide.kicker":      "Interaktive Anleitung",
+    "guide.title":       "So nutzen Sie die Plattform",
+    "guide.subtitle":    "Folgen Sie den fünf Schritten — von der Hardware-Einrichtung bis zur zertifizierten Cloud-Telemetrie in Minuten.",
+    "guide.badge.new":   "NEU",
+    "guide.progress":    "Schritt {n} von {total}",
+    "guide.btn.prev":    "← Zurück",
+    "guide.btn.next":    "Weiter →",
+    "guide.btn.start":   "Anleitung starten",
+    "guide.btn.restart": "Neu starten",
+    "guide.btn.done":    "Fertig ✓",
+    "guide.s1.tag":   "Schritt 01", "guide.s1.title": "Firmware flashen",
+    "guide.s1.body":  "Laden Sie pzt_emi_monitor.ino herunter und öffnen Sie es in der Arduino IDE (≥ 2.x). Installieren Sie das ESP32-Board-Paket, wählen Sie ESP32-WROOM-32 und klicken Sie auf Hochladen.",
+    "guide.s1.tip":   "Tipp: Halten Sie BOOT gedrückt, wenn der Port nicht automatisch zurückgesetzt wird.",
+    "guide.s2.tag":   "Schritt 02", "guide.s2.title": "PZT-Patch verdrahten",
+    "guide.s2.body":  "Verbinden Sie den piezoelektrischen Patch mit dem Spannungsteiler: GPIO25 → Rs 1 kΩ → PZT → GND. Führen Sie den Mittelpunkt zu GPIO36 (ADC1_CH0). Verwenden Sie verdrillte Leitungen.",
+    "guide.s2.tip":   "Tipp: Halten Sie die Messleitung von der LEDC-Treiberleitung getrennt.",
+    "guide.s3.tag":   "Schritt 03", "guide.s3.title": "WLAN & Cloud konfigurieren",
+    "guide.s3.body":  "Bearbeiten Sie WIFI_SSID und WIFI_PASSWORD. Der API-Endpunkt ist auf https://fimtosoft.com/api/v1/telemetry voreingestellt. Für Produktion: Root-CA-Zertifikat in API_ROOT_CA eintragen.",
+    "guide.s3.tip":   "Tipp: Der Knoten meldet seine IP-Adresse im seriellen Monitor nach der Verbindung.",
+    "guide.s4.tag":   "Schritt 04", "guide.s4.title": "Telemetrie-Labor überwachen",
+    "guide.s4.body":  "Verwenden Sie das Telemetrie-Labor dieser Seite, um EMI-Sweep, Spannungsspitze, Widerstand, Resonanzfrequenz und RMSD-Schadensindex in Echtzeit zu verfolgen.",
+    "guide.s4.tip":   "Tipp: Aktivieren Sie Netzwerkausfall, um den IndexedDB-Puffer zu testen.",
+    "guide.s5.tag":   "Schritt 05", "guide.s5.title": "Ergebnisse interpretieren",
+    "guide.s5.body":  "Das KI-Diagnosedeck prognostiziert die Druckfestigkeit am Tag 28. Bei Erreichen des Zertifizierungsschwellenwerts zeigt das Dashboard CERTIFIED. MIX_ADULTERATION- oder CONCRETE_CRUSHED-Ereignisse werden sofort gemeldet.",
+    "guide.s5.tip":   "Tipp: Exportieren Sie das Sitzungsprotokoll aus der forensischen QA-Konsole.",
+
+    "cz.nav":"Kundenbereich","cz.kicker":"Ihr Arbeitsbereich","cz.title":"Kundenbereich","cz.subtitle":"Verwalten Sie Projekte, verbinden Sie Ihr Gerät, laden Sie Firmware herunter und führen Sie Strukturprüfungen durch.","cz.tab.projects":"Projekte","cz.tab.connect":"Geräte-Setup","cz.tab.readings":"Live-Daten","cz.tab.reports":"Berichte","cz.proj.title":"Projektmanager","cz.proj.new":"Neues Projekt","cz.proj.empty":"Noch keine Projekte. Erstellen Sie Ihr erstes Projekt.","cz.proj.name":"Projektname","cz.proj.location":"Standort","cz.proj.concrete":"Betonklasse","cz.proj.date":"Startdatum","cz.proj.notes":"Notizen","cz.proj.save":"Speichern","cz.proj.cancel":"Abbrechen","cz.proj.delete":"Löschen","cz.proj.select":"Auswählen","cz.proj.active":"Aktiv","cz.proj.specimens":"Proben","cz.proj.created":"Erstellt","cz.proj.status.ok":"Zertifiziert","cz.proj.status.pend":"Ausstehend","cz.proj.status.fail":"Fehler","cz.dev.title":"Verbindungsassistent","cz.dev.step1":"ESP32 per USB verbinden","cz.dev.step1b":"Schließen Sie das Board mit einem USB-Datenkabel an.","cz.dev.step2":"Treiber installieren","cz.dev.step2b":"CP210x oder CH340 Treiber installieren, falls Port nicht erkannt.","cz.dev.step3":"Firmware herunterladen & flashen","cz.dev.step3b":"Datei herunterladen, in Arduino IDE öffnen und hochladen.","cz.dev.step4":"Verbindung prüfen","cz.dev.step4b":"Nach dem Flashen verbindet sich ESP32 mit Wi-Fi und sendet Daten.","cz.dev.download":"Firmware herunterladen (.ino)","cz.dev.download2":"Setup-Anleitung herunterladen","cz.dev.connected":"Gerät verbunden","cz.dev.notconnected":"Gerät nicht erkannt","cz.dev.simulate":"Gerät simulieren","cz.dev.disconnect":"Trennen","cz.dev.id":"Geräte-ID","cz.dev.port":"Port","cz.dev.firmware":"Firmware","cz.dev.signal":"Signal","cz.dev.driver.cp":"CP210x herunterladen","cz.dev.driver.ch":"CH340 herunterladen","cz.read.title":"Live-Sensordaten","cz.read.start":"Messung starten","cz.read.stop":"Stopp","cz.read.save":"Speichern","cz.read.clear":"Löschen","cz.read.nodev":"Kein Gerät verbunden.","cz.read.noproj":"Bitte zuerst ein Projekt auswählen.","cz.read.specimen":"Proben-ID","cz.read.age":"Probenalter (Tage)","cz.read.label":"Bezeichnung","cz.read.add":"Probe hinzufügen","cz.read.saved":"Daten im Projekt gespeichert","cz.read.voltage":"Spannungsspitze","cz.read.resistance":"Widerstand","cz.read.frequency":"Resonanzfrequenz","cz.read.conductance":"Leitfähigkeit","cz.read.damage":"Schadensindex","cz.read.strength":"Geschätzte Festigkeit","cz.read.cert":"Zertifizierung","cz.read.history":"Verlauf","cz.read.export":"CSV exportieren","cz.rep.title":"Prüfberichte","cz.rep.empty":"Keine Berichte. Daten im Tab Messung speichern.","cz.rep.generate":"Bericht erstellen","cz.rep.download":"Bericht herunterladen","cz.rep.specimen":"Probe","cz.rep.age":"Alter","cz.rep.mpa":"MPa","cz.rep.cert":"Zert.","cz.rep.date":"Datum","cz.rep.verdict":"Ergebnis","cz.rep.pass":"BESTANDEN","cz.rep.fail":"NICHT BESTANDEN","cz.rep.pending":"AUSSTEHEND",
+    "tok.title":"Werks-Token","tok.available":"Verfügbar","tok.used":"Verbraucht","tok.certified":"Gesamtausgabe","tok.order":"🛒 Original-Sensoren bestellen","tok.order50":"+50 Token · Bestellung","tok.order100":"+100 Token · Bestellung","tok.deduct":"−1 Token · Sensorsession","tok.rom":"ROM-ID","tok.badge.cert":"🔒 Zertifiziert (Werkskalibriert)","tok.badge.generic":"⚡ Generisch (Selbstkalibriert)","tok.badge.short.cert":"PROPRIETARY_CERTIFIED","tok.badge.short.gen":"GENERIC_RAW","tok.order.done":"✓ Bestellung erfüllt — Token hinzugefügt","tok.order.proc":"Autorisierung läuft…","tok.order.err":"Unzureichende Token — Sensoren bestellen","tok.history":"Token-Historie","tok.low":"⚠ Niedriger Kontostand","tok.ordershist":"Bestellhistorie","tok.session.cert":"smartLAB Originalsensor — ROM verifiziert","tok.session.gen":"Generischer Sensor (selbstkalibriert, kein ROM)","tok.choose":"Sensortyp",
+    "fold.expand":"Aufklappen","fold.collapse":"Zuklappen","fold.sum.firmware":"Zugeklappt — {lines} Zeilen in {n} kommentierten Abschnitten. Zum Aufklappen klicken.","fold.sum.refs":"Zugeklappt — {n} DOI-geprüfte Quellen und Normen. Zum Aufklappen klicken.",
+    "nav.cloud":"Cloud","cloud.kicker":"Zeitreihen-Backend","cloud.title":"InfluxDB 3 Cloud Serverless","cloud.connected":"live","cloud.testing":"Abfrage…","cloud.failed":"fehlgeschlagen","cloud.idle":"nicht verbunden","cloud.proxy":"Query-Proxy-Endpunkt","cloud.proxy.hint":"Ihre bereitgestellte /api/influx-query URL. Das InfluxDB-Token bleibt auf dem Server.","cloud.session":"Session-ID (Knoten)","cloud.uselive":"Live-Cloud-Daten nutzen","cloud.uselive.hint":"Aus = lokale Simulation","cloud.run":"SQL ausführen","cloud.warn":"Niemals ein InfluxDB-Token in dieses Dashboard einfügen. Die App wird zu einer einzigen öffentlichen HTML-Datei gebaut — jedes Token darin ist für alle lesbar. Abfragen laufen serverseitig.","cloud.m.bins":"Live-Bins","cloud.m.base":"Basis-Bins","cloud.m.peak":"Peak Δ bei","cloud.chart1":"Leitwert (µS) vs. Frequenz — live vs. Basislinie","cloud.chart2":"RMSD-Trend — Zeitaggregation","cloud.sql":"Ausgeführtes SQL",
+    "search.btn":"Suche","search.title":"Plattform durchsuchen","search.placeholder":"Abschnitte, Firmware, Pins, Literatur…","search.hint":"Tippen zum Suchen — oder ausprobieren","search.none":"Keine Treffer für","search.nav":"navigieren","search.open":"öffnen","search.close":"schließen","search.results":"Treffer","search.k.section":"Abschnitt","search.k.action":"Aktion","search.k.firmware":"Firmware","search.k.reference":"Literatur","search.k.pin":"Pin","search.k.glossary":"Begriff","theme.toggle":"Farbschema wechseln","theme.light":"Heller Modus","theme.dark":"Dunkler Modus","top.label":"Nach oben",
+    "nav.refs":"Literatur","ref.kicker":"Wissenschaftliche Basis","ref.title":"Literatur & Normen","ref.subtitle":"Jedes Modell dieser Plattform — EMI-Admittanz-Sweep, RMSD-Schadensindex, Reifegrad-Festigkeitsprognose — basiert auf begutachteter Fachliteratur. Alle DOIs führen zum veröffentlichten Datensatz.","ref.entries":"Einträge","ref.seminal":"Grundlegend","ref.bibtex":"BibTeX","ref.copied":"Kopiert","ref.copyall":"Alle kopieren","ref.search":"Titel, Autor, Jahr suchen…","ref.none":"Keine Treffer für diesen Filter.","ref.publisher":"Verlag","ref.footer":"Alle Einträge gegen den DOI-Datensatz geprüft · nicht automatisch erzeugt","ref.cat.all":"Alle","ref.cat.foundation":"EMI-Theorie","ref.cat.aggregate":"Smart Aggregates","ref.cat.earlyage":"Frühe Hydratation","ref.cat.ai":"KI / ML","ref.cat.standard":"Normen",
+    "cz.rep.print":"Drucken","cz.rep.pdf":"PDF","cz.rep.excel":"Excel","cz.rep.techsign":"Labortechniker — Unterschrift & Datum","cz.rep.engsign":"Zertifizierender Ingenieur — Unterschrift & Stempel",
+    "ship.title":"Werksauftrags- & Versandverfolgung","ship.orders":"Aufträge","ship.orderid":"Auftrags-Nr.","ship.qty":"Sensoranzahl","ship.date":"Bestelldatum","ship.status":"Logistikstatus","ship.tracking":"Sendung","ship.stage.encap":"In Laborverkapselung","ship.stage.dispatch":"Versandt über SMSA Express","ship.stage.delivered":"Geliefert & gutgeschrieben",
+    "cloud.export":"Export","cloud.export.pdf":"PDF-Bericht","cloud.export.xlsx":"Excel","cloud.export.print":"Drucken","cloud.export.chart":"Diagramm enthalten",
+    "lang.label": "Sprache",
+    "lang.select": "Sprache wählen",
+  },
+
+  /* ── CHINESE (Simplified) ───────────────────────────────────── */
+  zh: {
+    "nav.home":          "首页",
+    "nav.client":        "客户专区",
+    "nav.guide":         "使用指南",
+    "nav.telemetry":     "遥测",
+    "nav.firmware":      "固件",
+    "nav.hardware":      "硬件",
+    "nav.architecture":  "架构",
+    "nav.uplink":        "上行链路",
+
+    "hero.kicker":       "固件交付 — ESP32-WROOM-32 · Arduino Core 3.x",
+    "hero.meta":         "0 个阻塞调用",
+    "hero.body":         "适用于嵌入式压电贴片的生产固件，用于读取混凝土试件的机电阻抗 — 1–500 kHz 对数扫频、RMSD 损伤指数，以及不到 30 ms 的极限强度锁存，全部以 1 Hz 频率流式传输至 fimtosoft.com。",
+    "hero.chip1":        "≈83 kS/s ADC 突发",
+    "hero.chip2":        "EMI 扫频 · 96 对数步",
+    "hero.chip3":        "破碎锁存 < 30 ms",
+    "hero.chip4":        "TLS POST @ 1 Hz",
+    "hero.chip5":        "RMSD 损伤指数",
+    "hero.btn.review":   "查看固件源码 ↓",
+    "hero.btn.download": "下载 .ino",
+
+    "s01.kicker": "实时节点仿真",
+    "s01.title":  "遥测工作台",
+    "s01.blurb":  "虚拟节点孪生体将 28 天混凝土水化状态带入每个频谱和遥测帧。法证 QA 控制台可注入欺诈、断线、断网和声学坍塌条件。",
+
+    "s02.kicker": "源代码交付",
+    "s02.title":  "固件 — {file}",
+    "s02.blurb":  "完整的生产源代码，分十个带注释的章节。每个任务 — ADC 突发、扫频驻留、WiFi 看门狗、HTTPS POST — 都是一个 millis()/micros() 期限，在协作式 loop() 中执行。",
+
+    "s03.kicker": "物理层",
+    "s03.title":  "硬件接口",
+    "s03.blurb":  "单电源分压器感应：LEDC 扫频通过精密串联电阻驱动贴片，中点在 ADC1_CH0 上进行突发采样。",
+
+    "s04.kicker": "系统设计",
+    "s04.title":  "架构与时序",
+    "s04.blurb":  "一个 loop()，五个基于期限的任务，一个四状态机。故障检测器是峰值保持锁存：超过 950 计数的尖峰将其触发，30 ms 内三个死驻留确认。",
+
+    "s05.kicker": "云合约",
+    "s05.title":  "smartLAB 上行链路",
+    "s05.blurb":  "每秒向 https://fimtosoft.com 发送一个 HTTPS POST — 使用 ArduinoJson v7 通过固定 TLS 构建 JSON，具有指数退避和四帧离线缓冲池。",
+
+    "footer.tagline":   "混凝土结构机电阻抗监测 — 从嵌入式 PZT 贴片到云端，仅需一块 ESP32。",
+    "footer.copyright": "© 2026 smartLAB · Fimto Soft — 固件以 MIT 许可证发布",
+    "footer.verified":  "非阻塞已验证",
+
+    "fimto.name":        "Fimto Soft",
+    "fimto.slogan":      "综合技术解决方案",
+    "fimto.about":       "我们提供全面的软件解决方案，包括先进的交互式 ERP 系统、预拌混凝土搅拌站维护与开发、网站设计与开发、数字营销、安防监控系统、网络基础设施、人工智能应用及智能家居系统。",
+    "fimto.links":       "快速链接",
+    "fimto.link.home":   "首页",
+    "fimto.link.about":  "关于我们",
+    "fimto.link.services":"服务",
+    "fimto.link.contact":"联系我们",
+    "fimto.contact":     "联系我们",
+    "fimto.locations":   "我们的位置",
+    "fimto.eg":          "埃及开罗",
+    "fimto.ksa":         "沙特阿拉伯利雅得",
+    "fimto.poweredby":   "由 Fimto Soft 提供支持",
+
+    /* ── 用户指南 (ZH) ────────────────────────────────────────────── */
+    "guide.kicker":      "互动演练",
+    "guide.title":       "如何使用平台",
+    "guide.subtitle":    "按照以下五个步骤，从硬件设置到认证云遥测，只需几分钟。",
+    "guide.badge.new":   "新功能",
+    "guide.progress":    "第 {n} 步，共 {total} 步",
+    "guide.btn.prev":    "← 上一步",
+    "guide.btn.next":    "下一步 →",
+    "guide.btn.start":   "开始演练",
+    "guide.btn.restart": "重新开始",
+    "guide.btn.done":    "完成 ✓",
+    "guide.s1.tag":   "步骤 01", "guide.s1.title": "刷写固件",
+    "guide.s1.body":  "下载 pzt_emi_monitor.ino 并在 Arduino IDE (≥ 2.x) 中打开。通过 Boards Manager 安装 ESP32 板包，选择 ESP32-WROOM-32，然后点击上传。串口监视器将确认成功启动（波特率 921 600）。",
+    "guide.s1.tip":   "提示：如果端口无法自动复位，在上传过程中按住 ESP32 的 BOOT 按钮。",
+    "guide.s2.tag":   "步骤 02", "guide.s2.title": "连接 PZT 贴片",
+    "guide.s2.body":  "将压电智能骨料连接到分压器电路：GPIO25 → Rs 1 kΩ → PZT 贴片 → GND。将中间抽头连接到 GPIO36 (ADC1_CH0)。使用双绞线，屏蔽层仅接在 AGND 星形点。",
+    "guide.s2.tip":   "提示：保持感测走线远离 LEDC 驱动走线以避免耦合噪声。",
+    "guide.s3.tag":   "步骤 03", "guide.s3.title": "配置 Wi-Fi 和云端",
+    "guide.s3.body":  "在配置块中编辑 WIFI_SSID 和 WIFI_PASSWORD。API 端点已预设为 https://fimtosoft.com/api/v1/telemetry。生产环境中，将根 CA PEM 粘贴到 API_ROOT_CA 以启用证书固定 TLS。",
+    "guide.s3.tip":   "提示：建立连接后，节点会在串口监视器上公告其 IP 地址。",
+    "guide.s4.tag":   "步骤 04", "guide.s4.title": "监控遥测工作台",
+    "guide.s4.body":  "使用本页的遥测工作台实时监视 EMI 扫频、电压峰值、电阻、谐振频率和 RMSD 损伤指数。运行负载循环模拟渐进水化，或触发 QA 场景验证故障检测逻辑。",
+    "guide.s4.tip":   "提示：启用网络断网以测试 IndexedDB 缓冲，并在恢复连接时观察数据回放。",
+    "guide.s5.tag":   "步骤 05", "guide.s5.title": "解读结果与认证",
+    "guide.s5.body":  "AI 诊断台从早龄期阻抗漂移预测第 28 天抗压强度。一旦试件达到认证阈值，仪表板显示 CERTIFIED。MIX_ADULTERATION 或 CONCRETE_CRUSHED 事件会立即标记并附带时间戳故障数据包。",
+    "guide.s5.tip":   "提示：从取证 QA 控制台导出会话日志用于合规文档。",
+
+    "cz.nav":"客户专区","cz.kicker":"您的工作区","cz.title":"客户专区","cz.subtitle":"管理项目、连接设备、下载固件并进行结构健康测试。","cz.tab.projects":"我的项目","cz.tab.connect":"设备设置","cz.tab.readings":"实时读数","cz.tab.reports":"测试报告","cz.proj.title":"项目管理","cz.proj.new":"新建项目","cz.proj.empty":"暂无项目。创建您的第一个项目以开始测试。","cz.proj.name":"项目名称","cz.proj.location":"位置/工地","cz.proj.concrete":"混凝土等级","cz.proj.date":"开始日期","cz.proj.notes":"备注","cz.proj.save":"保存项目","cz.proj.cancel":"取消","cz.proj.delete":"删除","cz.proj.select":"选择","cz.proj.active":"活跃","cz.proj.specimens":"试件","cz.proj.created":"创建时间","cz.proj.status.ok":"已认证","cz.proj.status.pend":"待定","cz.proj.status.fail":"失败","cz.dev.title":"设备连接向导","cz.dev.step1":"通过USB连接ESP32","cz.dev.step1b":"使用USB数据线连接ESP32-WROOM-32板。","cz.dev.step2":"安装驱动","cz.dev.step2b":"如未检测到端口，请安装CP210x或CH340驱动。","cz.dev.step3":"下载并烧录固件","cz.dev.step3b":"点击下方按钮下载固件，在Arduino IDE中打开并上传。","cz.dev.step4":"验证连接","cz.dev.step4b":"烧录后ESP32将连接Wi-Fi并在30秒内开始传输数据。","cz.dev.download":"下载固件(.ino)","cz.dev.download2":"下载设置指南","cz.dev.connected":"设备已连接","cz.dev.notconnected":"未检测到设备","cz.dev.simulate":"模拟连接设备","cz.dev.disconnect":"断开连接","cz.dev.id":"设备ID","cz.dev.port":"端口","cz.dev.firmware":"固件","cz.dev.signal":"信号","cz.dev.driver.cp":"下载CP210x驱动","cz.dev.driver.ch":"下载CH340驱动","cz.read.title":"实时传感器读数","cz.read.start":"开始读取","cz.read.stop":"停止","cz.read.save":"保存读数","cz.read.clear":"清除","cz.read.nodev":"未连接设备。请前往设备设置。","cz.read.noproj":"请先选择一个项目。","cz.read.specimen":"试件编号","cz.read.age":"试件龄期(天)","cz.read.label":"标签/备注","cz.read.add":"添加试件","cz.read.saved":"读数已保存到项目","cz.read.voltage":"电压峰值","cz.read.resistance":"电阻","cz.read.frequency":"谐振频率","cz.read.conductance":"电导","cz.read.damage":"损伤指数","cz.read.strength":"估算强度","cz.read.cert":"认证","cz.read.history":"读数历史","cz.read.export":"导出CSV","cz.rep.title":"测试报告","cz.rep.empty":"暂无报告。在实时读数选项卡中保存读数以生成报告。","cz.rep.generate":"生成报告","cz.rep.download":"下载报告","cz.rep.specimen":"试件","cz.rep.age":"龄期","cz.rep.mpa":"MPa","cz.rep.cert":"认证","cz.rep.date":"日期","cz.rep.verdict":"结论","cz.rep.pass":"合格","cz.rep.fail":"不合格","cz.rep.pending":"待定",
+    "tok.title":"工厂令牌","tok.available":"可用","tok.used":"已使用","tok.certified":"总发行","tok.order":"🛒 订购原装传感器","tok.order50":"+50 令牌 · 批量订单","tok.order100":"+100 令牌 · 批量订单","tok.deduct":"−1 令牌 · 传感器会话","tok.rom":"ROM ID","tok.badge.cert":"🔒 原装认证（工厂校准）","tok.badge.generic":"⚡ 通用（自校准）","tok.badge.short.cert":"PROPRIETARY_CERTIFIED","tok.badge.short.gen":"GENERIC_RAW","tok.order.done":"✓ 订单完成 — 令牌已添加","tok.order.proc":"正在处理授权…","tok.order.err":"令牌不足 — 请订购传感器","tok.history":"令牌台账","tok.low":"⚠ 余额过低","tok.ordershist":"订单历史","tok.session.cert":"smartLAB 原装传感器 — ROM 已验证","tok.session.gen":"通用传感器（自校准，无 ROM）","tok.choose":"传感器类型",
+    "fold.expand":"展开","fold.collapse":"收起","fold.sum.firmware":"已收起 — 共 {lines} 行，分 {n} 个注释章节。点击展开。","fold.sum.refs":"已收起 — {n} 条 DOI 核验的文献与标准。点击展开。",
+    "nav.cloud":"云端","cloud.kicker":"时序数据库后端","cloud.title":"InfluxDB 3 Cloud Serverless","cloud.connected":"已连接","cloud.testing":"查询中…","cloud.failed":"失败","cloud.idle":"未连接","cloud.proxy":"查询代理地址","cloud.proxy.hint":"您部署的 /api/influx-query 地址。InfluxDB 令牌保留在服务器端，绝不会发送到本页面。","cloud.session":"会话 ID（节点）","cloud.uselive":"使用云端实时数据","cloud.uselive.hint":"关闭 = 本地仿真","cloud.run":"执行 SQL 查询","cloud.warn":"切勿将 InfluxDB 令牌放入此仪表板。本应用构建为单个公开 HTML 文件，其中任何令牌都可被所有访问者读取。查询按设计经由服务器代理。","cloud.m.bins":"实时点","cloud.m.base":"基线点","cloud.m.peak":"最大偏差在","cloud.chart1":"电导 (µS) 对频率 — 实时与基线","cloud.chart2":"RMSD 损伤趋势 — 时间聚合","cloud.sql":"正在执行的 SQL",
+    "search.btn":"搜索","search.title":"搜索平台","search.placeholder":"搜索章节、固件、引脚、文献…","search.hint":"输入以搜索 — 或试试这些","search.none":"未找到结果","search.nav":"导航","search.open":"打开","search.close":"关闭","search.results":"条结果","search.k.section":"章节","search.k.action":"操作","search.k.firmware":"固件","search.k.reference":"文献","search.k.pin":"引脚","search.k.glossary":"术语","theme.toggle":"切换配色主题","theme.light":"切换到浅色模式","theme.dark":"切换到深色模式","top.label":"返回顶部",
+    "nav.refs":"参考文献","ref.kicker":"科学依据","ref.title":"参考文献与标准","ref.subtitle":"本平台的每个模型 — EMI 导纳扫频、RMSD 损伤指数、成熟度强度预测 — 均源自同行评审文献。以下所有 DOI 均可解析到已发表记录。","ref.entries":"条","ref.seminal":"奠基性","ref.bibtex":"BibTeX","ref.copied":"已复制","ref.copyall":"全部复制","ref.search":"搜索标题、作者、年份…","ref.none":"没有符合筛选条件的文献。","ref.publisher":"出版方","ref.footer":"所有条目均已对照实时 DOI 记录核验 · 非自动生成","ref.cat.all":"全部","ref.cat.foundation":"EMI 理论","ref.cat.aggregate":"智能骨料","ref.cat.earlyage":"早龄期水化","ref.cat.ai":"人工智能","ref.cat.standard":"标准",
+    "cz.rep.print":"打印","cz.rep.pdf":"PDF","cz.rep.excel":"Excel","cz.rep.techsign":"实验室技术员 — 签名与日期","cz.rep.engsign":"认证工程师 — 签名与盖章",
+    "ship.title":"工厂订单与发货追踪","ship.orders":"订单","ship.orderid":"订单编号","ship.qty":"传感器数量","ship.date":"下单日期","ship.status":"物流状态","ship.tracking":"运单","ship.stage.encap":"实验室封装中","ship.stage.dispatch":"已通过 SMSA Express 发出","ship.stage.delivered":"已送达并入账",
+    "cloud.export":"导出","cloud.export.pdf":"PDF 报告","cloud.export.xlsx":"Excel","cloud.export.print":"打印","cloud.export.chart":"含波形图",
+    "lang.label": "语言",
+    "lang.select": "选择语言",
+  },
+
+  /* ── JAPANESE ───────────────────────────────────────────────── */
+  ja: {
+    "nav.home":          "ホーム",
+    "nav.client":        "クライアントゾーン",
+    "nav.guide":         "ガイド",
+    "nav.telemetry":     "テレメトリ",
+    "nav.firmware":      "ファームウェア",
+    "nav.hardware":      "ハードウェア",
+    "nav.architecture":  "アーキテクチャ",
+    "nav.uplink":        "アップリンク",
+
+    "hero.kicker":       "ファームウェア納品 — ESP32-WROOM-32 · Arduino Core 3.x",
+    "hero.meta":         "ブロッキング呼び出し 0 件",
+    "hero.body":         "コンクリート試験体の機電インピーダンスを読み取る組み込み圧電パッチ向け本番ファームウェア — 対数スイープ 1–500 kHz、RMSD 損傷指数、30 ms 未満の極限強度ラッチをすべて 1 Hz で fimtosoft.com へストリーミング。",
+    "hero.chip1":        "≈83 kS/s ADC バースト",
+    "hero.chip2":        "EMI スイープ · 96 対数ステップ",
+    "hero.chip3":        "破壊ラッチ < 30 ms",
+    "hero.chip4":        "TLS POST @ 1 Hz",
+    "hero.chip5":        "RMSD 損傷指数",
+    "hero.btn.review":   "ファームウェアソースを確認 ↓",
+    "hero.btn.download": ".ino をダウンロード",
+
+    "s01.kicker": "ライブノードシミュレーション",
+    "s01.title":  "テレメトリベンチ",
+    "s01.blurb":  "仮想ノードツインは28日間のコンクリート水和状態をすべてのスペクトルとテレメトリフレームに持ち込みます。フォレンジック QA コンソールは不正、切断、停電、音響崩壊状態を注入できます。",
+
+    "s02.kicker": "ソース納品",
+    "s02.title":  "ファームウェア — {file}",
+    "s02.blurb":  "10 個のアノテーション付きセクションに分けた完全な本番ソース。ADC バースト、スイープ dwell、WiFi ウォッチドッグ、HTTPS POST のすべてのタスクは、協調的な loop() 内の millis()/micros() デッドラインです。",
+
+    "s03.kicker": "物理層",
+    "s03.title":  "ハードウェアインターフェース",
+    "s03.blurb":  "単電源分圧器センシング：LEDC スイープは精密直列抵抗を通じてパッチを駆動し、中点は ADC1_CH0 でバーストサンプリングされます。",
+
+    "s04.kicker": "システム設計",
+    "s04.title":  "アーキテクチャ & タイミング",
+    "s04.blurb":  "1 つの loop()、5 つのデッドライン駆動タスク、4 状態マシン。障害検出器はピークホールドラッチ：950 カウントを超えるスパイクで武装し、30 ms 以内の 3 つのデッド dwell で確認。",
+
+    "s05.kicker": "クラウド契約",
+    "s05.title":  "smartLAB アップリンク",
+    "s05.blurb":  "https://fimtosoft.com へ毎秒 1 件の HTTPS POST — ピン留め TLS 経由の ArduinoJson v7 JSON、指数バックオフ、4 フレームオフラインスプール。",
+
+    "footer.tagline":   "コンクリート構造物の機電インピーダンス監視 — 組み込み PZT パッチからクラウドまで、1 枚の ESP32 で。",
+    "footer.copyright": "© 2026 smartLAB · Fimto Soft — MIT ライセンスでリリース",
+    "footer.verified":  "ノンブロッキング検証済み",
+
+    "fimto.name":        "Fimto Soft",
+    "fimto.slogan":      "統合テクノロジーソリューション",
+    "fimto.about":       "高度な ERP システム、生コンクリートプラントの保守・開発、ウェブデザイン・開発、デジタルマーケティング、防犯・監視システム、ネットワークインフラ、AI アプリケーション、スマートホームシステムを含む包括的なソフトウェアソリューションを提供します。",
+    "fimto.links":       "クイックリンク",
+    "fimto.link.home":   "ホーム",
+    "fimto.link.about":  "会社概要",
+    "fimto.link.services":"サービス",
+    "fimto.link.contact":"お問い合わせ",
+    "fimto.contact":     "お問い合わせ",
+    "fimto.locations":   "拠点",
+    "fimto.eg":          "エジプト・カイロ",
+    "fimto.ksa":         "サウジアラビア・リヤド",
+    "fimto.poweredby":   "Fimto Soft が提供",
+
+    /* ── ユーザーガイド (JA) ─────────────────────────────────────── */
+    "guide.kicker":      "インタラクティブガイド",
+    "guide.title":       "プラットフォームの使い方",
+    "guide.subtitle":    "以下の5つのステップに従って、ハードウェア設定から認定クラウドテレメトリまで数分で完了します。",
+    "guide.badge.new":   "新機能",
+    "guide.progress":    "ステップ {n} / {total}",
+    "guide.btn.prev":    "← 前へ",
+    "guide.btn.next":    "次へ →",
+    "guide.btn.start":   "ガイドを開始",
+    "guide.btn.restart": "最初から",
+    "guide.btn.done":    "完了 ✓",
+    "guide.s1.tag":   "ステップ 01", "guide.s1.title": "ファームウェアの書き込み",
+    "guide.s1.body":  "pzt_emi_monitor.ino をダウンロードし、Arduino IDE (≥ 2.x) で開きます。Boards Manager で ESP32 パッケージをインストールし、ESP32-WROOM-32 を選択してアップロードをクリックします。シリアルモニターが 921 600 ボーで起動を確認します。",
+    "guide.s1.tip":   "ヒント：ポートが自動リセットしない場合、アップロード中に BOOT ボタンを押し続けてください。",
+    "guide.s2.tag":   "ステップ 02", "guide.s2.title": "PZT パッチの配線",
+    "guide.s2.body":  "圧電スマートアグリゲートを分圧回路に接続します：GPIO25 → Rs 1 kΩ → PZT → GND。中点を GPIO36 (ADC1_CH0) に接続します。ツイストペアケーブルを使用し、シールドは AGND スター点のみに接続します。",
+    "guide.s2.tip":   "ヒント：感知ラインを LEDC 駆動ラインから離してノイズ結合を防いでください。",
+    "guide.s3.tag":   "ステップ 03", "guide.s3.title": "Wi-Fi とクラウドの設定",
+    "guide.s3.body":  "設定ブロックの WIFI_SSID と WIFI_PASSWORD を編集します。API エンドポイントは https://fimtosoft.com/api/v1/telemetry に設定済みです。本番環境では、ルート CA PEM を API_ROOT_CA に貼り付けて証明書固定 TLS を有効にします。",
+    "guide.s3.tip":   "ヒント：接続確立後、ノードはシリアルモニターに IP アドレスを表示します。",
+    "guide.s4.tag":   "ステップ 04", "guide.s4.title": "テレメトリベンチの監視",
+    "guide.s4.body":  "このページのテレメトリベンチを使用して、EMI スイープ、電圧ピーク、抵抗、共振周波数、RMSD 損傷指数をリアルタイムで監視します。負荷サイクルを実行するか、QA シナリオをトリガーして故障検出ロジックを検証します。",
+    "guide.s4.tip":   "ヒント：ネットワーク停電を有効にして IndexedDB スプールをテストし、リンク復旧時のリプレイを確認します。",
+    "guide.s5.tag":   "ステップ 05", "guide.s5.title": "結果の解釈と認定",
+    "guide.s5.body":  "AI 診断デッキは初期インピーダンスドリフトから 28 日目の圧縮強度を予測します。試験体が認定閾値に達するとダッシュボードに CERTIFIED と表示されます。MIX_ADULTERATION または CONCRETE_CRUSHED イベントはタイムスタンプ付きで即座にフラグ立てされます。",
+    "guide.s5.tip":   "ヒント：コンプライアンス文書のためにフォレンジック QA コンソールからセッションログをエクスポートします。",
+
+    "cz.nav":"クライアントゾーン","cz.kicker":"あなたのワークスペース","cz.title":"クライアントゾーン","cz.subtitle":"プロジェクト管理、デバイス接続、ファームウェアのダウンロード、構造健全性試験をすべて一か所で。","cz.tab.projects":"マイプロジェクト","cz.tab.connect":"デバイス設定","cz.tab.readings":"リアルタイム測定","cz.tab.reports":"試験報告","cz.proj.title":"プロジェクトマネージャー","cz.proj.new":"新規プロジェクト","cz.proj.empty":"プロジェクトがありません。最初のプロジェクトを作成してください。","cz.proj.name":"プロジェクト名","cz.proj.location":"場所/現場","cz.proj.concrete":"コンクリートグレード","cz.proj.date":"開始日","cz.proj.notes":"メモ","cz.proj.save":"保存","cz.proj.cancel":"キャンセル","cz.proj.delete":"削除","cz.proj.select":"選択","cz.proj.active":"アクティブ","cz.proj.specimens":"試験体","cz.proj.created":"作成日","cz.proj.status.ok":"認定済","cz.proj.status.pend":"保留中","cz.proj.status.fail":"失敗","cz.dev.title":"デバイス接続ウィザード","cz.dev.step1":"USB でESP32を接続","cz.dev.step1b":"データ転送用USBケーブルでESP32-WROOM-32を接続します。","cz.dev.step2":"ドライバをインストール","cz.dev.step2b":"ポートが検出されない場合はCP210xまたはCH340ドライバをインストール。","cz.dev.step3":"ファームウェアのダウンロードと書き込み","cz.dev.step3b":"下のボタンでダウンロードし、Arduino IDEで開いてアップロード。","cz.dev.step4":"接続を確認","cz.dev.step4b":"書き込み後ESP32はWi-Fiに接続し30秒以内に送信開始します。","cz.dev.download":"ファームウェアをダウンロード(.ino)","cz.dev.download2":"セットアップガイド(PDF)","cz.dev.connected":"デバイス接続済","cz.dev.notconnected":"デバイスが見つかりません","cz.dev.simulate":"デバイスをシミュレート","cz.dev.disconnect":"切断","cz.dev.id":"デバイスID","cz.dev.port":"ポート","cz.dev.firmware":"ファームウェア","cz.dev.signal":"信号","cz.dev.driver.cp":"CP210xをダウンロード","cz.dev.driver.ch":"CH340をダウンロード","cz.read.title":"リアルタイムセンサー測定","cz.read.start":"測定開始","cz.read.stop":"停止","cz.read.save":"保存","cz.read.clear":"クリア","cz.read.nodev":"デバイス未接続。デバイス設定へ移動してください。","cz.read.noproj":"まずプロジェクトを選択してください。","cz.read.specimen":"試験体ID","cz.read.age":"試験体の材齢(日)","cz.read.label":"ラベル/メモ","cz.read.add":"試験体を追加","cz.read.saved":"データをプロジェクトに保存しました","cz.read.voltage":"電圧ピーク","cz.read.resistance":"抵抗","cz.read.frequency":"共振周波数","cz.read.conductance":"電導率","cz.read.damage":"損傷指数","cz.read.strength":"推定強度","cz.read.cert":"認定","cz.read.history":"測定履歴","cz.read.export":"CSVエクスポート","cz.rep.title":"試験報告","cz.rep.empty":"報告がありません。測定タブでデータを保存してください。","cz.rep.generate":"報告を作成","cz.rep.download":"報告をダウンロード","cz.rep.specimen":"試験体","cz.rep.age":"材齢","cz.rep.mpa":"MPa","cz.rep.cert":"認定","cz.rep.date":"日付","cz.rep.verdict":"判定","cz.rep.pass":"合格","cz.rep.fail":"不合格","cz.rep.pending":"保留中",
+    "tok.title":"ファクトリートークン","tok.available":"利用可能","tok.used":"使用済","tok.certified":"総発行","tok.order":"🛒 純正センサーを注文","tok.order50":"+50 トークン · バッチ注文","tok.order100":"+100 トークン · バッチ注文","tok.deduct":"−1 トークン · センサーセッション","tok.rom":"ROM ID","tok.badge.cert":"🔒 純正認定（工場キャリブレーション）","tok.badge.generic":"⚡ ジェネリック（自己キャリブレーション）","tok.badge.short.cert":"PROPRIETARY_CERTIFIED","tok.badge.short.gen":"GENERIC_RAW","tok.order.done":"✓ 注文完了 — トークン追加","tok.order.proc":"認証処理中…","tok.order.err":"トークン不足 — センサーを注文してください","tok.history":"トークン台帳","tok.low":"⚠ 残高不足","tok.ordershist":"注文履歴","tok.session.cert":"smartLAB 純正センサー — ROM 検証済","tok.session.gen":"ジェネリックセンサー（自己キャリブレーション、ROM なし）","tok.choose":"センサータイプ",
+    "fold.expand":"展開","fold.collapse":"折りたたむ","fold.sum.firmware":"折りたたみ中 — {n} セクション・全 {lines} 行。クリックで展開。","fold.sum.refs":"折りたたみ中 — DOI 検証済みの文献・規格 {n} 件。クリックで展開。",
+    "nav.cloud":"クラウド","cloud.kicker":"時系列バックエンド","cloud.title":"InfluxDB 3 Cloud Serverless","cloud.connected":"接続中","cloud.testing":"クエリ中…","cloud.failed":"失敗","cloud.idle":"未接続","cloud.proxy":"クエリプロキシ URL","cloud.proxy.hint":"デプロイした /api/influx-query の URL。InfluxDB トークンはサーバー側に留まり、このページへは送信されません。","cloud.session":"セッション ID（ノード）","cloud.uselive":"クラウドのライブデータを使用","cloud.uselive.hint":"オフ = ローカルシミュレーション","cloud.run":"SQL を実行","cloud.warn":"InfluxDB トークンをこのダッシュボードに置かないでください。本アプリは単一の公開 HTML として構築されるため、内部のトークンは全訪問者に読まれます。クエリは設計上サーバー経由です。","cloud.m.bins":"ライブ点数","cloud.m.base":"基準点数","cloud.m.peak":"最大偏差","cloud.chart1":"コンダクタンス (µS) 対 周波数 — ライブ／基準","cloud.chart2":"RMSD 損傷トレンド — 時間集計","cloud.sql":"実行中の SQL",
+    "search.btn":"検索","search.title":"プラットフォームを検索","search.placeholder":"セクション・ファームウェア・ピン・文献を検索…","search.hint":"入力して検索 — またはこちらから","search.none":"該当なし:","search.nav":"移動","search.open":"開く","search.close":"閉じる","search.results":"件","search.k.section":"セクション","search.k.action":"操作","search.k.firmware":"ファームウェア","search.k.reference":"文献","search.k.pin":"ピン","search.k.glossary":"用語","theme.toggle":"配色テーマを切替","theme.light":"ライトモードへ","theme.dark":"ダークモードへ","top.label":"トップへ戻る",
+    "nav.refs":"参考文献","ref.kicker":"科学的根拠","ref.title":"参考文献と規格","ref.subtitle":"本プラットフォームの全モデル — EMI アドミタンススイープ、RMSD 損傷指数、成熟度による強度予測 — は査読済み文献に基づいています。以下の DOI はすべて公開記録に解決します。","ref.entries":"件","ref.seminal":"基礎文献","ref.bibtex":"BibTeX","ref.copied":"コピー済","ref.copyall":"全てコピー","ref.search":"タイトル・著者・年で検索…","ref.none":"条件に一致する文献がありません。","ref.publisher":"出版社","ref.footer":"全エントリを実 DOI レコードと照合済 · 自動生成ではありません","ref.cat.all":"すべて","ref.cat.foundation":"EMI 理論","ref.cat.aggregate":"スマートアグリゲート","ref.cat.earlyage":"初期材齢・水和","ref.cat.ai":"AI / 機械学習","ref.cat.standard":"規格",
+    "cz.rep.print":"印刷","cz.rep.pdf":"PDF","cz.rep.excel":"Excel","cz.rep.techsign":"ラボ技術者 — 署名・日付","cz.rep.engsign":"認定エンジニア — 署名・押印",
+    "ship.title":"工場注文・出荷トラッカー","ship.orders":"件の注文","ship.orderid":"注文番号","ship.qty":"センサー数","ship.date":"注文日","ship.status":"物流ステータス","ship.tracking":"追跡番号","ship.stage.encap":"ラボ封止処理中","ship.stage.dispatch":"SMSA Express にて発送済","ship.stage.delivered":"配達完了・クレジット済",
+    "cloud.export":"エクスポート","cloud.export.pdf":"PDFレポート","cloud.export.xlsx":"Excel","cloud.export.print":"印刷","cloud.export.chart":"波形図付き",
+    "lang.label": "言語",
+    "lang.select": "言語を選択",
+  },
+
+  /* ── FRENCH ─────────────────────────────────────────────────── */
+  fr: {
+    "nav.home":          "Accueil",
+    "nav.client":        "Espace client",
+    "nav.guide":         "Guide",
+    "nav.telemetry":     "Télémétrie",
+    "nav.firmware":      "Firmware",
+    "nav.hardware":      "Matériel",
+    "nav.architecture":  "Architecture",
+    "nav.uplink":        "Lien montant",
+
+    "hero.kicker":       "Livraison du firmware — ESP32-WROOM-32 · Arduino Core 3.x",
+    "hero.meta":         "0 appels bloquants",
+    "hero.body":         "Firmware de production pour un patch piézoélectrique embarqué mesurant l'impédance électromécanique d'une éprouvette en béton — balayage logarithmique 1–500 kHz, indice de dommages RMSD et verrou de résistance ultime en moins de 30 ms, tout diffusé sur fimtosoft.com à 1 Hz.",
+    "hero.chip1":        "≈83 kS/s ADC rafale",
+    "hero.chip2":        "Balayage EMI · 96 pas log.",
+    "hero.chip3":        "Verrou rupture < 30 ms",
+    "hero.chip4":        "TLS POST @ 1 Hz",
+    "hero.chip5":        "Indice dommages RMSD",
+    "hero.btn.review":   "Voir le source firmware ↓",
+    "hero.btn.download": "Télécharger .ino",
+
+    "s01.kicker": "Simulation de nœud en direct",
+    "s01.title":  "Banc de télémétrie",
+    "s01.blurb":  "Le jumeau virtuel du nœud intègre un état d'hydratation du béton sur 28 jours dans chaque spectre et trame de télémétrie. La console QA forensique peut injecter des fraudes, coupures de fil, pannes réseau et conditions d'effondrement acoustique.",
+
+    "s02.kicker": "Livraison du source",
+    "s02.title":  "Firmware — {file}",
+    "s02.blurb":  "Le source de production complet en dix sections annotées. Chaque tâche — rafale ADC, dwell de balayage, watchdog WiFi, HTTPS POST — est une échéance millis()/micros() dans un loop() coopératif.",
+
+    "s03.kicker": "Couche physique",
+    "s03.title":  "Interface matérielle",
+    "s03.blurb":  "Détection par pont diviseur alimentation simple : le balayage LEDC pilote le patch via une résistance série de précision, le point médian est échantillonné sur ADC1_CH0.",
+
+    "s04.kicker": "Conception système",
+    "s04.title":  "Architecture & synchronisation",
+    "s04.blurb":  "Un loop(), cinq tâches pilotées par des échéances et un automate à quatre états. Le détecteur de défaut est un verrou de maintien de crête : une pointe au-delà de 950 comptes l'arme, trois dwells morts en 30 ms le confirment.",
+
+    "s05.kicker": "Contrat cloud",
+    "s05.title":  "Lien montant smartLAB",
+    "s05.blurb":  "Un HTTPS POST par seconde vers https://fimtosoft.com — JSON construit avec ArduinoJson v7 sur TLS épinglé, avec backoff exponentiel et spool hors ligne de quatre trames.",
+
+    "footer.tagline":   "Surveillance de l'impédance électromécanique des structures en béton — du patch PZT embarqué au cloud, sur un seul ESP32.",
+    "footer.copyright": "© 2026 smartLAB · Fimto Soft — firmware publié sous MIT",
+    "footer.verified":  "non-bloquant vérifié",
+
+    "fimto.name":        "Fimto Soft",
+    "fimto.slogan":      "Solutions technologiques intégrées",
+    "fimto.about":       "Nous fournissons des solutions logicielles complètes : systèmes ERP interactifs avancés, maintenance de centrales à béton prêt à l'emploi, développement web, marketing digital, systèmes de sécurité et vidéosurveillance, infrastructure réseau, applications IA et systèmes domotiques.",
+    "fimto.links":       "Liens rapides",
+    "fimto.link.home":   "Accueil",
+    "fimto.link.about":  "À propos",
+    "fimto.link.services":"Services",
+    "fimto.link.contact":"Contact",
+    "fimto.contact":     "Nous contacter",
+    "fimto.locations":   "Nos bureaux",
+    "fimto.eg":          "Le Caire, Égypte",
+    "fimto.ksa":         "Riyad, Arabie Saoudite",
+    "fimto.poweredby":   "Propulsé par Fimto Soft",
+
+    /* ── Guide utilisateur (FR) ──────────────────────────────────── */
+    "guide.kicker":      "Tutoriel interactif",
+    "guide.title":       "Comment utiliser la plateforme",
+    "guide.subtitle":    "Suivez les cinq étapes ci-dessous — de la configuration matérielle à la télémétrie cloud certifiée en quelques minutes.",
+    "guide.badge.new":   "NOUVEAU",
+    "guide.progress":    "Étape {n} sur {total}",
+    "guide.btn.prev":    "← Précédent",
+    "guide.btn.next":    "Suivant →",
+    "guide.btn.start":   "Démarrer le tutoriel",
+    "guide.btn.restart": "Recommencer",
+    "guide.btn.done":    "Terminé ✓",
+    "guide.s1.tag":   "Étape 01", "guide.s1.title": "Flasher le firmware",
+    "guide.s1.body":  "Téléchargez pzt_emi_monitor.ino et ouvrez-le dans l'Arduino IDE (≥ 2.x). Installez le package ESP32 via Boards Manager, sélectionnez ESP32-WROOM-32 et cliquez sur Téléverser. Le moniteur série confirmera un démarrage réussi à 921 600 bauds.",
+    "guide.s1.tip":   "Conseil : maintenez BOOT enfoncé pendant le téléversement si le port ne se réinitialise pas automatiquement.",
+    "guide.s2.tag":   "Étape 02", "guide.s2.title": "Câbler le patch PZT",
+    "guide.s2.body":  "Connectez le patch piézoélectrique au diviseur de tension : GPIO25 → Rs 1 kΩ → PZT → GND. Connectez le point médian à GPIO36 (ADC1_CH0). Utilisez une paire torsadée ; reliez le blindage uniquement au point étoile AGND.",
+    "guide.s2.tip":   "Conseil : éloignez la piste de mesure de la piste de commande LEDC pour éviter le couplage.",
+    "guide.s3.tag":   "Étape 03", "guide.s3.title": "Configurer Wi-Fi et Cloud",
+    "guide.s3.body":  "Modifiez WIFI_SSID et WIFI_PASSWORD dans le bloc de configuration. Le point de terminaison API est préréglé sur https://fimtosoft.com/api/v1/telemetry. En production, collez votre CA racine PEM dans API_ROOT_CA pour activer le TLS épinglé.",
+    "guide.s3.tip":   "Conseil : le nœud annonce son adresse IP sur le moniteur série une fois la liaison établie.",
+    "guide.s4.tag":   "Étape 04", "guide.s4.title": "Surveiller le banc de télémétrie",
+    "guide.s4.body":  "Utilisez le banc de télémétrie de cette page pour observer le balayage EMI, le pic de tension, la résistance, la fréquence de résonance et l'indice RMSD en temps réel. Lancez un cycle de charge ou déclenchez des scénarios QA.",
+    "guide.s4.tip":   "Conseil : activez la panne réseau pour tester le spool IndexedDB et observer la récupération.",
+    "guide.s5.tag":   "Étape 05", "guide.s5.title": "Interpréter les résultats",
+    "guide.s5.body":  "Le tableau de bord IA prédit la résistance à la compression au Jour 28 à partir de la dérive d'impédance en début de vie. Lorsque l'éprouvette atteint le seuil de certification, le tableau affiche CERTIFIED. Les événements MIX_ADULTERATION ou CONCRETE_CRUSHED sont signalés immédiatement.",
+    "guide.s5.tip":   "Conseil : exportez le journal de session depuis la console QA forensique pour la documentation.",
+
+    "cz.nav":"Espace client","cz.kicker":"Votre espace de travail","cz.title":"Espace client","cz.subtitle":"Gérez vos projets, connectez votre appareil, téléchargez le firmware et effectuez des tests de santé structurelle.","cz.tab.projects":"Mes projets","cz.tab.connect":"Config. appareil","cz.tab.readings":"Mesures live","cz.tab.reports":"Rapports","cz.proj.title":"Gestionnaire de projets","cz.proj.new":"Nouveau projet","cz.proj.empty":"Aucun projet. Créez votre premier projet pour commencer.","cz.proj.name":"Nom du projet","cz.proj.location":"Lieu / Chantier","cz.proj.concrete":"Classe de béton","cz.proj.date":"Date de début","cz.proj.notes":"Notes","cz.proj.save":"Enregistrer","cz.proj.cancel":"Annuler","cz.proj.delete":"Supprimer","cz.proj.select":"Sélectionner","cz.proj.active":"Actif","cz.proj.specimens":"éprouvettes","cz.proj.created":"Créé le","cz.proj.status.ok":"Certifié","cz.proj.status.pend":"En attente","cz.proj.status.fail":"Échoué","cz.dev.title":"Assistant de connexion","cz.dev.step1":"Connecter l'ESP32 via USB","cz.dev.step1b":"Branchez la carte avec un câble USB de données.","cz.dev.step2":"Installer les pilotes","cz.dev.step2b":"Si le port n'est pas détecté, installez le pilote CP210x ou CH340.","cz.dev.step3":"Télécharger et flasher","cz.dev.step3b":"Cliquez ci-dessous, ouvrez le fichier dans Arduino IDE et téléversez.","cz.dev.step4":"Vérifier la connexion","cz.dev.step4b":"Après le flash, l'ESP32 se connecte au Wi-Fi et transmet en 30 secondes.","cz.dev.download":"Télécharger le firmware (.ino)","cz.dev.download2":"Télécharger le guide (PDF)","cz.dev.connected":"Appareil connecté","cz.dev.notconnected":"Appareil non détecté","cz.dev.simulate":"Simuler un appareil","cz.dev.disconnect":"Déconnecter","cz.dev.id":"ID appareil","cz.dev.port":"Port","cz.dev.firmware":"Firmware","cz.dev.signal":"Signal","cz.dev.driver.cp":"Télécharger CP210x","cz.dev.driver.ch":"Télécharger CH340","cz.read.title":"Mesures en direct","cz.read.start":"Démarrer la mesure","cz.read.stop":"Arrêter","cz.read.save":"Enregistrer","cz.read.clear":"Effacer","cz.read.nodev":"Aucun appareil connecté.","cz.read.noproj":"Sélectionnez d'abord un projet.","cz.read.specimen":"ID éprouvette","cz.read.age":"Âge (jours)","cz.read.label":"Étiquette / Notes","cz.read.add":"Ajouter éprouvette","cz.read.saved":"Mesure enregistrée","cz.read.voltage":"Tension crête","cz.read.resistance":"Résistance","cz.read.frequency":"Fréq. résonance","cz.read.conductance":"Conductance","cz.read.damage":"Indice dommage","cz.read.strength":"Résistance est.","cz.read.cert":"Certification","cz.read.history":"Historique","cz.read.export":"Exporter CSV","cz.rep.title":"Rapports de test","cz.rep.empty":"Aucun rapport. Enregistrez des mesures pour générer des rapports.","cz.rep.generate":"Générer rapport","cz.rep.download":"Télécharger rapport","cz.rep.specimen":"Éprouvette","cz.rep.age":"Âge","cz.rep.mpa":"MPa","cz.rep.cert":"Cert.","cz.rep.date":"Date","cz.rep.verdict":"Verdict","cz.rep.pass":"RÉUSSI","cz.rep.fail":"ÉCHOUÉ","cz.rep.pending":"EN ATTENTE",
+    "tok.title":"Jetons d'usine","tok.available":"Disponibles","tok.used":"Utilisés","tok.certified":"Total émis","tok.order":"🛒 Commander des capteurs originaux","tok.order50":"+50 jetons · Commande lot","tok.order100":"+100 jetons · Commande lot","tok.deduct":"−1 jeton · Session capteur","tok.rom":"ID ROM","tok.badge.cert":"🔒 Certifié original (calibré en usine)","tok.badge.generic":"⚡ Générique (auto-calibré)","tok.badge.short.cert":"PROPRIETARY_CERTIFIED","tok.badge.short.gen":"GENERIC_RAW","tok.order.done":"✓ Commande exécutée — jetons ajoutés","tok.order.proc":"Autorisation en cours…","tok.order.err":"Jetons insuffisants — commander des capteurs","tok.history":"Registre des jetons","tok.low":"⚠ Solde faible","tok.ordershist":"Historique des commandes","tok.session.cert":"Capteur smartLAB original — ROM vérifié","tok.session.gen":"Capteur générique (auto-calibré, sans ROM)","tok.choose":"Type de capteur",
+    "fold.expand":"Déplier","fold.collapse":"Replier","fold.sum.firmware":"Replié — {lines} lignes en {n} sections annotées. Cliquez pour déplier.","fold.sum.refs":"Replié — {n} références et normes vérifiées par DOI. Cliquez pour déplier.",
+    "nav.cloud":"Cloud","cloud.kicker":"Base de séries temporelles","cloud.title":"InfluxDB 3 Cloud Serverless","cloud.connected":"en direct","cloud.testing":"requête…","cloud.failed":"échec","cloud.idle":"non connecté","cloud.proxy":"Point de terminaison proxy","cloud.proxy.hint":"L'URL /api/influx-query déployée. Le token InfluxDB reste côté serveur et n'est jamais envoyé à cette page.","cloud.session":"ID de session (nœud)","cloud.uselive":"Utiliser les données cloud","cloud.uselive.hint":"Désactivé = simulation locale","cloud.run":"Exécuter les requêtes SQL","cloud.warn":"Ne placez jamais un token InfluxDB dans ce tableau de bord. L'application est compilée en un seul fichier HTML public — tout token à l'intérieur est lisible par chaque visiteur. Les requêtes passent par le serveur.","cloud.m.bins":"points live","cloud.m.base":"points de référence","cloud.m.peak":"Δ max à","cloud.chart1":"Conductance (µS) vs fréquence — live et référence","cloud.chart2":"Tendance RMSD — agrégation temporelle","cloud.sql":"SQL exécuté",
+    "search.btn":"Rechercher","search.title":"Rechercher dans la plateforme","search.placeholder":"Sections, firmware, broches, références…","search.hint":"Tapez pour rechercher — ou essayez","search.none":"Aucun résultat pour","search.nav":"naviguer","search.open":"ouvrir","search.close":"fermer","search.results":"résultats","search.k.section":"Section","search.k.action":"Action","search.k.firmware":"Firmware","search.k.reference":"Référence","search.k.pin":"Broche","search.k.glossary":"Terme","theme.toggle":"Changer de thème","theme.light":"Mode clair","theme.dark":"Mode sombre","top.label":"Haut de page",
+    "nav.refs":"Références","ref.kicker":"Base scientifique","ref.title":"Références & Normes","ref.subtitle":"Chaque modèle de la plateforme — balayage d'admittance EMI, indice RMSD, projection de résistance par maturité — s'appuie sur la littérature évaluée par les pairs. Tous les DOI ci-dessous résolvent vers l'enregistrement publié.","ref.entries":"entrées","ref.seminal":"Fondateur","ref.bibtex":"BibTeX","ref.copied":"Copié","ref.copyall":"Tout copier","ref.search":"Rechercher titre, auteur, année…","ref.none":"Aucune référence ne correspond au filtre.","ref.publisher":"Éditeur","ref.footer":"Toutes les entrées vérifiées auprès du registre DOI · non générées automatiquement","ref.cat.all":"Toutes","ref.cat.foundation":"Théorie EMI","ref.cat.aggregate":"Granulats intelligents","ref.cat.earlyage":"Hydratation précoce","ref.cat.ai":"IA / Apprentissage","ref.cat.standard":"Normes",
+    "cz.rep.print":"Imprimer","cz.rep.pdf":"PDF","cz.rep.excel":"Excel","cz.rep.techsign":"Technicien labo — signature & date","cz.rep.engsign":"Ingénieur certificateur — signature & cachet",
+    "ship.title":"Suivi des commandes & expéditions","ship.orders":"commandes","ship.orderid":"N° commande","ship.qty":"Qté capteurs","ship.date":"Date commande","ship.status":"Statut logistique","ship.tracking":"Suivi","ship.stage.encap":"En encapsulation laboratoire","ship.stage.dispatch":"Expédié via SMSA Express","ship.stage.delivered":"Livré & crédité",
+    "cloud.export":"Exporter","cloud.export.pdf":"Rapport PDF","cloud.export.xlsx":"Excel","cloud.export.print":"Imprimer","cloud.export.chart":"graphique inclus",
+    "lang.label": "Langue",
+    "lang.select": "Sélectionner la langue",
+  },
+};
+
+/* ── context ────────────────────────────────────────────────────── */
+interface LangCtx {
+  lang: LangCode;
+  setLang: (l: LangCode) => void;
+  t: (key: string, vars?: Record<string, string>) => string;
+  dir: "ltr" | "rtl";
+  meta: LangMeta;
+}
+
+const Ctx = createContext<LangCtx>({
+  lang: "en",
+  setLang: () => undefined,
+  t: (k) => k,
+  dir: "ltr",
+  meta: LANGUAGES[0],
+});
+
+export function LangProvider({ children }: { children: ReactNode }) {
+  const [lang, setLangState] = useState<LangCode>(() => {
+    try {
+      const stored = localStorage.getItem("smartlab-lang") as LangCode | null;
+      if (stored && LANGUAGES.some(l => l.code === stored)) return stored;
+    } catch { /* ignore */ }
+    return "en";
+  });
+
+  const setLang = (l: LangCode) => {
+    setLangState(l);
+    try { localStorage.setItem("smartlab-lang", l); } catch { /* ignore */ }
+  };
+
+  const meta = LANGUAGES.find(l => l.code === lang) ?? LANGUAGES[0];
+
+  const t = (key: string, vars?: Record<string, string>): string => {
+    const dict = T[lang] ?? T.en;
+    let str = dict[key] ?? T.en[key] ?? key;
+    if (vars) {
+      for (const [k, v] of Object.entries(vars)) {
+        str = str.replace(`{${k}}`, v);
+      }
+    }
+    return str;
+  };
+
+  return (
+    <Ctx.Provider value={{ lang, setLang, t, dir: meta.dir, meta }}>
+      {children}
+    </Ctx.Provider>
+  );
+}
+
+export const useLang = () => useContext(Ctx);

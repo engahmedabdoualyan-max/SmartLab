@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>smartLAB — My Projects</title>
-    <link rel="icon" href="../favicon.ico">
+    <title>smartLAB — Analytics</title>
+    <link rel="icon" href="../../favicon.ico">
     <link rel="stylesheet" href="client-common.css">
 </head>
 <body>
@@ -16,248 +16,134 @@
             <span data-i18n="Back to Concrete">Back to Concrete Testing</span>
         </a>
 
-        <h1 class="page-title" data-i18n="My Projects">My <span>Projects</span></h1>
-        <p class="page-sub" data-i18n="Projects desc">Manage your concrete projects, track progress, and access test data</p>
+        <h1 class="page-title" data-i18n="Analytics">Ana<span>lytics</span></h1>
+        <p class="page-sub" data-i18n="Analytics desc">Client project analytics and performance metrics</p>
 
         <div class="section">
-            <div class="section-title"><span class="st-icon">📁</span> <span data-i18n="Active Projects">Active Projects</span></div>
-            <div class="card-grid" id="activeProjectsGrid">
-                <!-- Injected by JS -->
+            <div class="section-title"><span class="st-icon">📊</span> <span data-i18n="Overview">Overview</span></div>
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-icon">🧪</div>
+                    <div class="card-value">2,340</div>
+                    <div class="card-label" data-i18n="Total Tests">Total Tests</div>
+                </div>
+                <div class="card">
+                    <div class="card-icon">💪</div>
+                    <div class="card-value">32.5 MPa</div>
+                    <div class="card-label" data-i18n="Average Strength">Average Strength</div>
+                </div>
+                <div class="card">
+                    <div class="card-icon">⏱️</div>
+                    <div class="card-value">94.7%</div>
+                    <div class="card-label" data-i18n="On-Time Rate">On-Time Rate</div>
+                </div>
             </div>
         </div>
 
         <div class="section">
-            <div class="section-title"><span class="st-icon">✅</span> <span data-i18n="Completed Projects">Completed Projects</span></div>
-            <div class="card-grid" id="completedProjectsGrid">
-                <!-- Injected by JS -->
+            <div class="section-title"><span class="st-icon">📈</span> <span data-i18n="Performance Chart">Performance Chart</span></div>
+            <div class="card" style="padding:32px;text-align:center;min-height:280px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                <svg width="100%" height="200" viewBox="0 0 800 200" style="max-width:700px;">
+                    <polyline points="20,160 100,120 180,140 260,80 340,95 420,50 500,70 580,40 660,55 740,30" fill="none" stroke="var(--primary,#4f8cff)" stroke-width="2.5" stroke-linejoin="round"/>
+                    <polyline points="20,160 100,120 180,140 260,80 340,95 420,50 500,70 580,40 660,55 740,30" fill="url(#chartGrad)" stroke="none" opacity="0.15"/>
+                    <defs><linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--primary,#4f8cff)"/><stop offset="100%" stop-color="transparent"/></linearGradient></defs>
+                    <circle cx="20" cy="160" r="4" fill="var(--primary,#4f8cff)"/>
+                    <circle cx="100" cy="120" r="4" fill="var(--primary,#4f8cff)"/>
+                    <circle cx="180" cy="140" r="4" fill="var(--primary,#4f8cff)"/>
+                    <circle cx="260" cy="80" r="4" fill="var(--primary,#4f8cff)"/>
+                    <circle cx="340" cy="95" r="4" fill="var(--primary,#4f8cff)"/>
+                    <circle cx="420" cy="50" r="4" fill="var(--primary,#4f8cff)"/>
+                    <circle cx="500" cy="70" r="4" fill="var(--primary,#4f8cff)"/>
+                    <circle cx="580" cy="40" r="4" fill="var(--primary,#4f8cff)"/>
+                    <circle cx="660" cy="55" r="4" fill="var(--primary,#4f8cff)"/>
+                    <circle cx="740" cy="30" r="4" fill="var(--primary,#4f8cff)"/>
+                    <text x="20" y="185" fill="var(--text-muted,#888)" font-size="11" text-anchor="middle">Jan</text>
+                    <text x="100" y="185" fill="var(--text-muted,#888)" font-size="11" text-anchor="middle">Feb</text>
+                    <text x="180" y="185" fill="var(--text-muted,#888)" font-size="11" text-anchor="middle">Mar</text>
+                    <text x="260" y="185" fill="var(--text-muted,#888)" font-size="11" text-anchor="middle">Apr</text>
+                    <text x="340" y="185" fill="var(--text-muted,#888)" font-size="11" text-anchor="middle">May</text>
+                    <text x="420" y="185" fill="var(--text-muted,#888)" font-size="11" text-anchor="middle">Jun</text>
+                    <text x="500" y="185" fill="var(--text-muted,#888)" font-size="11" text-anchor="middle">Jul</text>
+                    <text x="580" y="185" fill="var(--text-muted,#888)" font-size="11" text-anchor="middle">Aug</text>
+                    <text x="660" y="185" fill="var(--text-muted,#888)" font-size="11" text-anchor="middle">Sep</text>
+                    <text x="740" y="185" fill="var(--text-muted,#888)" font-size="11" text-anchor="middle">Oct</text>
+                </svg>
+                <p style="margin-top:12px;color:var(--text-muted,#888);font-size:13px;">Monthly test completion trend — Last 10 months</p>
             </div>
         </div>
 
         <div class="section">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-                <div class="section-title" style="margin:0;"><span class="st-icon">➕</span> <span data-i18n="Create New Project">Create New Project</span></div>
-                <button class="btn-lg btn-primary" onclick="openCreateModal()">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-                    <span data-i18n="New Project">New Project</span>
-                </button>
+            <div class="section-title"><span class="st-icon">📋</span> <span data-i18n="Recent Activity">Recent Activity</span></div>
+            <div class="card" style="overflow-x:auto;">
+                <table style="width:100%;border-collapse:collapse;font-size:14px;">
+                    <thead>
+                        <tr style="border-bottom:2px solid var(--border,#333);text-align:left;">
+                            <th style="padding:12px 16px;color:var(--text-muted,#888);font-weight:600;">Date</th>
+                            <th style="padding:12px 16px;color:var(--text-muted,#888);font-weight:600;">Activity</th>
+                            <th style="padding:12px 16px;color:var(--text-muted,#888);font-weight:600;">Project</th>
+                            <th style="padding:12px 16px;color:var(--text-muted,#888);font-weight:600;">Result</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-bottom:1px solid var(--border,#333);">
+                            <td style="padding:12px 16px;white-space:nowrap;">2026-07-28</td>
+                            <td style="padding:12px 16px;">Compressive Strength Test</td>
+                            <td style="padding:12px 16px;">High-Rise Tower - Floor 40</td>
+                            <td style="padding:12px 16px;"><span style="color:#4ade80;">Pass</span> — 33.8 MPa</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid var(--border,#333);">
+                            <td style="padding:12px 16px;white-space:nowrap;">2026-07-27</td>
+                            <td style="padding:12px 16px;">Slump Test</td>
+                            <td style="padding:12px 16px;">Riverfront Tower - Phase 2</td>
+                            <td style="padding:12px 16px;"><span style="color:#4ade80;">Pass</span> — 90 mm</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid var(--border,#333);">
+                            <td style="padding:12px 16px;white-space:nowrap;">2026-07-26</td>
+                            <td style="padding:12px 16px;">Air Content Test</td>
+                            <td style="padding:12px 16px;">New Urban District</td>
+                            <td style="padding:12px 16px;"><span style="color:#facc15;">Review</span> — 4.6% air</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid var(--border,#333);">
+                            <td style="padding:12px 16px;white-space:nowrap;">2026-07-25</td>
+                            <td style="padding:12px 16px;">Unit Weight Test</td>
+                            <td style="padding:12px 16px;">High-Rise Tower - Floor 40</td>
+                            <td style="padding:12px 16px;"><span style="color:#4ade80;">Pass</span> — 2,385 kg/m³</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:12px 16px;white-space:nowrap;">2026-07-24</td>
+                            <td style="padding:12px 16px;">Cylinder Prep & Curing</td>
+                            <td style="padding:12px 16px;">Riverfront Tower - Phase 2</td>
+                            <td style="padding:12px 16px;"><span style="color:#f87171;">Fail</span> — 27.4 MPa</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <!-- Create Project Modal -->
-    <div id="createModal" class="modal" style="display:none;">
-        <div class="modal-overlay" onclick="closeCreateModal()"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 data-i18n="New Project">New Project</h3>
-                <button class="modal-close" onclick="closeCreateModal()">×</button>
-            </div>
-            <form id="createProjectForm">
-                <div class="form-group">
-                    <label data-i18n="Project Name">Project Name</label>
-                    <input type="text" id="projectName" required placeholder="e.g. High-Rise Tower - Floor 40">
-                </div>
-                <div class="form-group">
-                    <label data-i18n="Location">Location</label>
-                    <input type="text" id="projectLocation" placeholder="e.g. Downtown - Zone A, Building 12">
-                </div>
-                <div class="form-group">
-                    <label data-i18n="Client">Client</label>
-                    <input type="text" id="projectClient" placeholder="e.g. Apex Construction Group">
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label data-i18n="Start Date">Start Date</label>
-                        <input type="date" id="projectStart">
-                    </div>
-                    <div class="form-group">
-                        <label data-i18n="Expected End">Expected End</label>
-                        <input type="date" id="projectEnd">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label data-i18n="Tests Required">Tests Required</label>
-                    <div class="test-checkboxes" id="testCheckboxes">
-                        <!-- Injected by JS -->
-                    </div>
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn-sm btn-secondary" onclick="closeCreateModal()" data-i18n="Cancel">Cancel</button>
-                    <button type="submit" class="btn-sm btn-primary" data-i18n="Create Project">Create Project</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        var projects = JSON.parse(localStorage.getItem('concrete_projects') || '[]');
-        var lang = localStorage.getItem('smartlab_lang') || 'en';
-
-        var testTypes = [
-            { id: 'compressive', name: 'Compressive Strength', icon: '🧱' },
-            { id: 'slump', name: 'Slump Test', icon: '🪣' },
-            { id: 'air', name: 'Air Content', icon: '💨' },
-            { id: 'density', name: 'Unit Weight', icon: '⚖️' },
-            { id: 'temperature', name: 'Temperature', icon: '🌡️' },
-            { id: 'cylinders', name: 'Cylinder Prep', icon: '🔩' }
-        ];
-
-        function renderProjects() {
-            var active = projects.filter(function(p) { return p.status === 'active'; });
-            var completed = projects.filter(function(p) { return p.status === 'completed'; });
-
-            renderGrid('activeProjectsGrid', active, true);
-            renderGrid('completedProjectsGrid', completed, false);
-
-            if (active.length === 0) {
-                document.getElementById('activeProjectsGrid').innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="icon">📁</div><h3 data-i18n="No Active Projects">No Active Projects</h3><p data-i18n="Start your first project">Create your first concrete project to begin tracking tests and progress.</p></div>';
-            }
-            if (completed.length === 0) {
-                document.getElementById('completedProjectsGrid').innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="icon">✅</div><h3 data-i18n="No Completed Projects">No Completed Projects</h3><p data-i18n="Completed will appear here">Finished projects will appear here with full test reports.</p></div>';
-            }
-        }
-
-        function renderGrid(gridId, list, showActions) {
-            var grid = document.getElementById(gridId);
-            if (!grid) return;
-            if (list.length === 0) { grid.innerHTML = ''; return; }
-            grid.innerHTML = list.map(function(p) {
-                var testsHtml = (p.tests || []).map(function(t) {
-                    var tt = testTypes.find(function(x) { return x.id === t; });
-                    return '<span class="test-tag">' + (tt ? tt.icon + ' ' + tt.name : t) + '</span>';
-                }).join('');
-                var statusClass = p.status === 'active' ? 'status-active' : p.status === 'pending' ? 'status-pending' : 'status-completed';
-                var statusText = p.status === 'active' ? (lang==='ar'?'نشط':'Active') : p.status === 'pending' ? (lang==='ar'?'قيد الانتظار':'Pending') : (lang==='ar'?'مكتمل':'Completed');
-                return '<div class="project-card" onclick="openProject(\'' + p.id + '\')">' +
-                    '<div class="project-header">' +
-                        '<span class="project-name">' + p.name + '</span>' +
-                        '<span class="project-status ' + statusClass + '">' + statusText + '</span>' +
-                    '</div>' +
-                    '<div class="project-meta">' +
-                        '<span>📍 ' + (p.location || '-') + '</span>' +
-                        '<span>🏢 ' + (p.client || '-') + '</span>' +
-                        '<span>📅 ' + (p.startDate || '') + ' → ' + (p.endDate || '') + '</span>' +
-                    '</div>' +
-                    '<div class="project-tests">' + testsHtml + '</div>' +
-                    (showActions ? '<div class="project-actions">' +
-                        '<button class="btn-sm btn-primary" onclick="event.stopPropagation(); openProject(\'' + p.id + '\')" data-i18n="Open">Open</button>' +
-                        '<button class="btn-sm btn-secondary" onclick="event.stopPropagation(); duplicateProject(\'' + p.id + '\')" data-i18n="Duplicate">Duplicate</button>' +
-                    '</div>' : '') +
-                '</div>';
-            }).join('');
-        }
-
-        function openCreateModal() {
-            document.getElementById('testCheckboxes').innerHTML = testTypes.map(function(t) {
-                return '<label class="test-checkbox"><input type="checkbox" name="tests" value="' + t.id + '"> ' + t.icon + ' ' + t.name + '</label>';
-            }).join('');
-            document.getElementById('createModal').style.display = 'block';
-            setTimeout(function() { document.getElementById('projectName').focus(); }, 100);
-        }
-
-        function closeCreateModal() {
-            document.getElementById('createModal').style.display = 'none';
-            document.getElementById('createProjectForm').reset();
-        }
-
-        document.getElementById('createProjectForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            var tests = Array.from(document.querySelectorAll('#testCheckboxes input:checked')).map(function(cb) { return cb.value; });
-            var project = {
-                id: 'PRJ-' + Date.now().toString(36).toUpperCase(),
-                name: document.getElementById('projectName').value,
-                location: document.getElementById('projectLocation').value,
-                client: document.getElementById('projectClient').value,
-                startDate: document.getElementById('projectStart').value,
-                endDate: document.getElementId('projectEnd').value,
-                tests: tests,
-                status: 'active',
-                createdAt: new Date().toISOString()
-            };
-            projects.unshift(project);
-            localStorage.setItem('concrete_projects', JSON.stringify(projects));
-            closeCreateModal();
-            renderProjects();
-        });
-
-        function openProject(id) {
-            localStorage.setItem('currentProjectId', id);
-            window.location.href = 'client-reports.html?project=' + id;
-        }
-
-        function duplicateProject(id) {
-            event.stopPropagation();
-            var p = projects.find(function(x) { return x.id === id; });
-            if (!p) return;
-            var np = { ...p, id: 'PRJ-' + Date.now().toString(36).toUpperCase(), name: p.name + ' (Copy)', status: 'active', createdAt: new Date().toISOString() };
-            projects.unshift(np);
-            localStorage.setItem('concrete_projects', JSON.stringify(projects));
-            renderProjects();
-        }
-
-        // Language toggle
-        document.getElementById('langToggle').addEventListener('click', function() {
-            lang = lang === 'en' ? 'ar' : 'en';
-            localStorage.setItem('smartlab_lang', lang);
-            this.innerHTML = '<span class="lang-dot"></span> ' + lang.toUpperCase();
-            renderProjects();
-        });
-        document.getElementById('langToggle').innerHTML = '<span class="lang-dot"></span> ' + lang.toUpperCase();
-
-        // Init
-        renderProjects();
-    </script>
     <script>
         window.translations = {
             'en': {
                 'Back to Concrete': 'Back to Concrete Testing',
-                'My Projects': 'My <span>Projects</span>',
-                'Projects desc': 'Manage your concrete projects, track progress, and access test data',
-                'Active Projects': 'Active Projects',
-                'Completed Projects': 'Completed Projects',
-                'Create New Project': 'Create New Project',
-                'New Project': 'New Project',
-                'Project Name': 'Project Name',
-                'Location': 'Location',
-                'Client': 'Client',
-                'Start Date': 'Start Date',
-                'Expected End': 'Expected End',
-                'Tests Required': 'Tests Required',
-                'Cancel': 'Cancel',
-                'Create Project': 'Create Project',
-                'No Active Projects': 'No Active Projects',
-                'Start your first project': 'Create your first concrete project to begin tracking tests and progress.',
-                'No Completed Projects': 'No Completed Projects',
-                'Completed will appear here': 'Finished projects will appear here with full test reports.',
-                'Open': 'Open',
-                'Duplicate': 'Duplicate',
-                'Concrete Testing': 'Concrete Testing',
-                'Tests': 'Tests', 'Design': 'Design'
+                'Analytics': 'Ana<span>lytics</span>',
+                'Analytics desc': 'Client project analytics and performance metrics',
+                'Overview': 'Overview',
+                'Total Tests': 'Total Tests',
+                'Average Strength': 'Average Strength',
+                'On-Time Rate': 'On-Time Rate',
+                'Performance Chart': 'Performance Chart',
+                'Recent Activity': 'Recent Activity'
             },
             'ar': {
                 'Back to Concrete': 'العودة إلى اختبارات الخرسانة',
-                'My Projects': 'مشاريعي <span>الخاصة</span>',
-                'Projects desc': 'إدارة مشاريع الخرسانة، تتبع التقدم، والوصول لبيانات الاختبارات',
-                'Active Projects': 'مشاريع نشطة',
-                'Completed Projects': 'مشاريع مكتملة',
-                'Create New Project': 'إنشاء مشروع جديد',
-                'New Project': 'مشروع جديد',
-                'Project Name': 'اسم المشروع',
-                'Location': 'الموقع',
-                'Client': 'العميل',
-                'Start Date': 'تاريخ البدء',
-                'Expected End': 'التاريخ المتوقع للانتهاء',
-                'Tests Required': 'الاختبارات المطلوبة',
-                'Cancel': 'إلغاء',
-                'Create Project': 'إنشاء المشروع',
-                'No Active Projects': 'لا توجد مشاريع نشطة',
-                'Start your first project': 'أنشئ أول مشروع خرسانة لبدء تتبع الاختبارات والتقدم.',
-                'No Completed Projects': 'لا توجد مشاريع مكتملة',
-                'Completed will appear here': 'ستظهر المشاريع المنجزة هنا مع تقارير الاختبارات الكاملة.',
-                'Open': 'فتح',
-                'Duplicate': 'نسخ',
-                'Concrete Testing': 'اختبارات <span>الخرسانة</span>',
-                'Tests': 'الاختبارات', 'Design': 'التصميم'
+                'Analytics': 'التحليلات <span>الخاصة</span>',
+                'Analytics desc': 'تحليلات مشاريع العملاء ومؤشرات الأداء',
+                'Overview': 'نظرة عامة',
+                'Total Tests': 'إجمالي الاختبارات',
+                'Average Strength': 'متوسط المقاومة',
+                'On-Time Rate': 'نسبة الالتزام بالمواعيد',
+                'Performance Chart': 'مخطط الأداء',
+                'Recent Activity': 'النشاط الأخير'
             }
         };
     </script>

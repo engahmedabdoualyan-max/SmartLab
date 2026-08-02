@@ -18,7 +18,7 @@
         <nav class="breadcrumb">
             <a href="../index.html">Home</a>
             <span>/</span>
-            <a href="index.html">Dashboard</a>
+            <a href="../index.html">Dashboard</a>
             <span>/</span>
             <span>QR Tracking</span>
         </nav>
@@ -120,13 +120,16 @@
         }
 
         function downloadQR() {
-            const qrImg = document.querySelector('#qrCode img') || document.querySelector('#qrCode canvas');
-            if (qrImg) {
-                const link = document.createElement('a');
-                link.download = 'sample-qr.png';
-                link.href = qrImg.src || qrImg.toDataURL();
-                link.click();
+            const qrCanvas = document.querySelector('#qrCode canvas');
+            const qrImg = document.querySelector('#qrCode img');
+            const link = document.createElement('a');
+            link.download = 'sample-qr.png';
+            if (qrCanvas) {
+                link.href = qrCanvas.toDataURL();
+            } else if (qrImg) {
+                link.href = qrImg.src;
             }
+            if (link.href) link.click();
         }
     </script>
 </body>

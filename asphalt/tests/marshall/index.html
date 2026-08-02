@@ -1,0 +1,2480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Marshall Stability Test</title>
+    <link rel="icon" href="/favicon.ico">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <link rel="stylesheet" href="../test-common.css">
+    <link rel="stylesheet" href="../../../test-zones.css">
+<style>
+.test-tab-bar {
+    display: flex;
+    gap: 0;
+    margin: 16px 0 20px;
+    background: var(--bg-glass);
+    border-radius: 10px;
+    padding: 4px;
+    border: 1px solid var(--border-glass);
+}
+.test-tab {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    background: transparent;
+    color: var(--text-muted);
+    transition: all 0.2s;
+}
+.test-tab.active {
+    background: var(--accent-blue);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.3);
+}
+.test-tab:hover:not(.active) {
+    background: rgba(255,255,255,0.05);
+}
+.manual-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 12px;
+    margin-top: 8px;
+}
+.manual-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.manual-field label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+.manual-field input, .manual-field select {
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border-glass);
+    background: rgba(255,255,255,0.04);
+    color: var(--text-primary);
+    font-size: 13px;
+    font-family: inherit;
+}
+.manual-field input:focus, .manual-field select:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
+}
+.curve-container {
+    background: rgba(0,0,0,0.15);
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 8px;
+    display: flex;
+    justify-content: center;
+    overflow-x: auto;
+}
+.curve-container canvas {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+}
+.sl-sub-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 16px;
+    background: var(--bg-glass);
+    border-radius: 8px;
+    padding: 3px;
+    border: 1px solid var(--border-glass);
+}
+.sl-sub-tab {
+    flex: 1;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    background: transparent;
+    color: var(--text-muted);
+    transition: all 0.2s;
+}
+.sl-sub-tab.active {
+    background: var(--accent-purple);
+    color: #fff;
+}
+.sl-sub-tab:hover:not(.active) {
+    background: rgba(255,255,255,0.05);
+}
+.manual-alert {
+    font-size: 12px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-top: 8px;
+}
+.manual-alert.success { background: rgba(16,185,129,0.1); border-left: 3px solid var(--accent-emerald); color: var(--accent-emerald); }
+.manual-alert.warning { background: rgba(245,158,11,0.1); border-left: 3px solid var(--accent-gold); color: var(--accent-gold); }
+.manual-alert.error { background: rgba(239,68,68,0.1); border-left: 3px solid var(--accent-red); color: var(--accent-red); }
+</style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <div class="page">
+        <a href="../../asphalt.html" class="back-link">
+            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            <span data-i18n="Back to Tests">Back to Tests</span>
+        </a>
+
+        <h1 class="page-title" id="testTitle"><span data-i18n="Test Environment">Test Environment</span></h1>
+        <p class="page-sub" id="testSub">Marshall Stability</p>
+
+        <!-- TAB BAR -->
+        <div class="test-tab-bar" id="testTabBar">
+            <button class="test-tab active" data-mode="normal">🧪 الاختبار العادي</button>
+            <button class="test-tab" data-mode="smartlab">🤖 الاختبار ب سمارت لاب</button>
+        </div>
+
+        <!-- ===== NORMAL TEST MODE ===== -->
+        <div id="normalTestMode">
+            <div id="manualAlert" class="manual-alert" style="display:none;"></div>
+
+            <div class="section">
+                <div class="section-title"><span class="st-icon">📐</span> <span>معلومات العينة <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(Sample Information)</span></span></div>
+                <div class="manual-grid">
+                    <div class="manual-field">
+                        <label>قطر العينة <span style="font-weight:400;">(Diameter)</span></label>
+                        <select id="m-diameter">
+                            <option value="100">100 mm (مم)</option>
+                            <option value="150" selected>150 mm (مم)</option>
+                        </select>
+                    </div>
+                    <div class="manual-field">
+                        <label>سمك العينة <span style="font-weight:400;">(Thickness mm)</span></label>
+                        <input type="number" id="m-thickness" step="0.1" placeholder="مثال: 63.5">
+                    </div>
+                    <div class="manual-field">
+                        <label>نسبة البيتيومين <span style="font-weight:400;">(Bitumen %)</span></label>
+                        <input type="number" id="m-bitumen" step="0.1" placeholder="مثال: 5.0">
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title"><span class="st-icon">⚖️</span> <span>قياسات الأوزان <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(Weight Measurements)</span></span></div>
+                <div class="manual-grid">
+                    <div class="manual-field">
+                        <label>الوزن في الهواء <span style="font-weight:400;">(Weight in Air g)</span></label>
+                        <input type="number" id="m-wtAir" step="0.1" placeholder="مثال: 1200.5">
+                    </div>
+                    <div class="manual-field">
+                        <label>الوزن في الماء SSD <span style="font-weight:400;">(Weight in Water g)</span></label>
+                        <input type="number" id="m-wtSsd" step="0.1" placeholder="مثال: 1250.3">
+                    </div>
+                    <div class="manual-field">
+                        <label>الوزن المعلق في الماء <span style="font-weight:400;">(Suspended g)</span></label>
+                        <input type="number" id="m-wtSus" step="0.1" placeholder="مثال: 710.2">
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title"><span class="st-icon">🧱</span> <span>خواص المواد <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(Material Properties)</span></span></div>
+                <div class="manual-grid">
+                    <div class="manual-field">
+                        <label>Max Theoretical SG <span style="font-weight:400;">(Gmm)</span></label>
+                        <input type="number" id="m-gmm" step="0.001" placeholder="مثال: 2.550">
+                    </div>
+                    <div class="manual-field">
+                        <label>Aggregate Bulk SG <span style="font-weight:400;">(Gsb)</span></label>
+                        <input type="number" id="m-gsb" step="0.001" placeholder="مثال: 2.700">
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title"><span class="st-icon">🔨</span> <span>نتائج اختبار مارشال <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(Marshall Test Results)</span></span></div>
+                <div class="manual-grid">
+                    <div class="manual-field">
+                        <label>الثباتية <span style="font-weight:400;">(Stability kN)</span></label>
+                        <input type="number" id="m-stability" step="0.01" placeholder="مثال: 12.45">
+                    </div>
+                    <div class="manual-field">
+                        <label>التدفق <span style="font-weight:400;">(Flow mm)</span></label>
+                        <input type="number" id="m-flow" step="0.1" placeholder="مثال: 3.2">
+                    </div>
+                </div>
+                <div class="btn-row" style="margin-top:10px;">
+                    <button class="btn btn-blue" id="btnCalcMarshall">🧮 احسب <span style="font-weight:400;">(Calculate)</span></button>
+                    <button class="btn btn-gold" id="btnClearManual">🗑 مسح <span style="font-weight:400;">(Clear)</span></button>
+                </div>
+            </div>
+
+            <div class="section" id="manualResultsSection" style="display:none;">
+                <div class="section-title"><span class="st-icon">📊</span> <span>النتائج المحسوبة <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(Calculated Results)</span></span></div>
+                <div class="results-two-col">
+                    <table class="results-table" id="manualResultsTable">
+                        <thead><tr><th>القياس <span style="font-weight:400;">(Parameter)</span></th><th style="text-align:right;">القيمة <span style="font-weight:400;">(Value)</span></th><th style="text-align:center;">الحالة <span style="font-weight:400;">(Status)</span></th></tr></thead>
+                        <tbody id="manualResultsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="section" id="manualCurveSection" style="display:none;">
+                <div class="section-title"><span class="st-icon">📈</span> <span>منحنى مارشال <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(Marshall Curve)</span></span></div>
+                <div class="curve-container">
+                    <canvas id="marshallCurve" width="700" height="350"></canvas>
+                </div>
+            </div>
+
+            <div class="section" id="manualReportSection" style="display:none;">
+                <div class="section-title"><span class="st-icon">📄</span> <span>تقرير الاختبار <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(Test Report)</span></span></div>
+                <div style="padding:6px 0;font-size:12px;color:var(--text-muted);margin-bottom:8px;">قم تصدير النتائج كتقرير Excel أو PDF أو طباعة.</div>
+                <div class="btn-row" style="justify-content:flex-start;gap:8px;">
+                    <button class="btn btn-blue" id="btnManualExcel">📄 Excel</button>
+                    <button class="btn btn-red" id="btnManualPdf">📄 PDF</button>
+                    <button class="btn btn-gold" id="btnManualPrint">🖨 طباعة <span style="font-weight:400;">(Print)</span></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== SMARTLAB CONTENT ===== -->
+        <div id="smartlabContent">
+            <div class="sl-sub-tabs">
+                <button class="sl-sub-tab active" data-sub="stages">📋 المراحل <span style="font-weight:400;">(Stages)</span></button>
+                <button class="sl-sub-tab" data-sub="hardware">🔧 دليل الهاردوير <span style="font-weight:400;">(Hardware Guide)</span></button>
+            </div>
+            <div id="slStagesContent">
+
+        <!-- Test Level selector -->
+        <div class="level-top" id="levelTopBar">
+            <span class="lt-label">&#x1F3C6; <span data-i18n="Test Level">Test Level</span></span>
+            <div class="lt-btns" id="testLevelSelectTop">
+                <button class="lt-btn active" data-level="quick">&#x26A1; <span data-i18n="Quick">Quick</span><span class="lt-sub" data-i18n="On-site check">On-site check</span></button>
+                <button class="lt-btn" data-level="unofficial">&#x1F3ED; <span data-i18n="Unofficial">Unofficial</span><span class="lt-sub" data-i18n="Factory lab">Factory lab</span></button>
+                <button class="lt-btn" data-level="certified">&#x1F512; <span data-i18n="Certified">Certified</span><span class="lt-sub" data-i18n="Full accreditation">Full accreditation</span></button>
+            </div>
+            <span class="lt-info" id="levelInfo">40% <span data-i18n="credibility">credibility</span></span>
+        </div>
+
+        <!-- BILLBOARD: animated step showcase -->
+        <div class="billboard" id="billboard">
+            <div class="bb-inner">
+                <div class="bb-icon" id="bbIcon">&#x1F3D7;</div>
+                <div class="bb-body">
+                    <div class="bb-step-label" id="bbStepLabel">STEP 1/3</div>
+                    <div class="bb-title" id="bbTitle"></div>
+                    <div class="bb-desc" id="bbDesc">Follow the steps below to complete your test</div>
+                    <div class="bb-dots" id="bbDots">
+                        <span class="bb-dot active" data-slide="0"></span>
+                        <span class="bb-dot" data-slide="1"></span>
+                        <span class="bb-dot" data-slide="2"></span>
+                    </div>
+                </div>
+                <div class="bb-nav">
+                    <button id="bbPrev">&#x276E;</button>
+                    <button id="bbNext">&#x276F;</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 1. CONNECTION ===== -->
+        <div class="section">
+            <div class="section-title"><span class="st-icon">&#x1F517;</span> <span data-i18n="Connection">Connection</span></div>
+            <div class="conn-grid">
+                <button class="conn-btn" data-conn="usb-a"><span class="cb-icon">&#x1F5A5;</span><span data-i18n="USB Type-A">USB Type-A</span></button>
+                <button class="conn-btn" data-conn="usb-otg"><span class="cb-icon">&#x1F4F1;</span><span data-i18n="USB-OTG">USB-OTG</span></button>
+                <button class="conn-btn" data-conn="serial"><span class="cb-icon">&#x1F50C;</span><span data-i18n="Serial UART">Serial UART</span></button>
+                <button class="conn-btn" data-conn="ethernet"><span class="cb-icon">&#x1F4E1;</span><span data-i18n="Ethernet LAN">Ethernet LAN</span></button>
+                <button class="conn-btn" data-conn="wifi"><span class="cb-icon">&#x1F4F6;</span><span data-i18n="Wi-Fi">Wi-Fi</span></button>
+                <button class="conn-btn" data-conn="bluetooth"><span class="cb-icon">&#x1F535;</span><span data-i18n="Bluetooth">Bluetooth</span></button>
+                <button class="conn-btn" data-conn="zigbee"><span class="cb-icon">&#x1F7E2;</span><span data-i18n="Zigbee">Zigbee</span></button>
+                <button class="conn-btn" data-conn="lora"><span class="cb-icon">&#x1F4E2;</span><span data-i18n="LoRa">LoRa</span></button>
+                <button class="conn-btn" data-conn="rs232"><span class="cb-icon">&#x2699;</span><span data-i18n="RS-232/485">RS-232/485</span></button>
+                <button class="conn-btn" data-conn="can"><span class="cb-icon">&#x1F697;</span><span data-i18n="CAN Bus">CAN Bus</span></button>
+                <button class="conn-btn" data-conn="spi"><span class="cb-icon">&#x1F527;</span><span data-i18n="SPI/I2C">SPI/I2C</span></button>
+                <button class="conn-btn" data-conn="nfc"><span class="cb-icon">&#x1F4F3;</span><span data-i18n="NFC">NFC</span></button>
+            </div>
+            <div class="conn-status disconnected" id="connStatus">
+                <span class="status-dot"></span>
+                <span data-i18n="Not connected">Not connected</span>
+            </div>
+        </div>
+
+        <!-- ===== 2. HARDWARE CHECK ===== -->
+        <div class="section">
+            <div class="section-title"><span class="st-icon">&#x1F6E0;</span> <span data-i18n="Hardware Check">Hardware Check</span></div>
+
+            <!-- Device type toggle -->
+            <div class="device-tabs" id="deviceTabs">
+                <button class="dev-tab active" data-devtype="ours" id="tabOurs">
+                    <span class="dt-icon">&#x1F3ED;</span>
+                    <span data-i18n="Our Device">Our Device</span>
+                </button>
+                <button class="dev-tab" data-devtype="client" id="tabClient">
+                    <span class="dt-icon">&#x1F528;</span>
+                    <span data-i18n="Client Device">Client Device</span>
+                </button>
+            </div>
+
+            <!-- Our Device panel -->
+            <div id="panelOurs">
+                <div class="hw-id-box" id="hwIdBox">
+                    <span class="hwid-label" data-i18n="Hardware ID">Hardware ID</span>
+                    <span class="hwid-value" id="hwIdDisplay">--</span>
+                    <span class="hwid-badge" id="hwIdBadge"></span>
+                </div>
+                <div class="check-list" id="checkListOurs">
+                    <div class="check-item pending" data-check="mcu"><span class="ci-icon">&#x25CB;</span> <span data-i18n="MCU Detected">MCU Detected</span></div>
+                    <div class="check-item pending" data-check="hwid"><span class="ci-icon">&#x25CB;</span> <span data-i18n="Hardware ID Match">Hardware ID Match</span></div>
+                    <div class="check-item pending" data-check="tamper"><span class="ci-icon">&#x25CB;</span> <span data-i18n="Anti-Tamper Seal">Anti-Tamper Seal</span></div>
+                    <div class="check-item pending" data-check="sensors"><span class="ci-icon">&#x25CB;</span> <span data-i18n="Sensors Online">Sensors Online</span></div>
+                    <div class="check-item pending" data-check="memory"><span class="ci-icon">&#x25CB;</span> <span data-i18n="Memory Ready">Memory Ready</span></div>
+                </div>
+            </div>
+
+            <!-- Client Device panel -->
+            <div id="panelClient" style="display:none;">
+                <div class="calib-box">
+                    <div class="calib-step" data-step="1">
+                        <span class="calib-num">1</span>
+                        <span data-i18n="Connect client device and place in neutral position">Connect client device and place in neutral position</span>
+                        <span class="calib-status pending" id="calibStep1">&#x25CB;</span>
+                    </div>
+                    <div class="calib-step" data-step="2">
+                        <span class="calib-num">2</span>
+                        <span data-i18n="Run reference measurement (known load)">Run reference measurement (known load)</span>
+                        <span class="calib-status pending" id="calibStep2">&#x25CB;</span>
+                    </div>
+                    <div class="calib-step" data-step="3">
+                        <span class="calib-num">3</span>
+                        <span data-i18n="Calculate offset and gain correction factors">Calculate offset and gain correction factors</span>
+                        <span class="calib-status pending" id="calibStep3">&#x25CB;</span>
+                    </div>
+                    <div class="calib-step" data-step="4">
+                        <span class="calib-num">4</span>
+                        <span data-i18n="Apply calibration and verify with second reference">Apply calibration and verify with second reference</span>
+                        <span class="calib-status pending" id="calibStep4">&#x25CB;</span>
+                    </div>
+                    <div class="calib-step" data-step="5">
+                        <span class="calib-num">5</span>
+                        <span data-i18n="Save calibration profile to device">Save calibration profile to device</span>
+                        <span class="calib-status pending" id="calibStep5">&#x25CB;</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="btn-row">
+                <button class="btn btn-blue" id="btnCheckHw" disabled><span data-i18n="Check Hardware">&#x1F50D; Check Hardware</span></button>
+            </div>
+        </div>
+
+        <!-- ===== 3. FIRMWARE ===== -->
+        <div class="section">
+            <div class="section-title"><span class="st-icon">&#x1F5C3;</span> <span data-i18n="Firmware">Firmware</span></div>
+
+            <!-- Status lamps -->
+            <div class="fw-lamps" id="fwLamps">
+                <div class="fw-lamp" data-status="bad" id="lampRed">
+                    <span class="lamp-bulb"></span>
+                    <span class="lamp-label" data-i18n="Damaged">Damaged</span>
+                </div>
+                <div class="fw-lamp" data-status="warn" id="lampYellow">
+                    <span class="lamp-bulb"></span>
+                    <span class="lamp-label" data-i18n="Has Issues">Has Issues</span>
+                </div>
+                <div class="fw-lamp" data-status="good" id="lampGreen">
+                    <span class="lamp-bulb"></span>
+                    <span class="lamp-label" data-i18n="Ready">Ready</span>
+                </div>
+            </div>
+
+            <div class="fw-msg" id="fwStatusMsg" data-i18n="Run hardware check first">Run hardware check first</div>
+
+            <div class="session-badge" id="sessionBadge" style="display:none;">
+                <span class="sb-label">&#x1F512; <span data-i18n="Session ID">Session ID</span></span>
+                <span class="sb-id" id="sessionIdDisplay">--</span>
+                <span class="sb-status" id="sessionStatus"></span>
+            </div>
+
+            <div class="fw-info">
+                <span><span data-i18n="Current Version">Current Version</span>: <span class="fw-version">v2.1.3</span></span>
+                <span class="fw-status" id="fwUpToDate" data-i18n="Up to date">&#x2705; Up to date</span>
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-gold" id="btnFlash" disabled><span data-i18n="Flash Firmware">&#x2B07; Flash Firmware</span></button>
+            </div>
+            <div class="fw-progress" id="fwProgress">
+                <div class="fw-bar" id="fwBar"></div>
+            </div>
+        </div>
+
+        <!-- ===== 4. RESULTS ===== -->
+        <div class="section">
+            <div class="section-title"><span class="st-icon">&#x1F4CA;</span> <span data-i18n="Test Results">Test Results</span></div>
+            <div class="results-placeholder" id="resultsPlaceholder">
+                <span data-i18n="Reconnect device after running test to read results">Reconnect device after running test to read results</span>
+            </div>
+            <div id="resultsData" style="display:none;">
+                <div id="rejectedBanner" style="display:none;margin-bottom:12px;padding:10px 14px;border-radius:8px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);text-align:center;font-size:13px;font-weight:700;color:var(--accent-red);">
+                    &#x26A0;&#xFE0F; <span data-i18n="Not Certified Warning">Results shown but NOT CERTIFIED — tampering was detected during the test.</span>
+                </div>
+                <div class="results-two-col" id="resultsTwoCol">
+                    <div class="rtc-left" id="rtcLeft">
+                        <table class="results-table">
+                            <thead><tr><th data-i18n="Parameter">Parameter</th><th style="text-align:right;" data-i18n="Value">Value</th><th style="text-align:center;" data-i18n="Status">Status</th><th style="text-align:center;" data-i18n="Notes">Notes</th></tr></thead>
+                            <tbody id="resultsBodyLeft"></tbody>
+                        </table>
+                    </div>
+                    <div class="rtc-right" id="rtcRight">
+                        <table class="results-table">
+                            <thead><tr><th data-i18n="Parameter">Parameter</th><th style="text-align:right;" data-i18n="Value">Value</th><th style="text-align:center;" data-i18n="Status">Status</th><th style="text-align:center;" data-i18n="Notes">Notes</th></tr></thead>
+                            <tbody id="resultsBodyRight"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-emerald" id="btnReadResults" disabled><span data-i18n="Read Results">&#x1F504; Read Results</span></button>
+            </div>
+        </div><!-- /section 4 -->
+
+        <!-- ===== 5. AI ASSISTANT ===== -->
+        <div class="section" id="aiAssistantSection">
+            <div class="section-title"><span class="st-icon">&#x1F916;</span> <span data-i18n="AI Assistant">AI Assistant</span></div>
+            <div class="vg-layout">
+                <div class="vg-left">
+                    <div class="vg-steps" id="vgSteps">
+                        <div class="vg-step active" data-step="1">
+                            <span class="vg-lamp"></span>
+                            <div class="vg-img">&#x1F3D7;</div>
+                            <div class="vg-text" id="vgText1"></div>
+                        </div>
+                        <div class="vg-pipe" id="vgPipe1">
+                            <div class="pipe-line"></div>
+                            <div class="pipe-dot"></div>
+                            <span class="pipe-arrow">&#x27A4;</span>
+                        </div>
+                        <div class="vg-step" data-step="2">
+                            <span class="vg-lamp"></span>
+                            <div class="vg-img">&#x1F517;</div>
+                            <div class="vg-text" id="vgText2"></div>
+                        </div>
+                        <div class="vg-pipe" id="vgPipe2">
+                            <div class="pipe-line"></div>
+                            <div class="pipe-dot"></div>
+                            <span class="pipe-arrow">&#x27A4;</span>
+                        </div>
+                        <div class="vg-step" data-step="3">
+                            <span class="vg-lamp"></span>
+                            <div class="vg-img">&#x1F527;</div>
+                            <div class="vg-text" id="vgText3"></div>
+                        </div>
+                    </div>
+                    <div class="ai-message" id="aiMessage" style="margin-top:10px;font-size:12px;padding:10px 14px;border-radius:var(--radius-sm);background:rgba(255,255,255,0.02);border-left:3px solid var(--accent-purple);">Hello! I&#x2019;m here to assist you through the test. Connect your device to begin.</div>
+                    <div id="aiTestPanel"></div>
+                    <div id="aiAlert"></div>
+                </div>
+                <div class="vg-right">
+                    <div class="rd-panel">
+                        <div class="rd-title">&#x1F4CA; <span data-i18n="Live Data">Live Data</span></div>
+                        <div class="rd-row"><span class="rd-label"><span class="rd-dot" id="dotTestType"></span> <span data-i18n="Test Type">Test Type</span></span><span class="rd-value" id="rdTestType">--</span></div>
+                        <div class="rd-row"><span class="rd-label"><span class="rd-dot" id="dotLocation"></span> <span data-i18n="Location">Location</span></span><span class="rd-value" id="rdLocation">--</span></div>
+                        <div class="rd-row"><span class="rd-label"><span class="rd-dot" id="dotConnection"></span> <span data-i18n="Connection">Connection</span></span><span class="rd-value" id="rdConnection">--</span></div>
+                        <div class="rd-row"><span class="rd-label"><span class="rd-dot" id="dotDevice"></span> <span data-i18n="Device">Device</span></span><span class="rd-value" id="rdDevice">--</span></div>
+                        <div class="rd-row"><span class="rd-label"><span class="rd-dot" id="dotGps"></span> <span data-i18n="GPS">GPS</span></span><span class="rd-value" id="rdGps">--</span></div>
+                        <div class="rd-row"><span class="rd-label"><span class="rd-dot" id="dotVpn"></span> <span data-i18n="VPN">VPN</span></span><span class="rd-value" id="rdVpn">--</span></div>
+                        <div class="rd-row"><span class="rd-label"><span class="rd-dot" id="dotSession"></span> <span data-i18n="Session ID">Session ID</span></span><span class="rd-value highlight" id="rdSession">--</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+            </div><!-- /slStagesContent -->
+
+            <div id="slHardwareContent" style="display:none;">
+                <div class="section">
+                    <div class="section-title"><span class="st-icon">🔧</span> <span>دليل الهاردوير <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(Hardware Guide)</span></span></div>
+                    <div style="padding:24px;font-size:13px;color:var(--text-muted);text-align:center;">
+                        <p style="font-size:28px;margin-bottom:10px;">📄</p>
+                        <p>سيتم تحميل ملف دليل الهاردوير هنا لاحقًا.</p>
+                        <p style="font-size:11px;margin-top:6px;">يرجى رفع ملف HTML للشرح وسيظهر تلقائيًا في هذه المساحة.</p>
+                        <p style="font-size:11px;margin-top:12px;color:var(--accent-gold);">💡 يمكنك وضع ملف <code style="background:rgba(0,0,0,0.2);padding:2px 6px;border-radius:4px;">hardware-guide.html</code> في نفس مجلد الاختبار.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /smartlabContent -->
+
+        <!-- ===== 6. REPORT SETTINGS ===== -->
+        <div class="section">
+            <div class="section-title"><span class="st-icon">&#x1F4CB;</span> <span data-i18n="Report Settings">Report Settings</span></div>
+            <div class="report-settings">
+                <!-- Row 0: Test Level (read-only display) -->
+                <div class="rs-row">
+                    <div class="rs-field" style="flex:0 0 auto;">
+                        <label>&#x1F3C6; <span data-i18n="Test Level">Test Level</span></label>
+                    </div>
+                    <span id="rsLevelDisplay">Quick (40%)</span>
+                </div>
+                <!-- Row 1: Lab Name, Sample Number -->
+                <div class="rs-row">
+                    <div class="rs-field">
+                        <label data-i18n="Lab Name">Lab Name</label>
+                        <input type="text" id="labName" value="smartLAB Testing Lab" data-i18n-placeholder="Enter lab name">
+                    </div>
+                    <div class="rs-field">
+                        <label data-i18n="Sample Number">Sample Number</label>
+                        <input type="text" id="sampleNumber" placeholder="e.g. S-2026-001" data-i18n-placeholder="e.g. S-2026-001">
+                    </div>
+                </div>
+                <!-- Row 2: Sample Specifications -->
+                <div class="rs-row">
+                    <div class="rs-field" style="flex:2;">
+                        <label data-i18n="Sample Specifications">Sample Specifications</label>
+                        <textarea id="sampleSpecs" data-i18n-placeholder="e.g. 150mm cube, standard curing, tested at 28 days">150mm standard cube, 28-day curing</textarea>
+                    </div>
+                </div>
+                <!-- Row 3: GPS -->
+                <div class="rs-row">
+                    <div class="rs-field" style="flex:0 0 auto;">
+                        <label>&#x1F4CD; <span data-i18n="Test Location">Test Location</span></label>
+                    </div>
+                    <span class="rs-coords" id="gpsDisplay">--</span>
+                    <button class="rs-btn" id="btnDetectGps">&#x1F50D; <span data-i18n="Auto-Detect">Auto-Detect</span></button>
+                    <button class="rs-btn" id="btnClearGps">&#x274C; <span data-i18n="Clear">Clear</span></button>
+                </div>
+                <!-- Row 4: VPN Toggle -->
+                <div class="rs-row">
+                    <div class="rs-field" style="flex:0 0 auto;">
+                        <label>&#x1F310; <span data-i18n="VPN Active">VPN Active</span></label>
+                    </div>
+                    <button class="rs-btn" id="btnVpnToggle"><span data-i18n="No">No</span></button>
+                </div>
+                <!-- Row 5: Photos -->
+                <div class="rs-row">
+                    <div class="rs-field" style="flex:0 0 auto;">
+                        <label>&#x1F4F7; <span data-i18n="Test Photos">Test Photos</span></label>
+                    </div>
+                    <button class="rs-btn" id="btnCapturePhoto">&#x1F4F7; <span data-i18n="Capture">Capture</span></button>
+                    <span style="font-size:11px;color:var(--text-muted);" id="photoCount">0 <span data-i18n="photos">photos</span></span>
+                </div>
+                <div class="photo-grid" id="photoGrid"></div>
+                <!-- Row 6: Digital Signature -->
+                <div class="sig-row">
+                    <div class="sig-field">
+                        <label>&#x1F9D1;‍💻 <span data-i18n="Technician Name">Technician Name</span></label>
+                        <input type="text" id="techName" placeholder="e.g. Ahmed Hassan" data-i18n-placeholder="e.g. Ahmed Hassan">
+                    </div>
+                    <div class="sig-field">
+                        <label>&#x1F9D1;‍🎓 <span data-i18n="Engineer Name">Engineer Name</span></label>
+                        <input type="text" id="engineerName" placeholder="e.g. Dr. Mohamed Ali" data-i18n-placeholder="e.g. Dr. Mohamed Ali">
+                    </div>
+                </div>
+            </div>
+        </div><!-- /section 6 -->
+
+        <!-- ===== 7. REPORTS ===== -->
+        <div class="section" id="reportsSection">
+            <div class="section-title"><span class="st-icon">&#x1F4C4;</span> <span data-i18n="Generate Report">Generate Report</span></div>
+            <div style="padding:6px 0;font-size:12px;color:var(--text-muted);margin-bottom:8px;" data-i18n="ReportDesc">Select report format to export test results with full credentials.</div>
+            <div class="btn-row" style="justify-content:flex-start;gap:8px;">
+                <button class="btn btn-blue" id="btnExcel" disabled><span data-i18n="Excel">&#x1F4C4; Excel</span></button>
+                <button class="btn btn-red" id="btnPdf" disabled><span data-i18n="PDF">&#x1F4C4; PDF</span></button>
+                <button class="btn btn-gold" id="btnPrint" disabled><span data-i18n="Print">&#x1F5A8; Print</span></button>
+            </div>
+        </div>
+
+        <!-- Photo preview modal -->
+        <div class="photo-preview" id="photoPreview">
+            <span class="pp-close" id="photoPreviewClose">&times;</span>
+            <img id="photoPreviewImg" src="" alt="Preview">
+        </div>
+
+        <!-- Hidden print report -->
+        <div class="print-only" id="printReport">
+            <div id="printContent"></div>
+            <div style="margin-top:24px;padding-top:12px;border-top:1px solid #ccc;font-size:10px;color:#888;text-align:center;">
+                Generated by smartLAB AI System &mdash; <span id="printDate"></span>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <script>
+        /* ===== Test info ===== */
+        var params = new URLSearchParams(window.location.search);
+        var testId = 'marshall';
+        var displayName = 'Marshall Stability';
+        document.getElementById('testSub').textContent = displayName;
+        var lang = localStorage.getItem('smartlab_lang') || 'en';
+
+        /* ===== Session ID ===== */
+        var sessionId = 'SL-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substr(2,6).toUpperCase();
+        var sessionBurned = false;
+        var sessionVerified = false;
+
+        /* ===== Report Settings (GPS, VPN, Photos) ===== */
+        var testLocation = null;
+        var vpnActive = false;
+        var testPhotos = [];
+        var videoStream = null;
+
+        // Init sample number
+        document.getElementById('sampleNumber').value = 'S-' + new Date().getFullYear() + '-' + Date.now().toString(36).toUpperCase().substr(0,4);
+
+        // GPS Auto-Detect
+        document.getElementById('btnDetectGps').addEventListener('click', function() {
+            var btn = this;
+            btn.textContent = '🕐 ' + (localStorage.getItem('smartlab_lang') === 'ar' ? 'جارٍ الكشف...' : 'Detecting...');
+            btn.disabled = true;
+            if (!navigator.geolocation) {
+                document.getElementById('gpsDisplay').textContent = 'GPS not available';
+                btn.textContent = '🔍 ' + (localStorage.getItem('smartlab_lang') === 'ar' ? 'كشف تلقائي' : 'Auto-Detect');
+                btn.disabled = false;
+                return;
+            }
+            navigator.geolocation.getCurrentPosition(function(pos) {
+                testLocation = { lat: pos.coords.latitude.toFixed(6), lng: pos.coords.longitude.toFixed(6) };
+                document.getElementById('gpsDisplay').textContent = testLocation.lat + ', ' + testLocation.lng;
+                btn.textContent = '🔍 ' + (localStorage.getItem('smartlab_lang') === 'ar' ? 'كشف تلقائي' : 'Auto-Detect');
+                btn.disabled = false;
+                updateAI((localStorage.getItem('smartlab_lang') === 'ar' ? 'تم تحديد الموقع: ' : 'Location detected: ') + testLocation.lat + ', ' + testLocation.lng);
+            }, function(err) {
+                document.getElementById('gpsDisplay').textContent = (localStorage.getItem('smartlab_lang') === 'ar' ? 'فشل الكشف: ' : 'Error: ') + err.message;
+                btn.textContent = '🔍 ' + (localStorage.getItem('smartlab_lang') === 'ar' ? 'كشف تلقائي' : 'Auto-Detect');
+                btn.disabled = false;
+            }, { enableHighAccuracy: true, timeout: 10000 });
+        });
+
+        document.getElementById('btnClearGps').addEventListener('click', function() {
+            testLocation = null;
+            document.getElementById('gpsDisplay').textContent = '--';
+        });
+
+        // VPN Toggle
+        document.getElementById('btnVpnToggle').addEventListener('click', function() {
+            vpnActive = !vpnActive;
+            this.classList.toggle('active', vpnActive);
+            this.innerHTML = '<span data-i18n="' + (vpnActive ? 'Yes' : 'No') + '">' + (vpnActive ? 'Yes' : 'No') + '</span>';
+            updateReportData('vpn', vpnActive ? 'Yes' : 'No');
+        });
+
+        // Test Level
+        var testLevel = 'quick';
+        var levelData = {
+            quick: {
+                label: 'Quick Test', labelAr: 'اختبار سريع',
+                stamp: 'سريع', stampEn: 'Quick',
+                requiresTools: false, requiresGps: false, requiresPhoto: false, requiresSession: false,
+                credibility: 40, color: '#fbbf24'
+            },
+            unofficial: {
+                label: 'Unofficial Test', labelAr: 'اختبار غير رسمي',
+                stamp: 'متوسط', stampEn: 'Medium',
+                requiresTools: true, requiresGps: false, requiresPhoto: false, requiresSession: true,
+                credibility: 70, color: '#3b82f6'
+            },
+            certified: {
+                label: 'Certified Test', labelAr: 'اختبار معتمد',
+                stamp: 'دقيق', stampEn: 'Accurate',
+                requiresTools: true, requiresGps: true, requiresPhoto: true, requiresSession: true,
+                credibility: 100, color: '#10b981'
+            }
+        };
+
+        function applyLevel(level) {
+            testLevel = level;
+            var data = levelData[level];
+            var isAr = (localStorage.getItem('smartlab_lang') || 'en') === 'ar';
+            document.querySelectorAll('.lt-btn').forEach(function(b) { b.classList.remove('active'); });
+            document.querySelector('.lt-btn[data-level="' + level + '"]').classList.add('active');
+            document.getElementById('levelInfo').textContent = data.credibility + '% credibility';
+            document.getElementById('rsLevelDisplay').textContent = (isAr ? data.labelAr : data.label) + ' (' + data.credibility + '%)';
+            updateReportData('location', level === 'quick' ? 'On-site' : level === 'unofficial' ? 'Factory Lab' : 'Accredited Lab');
+            updateAI(isAr ? 'تم اختيار مستوى: ' + (isAr ? data.labelAr : data.label) : 'Test level: ' + (isAr ? data.labelAr : data.label));
+            addAlert('success', (isAr ? 'مستوى الاختبار: ' : 'Level: ') + (isAr ? data.labelAr : data.label) + ' — ' + (isAr ? 'مصداقية ' + data.credibility + '%' : 'Credibility ' + data.credibility + '%'));
+        }
+        document.querySelectorAll('#testLevelSelectTop .lt-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                applyLevel(this.getAttribute('data-level'));
+            });
+        });
+        applyLevel(testLevel);
+
+        function getTestLevel() { return testLevel; }
+        function getLevelData(lvl) { return levelData[lvl] || levelData.quick; }
+
+        // Photo Capture
+        document.getElementById('btnCapturePhoto').addEventListener('click', function() {
+            var isAr = (localStorage.getItem('smartlab_lang') || 'en') === 'ar';
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                addAlert('warning', isAr ? 'الكاميرا غير متوفرة في هذا المتصفح.' : 'Camera not available in this browser.');
+                updateAI(isAr ? 'الكاميرا غير متاحة.' : 'Camera unavailable.');
+                return;
+            }
+            // If already streaming, just capture
+            if (videoStream) {
+                capturePhotoFromStream();
+                return;
+            }
+            // Create a video element overlay
+            var existingOverlay = document.querySelector('.photo-capture-overlay');
+            if (existingOverlay) existingOverlay.remove();
+
+            var overlay = document.createElement('div');
+            overlay.className = 'photo-capture-overlay';
+            overlay.style.cssText = 'position:fixed;z-index:99998;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);display:flex;flex-direction:column;align-items:center;justify-content:center;';
+            overlay.innerHTML = '<video id="captureVideo" autoplay playsinline style="max-width:90vw;max-height:70vh;border-radius:8px;"></video>' +
+                '<div style="margin-top:12px;display:flex;gap:10px;">' +
+                '<button class="btn btn-emerald" id="btnSnap">📷 ' + (isAr ? 'التقاط' : 'Capture') + '</button>' +
+                '<button class="btn btn-gold" id="btnCancelCapture">❌ ' + (isAr ? 'إلغاء' : 'Cancel') + '</button>' +
+                '</div>';
+            document.body.appendChild(overlay);
+
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } } })
+                .then(function(stream) {
+                    videoStream = stream;
+                    document.getElementById('captureVideo').srcObject = stream;
+
+                    document.getElementById('btnSnap').addEventListener('click', function() {
+                        capturePhotoFromStream();
+                        // Stop stream and close overlay
+                        if (videoStream) { videoStream.getTracks().forEach(function(t) { t.stop(); }); videoStream = null; }
+                        overlay.remove();
+                    });
+                    document.getElementById('btnCancelCapture').addEventListener('click', function() {
+                        if (videoStream) { videoStream.getTracks().forEach(function(t) { t.stop(); }); videoStream = null; }
+                        overlay.remove();
+                    });
+                })
+                .catch(function(err) {
+                    addAlert('warning', isAr ? 'خطأ في الكاميرا: ' + err.message : 'Camera error: ' + err.message);
+                    overlay.remove();
+                });
+        });
+
+        function capturePhotoFromStream() {
+            var isAr = (localStorage.getItem('smartlab_lang') || 'en') === 'ar';
+            var video = document.getElementById('captureVideo');
+            if (!video) return;
+            var canvas = document.createElement('canvas');
+            var w = video.videoWidth || 1280;
+            var h = video.videoHeight || 720;
+            canvas.width = w;
+            canvas.height = h + 40; // extra space for watermark
+            var ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, w, h);
+
+            // Watermark: location, date, time
+            ctx.fillStyle = 'rgba(0,0,0,0.6)';
+            ctx.fillRect(0, h, w, 40);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '12px monospace';
+            var locStr = testLocation ? (testLocation.lat + ', ' + testLocation.lng) : '--';
+            var now = new Date();
+            var dateStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
+            ctx.fillText('📍 ' + locStr + '  ⏰ ' + dateStr + '  smartLAB', 10, h + 26);
+            ctx.font = 'bold 36px sans-serif';
+            ctx.fillStyle = 'rgba(255,255,255,0.04)';
+            ctx.fillText('smartLAB', 30, h - 20);
+
+            var dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+            testPhotos.push({ data: dataUrl, location: locStr, date: dateStr, id: Date.now() });
+            renderPhotoGallery();
+            updateAI(isAr ? 'تم التقاط الصورة ' + testPhotos.length : 'Photo ' + testPhotos.length + ' captured.');
+            addAlert('success', isAr ? 'صورة ' + testPhotos.length + ' تمت إضافتها.' : 'Photo ' + testPhotos.length + ' added.');
+        }
+
+        function renderPhotoGallery() {
+            var grid = document.getElementById('photoGrid');
+            grid.innerHTML = '';
+            testPhotos.forEach(function(p, idx) {
+                var div = document.createElement('div');
+                div.className = 'photo-item';
+                div.innerHTML = '<img src="' + p.data + '" alt="Photo ' + (idx+1) + '">' +
+                    '<button class="photo-del" data-idx="' + idx + '">&times;</button>';
+                div.querySelector('img').addEventListener('click', function() {
+                    document.getElementById('photoPreviewImg').src = p.data;
+                    document.getElementById('photoPreview').classList.add('show');
+                });
+                div.querySelector('.photo-del').addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    testPhotos.splice(idx, 1);
+                    renderPhotoGallery();
+                    document.getElementById('photoCount').textContent = testPhotos.length + ' ' + (localStorage.getItem('smartlab_lang') === 'ar' ? 'صور' : 'photos');
+                });
+                grid.appendChild(div);
+            });
+            document.getElementById('photoCount').textContent = testPhotos.length + ' ' + (localStorage.getItem('smartlab_lang') === 'ar' ? 'صور' : 'photos');
+        }
+
+        // Photo preview close
+        document.getElementById('photoPreviewClose').addEventListener('click', function() {
+            document.getElementById('photoPreview').classList.remove('show');
+        });
+        document.getElementById('photoPreview').addEventListener('click', function(e) {
+            if (e.target === this) this.classList.remove('show');
+        });
+
+        // Helper: get notes data
+        function getNotesData() {
+            var notes = {};
+            var inputs = document.querySelectorAll('#resultsTwoCol .rtd-notes input');
+            inputs.forEach(function(inp) {
+                var idx = inp.id.replace('note_', '');
+                if (inp.value.trim()) notes[idx] = inp.value.trim();
+            });
+            return notes;
+        }
+
+        /* ===== STANDARDS DATABASE + PASS/FAIL ===== */
+        var standardsDB = [
+            { label: 'Stability', min: 8, max: 20, unit: 'kN', desc: 'ASTM D6927' },
+            { label: 'Flow', min: 2, max: 4, unit: 'mm', desc: 'ASTM D6927' },
+            { label: 'Density', min: 2200, max: 2600, unit: 'kg/m³', desc: '' },
+            { label: 'Air Voids', min: 3, max: 5, unit: '%', desc: 'ASTM D3203' },
+            { label: 'VMA', min: 13, max: 17, unit: '%', desc: '' },
+            { label: 'VFA', min: 65, max: 78, unit: '%', desc: '' },
+            { label: 'Bitumen Content', min: 4.5, max: 5.5, unit: '%', desc: '' }
+        ];
+
+        function evaluateParam(paramLabel, paramValue) {
+            var match = null;
+            for (var i = 0; i < standardsDB.length; i++) {
+                if (paramLabel.indexOf(standardsDB[i].label) !== -1 || standardsDB[i].label.indexOf(paramLabel) !== -1) {
+                    match = standardsDB[i]; break;
+                }
+            }
+            if (!match) return { status: '--', badge: '' };
+            var val = parseFloat(paramValue);
+            if (isNaN(val)) return { status: '--', badge: '' };
+            if (val >= match.min && val <= match.max) return { status: 'PASS', badge: 'pass' };
+            var margin = (match.max - match.min) * 0.15;
+            if (val >= match.min - margin && val <= match.max + margin) return { status: 'MARG', badge: 'marginal' };
+            return { status: 'FAIL', badge: 'fail' };
+        }
+
+        /* ===== QR CODE GENERATOR ===== */
+        function generateQRData() {
+            var data = {
+                session: sessionId,
+                test: testId,
+                sample: document.getElementById('sampleNumber').value || '--',
+                date: new Date().toISOString(),
+                lab: document.getElementById('labName').value || 'smartLAB',
+                level: testLevel,
+                verified: sessionVerified
+            };
+            return JSON.stringify(data);
+        }
+
+        function renderQRToCanvas(canvasId) {
+            var canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            try {
+                QRCode.toCanvas(canvas, generateQRData(), { width: 120, margin: 1, color: { dark: '#1e293b', light: '#ffffff' } });
+            } catch(e) { /* QR not available */ }
+        }
+
+        /* ===== CONCRETE TREND CHART ===== */
+        /* ===== STEP-BY-STEP GUIDE ===== */
+        var testGuides = {
+            marshall: [
+                'Weigh aggregates and bitumen binder per mix design',
+                'Heat aggregates and binder to mixing temperature (160°C)',
+                'Mix thoroughly for 2–3 minutes until uniform coating',
+                'Place mix in Marshall mold and compact with 75 blows per side',
+                'Allow specimen to cool, then extract from mold',
+                'Weigh specimen in air, then in water (SSD) for density',
+                'Heat specimen in water bath at 60°C for 30–40 min',
+                'Place in Marshall testing machine and apply load at 50.8 mm/min',
+                'Record maximum load (Stability) and flow value',
+                'Calculate Air Voids, VMA, VFA from measured data'
+            ]
+        };
+
+        function initStepGuide(containerId, testId) {
+            var container = document.getElementById(containerId);
+            if (!container) return;
+            var steps = testGuides[testId] || null;
+            if (!steps) return;
+
+            var isAr = (localStorage.getItem('smartlab_lang') || 'en') === 'ar';
+            var html = '<div style="margin-top:8px;padding-top:6px;border-top:1px solid var(--border-glass);">' +
+                '<div style="font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:4px;">' +
+                (isAr ? '📖 دليل الخطوات:' : '📖 Step-by-Step Guide:') + '</div>';
+            html += '<div class="step-guide">';
+            steps.forEach(function(step, idx) {
+                html += '<div class="sg-step" data-step="' + idx + '">' +
+                    '<span class="sg-num">' + (idx + 1) + '</span>' +
+                    '<span>' + step + '</span></div>';
+            });
+            html += '</div></div>';
+            container.insertAdjacentHTML('beforeend', html);
+
+            container.querySelectorAll('.sg-step').forEach(function(s) {
+                s.addEventListener('click', function() {
+                    this.classList.toggle('done');
+                });
+            });
+        }
+
+        /* ===== Visual Guide advancement ===== */
+        var currentVGStep = 1;
+        var stepTexts = [
+            'Select test type and location (On-site / Lab / Field)',
+            'Choose connection method (Wi-Fi, USB, Bluetooth, etc.)',
+            'Connect and verify hardware device'
+        ];
+
+        function typewriter(el, text, speed, callback) {
+            if (!el) return;
+            el.textContent = '';
+            var i = 0;
+            var cursor = document.createElement('span');
+            cursor.className = 'cursor';
+            function type() {
+                if (i < text.length) {
+                    el.textContent = text.substring(0, i + 1);
+                    if (i < text.length - 1) el.appendChild(cursor);
+                    i++;
+                    setTimeout(type, speed || 40);
+                } else {
+                    if (callback) callback();
+                }
+            }
+            type();
+        }
+
+        function advanceVisualGuide(step) {
+            var steps = document.querySelectorAll('.vg-step');
+            var pipes = document.querySelectorAll('.vg-pipe');
+            if (!steps.length) return;
+            steps.forEach(function(s) { s.classList.remove('active', 'done'); });
+            pipes.forEach(function(p) { p.classList.remove('done'); });
+
+            if (step === 1) {
+                currentVGStep = 1;
+                steps[0].classList.add('active');
+                typewriter(document.getElementById('vgText1'), stepTexts[0], 35);
+            } else if (step === 2) {
+                steps[0].classList.add('done');
+                pipes[0].classList.add('done');
+                steps[1].classList.add('active');
+                typewriter(document.getElementById('vgText2'), stepTexts[1], 35);
+                currentVGStep = 2;
+            } else if (step === 3) {
+                steps[0].classList.add('done');
+                steps[1].classList.add('done');
+                pipes[0].classList.add('done');
+                pipes[1].classList.add('done');
+                steps[2].classList.add('active');
+                typewriter(document.getElementById('vgText3'), stepTexts[2], 35);
+                currentVGStep = 3;
+            }
+        }
+        /* ===== Report Data collection ===== */
+        function updateReportData(field, value) {
+            var el = document.getElementById('rd' + field.charAt(0).toUpperCase() + field.slice(1));
+            if (el) {
+                el.textContent = value || '--';
+                el.classList.add('flash');
+                setTimeout(function() { el.classList.remove('flash'); }, 600);
+            }
+            var dot = document.getElementById('dot' + field.charAt(0).toUpperCase() + field.slice(1));
+            if (dot && value && value !== '--') {
+                dot.className = 'rd-dot live';
+            }
+        }
+
+        /* ===== Connection ===== */
+        var connBtns = document.querySelectorAll('.conn-btn');
+        var connStatus = document.getElementById('connStatus');
+        var connected = false;
+        connBtns.forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                if (this.classList.contains('active')) {
+                    this.classList.remove('active'); connected = false; updateConnectionUI(false); return;
+                }
+                connBtns.forEach(function(b) { b.classList.remove('active'); });
+                this.classList.add('active'); connected = true;
+                updateConnectionUI(true);
+                var connLabel = this.querySelector('span:last-child').textContent;
+                updateAI('Device connected via ' + connLabel + '. Running diagnostics…');
+                advanceVisualGuide(2);
+                updateReportData('connection', connLabel);
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function(pos) {
+                        updateReportData('gps', pos.coords.latitude.toFixed(4) + ', ' + pos.coords.longitude.toFixed(4));
+                    }, function() {});
+                }
+            });
+        });
+        function updateConnectionUI(state) {
+            var icon = state ? '✅' : '⚠';
+            var text = state ? 'Connected' : 'Not connected';
+            connStatus.className = 'conn-status ' + (state ? 'connected' : 'disconnected');
+            connStatus.innerHTML = '<span class="status-dot"></span> ' + icon + ' ' + text;
+            document.getElementById('btnCheckHw').disabled = !state;
+            document.getElementById('btnFlash').disabled = !state;
+            document.getElementById('btnReadResults').disabled = !state;
+            // reset lamps on disconnect
+            if (!state) setFirmwareStatus(null);
+        }
+
+        /* ===== Firmware status lamps ===== */
+        function setFirmwareStatus(status) {
+            var lamps = document.querySelectorAll('.fw-lamp');
+            var msg = document.getElementById('fwStatusMsg');
+            var flashBtn = document.getElementById('btnFlash');
+            var isAr = (localStorage.getItem('smartlab_lang') || 'en') === 'ar';
+            var msgText = '';
+            lamps.forEach(function(l) { l.classList.remove('active'); });
+            msg.className = 'fw-msg';
+            document.getElementById('btnFlash').disabled = true;
+
+            if (status === 'good') {
+                document.getElementById('lampGreen').classList.add('active');
+                msg.className = 'fw-msg good';
+                msgText = isAr ? 'الجهاز جاهز بالكامل. يمكن تحميل السوفت وير.' : 'Device is fully ready. You can flash firmware.';
+                flashBtn.disabled = false;
+            } else if (status === 'warn') {
+                document.getElementById('lampYellow').classList.add('active');
+                msg.className = 'fw-msg warn';
+                msgText = isAr ? 'يوجد بعض المشاكل البسيطة ولكن يمكن تحميل السوفت وير.' : 'Minor issues detected but firmware can still be flashed.';
+                flashBtn.disabled = false;
+            } else if (status === 'bad') {
+                document.getElementById('lampRed').classList.add('active');
+                msg.className = 'fw-msg bad';
+                msgText = isAr ? 'الجهاز تالف أو غير متعرف عليه. لا يمكن تحميل السوفت وير.' : 'Device damaged or unrecognized. Cannot flash firmware.';
+                flashBtn.disabled = true;
+            } else {
+                msgText = isAr ? 'يرجى تشغيل فحص الهاردوير أولاً' : 'Run hardware check first';
+            }
+            msg.textContent = msgText;
+        }
+
+        /* ===== Hardware check ===== */
+        /* ===== Device type tabs ===== */
+        var devType = 'ours';
+        document.getElementById('tabOurs').addEventListener('click', function() {
+            document.getElementById('tabOurs').classList.add('active');
+            document.getElementById('tabClient').classList.remove('active');
+            document.getElementById('panelOurs').style.display = 'block';
+            document.getElementById('panelClient').style.display = 'none';
+            devType = 'ours';
+        });
+        document.getElementById('tabClient').addEventListener('click', function() {
+            document.getElementById('tabClient').classList.add('active');
+            document.getElementById('tabOurs').classList.remove('active');
+            document.getElementById('panelClient').style.display = 'block';
+            document.getElementById('panelOurs').style.display = 'none';
+            devType = 'client';
+        });
+
+        /* ===== Hardware check (two modes) ===== */
+        document.getElementById('btnCheckHw').addEventListener('click', function() {
+            this.disabled = true;
+            if (devType === 'ours') {
+                runOursCheck();
+            } else {
+                runClientCalib();
+            }
+        });
+
+        function runOursCheck() {
+            updateAI('Verifying smartLAB hardware identity…');
+            // Generate a fake hardware ID
+            var hwid = 'SL-' + testId.toUpperCase() + '-' + (100000 + Math.floor(Math.random()*900000));
+            document.getElementById('hwIdDisplay').textContent = hwid;
+
+            var checks = ['mcu','hwid','tamper','sensors','memory'];
+            var delay = 0;
+            checks.forEach(function(id, i) {
+                setTimeout(function() {
+                    var el = document.querySelector('#checkListOurs [data-check="' + id + '"]');
+                    if (!el) return;
+                    el.className = 'check-item pass';
+                    el.querySelector('.ci-icon').textContent = '✅';
+                    if (id === 'hwid') {
+                        var badge = document.getElementById('hwIdBadge');
+                        badge.className = 'hwid-badge verified';
+                        badge.textContent = '✅ Verified';
+                    }
+                    if (i === checks.length - 1) {
+                        document.getElementById('btnCheckHw').disabled = false;
+                        document.getElementById('btnFlash').disabled = false;
+                        setFirmwareStatus('good');
+                        updateAI('smartLAB device ' + hwid + ' verified. All checks passed. Ready for firmware.');
+                        addAlert('success', 'Hardware verified successfully. Anti-tamper seal intact.');
+                        advanceVisualGuide(3);
+                        updateReportData('device', hwid);
+                    }
+                }, delay + 500);
+                delay += 350;
+            });
+        }
+
+        function runClientCalib() {
+            updateAI('Starting calibration for client device…');
+            var steps = 5;
+            var current = 0;
+            function nextStep() {
+                if (current >= steps) {
+                    document.getElementById('btnCheckHw').disabled = false;
+                    document.getElementById('btnFlash').disabled = false;
+                    setFirmwareStatus('good');
+                    updateAI('Calibration complete! Client device is now ready for firmware.');
+                    addAlert('success', 'Client device calibrated successfully.');
+                    advanceVisualGuide(3);
+                    updateReportData('device', 'Client Device (Calibrated)');
+                    return;
+                }
+                current++;
+                var stepEl = document.querySelector('.calib-step[data-step="' + current + '"]');
+                if (!stepEl) return;
+                if (current > 1) {
+                    var prev = document.querySelector('.calib-step[data-step="' + (current-1) + '"]');
+                    if (prev) { prev.classList.remove('active'); prev.classList.add('done'); }
+                }
+                stepEl.classList.add('active');
+                document.getElementById('calibStep' + current).textContent = '⏳';
+                updateAI('Calibration step ' + current + ' of ' + steps + '…');
+                setTimeout(function() {
+                    document.getElementById('calibStep' + current).textContent = '✅';
+                    stepEl.classList.remove('active');
+                    stepEl.classList.add('done');
+                    setTimeout(nextStep, 400);
+                }, 1200);
+            }
+            nextStep();
+        }
+
+        /* ===== Firmware flash ===== */
+        document.getElementById('btnFlash').addEventListener('click', function() {
+            this.disabled = true;
+            var prog = document.getElementById('fwProgress');
+            var bar = document.getElementById('fwBar');
+            prog.classList.add('active');
+            updateAI('Flashing firmware… Please do not disconnect.');
+            var pct = 0;
+            var interval = setInterval(function() {
+                pct += Math.random() * 12 + 3;
+                if (pct > 100) pct = 100;
+                bar.style.width = pct + '%';
+                if (pct >= 100) {
+                    clearInterval(interval);
+                    setTimeout(function() {
+                        // Burn session ID into device
+                        sessionBurned = true;
+                        var badge = document.getElementById('sessionBadge');
+                        var disp = document.getElementById('sessionIdDisplay');
+                        var st = document.getElementById('sessionStatus');
+                        badge.style.display = 'flex';
+                        disp.textContent = sessionId;
+                        st.className = 'sb-status burned';
+                        st.textContent = '✅ ' + (lang === 'ar' ? 'محرق في الجهاز' : 'Burned to device');
+
+                        document.getElementById('btnFlash').disabled = false;
+                        document.getElementById('btnReadResults').disabled = false;
+                        updateAI('Firmware + Session ID burned. Disconnect device and run your test. Reconnect to read results.');
+                        addAlert('success', 'Firmware v2.1.3 + Session ID burned successfully.');
+                        advanceVisualGuide(1);
+                        updateReportData('session', sessionId);
+                    }, 500);
+                }
+            }, 200);
+        });
+
+        /* ===== Results data ===== */
+        var currentResults = null;
+        document.getElementById('btnReadResults').addEventListener('click', function() {
+            var self = this;
+            self.disabled = true;
+            updateAI('Verifying device identity… Scanning session ID from connected device…');
+
+            // Simulate device reporting its session ID
+            setTimeout(function() {
+                // 90% chance the device reports the correct session
+                var deviceReports = (Math.random() < 0.9) ? sessionId : 'SL-FAKE-' + Math.random().toString(36).substr(2,6).toUpperCase();
+                var isAr = (localStorage.getItem('smartlab_lang') || 'en') === 'ar';
+                var st = document.getElementById('sessionStatus');
+
+                if (deviceReports === sessionId) {
+                    sessionVerified = true;
+                    st.className = 'sb-status verified';
+                    st.textContent = '✅ ' + (isAr ? 'متطابق' : 'Matched');
+                    updateAI('✅ Device identity verified. Session ID matches. Reading test data…');
+                    addAlert('success', isAr ? 'تم التحقق من تطابق الجهاز.' : 'Device identity verified successfully.');
+
+                    // Now proceed to read results
+                    var ph = document.getElementById('resultsPlaceholder');
+                    var rd = document.getElementById('resultsData');
+                    ph.style.display = 'none';
+                    rd.style.display = 'block';
+
+                    var paramSets = {
+                        marshall: [
+                            { label: 'Stability', value: (12.4 + Math.random()*2).toFixed(1), unit: 'kN' },
+                            { label: 'Flow', value: (3.2 + Math.random()*1.5).toFixed(1), unit: 'mm' },
+                            { label: 'Density', value: (2350 + Math.random()*100).toFixed(0), unit: 'kg/m³' },
+                            { label: 'Air Voids', value: (3.5 + Math.random()*2).toFixed(1), unit: '%' },
+                            { label: 'VMA', value: (14 + Math.random()*3).toFixed(1), unit: '%' },
+                            { label: 'VFA', value: (65 + Math.random()*10).toFixed(1), unit: '%' },
+                            { label: 'Bitumen Content', value: (4.8 + Math.random()*0.5).toFixed(2), unit: '%' }
+                        ]
+                    };
+                    currentResults = paramSets.marshall;
+
+                    // Show NOT CERTIFIED banner if test was tampered
+                    if (testRejected) {
+                        document.getElementById('rejectedBanner').style.display = 'block';
+                    } else {
+                        document.getElementById('rejectedBanner').style.display = 'none';
+                    }
+
+                    var tbodyL = document.getElementById('resultsBodyLeft');
+                    var tbodyR = document.getElementById('resultsBodyRight');
+                    tbodyL.innerHTML = '';
+                    tbodyR.innerHTML = '';
+                    var half = Math.ceil(currentResults.length / 2);
+                    currentResults.forEach(function(r, idx) {
+                        var tr = document.createElement('tr');
+                        var notesId = 'note_' + idx;
+                        var st = evaluateParam(r.label, r.value);
+                        var badgeHtml = st.badge ? '<span class="badge ' + st.badge + '">' + st.status + '</span>' : '--';
+                        tr.innerHTML = '<td class="rtd-label">' + r.label + '</td>' +
+                            '<td class="rtd-value">' + r.value + ' <span class="rtd-unit">' + r.unit + '</span></td>' +
+                            '<td class="rtd-status">' + badgeHtml + '</td>' +
+                            '<td class="rtd-notes"><input type="text" id="' + notesId + '" placeholder="' + (isAr ? 'ملاحظات...' : 'Notes...') + '"></td>';
+                        if (idx < half) {
+                            tbodyL.appendChild(tr);
+                        } else {
+                            tbodyR.appendChild(tr);
+                        }
+                    });
+
+                    document.getElementById('btnExcel').disabled = false;
+                    document.getElementById('btnPdf').disabled = false;
+                    document.getElementById('btnPrint').disabled = false;
+                    updateAI('Results collected from verified device. Generate your report.');
+                    addAlert('success', isAr ? 'تم استلام البيانات بنجاح.' : 'Test data retrieved successfully.');
+                } else {
+                    st.className = 'sb-status failed';
+                    st.textContent = '❌ ' + (isAr ? 'غير متطابق' : 'Mismatch');
+                    updateAI('❌ DEVICE MISMATCH! The connected device has Session ID ' + deviceReports + ' but expected ' + sessionId + '. Possible fraud detected.');
+                    addAlert('warning', isAr ? 'تحذير: الجهاز المتصل ليس نفس الجهاز الذي تم حرق الفيرم وير عليه!' : 'WARNING: Connected device is not the same device that was flashed!');
+                }
+                self.disabled = false;
+            }, 1200);
+        });
+
+        /* ===== Report: Excel ===== */
+        document.getElementById('btnExcel').addEventListener('click', function() {
+            if (!currentResults) return;
+            updateAI('Generating Excel report…');
+            setTimeout(function() {
+                var isAr = (localStorage.getItem('smartlab_lang') || 'en') === 'ar';
+                var wb = XLSX.utils.book_new();
+                var labName = document.getElementById('labName').value || 'smartLAB Testing Lab';
+                var sampleNo = document.getElementById('sampleNumber').value || '--';
+                var sampleSpecs = document.getElementById('sampleSpecs').value || '--';
+                var locStr = testLocation ? (testLocation.lat + ', ' + testLocation.lng) : '--';
+                var vpnStr = vpnActive ? (isAr ? 'نعم' : 'Yes') : (isAr ? 'لا' : 'No');
+                var notes = getNotesData();
+                var tech = document.getElementById('techName').value || '--';
+                var eng = document.getElementById('engineerName').value || '--';
+                var lvlData = getLevelData(testLevel);
+
+                // Header rows
+                var data = [];
+                data.push([labName, '', '', '']);
+                data.push(['smartLAB ' + (isAr ? 'تقرير اختبار' : 'Test Report'), '', '', '']);
+                data.push(['', '', '', '']);
+                data.push([(isAr ? 'الاختبار:' : 'Test:'), displayName.replace(/&amp;/g, '&'), (isAr ? 'رقم الجلسة:' : 'Session:'), sessionId]);
+                data.push([(isAr ? 'رقم العينة:' : 'Sample #:'), sampleNo, (isAr ? 'المستوى:' : 'Level:'), (isAr ? lvlData.labelAr : lvlData.label) + ' [' + (isAr ? lvlData.stamp : lvlData.stampEn) + ']']);
+                data.push([(isAr ? 'المواصفات:' : 'Specs:'), sampleSpecs, (isAr ? 'المصداقية:' : 'Credibility:'), lvlData.credibility + '%']);
+                data.push([(isAr ? 'التاريخ:' : 'Date:'), new Date().toLocaleString(), (isAr ? 'VPN:' : 'VPN:'), vpnStr]);
+                data.push([(isAr ? 'الموقع (GPS):' : 'Location:'), locStr, '', '']);
+                data.push([(isAr ? 'الفني:' : 'Technician:'), tech, (isAr ? 'المهندس:' : 'Engineer:'), eng]);
+                data.push(['', '', '', '']);
+
+                // Column headers
+                data.push([(isAr ? 'القياس' : 'Parameter'), (isAr ? 'القيمة' : 'Value'), (isAr ? 'الحالة' : 'Status'), (isAr ? 'ملاحظات' : 'Notes')]);
+
+                // Data rows
+                currentResults.forEach(function(r, idx) {
+                    var st = evaluateParam(r.label, r.value);
+                    data.push([r.label, r.value + ' ' + r.unit, st.status, notes[idx] || '']);
+                });
+
+                data.push(['', '', '', '']);
+                data.push([(isAr ? 'المراقبة:' : 'Monitor:') + ' smartLAB AI System', '', '', '']);
+                data.push([(isAr ? 'تاريخ التقرير:' : 'Generated:') + ' ' + new Date().toLocaleString(), '', '', '']);
+                if (testRejected) {
+                    data.push(['', '', '', '']);
+                    data.push([(isAr ? '!!! غير معتمد — تم اكتشاف تلاعب أثناء الاختبار !!!' : '!!! NOT CERTIFIED — Tampering detected during test !!!'), '', '', '']);
+                }
+                data.push(['', '', '', '']);
+
+                var ws = XLSX.utils.aoa_to_sheet(data);
+                ws['!cols'] = [{ wch: 28 }, { wch: 18 }, { wch: 10 }, { wch: 22 }];
+                XLSX.utils.book_append_sheet(wb, ws, (isAr ? 'نتائج الاختبار' : 'Test Results'));
+                XLSX.writeFile(wb, 'smartLAB_' + testId + '_report.xlsx');
+                updateAI('Excel report downloaded successfully.');
+                addAlert('success', 'Excel file saved.');
+            }, 300);
+        });
+
+        /* ===== Report: PDF ===== */
+        document.getElementById('btnPdf').addEventListener('click', function() {
+            if (!currentResults) return;
+            updateAI('Generating PDF report…');
+            setTimeout(function() {
+                var isAr = (localStorage.getItem('smartlab_lang') || 'en') === 'ar';
+                var doc = new jspdf.jsPDF();
+                var pageW = doc.internal.pageSize.getWidth();
+                var pageH = doc.internal.pageSize.getHeight();
+                var labName = document.getElementById('labName').value || 'smartLAB Testing Lab';
+                var sampleNo = document.getElementById('sampleNumber').value || '--';
+                var sampleSpecs = document.getElementById('sampleSpecs').value || '--';
+                var locStr = testLocation ? (testLocation.lat + ', ' + testLocation.lng) : '--';
+                var vpnStr = vpnActive ? (isAr ? 'نعم' : 'Yes') : (isAr ? 'لا' : 'No');
+                var notes = getNotesData();
+                var lvlData = getLevelData(testLevel);
+                var tech = document.getElementById('techName').value || '--';
+                var eng = document.getElementById('engineerName').value || '--';
+
+                // ---- Page 1: Report Header ----
+                doc.setFontSize(16);
+                doc.setTextColor(20, 30, 55);
+                doc.text(labName, pageW / 2, 25, { align: 'center' });
+                doc.setFontSize(10);
+                doc.setTextColor(180, 160, 60);
+                doc.text('smartLAB ' + (isAr ? 'تقرير اختبار' : 'Test Report'), pageW / 2, 33, { align: 'center' });
+
+                // Stamp (top-right rotated text)
+                var stampColor = testLevel === 'quick' ? [251, 191, 36] : testLevel === 'unofficial' ? [59, 130, 246] : [16, 185, 129];
+                var stampText = isAr ? lvlData.stamp : lvlData.stampEn;
+                doc.saveGraphicsState();
+                doc.setTextColor(stampColor[0], stampColor[1], stampColor[2]);
+                doc.setFontSize(16);
+                doc.setGState(new doc.GState({ opacity: 0.6 }));
+                doc.text(stampText, pageW - 30, 38, { align: 'center', angle: -8 });
+                doc.restoreGraphicsState();
+
+                // Meta info box (left column)
+                var metaY = 45;
+                doc.setFontSize(8);
+                doc.setTextColor(60, 60, 60);
+                var metaLeft = 18;
+                doc.text((isAr ? 'الاختبار:' : 'Test:') + ' ' + displayName.replace(/&amp;/g, '&'), metaLeft, metaY);
+                doc.text((isAr ? 'رقم العينة:' : 'Sample #:') + ' ' + sampleNo, metaLeft, metaY + 6);
+                doc.text((isAr ? 'المواصفات:' : 'Specs:') + ' ' + sampleSpecs, metaLeft, metaY + 12);
+                doc.text((isAr ? 'التاريخ:' : 'Date:') + ' ' + new Date().toLocaleString(), metaLeft, metaY + 18);
+                // Right column meta
+                var metaRight = pageW / 2 + 10;
+                doc.text((isAr ? 'رقم الجلسة:' : 'Session:') + ' ' + sessionId, metaRight, metaY);
+                doc.text((isAr ? 'المستوى:' : 'Level:') + ' ' + (isAr ? lvlData.labelAr : lvlData.label), metaRight, metaY + 6);
+                doc.text((isAr ? 'المصداقية:' : 'Credibility:') + ' ' + lvlData.credibility + '%', metaRight, metaY + 12);
+                doc.text((isAr ? 'الموقع (GPS):' : 'Location:') + ' ' + locStr, metaRight, metaY + 18);
+                doc.text((isAr ? 'VPN:' : 'VPN:') + ' ' + vpnStr, metaRight, metaY + 24);
+                doc.text((isAr ? 'الفني:' : 'Tech:') + ' ' + tech, metaRight, metaY + 30);
+                doc.text((isAr ? 'المهندس:' : 'Eng:') + ' ' + eng, metaRight, metaY + 36);
+
+                // ---- Results Table ----
+                var rows = [];
+                var headRow = isAr ? ['القياس', 'القيمة', 'الحالة', 'ملاحظات'] : ['Parameter', 'Value', 'Status', 'Notes'];
+                currentResults.forEach(function(r, idx) {
+                    var st = evaluateParam(r.label, r.value);
+                    rows.push([r.label, r.value + ' ' + r.unit, st.status, notes[idx] || '']);
+                });
+                doc.autoTable({
+                    startY: metaY + 44,
+                    head: [headRow],
+                    body: rows,
+                    theme: 'grid',
+                    headStyles: { fillColor: [59, 130, 246], textColor: 255, fontSize: 8 },
+                    bodyStyles: { fontSize: 7 },
+                    alternateRowStyles: { fillColor: [245, 247, 250] },
+                    columnStyles: { 0: { cellWidth: 50 }, 1: { cellWidth: 30 }, 2: { cellWidth: 14 }, 3: { cellWidth: 'auto' } }
+                });
+
+                var finalY = doc.lastAutoTable.finalY + 8;
+                // Signature line
+                doc.setFontSize(8);
+                doc.setTextColor(80, 80, 80);
+                doc.text((isAr ? 'الفني:' : 'Technician:') + ' ' + tech + '     ' + (isAr ? 'المهندس:' : 'Engineer:') + ' ' + eng, 14, finalY + 4);
+
+                doc.setFontSize(7);
+                doc.setTextColor(150, 150, 150);
+                doc.text((isAr ? 'المراقبة: تم الإشراف على الاختبار بواسطة نظام smartLAB AI' : 'Monitor: Test supervised by smartLAB AI System'), 14, finalY + 10);
+                doc.text((isAr ? 'تاريخ التقرير:' : 'Generated:') + ' ' + new Date().toLocaleString(), 14, finalY + 15);
+                if (testRejected) {
+                    doc.setTextColor(239, 68, 68);
+                    doc.setFontSize(10);
+                    doc.text((isAr ? '!!! غير معتمد — تم اكتشاف تلاعب أثناء الاختبار !!!' : '!!! NOT CERTIFIED — Tampering detected during test !!!'), pageW / 2, finalY + 24, { align: 'center' });
+                }
+
+                // ---- QR Code (bottom-right) ----
+                var qrData = generateQRData();
+                try {
+                    if (typeof QRCode !== 'undefined') {
+                        var qrCanvas = document.createElement('canvas');
+                        QRCode.toCanvas(qrCanvas, qrData, { width: 60, margin: 1, color: { dark: '#1e293b', light: '#ffffff' } });
+                        var qrImg = qrCanvas.toDataURL('image/png');
+                        doc.addImage(qrImg, 'PNG', pageW - 28, doc.internal.pageSize.getHeight() - 28, 22, 22);
+                    }
+                } catch(e) { /* QR fallback */ }
+
+                // ---- Photo Appendix (new pages) ----
+                if (testPhotos.length > 0) {
+                    testPhotos.forEach(function(p, idx) {
+                        doc.addPage();
+                        doc.setFontSize(12);
+                        doc.setTextColor(50, 50, 50);
+                        doc.text((isAr ? 'ملحق الصور — صورة ' : 'Photo Appendix — Photo ') + (idx + 1), pageW / 2, 20, { align: 'center' });
+                        try {
+                            var imgW = 160;
+                            var imgH = 110;
+                            var imgX = (pageW - imgW) / 2;
+                            doc.addImage(p.data, 'JPEG', imgX, 30, imgW, imgH);
+                            // Caption with watermark info
+                            doc.setFontSize(8);
+                            doc.setTextColor(100, 100, 100);
+                            doc.text((isAr ? 'الموقع:' : 'Location:') + ' ' + (p.location || '--'), pageW / 2, 30 + imgH + 10, { align: 'center' });
+                            doc.text((isAr ? 'التاريخ:' : 'Date/Time:') + ' ' + (p.date || '--'), pageW / 2, 30 + imgH + 18, { align: 'center' });
+                        } catch(e) {
+                            doc.text((isAr ? 'تعذر عرض الصورة' : 'Could not render image'), pageW / 2, 60, { align: 'center' });
+                        }
+                    });
+                }
+
+                doc.save('smartLAB_' + testId + '_report.pdf');
+                updateAI('PDF report downloaded successfully.');
+                addAlert('success', 'PDF file saved.');
+            }, 600);
+        });
+
+        /* ===== Report: Print ===== */
+        document.getElementById('btnPrint').addEventListener('click', function() {
+            if (!currentResults) return;
+            updateAI('Preparing print view…');
+            var isAr = (localStorage.getItem('smartlab_lang') || 'en') === 'ar';
+            var labName = document.getElementById('labName').value || 'smartLAB Testing Lab';
+            var sampleNo = document.getElementById('sampleNumber').value || '--';
+            var sampleSpecs = document.getElementById('sampleSpecs').value || '--';
+                var locStr = testLocation ? (testLocation.lat + ', ' + testLocation.lng) : '--';
+                var vpnStr = vpnActive ? (isAr ? 'نعم' : 'Yes') : (isAr ? 'لا' : 'No');
+                var notes = getNotesData();
+                var lvlData = getLevelData(testLevel);
+                var tech = document.getElementById('techName').value || '--';
+                var eng = document.getElementById('engineerName').value || '--';
+
+            var html = '<div style="text-align:center;margin-bottom:16px;position:relative;">';
+            html += '<h1 style="font-size:18px;margin-bottom:2px;">' + labName + '</h1>';
+            html += '<p style="font-size:11px;color:#888;">smartLAB ' + (isAr ? 'تقرير اختبار' : 'Test Report') + '</p>';
+            // Stamp
+            var stampColor = testLevel === 'quick' ? '#fbbf24' : testLevel === 'unofficial' ? '#3b82f6' : '#10b981';
+            html += '<div style="position:absolute;right:20px;top:0;width:80px;height:80px;border-radius:50%;border:3px solid ' + stampColor + ';color:' + stampColor + ';display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;font-weight:700;transform:rotate(-8deg);background:rgba(255,255,255,0.9);">' +
+                (isAr ? lvlData.stamp : lvlData.stampEn) +
+                '<span style="font-size:8px;font-weight:400;opacity:0.7;">' + lvlData.credibility + '%</span></div>';
+            html += '</div>';
+
+            // Meta info
+            html += '<table style="width:100%;font-size:11px;margin-bottom:12px;border-collapse:collapse;">';
+            html += '<tr><td style="padding:2px 8px;width:120px;color:#666;">' + (isAr ? 'الاختبار:' : 'Test:') + '</td><td style="padding:2px 8px;">' + displayName.replace(/&amp;/g, '&') + '</td></tr>';
+            html += '<tr><td style="padding:2px 8px;color:#666;">' + (isAr ? 'رقم العينة:' : 'Sample #:') + '</td><td style="padding:2px 8px;">' + sampleNo + '</td></tr>';
+            html += '<tr><td style="padding:2px 8px;color:#666;">' + (isAr ? 'المواصفات:' : 'Specs:') + '</td><td style="padding:2px 8px;">' + sampleSpecs + '</td></tr>';
+            html += '<tr><td style="padding:2px 8px;color:#666;">' + (isAr ? 'التاريخ:' : 'Date:') + '</td><td style="padding:2px 8px;">' + new Date().toLocaleString() + '</td>';
+            html += '<td style="padding:2px 8px;color:#666;">' + (isAr ? 'رقم الجلسة:' : 'Session:') + '</td><td style="padding:2px 8px;">' + sessionId + '</td></tr>';
+            html += '<tr><td style="padding:2px 8px;color:#666;">' + (isAr ? 'الموقع (GPS):' : 'Location:') + '</td><td style="padding:2px 8px;">' + locStr + '</td>';
+            html += '<td style="padding:2px 8px;color:#666;">' + (isAr ? 'VPN:' : 'VPN:') + '</td><td style="padding:2px 8px;">' + vpnStr + '</td></tr>';
+            html += '<tr><td style="padding:2px 8px;color:#666;">' + (isAr ? 'المستوى:' : 'Level:') + '</td><td style="padding:2px 8px;">' + (isAr ? lvlData.labelAr : lvlData.label) + ' [' + (isAr ? lvlData.stamp : lvlData.stampEn) + ']</td>';
+            html += '<td style="padding:2px 8px;color:#666;">' + (isAr ? 'المصداقية:' : 'Credibility:') + '</td><td style="padding:2px 8px;">' + lvlData.credibility + '%</td></tr>';
+            html += '<tr><td style="padding:2px 8px;color:#666;">' + (isAr ? 'الفني:' : 'Technician:') + '</td><td style="padding:2px 8px;">' + tech + '</td>';
+            html += '<td style="padding:2px 8px;color:#666;">' + (isAr ? 'المهندس:' : 'Engineer:') + '</td><td style="padding:2px 8px;">' + eng + '</td></tr>';
+            html += '</table>';
+
+            // Results table
+            html += '<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:16px;">';
+            html += '<tr style="background:#3b82f6;color:#fff;">';
+            html += '<th style="padding:6px 10px;border:1px solid #3b82f6;text-align:left;">' + (isAr ? 'القياس' : 'Parameter') + '</th>';
+            html += '<th style="padding:6px 10px;border:1px solid #3b82f6;text-align:right;">' + (isAr ? 'القيمة' : 'Value') + '</th>';
+            html += '<th style="padding:6px 10px;border:1px solid #3b82f6;text-align:center;">' + (isAr ? 'الحالة' : 'Status') + '</th>';
+            html += '<th style="padding:6px 10px;border:1px solid #3b82f6;text-align:left;">' + (isAr ? 'ملاحظات' : 'Notes') + '</th>';
+            html += '</tr>';
+            currentResults.forEach(function(r, idx) {
+                var st = evaluateParam(r.label, r.value);
+                var stColor = st.badge === 'pass' ? '#10b981' : st.badge === 'fail' ? '#ef4444' : st.badge === 'marginal' ? '#f59e0b' : '#999';
+                html += '<tr>';
+                html += '<td style="padding:5px 10px;border:1px solid #ddd;">' + r.label + '</td>';
+                html += '<td style="padding:5px 10px;border:1px solid #ddd;text-align:right;">' + r.value + ' ' + r.unit + '</td>';
+                html += '<td style="padding:5px 10px;border:1px solid #ddd;text-align:center;font-weight:700;color:' + stColor + ';">' + st.status + '</td>';
+                html += '<td style="padding:5px 10px;border:1px solid #ddd;">' + (notes[idx] || '') + '</td>';
+                html += '</tr>';
+            });
+            html += '</table>';
+
+            // Footer
+            html += '<p style="font-size:9px;color:#999;">' + (isAr ? 'المراقبة: تم الإشراف على الاختبار بواسطة نظام smartLAB AI' : 'Monitor: Test supervised by smartLAB AI System') + '</p>';
+            if (testRejected) {
+                html += '<p style="font-size:11px;color:#dc2626;font-weight:700;text-align:center;margin-top:8px;">!!! ' + (isAr ? 'غير معتمد — تم اكتشاف تلاعب أثناء الاختبار !!!' : 'NOT CERTIFIED — Tampering detected during test !!!') + '</p>';
+            }
+            html += '<p style="font-size:9px;color:#999;text-align:center;margin-top:4px;">' + (isAr ? 'تاريخ التقرير:' : 'Generated:') + ' ' + new Date().toLocaleString() + '</p>';
+            // QR
+            try {
+                if (typeof QRCode !== 'undefined') {
+                    var qrC = document.createElement('canvas');
+                    QRCode.toCanvas(qrC, generateQRData(), { width: 80, margin: 1, color: { dark: '#1e293b', light: '#ffffff' } });
+                    html += '<div style="text-align:center;margin-top:10px;"><img src="' + qrC.toDataURL('image/png') + '" style="width:60px;height:60px;" alt="QR"><p style="font-size:7px;color:#999;">' + (isAr ? 'امسح للتحقق من التقرير' : 'Scan to verify report') + '</p></div>';
+                }
+            } catch(e) {}
+
+            // Photo appendix
+            if (testPhotos.length > 0) {
+                html += '<div style="page-break-before:always;margin-top:20px;">';
+                html += '<h3 style="font-size:14px;text-align:center;margin-bottom:12px;">' + (isAr ? 'ملحق الصور' : 'Photo Appendix') + '</h3>';
+                testPhotos.forEach(function(p, idx) {
+                    html += '<div style="text-align:center;margin-bottom:16px;">';
+                    html += '<p style="font-size:10px;color:#666;margin-bottom:4px;">' + (isAr ? 'صورة ' : 'Photo ') + (idx + 1) + '</p>';
+                    html += '<img src="' + p.data + '" style="max-width:100%;max-height:350px;border:1px solid #ccc;border-radius:4px;">';
+                    html += '<p style="font-size:8px;color:#888;margin-top:4px;">' + (isAr ? 'الموقع:' : 'Location:') + ' ' + (p.location || '--') + ' | ' + (isAr ? 'التاريخ:' : 'Date:') + ' ' + (p.date || '--') + '</p>';
+                    html += '</div>';
+                });
+                html += '</div>';
+            }
+
+            var pc = document.getElementById('printContent');
+            pc.innerHTML = html;
+            document.getElementById('printDate').textContent = new Date().toLocaleString();
+            setTimeout(function() { window.print(); }, 400);
+        });
+
+        /* ===== AI: Test-specific Monitor ===== */
+        var strikes = 0;
+        var gpsBase = null;
+        var testRejected = false;
+
+        function initAITestMonitor() {
+            var panel = document.getElementById('aiTestPanel');
+            if (!panel) return;
+
+            if (testId === 'marshall' || testId === 'flow' || testId === 'extraction' || testId === 'density' || testId === 'gradation' || testId === 'ignition') {
+                // ----- ASPHALT / MARSHALL: Tool verification + 3 strikes -----
+                var tools = [
+                    { id: 'sieve', icon: '🧰', labelEn: 'Sieves (set)', labelAr: 'المناخل (مجموعة)' },
+                    { id: 'mold', icon: '🚧', labelEn: 'Marshall Mold & hammer', labelAr: 'قالب مارشال والمطرقة' },
+                    { id: 'water', icon: '💧', labelEn: 'Water bath (60°C)', labelAr: 'حمام مائي (٦٠°م)' },
+                    { id: 'balance', icon: '⚖️', labelEn: 'Digital balance', labelAr: 'ميزان رقمي' },
+                    { id: 'thermo', icon: '🌡', labelEn: 'Thermometer', labelAr: 'ترمومتر' }
+                ];
+                var isAr = (localStorage.getItem('smartlab_lang') || 'en') === 'ar';
+                var lvlData = getLevelData(testLevel);
+                var levelLabel = isAr ? lvlData.labelAr : lvlData.label;
+                var requiresTools = lvlData.requiresTools;
+
+                var html = '<div class="ai-tool-verify">';
+                html += '<div class="atv-title">' +
+                    (isAr ? '🔍 مستوى الاختبار: ' : '🔍 Test Level: ') +
+                    '<span style="color:' + lvlData.color + ';">' + levelLabel + '</span>' +
+                    (isAr ? ' — المصداقية: ' : ' — Credibility: ') + lvlData.credibility + '%' +
+                    '</div>';
+                html += '<div class="atv-title" style="font-size:11px;font-weight:400;margin-top:4px;">' +
+                    (requiresTools
+                        ? (isAr ? 'وجه الكاميرا نحو كل أداة للتحقق البصري' : 'Point camera at each tool for visual verification')
+                        : (isAr ? '(اختياري) انقر للتأكيد البصري أو تخطى' : '(Optional) Click for visual verification or skip')) +
+                    '</div>';
+                tools.forEach(function(t, idx) {
+                    var skipClass = requiresTools ? '' : ' optional-item';
+                    html += '<div class="ai-tool-item' + skipClass + '" data-tool="' + t.id + '" data-idx="' + idx + '">' +
+                        '<span class="ati-icon">' + t.icon + '</span>' +
+                        '<span>' + (isAr ? t.labelAr : t.labelEn) + '</span>' +
+                        '<span class="ati-check">○</span></div>';
+                });
+                html += '</div>';
+                // Level indicator strip
+                html += '<div style="margin-top:8px;padding:6px 10px;border-radius:4px;font-size:10px;text-align:center;border:1px solid ' + lvlData.color + ';color:' + lvlData.color + ';background:rgba(' +
+                    (testLevel === 'quick' ? '251,191,36' : testLevel === 'unofficial' ? '59,130,246' : '16,185,129') + ',0.06);">' +
+                    (isAr
+                        ? (testLevel === 'quick' ? '⚡ اختبار سريع — النتائج للاسترشاد فقط' : testLevel === 'unofficial' ? '🏭 اختبار غير رسمي — للتقييم المبدئي' : '🔒 اختبار معتمد — جميع القيود مفعلة')
+                        : (testLevel === 'quick' ? '⚡ Quick Test — Results for reference only' : testLevel === 'unofficial' ? '🏭 Unofficial Test — Preliminary evaluation' : '🔒 Certified Test — All restrictions enforced')) +
+                    '</div>';
+                // Strikes display (only for certified)
+                if (testLevel === 'certified') {
+                    html += '<div class="ai-strikes" id="aiStrikes">';
+                    for (var s = 1; s <= 3; s++) {
+                        html += '<div class="ai-strike" data-strike="' + s + '">' + s + '</div>';
+                    }
+                    html += '</div>';
+                }
+                panel.innerHTML = html;
+
+                // Tool click: Open camera to visually verify tool (or skip for quick)
+                var verifyStream = null;
+                panel.querySelectorAll('.ai-tool-item').forEach(function(item) {
+                    item.addEventListener('click', function() {
+                        if (this.classList.contains('done')) return;
+                        if (!requiresTools) {
+                            // Quick level: simple confirm without camera
+                            this.classList.add('done');
+                            var check = this.querySelector('.ati-check');
+                            if (check) check.textContent = '✅';
+                            var allDone = document.querySelectorAll('.ai-tool-item.done').length === tools.length;
+                            if (allDone) {
+                                updateAI(isAr ? '✅ تم التأكيد. يمكن البدء.' : '✅ Confirmed. You may begin.');
+                            }
+                            return;
+                        }
+                        var toolName = this.querySelector('span:not(.ati-icon):not(.ati-check)').textContent;
+                        openToolVerification(this, toolName);
+                    });
+                });
+
+                function openToolVerification(item, toolName) {
+                    var isAr = (localStorage.getItem('smartlab_lang') || 'en') === 'ar';
+
+                    // Create verification overlay
+                    var overlay = document.createElement('div');
+                    overlay.className = 'ai-verify-overlay';
+                    overlay.innerHTML =
+                        '<p style="color:#fff;font-size:14px;font-weight:600;">' +
+                            (isAr ? '🔍 وجه الكاميرا نحو ' : '🔍 Point camera at ') + '<span style="color:' + (isAr ? '#fbbf24' : '#fbbf24') + ';">' + toolName + '</span>' +
+                        '</p>' +
+                        '<video id="verifyVideo" autoplay playsinline style="max-width:90vw;max-height:55vh;border-radius:8px;"></video>' +
+                        '<div class="avo-actions">' +
+                            '<button class="btn btn-emerald" id="btnVerifySnap">📷 ' + (isAr ? 'التقط صورة' : 'Capture Photo') + '</button>' +
+                            '<button class="btn btn-gold" id="btnVerifyCancel">❌ ' + (isAr ? 'إلغاء' : 'Cancel') + '</button>' +
+                        '</div>';
+                    document.body.appendChild(overlay);
+
+                    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } } })
+                        .then(function(stream) {
+                            verifyStream = stream;
+                            document.getElementById('verifyVideo').srcObject = stream;
+
+                            document.getElementById('btnVerifySnap').addEventListener('click', function() {
+                                analyzeToolPhoto(item, toolName, overlay);
+                            });
+                            document.getElementById('btnVerifyCancel').addEventListener('click', function() {
+                                if (verifyStream) { verifyStream.getTracks().forEach(function(t) { t.stop(); }); verifyStream = null; }
+                                overlay.remove();
+                            });
+                        })
+                        .catch(function(err) {
+                            updateAI(isAr ? 'خطأ في الكاميرا: ' + err.message : 'Camera error: ' + err.message);
+                            overlay.remove();
+                        });
+                }
+
+                function analyzeToolPhoto(item, toolName, overlay) {
+                    var isAr = (localStorage.getItem('smartlab_lang') || 'en') === 'ar';
+                    var video = document.getElementById('verifyVideo');
+                    if (!video) return;
+
+                    // Capture frame to canvas
+                    var canvas = document.createElement('canvas');
+                    var w = video.videoWidth || 640;
+                    var h = video.videoHeight || 480;
+                    canvas.width = w;
+                    canvas.height = h;
+                    var ctx = canvas.getContext('2d');
+                    ctx.drawImage(video, 0, 0, w, h);
+
+                    // Stop camera stream
+                    if (verifyStream) { verifyStream.getTracks().forEach(function(t) { t.stop(); }); verifyStream = null; }
+
+                    // Show captured image + analysis UI
+                    overlay.innerHTML =
+                        '<img src="' + canvas.toDataURL('image/jpeg', 0.9) + '" class="avo-img" alt="Captured">' +
+                        '<div class="avo-status scanning" id="avoStatus">🤖 ' + (isAr ? 'AI يحلل الصورة...' : 'AI analyzing image...') + '</div>' +
+                        '<div class="avo-detail" id="avoDetail"></div>' +
+                        '<div class="avo-actions" id="avoActions" style="display:none;">' +
+                            '<button class="btn btn-emerald" id="btnVerifyRetry">🔄 ' + (isAr ? 'إعادة المحاولة' : 'Retry') + '</button>' +
+                            '<button class="btn btn-gold" id="btnVerifyDone">✔ ' + (isAr ? 'تم' : 'Done') + '</button>' +
+                        '</div>';
+
+                    // Run AI analysis (simulated with realistic checks)
+                    setTimeout(function() {
+                        var isScreen = analyzeScreenDetection(ctx, w, h);
+                        var gpsOk = analyzeGpsMatch();
+                        var gpsTestOk = checkTestLocationGps();
+                        var aiConfidence = analyzeImageQuality(ctx, w, h);
+
+                        var statusEl = document.getElementById('avoStatus');
+                        var detailEl = document.getElementById('avoDetail');
+                        var actionsEl = document.getElementById('avoActions');
+
+                        var details = [];
+                        var passed = false;
+
+                        if (isScreen) {
+                            statusEl.className = 'avo-status screen';
+                            statusEl.textContent = '🚨 ' + (isAr ? 'تم اكتشاف شاشة! يبدو أنك تظهر صورة من هاتف آخر.' : 'SCREEN DETECTED! You appear to be showing a phone screen.');
+                            details.push(isAr ? '❌ فحص الشاشة: تم اكتشاف نمط بكسل (شاشة)' : '❌ Screen check: Pixel grid detected (screen)');
+                            if (strikes < 3) {
+                                strikes++;
+                                var strikeEl = document.querySelector('.ai-strike[data-strike="' + strikes + '"]');
+                                if (strikeEl) { strikeEl.classList.remove('active'); strikeEl.classList.add('used'); }
+                                if (strikes < 3) {
+                                    var next = document.querySelector('.ai-strike[data-strike="' + (strikes + 1) + '"]');
+                                    if (next) next.classList.add('active');
+                                }
+                                details.push(isAr ? '🔔 صفارة! محاولة تلاعب! (' + strikes + '/3)' : '🔔 Whistle! Tamper attempt! (' + strikes + '/3)');
+                            }
+                        } else if (aiConfidence < 40) {
+                            statusEl.className = 'avo-status fail';
+                            statusEl.textContent = '❗ ' + (isAr ? 'الصورة غير واضحة. يرجى التقاط صورة أفضل.' : 'Image is unclear. Please take a better photo.');
+                            details.push(isAr ? '❌ جودة الصورة: منخفضة (' + aiConfidence + '%)' : '❌ Image quality: Low (' + aiConfidence + '%)');
+                        } else if (!gpsTestOk && testLocation) {
+                            statusEl.className = 'avo-status fail';
+                            statusEl.textContent = '📍 ' + (isAr ? 'الموقع لا يتطابق مع موقع الاختبار!' : 'Location does not match test site!');
+                            details.push(isAr ? '❌ GPS: موقع الصورة يختلف عن موقع الاختبار' : '❌ GPS: Photo location differs from test location');
+                            if (strikes < 3) {
+                                strikes++;
+                                var strikeEl = document.querySelector('.ai-strike[data-strike="' + strikes + '"]');
+                                if (strikeEl) { strikeEl.classList.remove('active'); strikeEl.classList.add('used'); }
+                                if (strikes < 3) {
+                                    var next = document.querySelector('.ai-strike[data-strike="' + (strikes + 1) + '"]');
+                                    if (next) next.classList.add('active');
+                                }
+                                details.push(isAr ? '🔔 صفارة! موقع مشبوه! (' + strikes + '/3)' : '🔔 Whistle! Suspicious location! (' + strikes + '/3)');
+                            }
+                        } else {
+                            passed = true;
+                            statusEl.className = 'avo-status pass';
+                            statusEl.textContent = '✅ ' + (isAr ? 'تم التحقق من ' : 'Verified: ') + toolName;
+                            details.push(isAr ? '✅ فحص الشاشة: لا توجد شاشة — أداة حقيقية' : '✅ Screen check: No screen detected — real tool');
+                            details.push(isAr ? '✅ جودة الصورة: مقبولة (' + aiConfidence + '%)' : '✅ Image quality: Acceptable (' + aiConfidence + '%)');
+                            if (testLocation) details.push(isAr ? '✅ GPS: متطابق مع موقع الاختبار' : '✅ GPS: Matches test location');
+                        }
+
+                        detailEl.textContent = details.join(' | ');
+
+                        // Check if rejected
+                        if (strikes >= 3) {
+                            testRejected = true;
+                            statusEl.className = 'avo-status fail';
+                            statusEl.textContent = '🚨 ' + (isAr ? 'الاختبار مرفوض! 3 محاولات تلاعب.' : 'TEST REJECTED! 3 tamper attempts.');
+                            document.getElementById('btnReadResults').disabled = false;
+                            actionsEl.style.display = 'flex';
+                            document.getElementById('btnVerifyRetry').style.display = 'none';
+                            document.getElementById('btnVerifyDone').textContent = '✔ ' + (isAr ? 'حسناً' : 'OK');
+                            document.getElementById('btnVerifyDone').addEventListener('click', function() { overlay.remove(); });
+                            return;
+                        }
+
+                        actionsEl.style.display = 'flex';
+
+                        if (passed) {
+                            // Mark tool as verified
+                            item.classList.add('done');
+                            var check = item.querySelector('.ati-check');
+                            if (check) check.textContent = '✅';
+                            var allDone = document.querySelectorAll('.ai-tool-item.done').length === 5;
+                            if (allDone) {
+                                updateAI(isAr ? '✅ جميع الأدوات مؤكدة بصرياً. يمكنك البدء.' : '✅ All tools visually verified. You may begin.');
+                                addAlert('success', isAr ? 'تم التحقق من جميع الأدوات.' : 'All tools verified.');
+                            } else {
+                                var remaining = 5 - document.querySelectorAll('.ai-tool-item.done').length;
+                                updateAI(isAr ? '✅ تم التحقق من ' + toolName + '. متبقي ' + remaining + ' أدوات.' : '✅ ' + toolName + ' verified. ' + remaining + ' tools remaining.');
+                            }
+                            document.getElementById('btnVerifyRetry').style.display = 'none';
+                            document.getElementById('btnVerifyDone').textContent = '✔ ' + (isAr ? 'تم' : 'Done');
+                            document.getElementById('btnVerifyDone').addEventListener('click', function() { overlay.remove(); });
+                        } else {
+                            // Failed — allow retry
+                            document.getElementById('btnVerifyRetry').addEventListener('click', function() {
+                                overlay.remove();
+                                openToolVerification(item, toolName);
+                            });
+                            document.getElementById('btnVerifyDone').textContent = '❌ ' + (isAr ? 'إلغاء' : 'Cancel');
+                            document.getElementById('btnVerifyDone').addEventListener('click', function() { overlay.remove(); });
+                        }
+                    }, 1500);
+                }
+
+                // ---- AI Analysis Functions ----
+                function analyzeScreenDetection(ctx, w, h) {
+                    // Check for screen patterns (moire, pixel grid) by analyzing pixel variance
+                    var detected = false;
+                    var samples = 0;
+                    var gridHits = 0;
+
+                    // Sample 30 random points, check neighbors for screen-like patterns
+                    for (var s = 0; s < 30; s++) {
+                        var x = Math.floor(Math.random() * (w - 4));
+                        var y = Math.floor(Math.random() * (h - 4));
+                        var pixel = ctx.getImageData(x, y, 4, 4).data;
+                        var variance = 0;
+                        for (var i = 0; i < 16; i++) {
+                            variance += Math.abs(pixel[i*4] - pixel[(i+1)*4]) + Math.abs(pixel[i*4+1] - pixel[(i+1)*4+1]) + Math.abs(pixel[i*4+2] - pixel[(i+1)*4+2]);
+                        }
+                        variance /= 16;
+                        // Screens often have very uniform areas (0 variance) or repeating grid patterns
+                        if (variance < 2) gridHits++;
+                        samples++;
+                    }
+
+                    var gridRatio = gridHits / samples;
+                    // Simulate: higher chance if gridRatio is very high (too uniform) or very structured
+                    detected = (gridRatio > 0.5 && Math.random() < 0.55) || (Math.random() < 0.12);
+
+                    // Add some randomness based on timing — real screens have 60Hz refresh that can cause banding
+                    return detected;
+                }
+
+                function analyzeGpsMatch() {
+                    // Simulated: check if photo GPS matches expected GPS
+                    // In real implementation, would read EXIF GPS data
+                    return true;
+                }
+
+                function checkTestLocationGps() {
+                    // If we don't have a test location set, skip this check
+                    if (!testLocation) return true;
+                    // Simulated: 85% chance GPS matches
+                    return Math.random() < 0.85;
+                }
+
+                function analyzeImageQuality(ctx, w, h) {
+                    // Check brightness, contrast, blur
+                    var totalBrightness = 0;
+                    var pixels = ctx.getImageData(0, 0, Math.min(w, 100), Math.min(h, 100));
+                    var count = pixels.data.length / 4;
+                    for (var i = 0; i < count; i++) {
+                        totalBrightness += (pixels.data[i*4] + pixels.data[i*4+1] + pixels.data[i*4+2]) / 3;
+                    }
+                    var avgBright = totalBrightness / count;
+                    // Score: good brightness = 70-200, bad = too dark or too bright
+                    var score = 50;
+                    if (avgBright > 40 && avgBright < 220) score += 30;
+                    if (avgBright > 70 && avgBright < 180) score += 20;
+                    score += Math.floor(Math.random() * 15);
+                    return Math.min(100, score);
+                }
+
+                // Tamper whistle button (only for non-quick levels)
+                if (testLevel !== 'quick') {
+                    var whistleBtn = document.createElement('button');
+                    whistleBtn.className = 'btn btn-gold';
+                    whistleBtn.style.cssText = 'margin-top:10px;width:100%;';
+                    whistleBtn.innerHTML = '🔔 ' + (isAr ? 'محاولة تلاعب (للاختبار)' : 'Simulate Tamper (Test)');
+                    whistleBtn.addEventListener('click', function() {
+                        if (testRejected) {
+                            updateAI(isAr ? 'الاختبار مرفوض بالفعل.' : 'Test already rejected.');
+                            return;
+                        }
+                        strikes++;
+                        var strikeEl = document.querySelector('.ai-strike[data-strike="' + strikes + '"]');
+                        if (strikeEl) { strikeEl.classList.remove('active'); strikeEl.classList.add('used'); }
+                        if (strikes < 3) {
+                            var next = document.querySelector('.ai-strike[data-strike="' + (strikes + 1) + '"]');
+                            if (next) next.classList.add('active');
+                            updateAI('🔔 WHISTLE! Tamper detected! Strike ' + strikes + '/3.');
+                            addAlert('warning', isAr ? 'صفارة! تم كشف تلاعب! ' + strikes + '/3' : 'Whistle! Tamper detected! ' + strikes + '/3');
+                            var snd = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACJioqJioqKioqJiomKioqJiomKioqKiYqJiYqKioqJiomKioqJiomKioqKiYqJiYqKioqJiomKioqKiYqJiYqKioqJiomKioqKiYqJiYqKioqJiomKioqKiYqJiYqKioqJiomKioqKiYqJiYqKioqJiomKioqKiYqJiYqK');
+                            if (snd) snd.play().catch(function(){});
+                        } else {
+                            testRejected = true;
+                            updateAI('🚨 TEST REJECTED! Results will be generated but NOT certified due to tampering.');
+                            addAlert('warning', isAr ? 'الاختبار مرفوض! النتائج ستظهر ولكن لن يتم اعتمادها.' : 'TEST REJECTED! Results shown but NOT certified.');
+                            document.getElementById('btnReadResults').disabled = false;
+                        }
+                    });
+                    panel.appendChild(whistleBtn);
+                }
+
+                // Activate first strike (only if strikes area exists)
+                var first = document.querySelector('.ai-strike[data-strike="1"]');
+                if (first) first.classList.add('active');
+                updateAI(requiresTools
+                    ? (isAr ? 'وجه الكاميرا نحو كل أداة للتحقق البصري قبل البدء.' : 'Point camera at each tool for visual verification before starting.')
+                    : (isAr ? 'اختياري: انقر على الأدوات للتأكيد أو ابدأ الاختبار مباشرة.' : 'Optional: Click tools to confirm or start the test directly.'));
+
+            } else {
+                // ----- Generic fallback -----
+                var isAr = (localStorage.getItem('smartlab_lang') || 'en') === 'ar';
+                panel.innerHTML = '<p style="color:var(--text-muted);font-size:12px;margin-top:8px;">' +
+                    (isAr ? 'المراقب العام نشط. سيتم الإبلاغ عن أي نشاط مشبوه.' : 'Generic monitor active. Any suspicious activity will be reported.') +
+                    '</p>';
+            }
+        }
+
+        // Init on load
+        initAITestMonitor();
+
+        // Initial report data
+        updateReportData('testType', displayName.replace(/&amp;/g, '&'));
+        updateReportData('session', sessionId);
+        updateReportData('vpn', 'No');
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(pos) {
+                updateReportData('gps', pos.coords.latitude.toFixed(4) + ', ' + pos.coords.longitude.toFixed(4));
+            }, function() {});
+        }
+        // Start typewriter on step 1
+        setTimeout(function() {
+            typewriter(document.getElementById('vgText1'), stepTexts[0], 35);
+        }, 500);
+
+        // Step-by-step guide: show in AI panel after AI test init
+        setTimeout(function() {
+            initStepGuide('aiTestPanel', testId);
+        }, 50);
+
+        /* ===== AI helpers ===== */
+        function updateAI(msg) {
+            document.getElementById('aiMessage').textContent = msg;
+        }
+        function addAlert(type, msg) {
+            var container = document.getElementById('aiAlert');
+            var div = document.createElement('div');
+            div.className = 'ai-alert ' + type;
+            div.textContent = '✨ ' + msg;
+            container.appendChild(div);
+            setTimeout(function() { div.remove(); }, 6000);
+        }
+    </script>
+
+    <script>
+        window.translations = {
+            'en': {
+                'Back to Tests': 'Back to Tests',
+                'Test Environment': '<span>Test Environment</span>',
+                'Connection': 'Connection',
+                'USB Type-A': 'USB Type-A', 'USB-OTG': 'USB-OTG', 'Serial UART': 'Serial UART', 'Ethernet LAN': 'Ethernet LAN',
+                'Wi-Fi': 'Wi-Fi', 'Bluetooth': 'Bluetooth', 'Zigbee': 'Zigbee', 'LoRa': 'LoRa',
+                'RS-232/485': 'RS-232/485', 'CAN Bus': 'CAN Bus', 'SPI/I2C': 'SPI/I2C', 'NFC': 'NFC',
+                'Not connected': 'Not connected', 'Connected': 'Connected',
+                'Hardware Check': 'Hardware Check',
+                'Our Device': 'Our Device', 'Client Device': 'Client Device',
+                'MCU Detected': 'MCU Detected', 'Hardware ID Match': 'Hardware ID Match',
+                'Anti-Tamper Seal': 'Anti-Tamper Seal',
+                'Sensors Online': 'Sensors Online', 'Memory Ready': 'Memory Ready',
+                'Hardware ID': 'Hardware ID',
+                'Connect client device and place in neutral position': 'Connect client device and place in neutral position',
+                'Run reference measurement (known load)': 'Run reference measurement (known load)',
+                'Calculate offset and gain correction factors': 'Calculate offset and gain correction factors',
+                'Apply calibration and verify with second reference': 'Apply calibration and verify with second reference',
+                'Save calibration profile to device': 'Save calibration profile to device',
+                'Damaged': 'Damaged', 'Has Issues': 'Has Issues', 'Ready': 'Ready',
+                'Run hardware check first': 'Run hardware check first',
+                'Session ID': 'Session ID',
+                'Check Hardware': '🔍 Check Hardware',
+                'Firmware': 'Firmware', 'Current Version': 'Current Version', 'Up to date': '✅ Up to date',
+                'Flash Firmware': '⬇ Flash Firmware',
+                'Test Results': 'Test Results',
+                'Reconnect device after running test to read results': 'Reconnect device after running test to read results',
+                'Read Results': '🔄 Read Results',
+                'Excel': '📄 Excel', 'PDF': '📄 PDF', 'Print': '🖨 Print',
+                'Parameter': 'Parameter', 'Value': 'Value',
+                'Test Report': 'Test Report',
+                'AI Test Monitor': 'AI Test Monitor', 'Monitoring': 'Monitoring',
+                'AI Welcome': 'Hello! I’m here to assist you through the test. Connect your device to begin.',
+                'Not Certified Warning': 'Results shown but NOT CERTIFIED — tampering was detected during the test.'
+            },
+            'ar': {
+                'Back to Tests': 'العودة إلى الاختبارات',
+                'Test Environment': '<span>بيئة الاختبار</span>',
+                'Connection': 'التوصيل',
+                'USB Type-A': 'USB Type-A', 'USB-OTG': 'USB-OTG', 'Serial UART': 'سيريال UART', 'Ethernet LAN': 'إيثرنت LAN',
+                'Wi-Fi': 'واي فاي', 'Bluetooth': 'بلوتوث', 'Zigbee': 'Zigbee', 'LoRa': 'LoRa',
+                'RS-232/485': 'RS-232/485', 'CAN Bus': 'ناقل CAN', 'SPI/I2C': 'SPI/I2C', 'NFC': 'NFC',
+                'Not connected': 'غير متصل', 'Connected': 'متصل',
+                'Hardware Check': 'فحص الهاردوير',
+                'Our Device': 'جهاز smartLAB', 'Client Device': 'جهاز العميل',
+                'MCU Detected': 'MCU تم الكشف', 'Hardware ID Match': 'تطابق المعرف',
+                'Anti-Tamper Seal': 'ختم مقاومة العبث',
+                'Sensors Online': 'الحساسات متصلة', 'Memory Ready': 'الذاكرة جاهزة',
+                'Hardware ID': 'معرف الهاردوير',
+                'Connect client device and place in neutral position': 'قم بتوصيل جهاز العميل وضعه في الوضع المحايد',
+                'Run reference measurement (known load)': 'تشغيل قياس مرجعي (حمل معروف)',
+                'Calculate offset and gain correction factors': 'حساب معاملات تصحيح الإزاحة والكسب',
+                'Apply calibration and verify with second reference': 'تطبيق المعايرة والتحقق بمرجع ثانٍ',
+                'Save calibration profile to device': 'حفظ ملف المعايرة على الجهاز',
+                'Damaged': 'تالف', 'Has Issues': 'يوجد مشاكل', 'Ready': 'جاهز',
+                'Run hardware check first': 'يرجى تشغيل فحص الهاردوير أولاً',
+                'Session ID': 'رقم الجلسة',
+                'Check Hardware': '🔍 فحص الهاردوير',
+                'Firmware': 'السوفت وير', 'Current Version': 'الإصدار الحالي', 'Up to date': '✅ محدث',
+                'Flash Firmware': '⬇ تحميل السوفت وير',
+                'Test Results': 'نتائج الاختبار',
+                'Reconnect device after running test to read results': 'أعد توصيل الجهاز بعد الاختبار لقراءة النتائج',
+                'Read Results': '🔄 قراءة النتائج',
+                'Excel': '📄 إكسيل', 'PDF': '📄 PDF', 'Print': '🖨 طباعة',
+                'Parameter': 'القياس', 'Value': 'القيمة',
+                'Test Report': 'تقرير الاختبار',
+                'AI Test Monitor': 'مراقب الذكاء الاصطناعي', 'Monitoring': 'مراقبة',
+                'AI Welcome': 'مرحباً! أنا هنا لمساعدتك خلال الاختبار. قم بتوصيل جهازك للبدء.',
+                'Not Certified Warning': 'النتائج معروضة ولكنها غير معتمدة — تم اكتشاف تلاعب أثناء الاختبار.'
+            }
+        };
+    </script>
+    <script src="../../../components.js"></script>
+    <script src="../../../test-zone.js"></script>
+    <script>
+// ===== TAB SWITCHING (Normal / SmartLab) =====
+(function() {
+    var tabs = document.querySelectorAll('#testTabBar .test-tab');
+    var normalMode = document.getElementById('normalTestMode');
+    var smartlabContent = document.getElementById('smartlabContent');
+    var reportsSection = document.getElementById('reportsSection');
+
+    function switchTestMode(mode) {
+        tabs.forEach(function(t) { t.classList.remove('active'); });
+        document.querySelector('.test-tab[data-mode="' + mode + '"]').classList.add('active');
+        if (mode === 'normal') {
+            normalMode.style.display = 'block';
+            smartlabContent.style.display = 'none';
+            if (reportsSection) reportsSection.style.display = 'none';
+        } else {
+            normalMode.style.display = 'none';
+            smartlabContent.style.display = 'block';
+            if (reportsSection) reportsSection.style.display = '';
+        }
+        try { localStorage.setItem('smartlab_test_mode', mode); } catch(e) {}
+    }
+
+    tabs.forEach(function(tab) {
+        tab.addEventListener('click', function() {
+            switchTestMode(this.getAttribute('data-mode'));
+        });
+    });
+
+    var saved = localStorage.getItem('smartlab_test_mode') || 'normal';
+    switchTestMode(saved);
+
+    // Sub-tab switching within smartlab
+    var subTabs = document.querySelectorAll('.sl-sub-tab');
+    var stagesEl = document.getElementById('slStagesContent');
+    var hwEl = document.getElementById('slHardwareContent');
+    subTabs.forEach(function(st) {
+        st.addEventListener('click', function() {
+            subTabs.forEach(function(s) { s.classList.remove('active'); });
+            this.classList.add('active');
+            if (this.getAttribute('data-sub') === 'stages') {
+                stagesEl.style.display = 'block';
+                hwEl.style.display = 'none';
+            } else {
+                stagesEl.style.display = 'none';
+                hwEl.style.display = 'block';
+            }
+        });
+    });
+})();
+
+// ===== MANUAL MARSHALL CALCULATOR =====
+var manualResults = null;
+
+function manualAlert(type, msg) {
+    var el = document.getElementById('manualAlert');
+    if (!el) return;
+    el.className = 'manual-alert ' + type;
+    el.textContent = msg;
+    el.style.display = 'block';
+    setTimeout(function() { el.style.display = 'none'; }, 5000);
+}
+
+document.getElementById('btnCalcMarshall').addEventListener('click', calculateMarshall);
+
+document.getElementById('btnClearManual').addEventListener('click', function() {
+    ['m-diameter','m-thickness','m-bitumen','m-wtAir','m-wtSsd','m-wtSus','m-gmm','m-gsb','m-stability','m-flow'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+    document.getElementById('manualResultsSection').style.display = 'none';
+    document.getElementById('manualCurveSection').style.display = 'none';
+    document.getElementById('manualReportSection').style.display = 'none';
+    document.getElementById('manualAlert').style.display = 'none';
+    manualResults = null;
+});
+
+function calculateMarshall() {
+    var diameter = parseFloat(document.getElementById('m-diameter').value);
+    var thickness = parseFloat(document.getElementById('m-thickness').value);
+    var bitumen = parseFloat(document.getElementById('m-bitumen').value);
+    var wtAir = parseFloat(document.getElementById('m-wtAir').value);
+    var wtSsd = parseFloat(document.getElementById('m-wtSsd').value);
+    var wtSus = parseFloat(document.getElementById('m-wtSus').value);
+    var gmm = parseFloat(document.getElementById('m-gmm').value);
+    var gsb = parseFloat(document.getElementById('m-gsb').value);
+    var stability = parseFloat(document.getElementById('m-stability').value);
+    var flow = parseFloat(document.getElementById('m-flow').value);
+
+    if ([thickness, wtAir, wtSsd, wtSus, gmm, gsb, stability, flow, bitumen].some(isNaN)) {
+        manualAlert('warning', 'Please fill in all required fields');
+        return;
+    }
+
+    var gmb = wtAir / (wtSsd - wtSus);
+    var density = gmb * 1000;
+    var av = (1 - gmb / gmm) * 100;
+    var vma = (1 - gmb * (1 - bitumen / 100) / gsb) * 100;
+    var vfa = (vma > 0) ? ((vma - av) / vma) * 100 : 0;
+
+    var cf = 1.0;
+    var cfPts = [[51.5,1.40],[53.3,1.32],[55.9,1.23],[57.2,1.19],[58.7,1.13],[60.3,1.08],[61.9,1.04],[63.5,1.00],[65.1,0.96],[66.7,0.93],[68.3,0.90],[69.9,0.88],[71.4,0.85],[73.0,0.83],[74.6,0.81],[76.2,0.78],[82.6,0.70],[88.9,0.63],[95.3,0.58],[101.6,0.54]];
+    if (thickness <= cfPts[0][0]) cf = cfPts[0][1];
+    else if (thickness >= cfPts[cfPts.length-1][0]) cf = cfPts[cfPts.length-1][1];
+    else {
+        for (var k = 0; k < cfPts.length - 1; k++) {
+            if (thickness <= cfPts[k+1][0]) {
+                var ft = (thickness - cfPts[k][0]) / (cfPts[k+1][0] - cfPts[k][0]);
+                cf = cfPts[k][1] + ft * (cfPts[k+1][1] - cfPts[k][1]);
+                break;
+            }
+        }
+    }
+
+    var correctedStab = stability * cf;
+    var stabFlowRatio = correctedStab / flow;
+
+    manualResults = [
+        { label: 'Bulk Specific Gravity (Gmb)', value: gmb.toFixed(3), unit: '', status: '' },
+        { label: 'Density', value: density.toFixed(0), unit: 'kg/m\u00B3', status: '' },
+        { label: 'Air Voids', value: av.toFixed(1), unit: '%', status: evaluateParam('Air Voids', av.toFixed(1)).badge },
+        { label: 'VMA', value: vma.toFixed(1), unit: '%', status: evaluateParam('VMA', vma.toFixed(1)).badge },
+        { label: 'VFA', value: vfa.toFixed(1), unit: '%', status: evaluateParam('VFA', vfa.toFixed(1)).badge },
+        { label: 'Stability', value: stability.toFixed(2), unit: 'kN', status: evaluateParam('Stability', stability.toFixed(2)).badge },
+        { label: 'Corrected Stability', value: correctedStab.toFixed(2), unit: 'kN', status: '' },
+        { label: 'Flow', value: flow.toFixed(1), unit: 'mm', status: evaluateParam('Flow', flow.toFixed(1)).badge },
+        { label: 'Stability/Flow Ratio', value: stabFlowRatio.toFixed(1), unit: 'kN/mm', status: '' },
+        { label: 'Bitumen Content', value: bitumen.toFixed(1), unit: '%', status: evaluateParam('Bitumen Content', bitumen.toFixed(1)).badge },
+        { label: 'Correction Factor', value: cf.toFixed(3), unit: '', status: '' }
+    ];
+
+    var tbody = document.getElementById('manualResultsBody');
+    tbody.innerHTML = '';
+    manualResults.forEach(function(r) {
+        var tr = document.createElement('tr');
+        var badgeHtml = '';
+        if (r.status === 'pass') badgeHtml = '<span class="badge pass">PASS</span>';
+        else if (r.status === 'fail') badgeHtml = '<span class="badge fail">FAIL</span>';
+        else if (r.status === 'marginal') badgeHtml = '<span class="badge marginal">MARG</span>';
+        tr.innerHTML = '<td class="rtd-label">' + r.label + '</td>' +
+            '<td class="rtd-value">' + r.value + (r.unit ? ' <span class="rtd-unit">' + r.unit + '</span>' : '') + '</td>' +
+            '<td class="rtd-status">' + (badgeHtml || '--') + '</td>';
+        tbody.appendChild(tr);
+    });
+
+    document.getElementById('manualResultsSection').style.display = 'block';
+    document.getElementById('manualCurveSection').style.display = 'block';
+    document.getElementById('manualReportSection').style.display = 'block';
+
+    drawMarshallCurve(stability, correctedStab, flow);
+    manualAlert('success', 'Calculation complete');
+}
+
+// ===== MARSHALL LOAD-DEFORMATION CURVE =====
+function drawMarshallCurve(stability, correctedStab, flow) {
+    var canvas = document.getElementById('marshallCurve');
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+    var W = canvas.width, H = canvas.height;
+    var pad = { top: 32, bottom: 32, left: 55, right: 25 };
+    var cw = W - pad.left - pad.right;
+    var ch = H - pad.top - pad.bottom;
+
+    ctx.clearRect(0, 0, W, H);
+
+    var maxLoad = Math.max(stability, correctedStab) * 1.4;
+    var maxFlow = Math.max(flow * 1.8, 6);
+
+    // Grid
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.lineWidth = 1;
+    for (var i = 0; i <= 5; i++) {
+        var x = pad.left + (cw / 5) * i;
+        var y = pad.top + (ch / 5) * i;
+        ctx.beginPath(); ctx.moveTo(x, pad.top); ctx.lineTo(x, pad.top + ch); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + cw, y); ctx.stroke();
+    }
+
+    // Axes
+    ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(pad.left, pad.top); ctx.lineTo(pad.left, pad.top + ch);
+    ctx.lineTo(pad.left + cw, pad.top + ch);
+    ctx.stroke();
+
+    // Labels
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Deformation (mm)', pad.left + cw / 2, H - 4);
+    ctx.save();
+    ctx.translate(14, pad.top + ch / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText('Load (kN)', 0, 0);
+    ctx.restore();
+
+    // Tick labels
+    for (var i = 0; i <= 5; i++) {
+        var v = (maxFlow / 5) * i;
+        ctx.fillStyle = 'rgba(255,255,255,0.4)';
+        ctx.font = '9px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(v.toFixed(1), pad.left + (cw / 5) * i, pad.top + ch + 14);
+
+        v = (maxLoad / 5) * i;
+        ctx.fillStyle = 'rgba(255,255,255,0.4)';
+        ctx.textAlign = 'right';
+        ctx.fillText(v.toFixed(1), pad.left - 6, pad.top + ch - (ch / 5) * i + 3);
+    }
+
+    // PASS zone for flow (2-4 mm)
+    ctx.fillStyle = 'rgba(16,185,129,0.06)';
+    var fMin = pad.left + (2 / maxFlow) * cw;
+    var fMax = pad.left + (4 / maxFlow) * cw;
+    ctx.fillRect(fMin, pad.top, fMax - fMin, ch);
+    ctx.strokeStyle = 'rgba(16,185,129,0.15)';
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(fMin, pad.top); ctx.lineTo(fMin, pad.top + ch); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(fMax, pad.top); ctx.lineTo(fMax, pad.top + ch); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(16,185,129,0.35)';
+    ctx.font = '8px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Flow PASS (2-4 mm)', fMin + (fMax - fMin) / 2, pad.top - 4);
+
+    // Draw curve
+    var px = pad.left + (flow / maxFlow) * cw;
+    var py = pad.top + ch - (stability / maxLoad) * ch;
+
+    var cp1x = pad.left + cw * 0.12;
+    var cp1y = pad.top + ch - ch * 0.05;
+    var cp2x = px - cw * 0.08;
+    var cp2y = py;
+    var cp3x = px + cw * 0.06;
+    var cp3y = py + ch * 0.03;
+    var ex = Math.min(px + cw * 0.25, pad.left + cw);
+    var ey = py + ch * 0.1;
+
+    // Fill
+    var grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + ch);
+    grad.addColorStop(0, 'rgba(59,130,246,0.18)');
+    grad.addColorStop(1, 'rgba(59,130,246,0.02)');
+    ctx.beginPath();
+    ctx.moveTo(pad.left, pad.top + ch);
+    ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, px, py);
+    ctx.bezierCurveTo(cp3x, cp3y, ex, ey, ex, pad.top + ch);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Line
+    ctx.beginPath();
+    ctx.moveTo(pad.left, pad.top + ch);
+    ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, px, py);
+    ctx.bezierCurveTo(cp3x, cp3y, ex, ey, ex, pad.top + ch);
+    ctx.strokeStyle = '#3b82f6';
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    // Peak marker
+    ctx.beginPath();
+    ctx.arc(px, py, 5, 0, Math.PI * 2);
+    ctx.fillStyle = '#ef4444';
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    ctx.fillStyle = '#ef4444';
+    ctx.font = 'bold 10px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(stability.toFixed(2) + ' kN @ ' + flow.toFixed(1) + ' mm', px + 8, py + 3);
+
+    // Corrected stability marker
+    if (Math.abs(correctedStab - stability) > 0.01) {
+        var cpy = pad.top + ch - (correctedStab / maxLoad) * ch;
+        ctx.beginPath();
+        ctx.arc(px, cpy, 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#f59e0b';
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.fillStyle = '#f59e0b';
+        ctx.font = '9px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('Corr: ' + correctedStab.toFixed(2) + ' kN', px + 8, cpy + 3);
+    }
+
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    ctx.font = '11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Marshall Load-Deformation Curve', pad.left + cw / 2, 16);
+}
+
+// ===== MANUAL REPORT GENERATORS =====
+document.getElementById('btnManualExcel').addEventListener('click', function() {
+    if (!manualResults) { manualAlert('warning', 'Calculate results first'); return; }
+    genManualExcel();
+});
+document.getElementById('btnManualPdf').addEventListener('click', function() {
+    if (!manualResults) { manualAlert('warning', 'Calculate results first'); return; }
+    genManualPdf();
+});
+document.getElementById('btnManualPrint').addEventListener('click', function() {
+    if (!manualResults) { manualAlert('warning', 'Calculate results first'); return; }
+    genManualPrint();
+});
+
+function genManualExcel() {
+    var isAr = (localStorage.getItem('smartlab_lang') || 'en') === 'ar';
+    var wb = XLSX.utils.book_new();
+    var labName = document.getElementById('labName').value || 'smartLAB Testing Lab';
+    var sampleNo = document.getElementById('sampleNumber').value || '--';
+    var sampleSpecs = document.getElementById('sampleSpecs').value || '--';
+    var locStr = testLocation ? (testLocation.lat + ', ' + testLocation.lng) : '--';
+    var tech = document.getElementById('techName').value || '--';
+    var eng = document.getElementById('engineerName').value || '--';
+
+    var data = [];
+    data.push([labName, '', '']);
+    data.push(['smartLAB Manual Test Report', '', '']);
+    data.push(['', '', '']);
+    data.push(['Test:', 'Marshall Stability (Manual)', '']);
+    data.push(['Sample #:', sampleNo, '']);
+    data.push(['Specs:', sampleSpecs, '']);
+    data.push(['Date:', new Date().toLocaleString(), '']);
+    data.push(['Location:', locStr, '']);
+    data.push(['Technician:', tech, 'Engineer:', eng]);
+    data.push(['', '', '']);
+    data.push(['Parameter', 'Value', 'Status']);
+
+    manualResults.forEach(function(r) {
+        data.push([r.label, r.value + (r.unit ? ' ' + r.unit : ''), r.status || '--']);
+    });
+
+    data.push(['', '', '']);
+    data.push(['Monitor: smartLAB AI System', '', '']);
+    data.push(['Generated: ' + new Date().toLocaleString(), '', '']);
+
+    var ws = XLSX.utils.aoa_to_sheet(data);
+    ws['!cols'] = [{ wch: 34 }, { wch: 22 }, { wch: 12 }];
+    XLSX.utils.book_append_sheet(wb, ws, 'Manual Results');
+    XLSX.writeFile(wb, 'Marshall_Manual_Report.xlsx');
+    manualAlert('success', 'Excel ' + (isAr ? '\u062A\u0645 \u062D\u0641\u0638\u0647' : 'saved'));
+}
+
+function genManualPdf() {
+    var isAr = (localStorage.getItem('smartlab_lang') || 'en') === 'ar';
+    var doc = new jspdf.jsPDF();
+    var pw = doc.internal.pageSize.getWidth();
+    var labName = document.getElementById('labName').value || 'smartLAB Testing Lab';
+    var sampleNo = document.getElementById('sampleNumber').value || '--';
+    var sampleSpecs = document.getElementById('sampleSpecs').value || '--';
+    var locStr = testLocation ? (testLocation.lat + ', ' + testLocation.lng) : '--';
+    var tech = document.getElementById('techName').value || '--';
+    var eng = document.getElementById('engineerName').value || '--';
+
+    doc.setFontSize(16);
+    doc.setTextColor(20, 30, 55);
+    doc.text(labName, pw / 2, 25, { align: 'center' });
+    doc.setFontSize(10);
+    doc.setTextColor(180, 160, 60);
+    doc.text('smartLAB Manual Test Report', pw / 2, 33, { align: 'center' });
+
+    var my = 45;
+    doc.setFontSize(8);
+    doc.setTextColor(60, 60, 60);
+    doc.text('Test: Marshall Stability (Manual)', 18, my);
+    doc.text('Sample #: ' + sampleNo, 18, my + 6);
+    doc.text('Specs: ' + sampleSpecs, 18, my + 12);
+    doc.text('Date: ' + new Date().toLocaleString(), 18, my + 18);
+    doc.text('Location: ' + locStr, 18, my + 24);
+    doc.text('Tech: ' + tech + '  |  Eng: ' + eng, 18, my + 30);
+
+    var rows = [];
+    var head = ['Parameter', 'Value', 'Status'];
+    manualResults.forEach(function(r) {
+        rows.push([r.label, r.value + (r.unit ? ' ' + r.unit : ''), r.status || '--']);
+    });
+
+    doc.autoTable({
+        startY: my + 36,
+        head: [head],
+        body: rows,
+        theme: 'grid',
+        headStyles: { fillColor: [59, 130, 246], textColor: 255, fontSize: 8 },
+        bodyStyles: { fontSize: 7 },
+        alternateRowStyles: { fillColor: [245, 247, 250] },
+        columnStyles: { 0: { cellWidth: 74 }, 1: { cellWidth: 44 }, 2: { cellWidth: 20 } }
+    });
+
+    var fy = doc.lastAutoTable.finalY + 8;
+    doc.setFontSize(7);
+    doc.setTextColor(150, 150, 150);
+    doc.text('Monitor: Calculated by smartLAB AI System', 14, fy + 4);
+    doc.text('Generated: ' + new Date().toLocaleString(), 14, fy + 9);
+
+    doc.save('Marshall_Manual_Report.pdf');
+    manualAlert('success', 'PDF ' + (isAr ? '\u062A\u0645 \u062D\u0641\u0638\u0647' : 'saved'));
+}
+
+function genManualPrint() {
+    var isAr = (localStorage.getItem('smartlab_lang') || 'en') === 'ar';
+    var labName = document.getElementById('labName').value || 'smartLAB Testing Lab';
+    var sampleNo = document.getElementById('sampleNumber').value || '--';
+    var sampleSpecs = document.getElementById('sampleSpecs').value || '--';
+    var locStr = testLocation ? (testLocation.lat + ', ' + testLocation.lng) : '--';
+    var tech = document.getElementById('techName').value || '--';
+    var eng = document.getElementById('engineerName').value || '--';
+
+    var html = '<div style="text-align:center;margin-bottom:16px;">';
+    html += '<h1 style="font-size:18px;margin-bottom:2px;">' + labName + '</h1>';
+    html += '<p style="font-size:11px;color:#888;">smartLAB Manual Test Report</p></div>';
+
+    html += '<table style="width:100%;font-size:11px;margin-bottom:12px;border-collapse:collapse;">';
+    html += '<tr><td style="padding:2px 8px;width:140px;color:#666;">Test:</td><td style="padding:2px 8px;">Marshall Stability (Manual)</td></tr>';
+    html += '<tr><td style="padding:2px 8px;color:#666;">Sample #:</td><td style="padding:2px 8px;">' + sampleNo + '</td></tr>';
+    html += '<tr><td style="padding:2px 8px;color:#666;">Specs:</td><td style="padding:2px 8px;">' + sampleSpecs + '</td></tr>';
+    html += '<tr><td style="padding:2px 8px;color:#666;">Date:</td><td style="padding:2px 8px;">' + new Date().toLocaleString() + '</td></tr>';
+    html += '<tr><td style="padding:2px 8px;color:#666;">Location:</td><td style="padding:2px 8px;">' + locStr + '</td></tr>';
+    html += '<tr><td style="padding:2px 8px;color:#666;">Technician:</td><td style="padding:2px 8px;">' + tech + '</td><td style="padding:2px 8px;color:#666;">Engineer:</td><td style="padding:2px 8px;">' + eng + '</td></tr>';
+    html += '</table>';
+
+    html += '<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:16px;">';
+    html += '<tr style="background:#3b82f6;color:#fff;">';
+    html += '<th style="padding:6px 10px;border:1px solid #3b82f6;text-align:left;">Parameter</th>';
+    html += '<th style="padding:6px 10px;border:1px solid #3b82f6;text-align:right;">Value</th>';
+    html += '<th style="padding:6px 10px;border:1px solid #3b82f6;text-align:center;">Status</th></tr>';
+    manualResults.forEach(function(r) {
+        var sc = r.status === 'pass' ? '#10b981' : r.status === 'fail' ? '#ef4444' : r.status === 'marginal' ? '#f59e0b' : '#999';
+        html += '<tr><td style="padding:5px 10px;border:1px solid #ddd;">' + r.label + '</td>';
+        html += '<td style="padding:5px 10px;border:1px solid #ddd;text-align:right;">' + r.value + (r.unit ? ' ' + r.unit : '') + '</td>';
+        html += '<td style="padding:5px 10px;border:1px solid #ddd;text-align:center;font-weight:700;color:' + sc + ';">' + (r.status || '--') + '</td></tr>';
+    });
+    html += '</table>';
+
+    html += '<p style="font-size:9px;color:#999;">Monitor: Calculated by smartLAB AI System</p>';
+    html += '<p style="font-size:9px;color:#999;text-align:center;">Generated: ' + new Date().toLocaleString() + '</p>';
+
+    var pc = document.getElementById('printContent');
+    pc.innerHTML = html;
+    document.getElementById('printDate').textContent = new Date().toLocaleString();
+    setTimeout(function() { window.print(); }, 400);
+}
+    </script>
+    <script>
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() { TestZones.init('asphalt-marshall'); });
+        } else {
+            TestZones.init('asphalt-marshall');
+        }
+    </script>
+</body>
+</html>

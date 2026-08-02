@@ -17,6 +17,8 @@
             --accent-blue: #3b82f6;
             --accent-gold: #fbbf24;
             --accent-emerald: #10b981;
+            --accent-cyan: #06b6d4;
+            --accent-amber: #f59e0b;
             --accent-red: #f87171;
             --radius-sm: 8px;
             --radius-md: 12px;
@@ -71,6 +73,7 @@
             animation: fadeUp 0.6s ease both;
         }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .logo-box {
             width: 100%;
             min-height: 86px;
             display: flex;
@@ -665,18 +668,21 @@
         .pillar-card:nth-child(3) { --pillar-border: linear-gradient(135deg, rgba(59,130,246,0.4), rgba(59,130,246,0.1)); --pillar-accent: #3b82f6; animation-delay: 0.3s; }
         .pillar-card:nth-child(4) { --pillar-border: linear-gradient(135deg, rgba(16,185,129,0.4), rgba(16,185,129,0.1)); --pillar-accent: #10b981; animation-delay: 0.4s; }
         .pillar-icon {
-            flex-shrink: 0; width: 48px; height: 48px;
+            flex-shrink: 0; width: 80px; height: 80px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 22px;
             background: rgba(255,255,255,0.04);
-            border-radius: var(--radius-md); line-height: 1;
-            box-shadow: 0 0 0 1px var(--border-glass);
-            transition: background 0.25s;
+            border-radius: 18px; overflow: hidden;
+            box-shadow: 0 0 0 1px var(--border-glass), 0 8px 24px rgba(0,0,0,0.25);
+            transition: transform 0.35s ease, box-shadow 0.35s ease, background 0.35s;
         }
         .pillar-card-body { flex: 1; min-width: 0; }
         .pillar-card:hover .pillar-icon {
             background: rgba(255,255,255,0.08);
+            transform: scale(1.08) rotate(-2deg);
+            box-shadow: 0 14px 34px rgba(0,0,0,0.35), 0 0 0 1px var(--pillar-accent, var(--accent-blue)), 0 0 24px var(--pillar-accent, var(--accent-blue));
         }
+        .pillar-icon img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.35s ease; }
+        .pillar-card:hover .pillar-icon img { transform: scale(1.12); }
         .pillar-title {
             font-size: 16px; font-weight: 700; color: var(--text-primary);
             margin-bottom: 10px;
@@ -754,6 +760,12 @@
         }
         .domain-icon svg { width: 32px; height: 32px; }
         .domain-icon img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+        .domain-card .domain-cover {
+            width: calc(100% + 44px); height: 150px; object-fit: cover;
+            display: block; margin: -30px -22px 16px;
+            transition: transform 0.4s ease;
+        }
+        .domain-card:hover .domain-cover { transform: scale(1.04); }
         .domain-card:hover .domain-icon { transform: scale(1.08); }
         .domain-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
         .domain-card p { font-size: 12px; color: var(--text-secondary); line-height: 1.5; max-width: 220px; margin: 0 auto; }
@@ -862,7 +874,7 @@
             .equip-cycle svg { width: 14px; height: 14px; }
             .slab-banner-text p { font-size: 14px; }
             .pillar-card { padding: 16px 16px; gap: 14px; }
-            .pillar-icon { width: 40px; height: 40px; font-size: 18px; }
+            .pillar-icon { width: 64px; height: 64px; }
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
             .login-card { padding: 24px 18px; margin: 0 12px; }
             .user-name { display: none; }
@@ -949,6 +961,9 @@
             margin-bottom: 16px;
         }
         .footer-col h3 span { color: var(--accent-gold); }
+        .footer-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+        .footer-brand .footer-brand-logo { width: 42px; height: 42px; border-radius: 10px; object-fit: cover; flex-shrink: 0; box-shadow: 0 0 16px rgba(59,130,246,0.2); }
+        .footer-brand h3 { margin-bottom: 0; }
         .footer-col p {
             line-height: 1.7;
             color: var(--text-secondary);
@@ -1002,7 +1017,7 @@
     <header class="app-header" id="app-header">
         <div class="header-left">
             <a href="#" class="header-logo" onclick="event.preventDefault(); if(document.body.classList.contains('authenticated')) openDomain('domains');">
-                <span class="logo-svg" style="display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,#3b82f6,#10b981);font-size:16px;font-weight:800;color:#fff;flex-shrink:0;">SL</span>
+                <img src="/assets/logo.png" alt="smartLAB" width="42" height="42" style="flex-shrink:0;">
                 <span>smart<span>LAB</span></span>
             </a>
             <nav class="header-nav" id="header-nav">
@@ -1051,7 +1066,7 @@
     <div id="screen-auth" class="login-page">
         <div class="login-card">
             <div class="logo-box">
-                <span class="logo-svg" style="display:inline-flex;align-items:center;justify-content:center;width:78px;height:78px;border-radius:16px;background:linear-gradient(135deg,#3b82f6,#10b981);font-size:28px;font-weight:800;color:#fff;box-shadow:0 0 30px rgba(59,130,246,0.35),0 0 60px rgba(59,130,246,0.12);">SL</span>
+                <img src="/assets/logo.png" alt="smartLAB" style="width:78px;height:78px;border-radius:16px;object-fit:cover;display:block;box-shadow:0 0 30px rgba(59,130,246,0.35),0 0 60px rgba(59,130,246,0.12);">
             </div>
             <h2 data-i18n="Welcome">Welcome</h2>
             <p class="subtitle" data-i18n="Sign in to your lab workspace">Sign in to your lab workspace</p>
@@ -1148,7 +1163,7 @@
             <div class="slab-intro-banner">
                 <div class="slab-banner-logo">
                     <div class="logo-frame">
-                        <span class="logo-svg" style="display:inline-flex;align-items:center;justify-content:center;width:140px;height:90px;border-radius:16px;background:linear-gradient(135deg,#3b82f6,#10b981);font-size:32px;font-weight:800;color:#fff;">SL</span>
+                        <img src="/assets/logo.png" alt="smartLAB" class="logo-svg" style="width:110px;height:110px;max-width:110px;max-height:110px;border-radius:14px;object-fit:cover;display:block;">
                     </div>
                     <div class="equip-cycle">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M8 10h8"/><path d="M8 14h4"/><circle cx="18" cy="12" r="1"/></svg>
@@ -1164,7 +1179,7 @@
 
             <div class="pillar-grid">
                 <div class="pillar-card">
-                    <div class="pillar-icon">&#x1F50C;</div>
+                    <div class="pillar-icon"><img src="assets/mainadvan/iot-integration.jpg" alt="Real-Time Hardware &amp; IoT Integration"></div>
                     <div class="pillar-card-body">
                         <h3 class="pillar-title" data-i18n="1. Real-Time Hardware &amp; IoT Integration">1. Real-Time Hardware &amp; IoT Integration</h3>
                         <p class="pillar-sub" data-i18n="The platform's standout feature is its ability to establish a direct, real-time data connection with low-cost, accessible hardware components (such as Arduino or ESP32 microcontrollers).">The platform's standout feature is its ability to establish a direct, real-time data connection with low-cost, accessible hardware components (such as Arduino or ESP32 microcontrollers).</p>
@@ -1179,7 +1194,7 @@
                     </div>
                 </div>
                 <div class="pillar-card">
-                    <div class="pillar-icon">&#x1F4DA;</div>
+                    <div class="pillar-icon"><img src="assets/mainadvan/global-standards.jpg" alt="Strict Adherence to Global Standards"></div>
                     <div class="pillar-card-body">
                         <h3 class="pillar-title" data-i18n="2. Strict Adherence to Global Standards">2. Strict Adherence to Global Standards</h3>
                         <p class="pillar-sub" data-i18n="Every automated calculation, density tracking, and engineering formula executed within the system is rigorously cross-referenced with international testing codes:">Every automated calculation, density tracking, and engineering formula executed within the system is rigorously cross-referenced with international testing codes:</p>
@@ -1195,7 +1210,7 @@
                     </div>
                 </div>
                 <div class="pillar-card">
-                    <div class="pillar-icon">&#x1F4CA;</div>
+                    <div class="pillar-icon"><img src="assets/mainadvan/quality-control.jpg" alt="Statistical Quality Control &amp; Design Tools"></div>
                     <div class="pillar-card-body">
                         <h3 class="pillar-title" data-i18n="3. Statistical Quality Control &amp; Design Tools">3. Statistical Quality Control &amp; Design Tools</h3>
                         <p class="pillar-sub" data-i18n="Laboratories can track material performance trends over time using automated quality control methods and interactive engineering modules.">Laboratories can track material performance trends over time using automated quality control methods and interactive engineering modules.</p>
@@ -1211,7 +1226,7 @@
                     </div>
                 </div>
                 <div class="pillar-card">
-                    <div class="pillar-icon">&#x1F4C4;</div>
+                    <div class="pillar-icon"><img src="assets/mainadvan/automated-reporting.jpg" alt="Automated Operations &amp; Reporting"></div>
                     <div class="pillar-card-body">
                         <h3 class="pillar-title" data-i18n="4. Automated Operations &amp; Reporting">4. Automated Operations &amp; Reporting</h3>
                         <p class="pillar-sub" data-i18n="Eliminates manual logging errors by generating professional, comprehensive laboratory reports with automated calculations and data management features.">Eliminates manual logging errors by generating professional, comprehensive laboratory reports with automated calculations and data management features.</p>
@@ -1245,19 +1260,19 @@
 
         <div class="domain-grid">
             <div class="domain-card" data-domain="concrete" onclick="openDomain('concrete')">
-                <div class="domain-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="32" height="32"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
+                <img class="domain-cover" src="assets/concrete.png" alt="Concrete Testing">
                 <h3 data-i18n="Concrete Testing">Concrete Testing</h3>
                 <p data-i18n="Cube strength, slump, and mix design analysis for structural concrete">Cube strength, slump, and mix design analysis for structural concrete</p>
                 <div class="domain-card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
             </div>
             <div class="domain-card" data-domain="soil" onclick="openDomain('soil')">
-                <div class="domain-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="32" height="32"><path d="M4 20h16"/><path d="M6 20V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v14"/><path d="M10 10h4"/><path d="M10 14h4"/><circle cx="12" cy="6" r="1"/></svg></div>
+                <img class="domain-cover" src="assets/soil.png" alt="Soil Mechanics">
                 <h3 data-i18n="Soil Mechanics">Soil Mechanics</h3>
                 <p data-i18n="Atterberg limits, CBR, compaction, and moisture content testing">Atterberg limits, CBR, compaction, and moisture content testing</p>
                 <div class="domain-card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
             </div>
             <div class="domain-card" data-domain="asphalt" onclick="openDomain('asphalt')">
-                <div class="domain-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="32" height="32"><circle cx="12" cy="12" r="10"/><path d="M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z"/><path d="M2 12h20"/><path d="M8 8a4 4 0 0 0 0 8"/><path d="M16 8a4 4 0 0 1 0 8"/></svg></div>
+                <img class="domain-cover" src="assets/asphalt.png" alt="Asphalt &amp; Marshall">
                 <h3 data-i18n="Asphalt &amp; Marshall">Asphalt &amp; Marshall</h3>
                 <p data-i18n="Marshall stability, flow value, and bitumen extraction testing">Marshall stability, flow value, and bitumen extraction testing</p>
                 <div class="domain-card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
@@ -2123,12 +2138,12 @@ translatePage(currentLang);
 
         // Inline asphalt cards (fallback for SPA)
         var asphTests = [
-            { id: 'marshall', icon: '\u{1F9EE}', name: 'Marshall Stability', descEn: 'Measures resistance of asphalt mixes to deformation under loading', descAr: '\u064A\u0642\u064A\u0633 \u0645\u0642\u0627\u0648\u0645\u0629 \u062E\u0644\u0637\u0627\u062A \u0627\u0644\u0623\u0633\u0641\u0644\u062A \u0644\u0644\u062A\u0634\u0648\u0647 \u062A\u062D\u062A \u062A\u0623\u062B\u064A\u0631 \u0627\u0644\u0623\u062D\u0645\u0627\u0644', hw: 'asphalt/tests/test-marshall.html', proc: 'asphalt/tests/test-marshall.html', ref: 'asphalt/library.html' },
-            { id: 'flow', icon: '\u{1F4A7}', name: 'Flow Value', descEn: 'Measures the vertical deformation of the specimen under load', descAr: '\u064A\u0642\u064A\u0633 \u0627\u0644\u062A\u0634\u0648\u0647 \u0627\u0644\u0631\u0623\u0633\u064A \u0644\u0644\u0639\u064A\u0646\u0629 \u062A\u062D\u062A \u062A\u0623\u062B\u064A\u0631 \u0627\u0644\u062D\u0645\u0644', hw: 'asphalt/tests/test-flow.html', proc: 'asphalt/tests/test-flow.html', ref: 'asphalt/library.html' },
-            { id: 'extraction', icon: '\u{1F3ED}', name: 'Bitumen Extraction', descEn: 'Extracts bitumen from the mix to determine binder content', descAr: '\u064A\u0633\u062A\u062E\u0644\u0635 \u0627\u0644\u0628\u064A\u062A\u0648\u0645\u064A\u0646 \u0645\u0646 \u0627\u0644\u062E\u0644\u0637\u0629 \u0644\u062A\u062D\u062F\u064A\u062F \u0646\u0633\u0628\u0629 \u0627\u0644\u0645\u0627\u062F\u0629 \u0627\u0644\u0631\u0627\u0628\u0637\u0629', hw: 'asphalt/tests/test-extraction.html', proc: 'asphalt/tests/test-extraction.html', ref: 'asphalt/library.html' },
-            { id: 'density', icon: '\u{2696}\u{FE0F}', name: 'Density & Voids', descEn: 'Calculates bulk density and air void content of the mix', descAr: '\u064A\u062D\u0633\u0628 \u0627\u0644\u0643\u062B\u0627\u0641\u0629 \u0627\u0644\u0638\u0627\u0647\u0631\u064A\u0629 \u0648\u0646\u0633\u0628\u0629 \u0627\u0644\u0641\u0631\u0627\u063A\u0627\u062A \u0627\u0644\u0647\u0648\u0627\u0626\u064A\u0629 \u0641\u064A \u0627\u0644\u062E\u0644\u0637\u0629', hw: 'asphalt/tests/test-density.html', proc: 'asphalt/tests/test-density.html', ref: 'asphalt/library.html' },
-            { id: 'gradation', icon: '\u{1F300}', name: 'Aggregate Gradation', descEn: 'Determines particle size distribution of aggregates', descAr: '\u064A\u062D\u062F\u062F \u062A\u0648\u0632\u064A\u0639 \u0623\u062D\u062C\u0627\u0645 \u062D\u0628\u064A\u0628\u0627\u062A \u0627\u0644\u0631\u0643\u0627\u0645 \u0641\u064A \u0627\u0644\u062E\u0644\u0637\u0629', hw: 'asphalt/tests/test-gradation.html', proc: 'asphalt/tests/test-gradation.html', ref: 'asphalt/library.html' },
-            { id: 'ignition', icon: '\u{1F525}', name: 'Ignition Method', descEn: 'Burns off bitumen to accurately determine binder content', descAr: '\u064A\u062D\u0631\u0642 \u0627\u0644\u0628\u064A\u062A\u0648\u0645\u064A\u0646 \u0644\u062A\u062D\u062F\u064A\u062F \u0645\u062D\u062A\u0648\u0649 \u0627\u0644\u0645\u0627\u062F\u0629 \u0627\u0644\u0631\u0627\u0628\u0637\u0629 \u0628\u062F\u0642\u0629', hw: 'asphalt/tests/test-ignition.html', proc: 'asphalt/tests/test-ignition.html', ref: 'asphalt/library.html' }
+            { id: 'marshall', icon: '\u{1F9EE}', name: 'Marshall Stability', descEn: 'Measures resistance of asphalt mixes to deformation under loading', descAr: '\u064A\u0642\u064A\u0633 \u0645\u0642\u0627\u0648\u0645\u0629 \u062E\u0644\u0637\u0627\u062A \u0627\u0644\u0623\u0633\u0641\u0644\u062A \u0644\u0644\u062A\u0634\u0648\u0647 \u062A\u062D\u062A \u062A\u0623\u062B\u064A\u0631 \u0627\u0644\u0623\u062D\u0645\u0627\u0644', hw: 'asphalt/tests/marshall/index.html', proc: 'asphalt/tests/marshall/index.html', ref: 'asphalt/library.html' },
+            { id: 'flow', icon: '\u{1F4A7}', name: 'Flow Value', descEn: 'Measures the vertical deformation of the specimen under load', descAr: '\u064A\u0642\u064A\u0633 \u0627\u0644\u062A\u0634\u0648\u0647 \u0627\u0644\u0631\u0623\u0633\u064A \u0644\u0644\u0639\u064A\u0646\u0629 \u062A\u062D\u062A \u062A\u0623\u062B\u064A\u0631 \u0627\u0644\u062D\u0645\u0644', hw: 'asphalt/tests/flow/index.html', proc: 'asphalt/tests/flow/index.html', ref: 'asphalt/library.html' },
+            { id: 'extraction', icon: '\u{1F3ED}', name: 'Bitumen Extraction', descEn: 'Extracts bitumen from the mix to determine binder content', descAr: '\u064A\u0633\u062A\u062E\u0644\u0635 \u0627\u0644\u0628\u064A\u062A\u0648\u0645\u064A\u0646 \u0645\u0646 \u0627\u0644\u062E\u0644\u0637\u0629 \u0644\u062A\u062D\u062F\u064A\u062F \u0646\u0633\u0628\u0629 \u0627\u0644\u0645\u0627\u062F\u0629 \u0627\u0644\u0631\u0627\u0628\u0637\u0629', hw: 'asphalt/tests/extraction/index.html', proc: 'asphalt/tests/extraction/index.html', ref: 'asphalt/library.html' },
+            { id: 'density', icon: '\u{2696}\u{FE0F}', name: 'Density & Voids', descEn: 'Calculates bulk density and air void content of the mix', descAr: '\u064A\u062D\u0633\u0628 \u0627\u0644\u0643\u062B\u0627\u0641\u0629 \u0627\u0644\u0638\u0627\u0647\u0631\u064A\u0629 \u0648\u0646\u0633\u0628\u0629 \u0627\u0644\u0641\u0631\u0627\u063A\u0627\u062A \u0627\u0644\u0647\u0648\u0627\u0626\u064A\u0629 \u0641\u064A \u0627\u0644\u062E\u0644\u0637\u0629', hw: 'asphalt/tests/density/index.html', proc: 'asphalt/tests/density/index.html', ref: 'asphalt/library.html' },
+            { id: 'gradation', icon: '\u{1F300}', name: 'Aggregate Gradation', descEn: 'Determines particle size distribution of aggregates', descAr: '\u064A\u062D\u062F\u062F \u062A\u0648\u0632\u064A\u0639 \u0623\u062D\u062C\u0627\u0645 \u062D\u0628\u064A\u0628\u0627\u062A \u0627\u0644\u0631\u0643\u0627\u0645 \u0641\u064A \u0627\u0644\u062E\u0644\u0637\u0629', hw: 'asphalt/tests/gradation/index.html', proc: 'asphalt/tests/gradation/index.html', ref: 'asphalt/library.html' },
+            { id: 'ignition', icon: '\u{1F525}', name: 'Ignition Method', descEn: 'Burns off bitumen to accurately determine binder content', descAr: '\u064A\u062D\u0631\u0642 \u0627\u0644\u0628\u064A\u062A\u0648\u0645\u064A\u0646 \u0644\u062A\u062D\u062F\u064A\u062F \u0645\u062D\u062A\u0648\u0649 \u0627\u0644\u0645\u0627\u062F\u0629 \u0627\u0644\u0631\u0627\u0628\u0637\u0629 \u0628\u062F\u0642\u0629', hw: 'asphalt/tests/ignition/index.html', proc: 'asphalt/tests/ignition/index.html', ref: 'asphalt/library.html' }
         ];
         function renderAsphInline() {
             var grid = document.getElementById('asphCardsInline');
@@ -2227,12 +2242,16 @@ translatePage(currentLang);
             renderAsphInline();
         };
     </script>
+    </div>
 
     <!-- FOOTER -->
     <footer class="app-footer">
         <div class="footer-inner">
             <div class="footer-col">
-                <h3 data-i18n="Fimto Soft">Fimto <span>Soft</span></h3>
+                <div class="footer-brand">
+                    <img src="/assets/fimtosoftlogo.jpg" alt="Fimto Soft" class="footer-brand-logo">
+                    <h3 data-i18n="Fimto Soft">Fimto <span>Soft</span></h3>
+                </div>
                 <p style="margin-bottom:12px;" data-i18n="Integrated Tech Solutions">Integrated Tech Solutions</p>
                 <p data-i18n="We provide comprehensive software solutions including advanced interactive ERP systems, maintenance and development of ready-mix concrete plants, web design and development, distinguished digital marketing, creation and development of security and surveillance systems, establishment and development of infrastructure networks, creation and development of AI applications, and establishment and development of smart home systems.">We provide comprehensive software solutions including advanced interactive ERP systems, maintenance and development of ready-mix concrete plants, web design and development, distinguished digital marketing, creation and development of security and surveillance systems, establishment and development of infrastructure networks, creation and development of AI applications, and establishment and development of smart home systems.</p>
             </div>

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>smartLAB — Filter Design</title>
-    <link rel="icon" href="favicon.ico">
+    <link rel="icon" href="../../favicon.ico">
     <link rel="stylesheet" href="design-common.css">
     <style>
         :root { --accent-page: #f87171; }
@@ -270,7 +270,7 @@
         <a href="../concrete.html" class="back-btn">← Back to Concrete Testing</a>
     </div>
     <div id="footer-placeholder"></div>
-    <script src="../components.js"></script>
+    <script src="../../components.js"></script>
     <script>
         function switchTab(tabId, btn) {
             document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
@@ -601,19 +601,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             generateGradation();
         });
-        // Update unique info display
-        const uniqueInfo = document.createElement('div');
-        uniqueInfo.className = 'unique-info';
-        uniqueInfo.innerHTML = `
-            <div class="unique-details">
-                <div class="unique-row"><strong>Type:</strong> Continuous gradation design tool</div>
-                <div class="unique-row"><strong>Target:</strong> Blend coarse and fine aggregates for optimal performance</div>
-                <div class="unique-row"><strong>Method:</strong> Design gradation based on mix type and exposure</div>
-                <div class="unique-row"><strong>Output:</strong> gradation percentages, gradation coefficients, and compliance check</div>
-            </div>
-        `;
-        infoContainer.appendChild(uniqueInfo);
-
         function getClientFeatures() {
             const features = {
                 hasLocalStorage: typeof localStorage !== 'undefined',

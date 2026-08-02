@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Proctor Compaction Test</title>
+    <link rel="icon" href="/favicon.ico">
+    <link rel="stylesheet" href="../test-common.css">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <link rel="stylesheet" href="../../../test-zones.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    <div class="page">
+        <a href="../../soil.html" class="back-link">
+            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Back to Soil Tests
+        </a>
+
+        <h1 class="page-title">Proctor <span>Compaction</span></h1>
+        <p class="page-sub">Standard & modified Proctor for max dry density per ASTM D698 / D1557</p>
+
+                <!-- TAB BAR: Normal / SmartLab -->
+        <div class="test-tab-bar" id="testTabBar">
+            <button class="test-tab active" data-mode="normal">&#x1F9EA; <span data-i18n="Normal Test">Normal Test</span> <span style="font-weight:400;font-size:11px;">(&#x0627;&#x0644;&#x0627;&#x062E;&#x062A;&#x0628;&#x0627;&#x0631; &#x0627;&#x0644;&#x0639;&#x0627;&#x062F;&#x064A;)</span></button>
+            <button class="test-tab" data-mode="smartlab">&#x1F916; <span data-i18n="SmartLab Test">SmartLab Test</span> <span style="font-weight:400;font-size:11px;">(&#x0627;&#x062E;&#x062A;&#x0628;&#x0627;&#x0631; &#x0633;&#x0645;&#x0627;&#x0631;&#x062A; &#x0644;&#x0627;&#x0628;)</span></button>
+        </div>
+
+        <div id="normalTestMode">
+            <div id="manualAlert" class="manual-alert" style="display:none;"></div>
+
+<div class="level-top">
+            <span class="lt-label">Test Level</span>
+            <div class="lt-btns">
+                <button class="lt-btn active" data-level="quick">⚡ Quick</button>
+                <button class="lt-btn" data-level="unofficial">🏭 Unofficial</button>
+                <button class="lt-btn" data-level="certified">🔒 Certified</button>
+            </div>
+            <span class="lt-info">Critical for pavement design</span>
+        </div>
+
+        <div class="billboard">
+            <div class="bb-inner">
+                <div class="bb-icon">💧</div>
+                <div class="bb-body">
+                    <div class="bb-step-label">STEP 1/4</div>
+                    <div class="bb-title">Proctor Compaction Test</div>
+                    <div class="bb-desc">Find optimum moisture content for maximum dry density</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="two-col">
+            <div class="sidebar">
+                <div class="sidebar-title">⚙ Test Setup</div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Proctor Type</label>
+                    <select class="sidebar-input" id="proctorType">
+                        <option value="standard">Standard (4.5kg)</option>
+                        <option value="modified">Modified (4.5kg)</option>
+                    </select>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Drop Height</label>
+                    <input type="number" class="sidebar-input" id="dropHeight" value="30" step="1"><span class="unit">inches</span>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Mold Volume</label>
+                    <input type="number" class="sidebar-input" id="moldVolume" value="1000" step="1"><span class="unit">cm³</span>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Moisture Content %</label>
+                    <input type="text" class="sidebar-input" id="moistureVals" value="5,7,9,11,13,15"><span class="unit">%</span>
+                </div>
+                
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Dry Density (t/m³) comma-separated</label>
+                    <input type="text" class="sidebar-input" id="dryDensityVals" value="1.65,1.75,1.85,1.90,1.92,1.88">
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Specific Gravity (Gs)</label>
+                    <input type="number" class="sidebar-input" id="gsValue" value="2.70" step="0.01">
+                </div>
+<button class="btn btn-primary" onclick="runProctorTest()">💧 Calculate Proctor</button>
+            </div>
+
+            <div>
+                <div id="proctorResults" style="display:none;">
+                    <h3 style="color:var(--accent-orange);margin-bottom:16px;">📋 Proctor Results</h3>
+                    <div class="chart-section">
+                        <div class="chart-title">📈 Moisture-Density Curve</div>
+                        <canvas class="chart-canvas" id="proctorChart"></canvas>
+                    </div>
+                    <div class="result-grid" style="margin-top:16px;">
+                        <div class="result-card"><div class="result-icon">💧</div><div class="result-label">Opt. Moisture</div><div class="result-value" id="rOptMoisture">--</div></div>
+                        <div class="result-card"><div class="result-icon">⚖️</div><div class="result-label">Max Dry Density</div><div class="result-value" id="rMaxDryDensity">--</div></div>
+                        <div class="result-card"><div class="result-icon">📊</div><div class="result-label">Void Ratio</div><div class="result-value" id="rVoidRatio">--</div></div>
+                    </div>
+                </div>
+                <div id="proctorPlaceholder" style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+                    <div style="font-size:48px;margin-bottom:16px;">💧</div>
+                    <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Enter Proctor Parameters</div>
+                    <div style="font-size:13px;">Select test type and enter moisture values to generate compaction curve.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="notes-section">
+            <div class="notes-title">📝 Standards</div>
+            <ul class="notes-list">
+                <li>Standard Proctor: 4.5kg hammer, 305mm drop height, 1000cm³ mold (ASTM D698)</li>
+                <li>Modified Proctor: 4.5kg hammer, 457mm drop height, 1000cm³ mold (ASTM D1557)</li>
+                <li>Typical test points: 5-15% moisture content in 2% increments</li>
+                <li>Optimum moisture: peak of dry density vs moisture curve</li>
+            </ul>
+        </div>
+
+            <div class="section" id="manualResultsSection" style="display:none;">
+                <div class="section-title"><span class="st-icon">&#x1F4CA;</span> <span>Calculated Results <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(&#x0627;&#x0644;&#x0646;&#x062A;&#x0627;&#x0626;&#x062C; &#x0627;&#x0644;&#x0645;&#x062D;&#x0633;&#x0648;&#x0628;&#x0629;)</span></span></div>
+                <div class="results-two-col">
+                    <table class="results-table" id="manualResultsTable">
+                        <thead><tr><th>Parameter <span style="font-weight:400;">(&#x0627;&#x0644;&#x0642;&#x064A;&#x0627;&#x0633;)</span></th><th style="text-align:right;">Value <span style="font-weight:400;">(&#x0627;&#x0644;&#x0642;&#x064A;&#x0645;&#x0629;)</span></th><th style="text-align:center;">Status <span style="font-weight:400;">(&#x0627;&#x0644;&#x062D;&#x0627;&#x0644;&#x0629;)</span></th></tr></thead>
+                        <tbody id="manualResultsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="section" id="manualReportSection" style="display:none;">
+                <div class="section-title"><span class="st-icon">&#x1F4C4;</span> <span>Test Report <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(&#x062A;&#x0642;&#x0631;&#x064A;&#x0631; &#x0627;&#x0644;&#x0627;&#x062E;&#x062A;&#x0628;&#x0627;&#x0631;)</span></span></div>
+                <div class="report-input-row">
+                    <div class="manual-field"><label>Lab Name <span style="font-weight:400;">(&#x0627;&#x0633;&#x0645; &#x0627;&#x0644;&#x0645;&#x062E;&#x062A;&#x0628;&#x0631;)</span></label><input type="text" id="m-labName" value="smartLAB Testing Lab"></div>
+                    <div class="manual-field"><label>Sample # <span style="font-weight:400;">(&#x0631;&#x0642;&#x0645; &#x0627;&#x0644;&#x0639;&#x064A;&#x0646;&#x0629;)</span></label><input type="text" id="m-sampleNo" placeholder="e.g. S-2026-001"></div>
+                    <div class="manual-field"><label>Specifications <span style="font-weight:400;">(&#x0627;&#x0644;&#x0645;&#x0648;&#x0627;&#x0635;&#x0641;&#x0627;&#x062A;)</span></label><input type="text" id="m-specs" placeholder="e.g. 150mm cube, 28d"></div>
+                    <div class="manual-field"><label>Technician <span style="font-weight:400;">(&#x0627;&#x0644;&#x0641;&#x0646;&#x064A;)</span></label><input type="text" id="m-tech" placeholder="Name"></div>
+                    <div class="manual-field"><label>Engineer <span style="font-weight:400;">(&#x0627;&#x0644;&#x0645;&#x0647;&#x0646;&#x062F;&#x0633;)</span></label><input type="text" id="m-eng" placeholder="Name"></div>
+                </div>
+                <div style="padding:6px 0;font-size:12px;color:var(--text-muted);margin-bottom:8px;">Export the results as an Excel, PDF or printed report.</div>
+                <div class="btn-row" style="justify-content:flex-start;gap:8px;">
+                    <button class="btn btn-blue" id="btnManualExcel">&#x1F4C4; Excel</button>
+                    <button class="btn btn-red" id="btnManualPdf">&#x1F4C4; PDF</button>
+                    <button class="btn btn-gold" id="btnManualPrint">&#x1F5A8; Print <span style="font-weight:400;">(&#x0637;&#x0628;&#x0627;&#x0639;&#x0629;)</span></button>
+                </div>
+            </div>
+
+        </div><!-- /normalTestMode -->
+
+        <!-- ===== SMARTLAB CONTENT ===== -->
+        <div id="smartlabContent">
+            <div class="sl-sub-tabs">
+                <button class="sl-sub-tab active" data-sub="stages">&#x1F4CB; Stages <span style="font-weight:400;">(&#x0627;&#x0644;&#x0645;&#x0631;&#x0627;&#x062D;&#x0644;)</span></button>
+                <button class="sl-sub-tab" data-sub="hardware">&#x1F527; Hardware Guide <span style="font-weight:400;">(&#x062F;&#x0644;&#x064A;&#x0644; &#x0627;&#x0644;&#x0647;&#x0627;&#x0631;&#x062F;&#x0648;&#x064A;&#x0631;)</span></button>
+            </div>
+            <div id="slStagesContent">
+                <div class="section">
+                    <div class="section-title"><span class="st-icon">&#x1F916;</span> <span>SmartLab Stages <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(&#x0645;&#x0631;&#x0627;&#x062D;&#x0644; &#x0633;&#x0645;&#x0627;&#x0631;&#x062A; &#x0644;&#x0627;&#x0628;)</span></span></div>
+                    <div style="padding:10px 0;font-size:13px;color:var(--text-muted);line-height:1.7;">
+                        <p>Connect your SmartLab device and follow the guided stages to run this test automatically.</p>
+                        <p style="font-size:12px;margin-top:8px;">&#x1F4A1; The SmartLab content below is managed through the <strong>Test Zones</strong> system (available to administrators).</p>
+                    </div>
+                </div>
+                <div id="zoneContainer" class="zone-container"></div>
+            </div><!-- /slStagesContent -->
+            <div id="slHardwareContent" style="display:none;">
+                <div class="section">
+                    <div class="section-title"><span class="st-icon">&#x1F527;</span> <span>Hardware Guide <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(&#x062F;&#x0644;&#x064A;&#x0644; &#x0627;&#x0644;&#x0647;&#x0627;&#x0631;&#x062F;&#x0648;&#x064A;&#x0631;)</span></span></div>
+                    <div style="padding:24px;font-size:13px;color:var(--text-muted);text-align:center;">
+                        <p style="font-size:28px;margin-bottom:10px;">&#x1F4C4;</p>
+                        <p>Hardware guide file will be loaded here.</p>
+                        <p style="font-size:11px;margin-top:6px;">Place a <code style="background:rgba(0,0,0,0.2);padding:2px 6px;border-radius:4px;">hardware-guide.html</code> file in the test folder.</p>
+                    </div>
+                </div>
+            </div>
+        </div><!-- /smartlabContent -->
+
+    </div>
+    <div id="footer-placeholder"></div>
+    <script src="../../../components.js"></script>
+    <script src="../../../test-zone.js"></script>
+    <script src="../test-manual.js"></script>
+    <script>
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() { TestZones.init('soil-proctor'); });
+        } else {
+            TestZones.init('soil-proctor');
+        }
+    </script>
+        <script>
+var manualResults = null;
+var manualTestTitleStr = "Proctor Compaction Test";
+
+function bindManualExports() {
+    var be = document.getElementById('btnManualExcel');
+    var bp = document.getElementById('btnManualPdf');
+    var br = document.getElementById('btnManualPrint');
+    if (be) be.addEventListener('click', manualExportExcel);
+    if (bp) bp.addEventListener('click', manualExportPdf);
+    if (br) br.addEventListener('click', manualExportPrint);
+}
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bindManualExports);
+} else {
+    bindManualExports();
+}
+
+
+function runProctorTest() {
+    const proctorType = document.getElementById('proctorType').value;
+    const moistureVals = document.getElementById('moistureVals').value.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
+    const densityVals = document.getElementById('dryDensityVals').value.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
+    const gs = parseFloat(document.getElementById('gsValue').value) || 2.70;
+    const moldVolume = parseFloat(document.getElementById('moldVolume').value);
+
+    if (moistureVals.length < 3 || densityVals.length !== moistureVals.length) {
+        manualAlert('warning', 'Enter at least 3 points with matching moisture and dry density values.');
+        return;
+    }
+
+    const n = moistureVals.length;
+    let sx = 0, sx2 = 0, sx3 = 0, sx4 = 0, sy = 0, sxy = 0, sx2y = 0;
+    for (let i = 0; i < n; i++) {
+        const x = moistureVals[i], y = densityVals[i];
+        sx += x; sx2 += x*x; sx3 += x*x*x; sx4 += x*x*x*x;
+        sy += y; sxy += x*y; sx2y += x*x*y;
+    }
+    const A = [
+        [n, sx, sx2],
+        [sx, sx2, sx3],
+        [sx2, sx3, sx4]
+    ];
+    const B = [sy, sxy, sx2y];
+
+    function det3(m) {
+        return m[0][0]*(m[1][1]*m[2][2]-m[1][2]*m[2][1])
+             - m[0][1]*(m[1][0]*m[2][2]-m[1][2]*m[2][0])
+             + m[0][2]*(m[1][0]*m[2][1]-m[1][1]*m[2][0]);
+    }
+    const dA = det3(A);
+    if (Math.abs(dA) < 1e-12) { manualAlert('error', 'Could not fit compaction curve.'); return; }
+    const c0 = det3([[B[0],A[0][1],A[0][2]],[B[1],A[1][1],A[1][2]],[B[2],A[2][1],A[2][2]]]) / dA;
+    const c1 = det3([[A[0][0],B[0],A[0][2]],[A[1][0],B[1],A[1][2]],[A[2][0],B[2],A[2][2]]]) / dA;
+    const c2 = det3([[A[0][0],A[0][1],B[0]],[A[1][0],A[1][1],B[1]],[A[2][0],A[2][1],B[2]]]) / dA;
+
+    const optMoisture = -c1 / (2 * c2);
+    const maxDry = c0 + c1 * optMoisture + c2 * optMoisture * optMoisture;
+    const voidRatio = maxDry > 0 ? (gs * 1.0 / maxDry) - 1 : 0;
+
+    let ssRes = 0, ssTot = 0, meanY = sy / n;
+    for (let i = 0; i < n; i++) {
+        const fit = c0 + c1 * moistureVals[i] + c2 * moistureVals[i] * moistureVals[i];
+        ssRes += Math.pow(densityVals[i] - fit, 2);
+        ssTot += Math.pow(densityVals[i] - meanY, 2);
+    }
+    const r2 = ssTot > 0 ? 1 - ssRes / ssTot : 0;
+
+    document.getElementById('proctorPlaceholder').style.display = 'none';
+    document.getElementById('proctorResults').style.display = 'block';
+    document.getElementById('rOptMoisture').textContent = optMoisture.toFixed(1) + '%';
+    document.getElementById('rMaxDryDensity').textContent = (maxDry * 1000).toFixed(0) + ' kg/m\u00B3';
+    document.getElementById('rVoidRatio').textContent = voidRatio.toFixed(2);
+
+    drawProctorChart(moistureVals, densityVals, c0, c1, c2, optMoisture, maxDry);
+
+    window.manualResults = [
+        { label: 'Test Type', value: proctorType === 'standard' ? 'Standard (ASTM D698)' : 'Modified (ASTM D1557)', unit: '', status: '' },
+        { label: 'Test Points', value: n, unit: '', status: '' },
+        { label: 'Optimum Moisture Content (OMC)', value: optMoisture.toFixed(1), unit: '%', status: '' },
+        { label: 'Maximum Dry Density', value: (maxDry * 1000).toFixed(0), unit: 'kg/m\u00B3', status: '' },
+        { label: 'Void Ratio at OMC', value: voidRatio.toFixed(2), unit: '', status: '' },
+        { label: 'Curve Fit R\u00B2', value: r2.toFixed(3), unit: '', status: r2 >= 0.9 ? 'pass' : 'marginal' }
+    ];
+    manualRenderResults();
+    manualAlert('success', 'Compaction curve fitted');
+}
+
+function drawProctorChart(moisture, density, c0, c1, c2, optM, maxD) {
+    const canvas = document.getElementById('proctorChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    canvas.width = canvas.offsetWidth;
+    canvas.height = 300;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const padding = 60;
+    const w = canvas.width - 2 * padding;
+    const h = canvas.height - 2 * padding;
+    const minM = Math.min.apply(null, moisture) - 1;
+    const maxM = Math.max.apply(null, moisture) + 1;
+    const minD = 1.5;
+    const maxDens = Math.max(maxD * 1.05, Math.max.apply(null, density) * 1.05);
+
+    const X = (m) => padding + ((m - minM) / (maxM - minM)) * w;
+    const Y = (d) => canvas.height - padding - ((d - minD) / (maxDens - minD)) * h;
+
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 5; i++) {
+        const y = padding + (i/5) * h;
+        ctx.beginPath(); ctx.moveTo(padding, y); ctx.lineTo(canvas.width - padding, y); ctx.stroke();
+        const x = padding + (i/5) * w;
+        ctx.beginPath(); ctx.moveTo(x, padding); ctx.lineTo(x, canvas.height - padding); ctx.stroke();
+    }
+
+    ctx.strokeStyle = 'var(--accent-orange)';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    for (let i = 0; i <= 60; i++) {
+        const m = minM + (i/60) * (maxM - minM);
+        const d = c0 + c1 * m + c2 * m * m;
+        const x = X(m), y = Y(d);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    ctx.fillStyle = 'var(--accent-orange)';
+    density.forEach((d, i) => {
+        ctx.beginPath(); ctx.arc(X(moisture[i]), Y(d), 5, 0, Math.PI * 2); ctx.fill();
+    });
+
+    ctx.fillStyle = 'var(--accent-emerald)';
+    ctx.strokeStyle = 'var(--accent-emerald)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(X(optM), padding); ctx.lineTo(X(optM), canvas.height - padding); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.beginPath(); ctx.arc(X(optM), Y(maxD), 6, 0, Math.PI * 2); ctx.fill();
+
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.font = '11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('OMC = ' + optM.toFixed(1) + '%', X(optM), padding - 6);
+    ctx.fillText('Moisture Content (%)', padding + w / 2, canvas.height - 8);
+    ctx.save();
+    ctx.translate(14, padding + h / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText('Dry Density (t/m\u00B3)', 0, 0);
+    ctx.restore();
+}
+
+    </script>
+</body>
+</html>

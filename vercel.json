@@ -1,12 +1,7 @@
 {
   "version": 2,
-  "builds": [
-    { "src": "**/*.html", "use": "@vercel/static" },
-    { "src": "**/*.js", "use": "@vercel/static" },
-    { "src": "**/*.css", "use": "@vercel/static" },
-    { "src": "**/*.json", "use": "@vercel/static" },
-    { "src": "**/*.{png,jpg,svg,ico,webp}", "use": "@vercel/static" },
-    { "src": "**/*.{woff,woff2,ttf,eot}", "use": "@vercel/static" }
+  "redirects": [
+    { "source": "/:section/tests/test-:name.html", "destination": "/:section/tests/:name/index.html", "permanent": true }
   ],
   "headers": [
     {

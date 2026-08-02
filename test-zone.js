@@ -71,14 +71,23 @@ var TestZones = (function() {
         loadZones();
         renderFloatBar();
         applyLayout();
+        refreshAdmin();
     }
 
     function loadZones() {
         var stored = null;
         try { stored = JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch(e) {}
         pageZones = stored || {};
-        if (!pageZones[currentPageId]) {
+        var raw = pageZones[currentPageId];
+        if (!raw || typeof raw !== 'object') {
             pageZones[currentPageId] = DEFAULT_ZONES[currentPageId] || createDefaultConfig();
+        } else if (Array.isArray(raw)) {
+            pageZones[currentPageId] = { layout: '1-col', zones: raw, showHeader: true, showFooter: true };
+        } else if (raw.zones === undefined) {
+            raw.zones = [];
+            if (raw.layout === undefined) raw.layout = '1-col';
+            if (raw.showHeader === undefined) raw.showHeader = true;
+            if (raw.showFooter === undefined) raw.showFooter = true;
         }
     }
 
@@ -100,9 +109,30 @@ var TestZones = (function() {
     }
 
     /* ===== FLOATING CONTROLS BAR ===== */
+    var adminKnown = false;
+    var adminAuthed = false;
+    function isAdmin() {
+        return adminKnown && adminAuthed;
+    }
+    function refreshAdmin() {
+        fetch('/api/session', { credentials: 'same-origin' })
+            .then(function(r){ return r.json(); })
+            .then(function(d){
+                var was = adminAuthed;
+                adminKnown = true;
+                adminAuthed = !!(d && d.authed);
+                if (adminAuthed !== was) {
+                    renderFloatBar();
+                    applyLayout();
+                }
+            })
+            .catch(function(){ adminKnown = true; adminAuthed = false; });
+    }
     function renderFloatBar() {
         var existing = document.getElementById('zoneFloatBar');
         if (existing) existing.remove();
+
+        if (!isAdmin()) return;
 
         var bar = document.createElement('div');
         bar.id = 'zoneFloatBar';
@@ -184,9 +214,11 @@ var TestZones = (function() {
         container.innerHTML = '';
 
         if (config.zones.length === 0) {
+            if (!isAdmin()) { container.style.display = 'none'; return; }
             container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);"><div style="font-size:40px;margin-bottom:12px;">📦</div><div style="font-size:14px;">No zones configured. Click <strong>➕ Add Zone</strong> to start.</div></div>';
             return;
         }
+        container.style.display = '';
 
         var layoutType = config.layout || '1-col';
         var preset = LAYOUT_PRESETS[layoutType];

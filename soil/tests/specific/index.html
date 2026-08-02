@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Specific Gravity Test</title>
+    <link rel="icon" href="/favicon.ico">
+    <link rel="stylesheet" href="../test-common.css">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <link rel="stylesheet" href="../../../test-zones.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    <div class="page">
+        <a href="../../soil.html" class="back-link">
+            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Back to Soil Tests
+        </a>
+
+        <h1 class="page-title">Specific <span>Gravity</span></h1>
+        <p class="page-sub">Particle density & water absorption per ASTM D854</p>
+
+                <!-- TAB BAR: Normal / SmartLab -->
+        <div class="test-tab-bar" id="testTabBar">
+            <button class="test-tab active" data-mode="normal">&#x1F9EA; <span data-i18n="Normal Test">Normal Test</span> <span style="font-weight:400;font-size:11px;">(&#x0627;&#x0644;&#x0627;&#x062E;&#x062A;&#x0628;&#x0627;&#x0631; &#x0627;&#x0644;&#x0639;&#x0627;&#x062F;&#x064A;)</span></button>
+            <button class="test-tab" data-mode="smartlab">&#x1F916; <span data-i18n="SmartLab Test">SmartLab Test</span> <span style="font-weight:400;font-size:11px;">(&#x0627;&#x062E;&#x062A;&#x0628;&#x0627;&#x0631; &#x0633;&#x0645;&#x0627;&#x0631;&#x062A; &#x0644;&#x0627;&#x0628;)</span></button>
+        </div>
+
+        <div id="normalTestMode">
+            <div id="manualAlert" class="manual-alert" style="display:none;"></div>
+
+<div class="level-top">
+            <span class="lt-label">Test Level</span>
+            <div class="lt-btns">
+                <button class="lt-btn active" data-level="quick">⚡ Quick</button>
+                <button class="lt-btn" data-level="unofficial">🏭 Unofficial</button>
+                <button class="lt-btn" data-level="certified">🔒 Certified</button>
+            </div>
+            <span class="lt-info">Required for phase relationships</span>
+        </div>
+
+        <div class="billboard">
+            <div class="bb-inner">
+                <div class="bb-icon">🔬</div>
+                <div class="bb-body">
+                    <div class="bb-step-label">STEP 1/3</div>
+                    <div class="bb-title">Specific Gravity Test</div>
+                    <div class="bb-desc">Determine particle density and absorption using pycnometer or volumetric method</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="two-col">
+            <div class="sidebar">
+                <div class="sidebar-title">⚖ Test Data</div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Method</label>
+                    <select class="sidebar-input" id="sgMethod">
+                        <option value="pycnometer">Pycnometer (ASTM D854)</option>
+                        <option value="volumetric">Volumetric Flask</option>
+                    </select>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">W oven-dry (g)</label>
+                    <input type="number" class="sidebar-input" id="wOvenDry" value="500" step="0.1"><span class="unit">g</span>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">W saturated surface dry (g)</label>
+                    <input type="number" class="sidebar-input" id="wSatSurfDry" value="520" step="0.1"><span class="unit">g</span>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">W immersed (g)</label>
+                    <input type="number" class="sidebar-input" id="wImmersed" value="320" step="0.1"><span class="unit">g</span>
+                </div>
+                <div class="sidebar-field">
+                    <label class="sidebar-label">Temperature (°C)</label>
+                    <input type="number" class="sidebar-input" id="sgTemp" value="20" step="1"><span class="unit">°C</span>
+                </div>
+                <button class="btn btn-primary" onclick="calcSpecificGravity()">🔬 Calculate SG</button>
+            </div>
+
+            <div>
+                <div id="sgResults" style="display:none;">
+                    <h3 style="color:var(--accent-orange);margin-bottom:16px;">📋 Specific Gravity Results</h3>
+                    <div class="result-grid">
+                        <div class="result-card"><div class="result-icon">🔬</div><div class="result-label">Gs (Bulk)</div><div class="result-value" id="rGs">--</div></div>
+                        <div class="result-card"><div class="result-icon">📏</div><div class="result-label">Absorption</div><div class="result-value" id="rAbs">--</div></div>
+                        <div class="result-card"><div class="result-icon">💧</div><div class="result-label">Porosity (n)</div><div class="result-value" id="rPorosity">--</div></div>
+                    </div>
+
+                    <div class="chart-section" style="margin-top:24px;">
+                        <div class="chart-title">📈 Phase Diagram</div>
+                        <canvas class="chart-canvas" id="sgChart"></canvas>
+                    </div>
+                </div>
+
+                <div id="sgPlaceholder" style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+                    <div style="font-size:48px;margin-bottom:16px;">🔬</div>
+                    <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Enter Test Data</div>
+                    <div style="font-size:13px;max-width:400px;">Input weights to calculate specific gravity and absorption values.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="notes-section">
+            <div class="notes-title">📝 ASTM D854 Method</div>
+            <ul class="notes-list">
+                <li>Specific Gravity Gs = W oven-dry / (W SSD - W immersed) × ρ_water</li>
+                <li>Water absorption = (W SSD - W oven-dry) / W oven-dry × 100</li>
+                <li>Temperature correction factor: 1 + 0.000009 × (T - 20)</li>
+                <li>Rapidly determine aggregate properties for mix design</li>
+            </ul>
+        </div>
+
+            <div class="section" id="manualResultsSection" style="display:none;">
+                <div class="section-title"><span class="st-icon">&#x1F4CA;</span> <span>Calculated Results <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(&#x0627;&#x0644;&#x0646;&#x062A;&#x0627;&#x0626;&#x062C; &#x0627;&#x0644;&#x0645;&#x062D;&#x0633;&#x0648;&#x0628;&#x0629;)</span></span></div>
+                <div class="results-two-col">
+                    <table class="results-table" id="manualResultsTable">
+                        <thead><tr><th>Parameter <span style="font-weight:400;">(&#x0627;&#x0644;&#x0642;&#x064A;&#x0627;&#x0633;)</span></th><th style="text-align:right;">Value <span style="font-weight:400;">(&#x0627;&#x0644;&#x0642;&#x064A;&#x0645;&#x0629;)</span></th><th style="text-align:center;">Status <span style="font-weight:400;">(&#x0627;&#x0644;&#x062D;&#x0627;&#x0644;&#x0629;)</span></th></tr></thead>
+                        <tbody id="manualResultsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="section" id="manualReportSection" style="display:none;">
+                <div class="section-title"><span class="st-icon">&#x1F4C4;</span> <span>Test Report <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(&#x062A;&#x0642;&#x0631;&#x064A;&#x0631; &#x0627;&#x0644;&#x0627;&#x062E;&#x062A;&#x0628;&#x0627;&#x0631;)</span></span></div>
+                <div class="report-input-row">
+                    <div class="manual-field"><label>Lab Name <span style="font-weight:400;">(&#x0627;&#x0633;&#x0645; &#x0627;&#x0644;&#x0645;&#x062E;&#x062A;&#x0628;&#x0631;)</span></label><input type="text" id="m-labName" value="smartLAB Testing Lab"></div>
+                    <div class="manual-field"><label>Sample # <span style="font-weight:400;">(&#x0631;&#x0642;&#x0645; &#x0627;&#x0644;&#x0639;&#x064A;&#x0646;&#x0629;)</span></label><input type="text" id="m-sampleNo" placeholder="e.g. S-2026-001"></div>
+                    <div class="manual-field"><label>Specifications <span style="font-weight:400;">(&#x0627;&#x0644;&#x0645;&#x0648;&#x0627;&#x0635;&#x0641;&#x0627;&#x062A;)</span></label><input type="text" id="m-specs" placeholder="e.g. 150mm cube, 28d"></div>
+                    <div class="manual-field"><label>Technician <span style="font-weight:400;">(&#x0627;&#x0644;&#x0641;&#x0646;&#x064A;)</span></label><input type="text" id="m-tech" placeholder="Name"></div>
+                    <div class="manual-field"><label>Engineer <span style="font-weight:400;">(&#x0627;&#x0644;&#x0645;&#x0647;&#x0646;&#x062F;&#x0633;)</span></label><input type="text" id="m-eng" placeholder="Name"></div>
+                </div>
+                <div style="padding:6px 0;font-size:12px;color:var(--text-muted);margin-bottom:8px;">Export the results as an Excel, PDF or printed report.</div>
+                <div class="btn-row" style="justify-content:flex-start;gap:8px;">
+                    <button class="btn btn-blue" id="btnManualExcel">&#x1F4C4; Excel</button>
+                    <button class="btn btn-red" id="btnManualPdf">&#x1F4C4; PDF</button>
+                    <button class="btn btn-gold" id="btnManualPrint">&#x1F5A8; Print <span style="font-weight:400;">(&#x0637;&#x0628;&#x0627;&#x0639;&#x0629;)</span></button>
+                </div>
+            </div>
+
+        </div><!-- /normalTestMode -->
+
+        <!-- ===== SMARTLAB CONTENT ===== -->
+        <div id="smartlabContent">
+            <div class="sl-sub-tabs">
+                <button class="sl-sub-tab active" data-sub="stages">&#x1F4CB; Stages <span style="font-weight:400;">(&#x0627;&#x0644;&#x0645;&#x0631;&#x0627;&#x062D;&#x0644;)</span></button>
+                <button class="sl-sub-tab" data-sub="hardware">&#x1F527; Hardware Guide <span style="font-weight:400;">(&#x062F;&#x0644;&#x064A;&#x0644; &#x0627;&#x0644;&#x0647;&#x0627;&#x0631;&#x062F;&#x0648;&#x064A;&#x0631;)</span></button>
+            </div>
+            <div id="slStagesContent">
+                <div class="section">
+                    <div class="section-title"><span class="st-icon">&#x1F916;</span> <span>SmartLab Stages <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(&#x0645;&#x0631;&#x0627;&#x062D;&#x0644; &#x0633;&#x0645;&#x0627;&#x0631;&#x062A; &#x0644;&#x0627;&#x0628;)</span></span></div>
+                    <div style="padding:10px 0;font-size:13px;color:var(--text-muted);line-height:1.7;">
+                        <p>Connect your SmartLab device and follow the guided stages to run this test automatically.</p>
+                        <p style="font-size:12px;margin-top:8px;">&#x1F4A1; The SmartLab content below is managed through the <strong>Test Zones</strong> system (available to administrators).</p>
+                    </div>
+                </div>
+                <div id="zoneContainer" class="zone-container"></div>
+            </div><!-- /slStagesContent -->
+            <div id="slHardwareContent" style="display:none;">
+                <div class="section">
+                    <div class="section-title"><span class="st-icon">&#x1F527;</span> <span>Hardware Guide <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(&#x062F;&#x0644;&#x064A;&#x0644; &#x0627;&#x0644;&#x0647;&#x0627;&#x0631;&#x062F;&#x0648;&#x064A;&#x0631;)</span></span></div>
+                    <div style="padding:24px;font-size:13px;color:var(--text-muted);text-align:center;">
+                        <p style="font-size:28px;margin-bottom:10px;">&#x1F4C4;</p>
+                        <p>Hardware guide file will be loaded here.</p>
+                        <p style="font-size:11px;margin-top:6px;">Place a <code style="background:rgba(0,0,0,0.2);padding:2px 6px;border-radius:4px;">hardware-guide.html</code> file in the test folder.</p>
+                    </div>
+                </div>
+            </div>
+        </div><!-- /smartlabContent -->
+
+    </div>
+    <div id="footer-placeholder"></div>
+    <script src="../../../components.js"></script>
+    <script src="../../../test-zone.js"></script>
+    <script src="../test-manual.js"></script>
+    <script>
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() { TestZones.init('soil-specific'); });
+        } else {
+            TestZones.init('soil-specific');
+        }
+    </script>
+        <script>
+var manualResults = null;
+var manualTestTitleStr = "Specific Gravity Test";
+
+function bindManualExports() {
+    var be = document.getElementById('btnManualExcel');
+    var bp = document.getElementById('btnManualPdf');
+    var br = document.getElementById('btnManualPrint');
+    if (be) be.addEventListener('click', manualExportExcel);
+    if (bp) bp.addEventListener('click', manualExportPdf);
+    if (br) br.addEventListener('click', manualExportPrint);
+}
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bindManualExports);
+} else {
+    bindManualExports();
+}
+
+
+function calcSpecificGravity() {
+    const w1 = parseFloat(document.getElementById('wOvenDry').value);
+    const w2 = parseFloat(document.getElementById('wSatSurfDry').value);
+    const w3 = parseFloat(document.getElementById('wImmersed').value);
+    const temp = parseFloat(document.getElementById('sgTemp').value);
+
+    if (!w1 || !w2 || !w3 || w1 <= 0 || w2 <= w3) { manualAlert('warning', 'Please enter valid weights'); return; }
+
+    const rhoWater = 0.9982 - 0.0002 * (temp - 20);
+    const Gs = w1 / ((w2 - w3) * rhoWater);
+    const absorption = ((w2 - w1) / w1) * 100;
+    const porosity = (1 - (w1 - w3) / (w2 - w3)) * 100;
+    const gsOk = Gs >= 2.5 && Gs <= 2.85;
+
+    document.getElementById('sgPlaceholder').style.display = 'none';
+    document.getElementById('sgResults').style.display = 'block';
+    document.getElementById('rGs').textContent = Gs.toFixed(3);
+    document.getElementById('rAbs').textContent = absorption.toFixed(2) + '%';
+    document.getElementById('rPorosity').textContent = porosity.toFixed(1) + '%';
+
+    drawSGChart(Gs);
+
+    window.manualResults = [
+        { label: 'Specific Gravity (Gs)', value: Gs.toFixed(3), unit: '', status: gsOk ? 'pass' : 'marginal' },
+        { label: 'Absorption', value: absorption.toFixed(2), unit: '%', status: '' },
+        { label: 'Porosity (n)', value: porosity.toFixed(1), unit: '%', status: '' },
+        { label: 'Water Density @ Temp', value: rhoWater.toFixed(4), unit: 'g/cm\u00B3', status: '' },
+        { label: 'Oven-Dry Weight', value: w1.toFixed(1), unit: 'g', status: '' },
+        { label: 'SSD Weight', value: w2.toFixed(1), unit: 'g', status: '' },
+        { label: 'Immersed Weight', value: w3.toFixed(1), unit: 'g', status: '' }
+    ];
+    manualRenderResults();
+    manualAlert('success', 'Calculation complete');
+}
+
+function drawSGChart(Gs) {
+    const canvas = document.getElementById('sgChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    canvas.width = canvas.offsetWidth;
+    canvas.height = 200;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const h = canvas.height - 40;
+    ctx.fillStyle = 'var(--accent-orange)';
+    ctx.fillRect(60, 20, 80, h * Gs / 3);
+    ctx.fillStyle = 'var(--text-muted)';
+    ctx.font = '12px monospace';
+    ctx.fillText('Gs', 60, canvas.height - 5);
+}
+
+    </script>
+</body>
+</html>

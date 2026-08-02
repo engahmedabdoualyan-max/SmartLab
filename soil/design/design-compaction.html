@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>smartLAB — Compaction Curve</title>
-    <link rel="icon" href="../favicon.ico">
+    <link rel="icon" href="../../favicon.ico">
     <link rel="stylesheet" href="design-common.css">
     <style>
         :root { --accent-page: #fb923c; }
@@ -280,7 +280,7 @@
         <a href="../soil.html" class="back-btn">← Back to Soil & Roads</a>
     </div>
     <div id="footer-placeholder"></div>
-    <script src="../components.js"></script>
+    <script src="../../components.js"></script>
     <script>
         function switchTab(tabId, btn) {
             document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
@@ -312,14 +312,14 @@
             // Zero air voids curve: γzav = Gs*γw / (1 + w*Gs) where γw = 62.4 pcf
             const gammaW = 62.4;
             const zavOpt = (Gs * gammaW) / (1 + wOpt * Gs / 100);
-            const satOpt = (wOpt / 100) * Gs * gammaMax / (gammaW * (1 - gammaMax/(Gs*gammaW))) * 100;
+            const satOpt = (wOpt / 100) * Gs * gammaMax / (Gs * gammaW - gammaMax) * 100;
 
             // Calculate for each data point
             const tableData = [];
             for (let i = 0; i < n; i++) {
                 const w = wPoints[i], gd = dPoints[i];
                 const gw = gd * (1 + w/100);
-                const sat = (w/100) * Gs * gd / (gammaW * (1 - gd/(Gs*gammaW))) * 100;
+                const sat = (w/100) * Gs * gd / (Gs * gammaW - gd) * 100;
                 tableData.push({w, gd, gw, sat: sat.toFixed(1)});
             }
 

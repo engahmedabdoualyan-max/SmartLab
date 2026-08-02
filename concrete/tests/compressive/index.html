@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>smartLAB — Compressive Strength Test</title>
+    <link rel="icon" href="/favicon.ico">
+    <link rel="stylesheet" href="../test-common.css">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <link rel="stylesheet" href="../../../test-zones.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    <div class="page">
+        <a href="../../concrete.html" class="back-link">
+            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Back to Concrete Tests
+        </a>
+
+        <h1 class="page-title">Compressive <span>Strength</span></h1>
+        <p class="page-sub">Cylinder / Cube compressive strength per ASTM C39 / BS 1881-116</p>
+
+        <!-- TAB BAR: Normal / SmartLab -->
+        <div class="test-tab-bar" id="testTabBar">
+            <button class="test-tab active" data-mode="normal">&#x1F9EA; <span data-i18n="Normal Test">Normal Test</span> <span style="font-weight:400;font-size:11px;">(&#x0627;&#x0644;&#x0627;&#x062E;&#x062A;&#x0628;&#x0627;&#x0631; &#x0627;&#x0644;&#x0639;&#x0627;&#x062F;&#x064A;)</span></button>
+            <button class="test-tab" data-mode="smartlab">&#x1F916; <span data-i18n="SmartLab Test">SmartLab Test</span> <span style="font-weight:400;font-size:11px;">(&#x0627;&#x062E;&#x062A;&#x0628;&#x0627;&#x0631; &#x0633;&#x0645;&#x0627;&#x0631;&#x062A; &#x0644;&#x0644;&#x0627;&#x0628;)</span></button>
+        </div>
+
+        <!-- Device Selector (SmartLab) -->
+        <div id="deviceSelectorBar" style="display:none;margin-top:12px;align-items:center;gap:10px;flex-wrap:wrap;">
+            <label class="lt-label">&#x1F4E6; <span data-i18n="SmartLab Device">SmartLab Device</span></label>
+            <select id="deviceSelector" class="lt-select" style="flex:1;max-width:360px;padding:8px 10px;border-radius:6px;border:1px solid var(--border-glass);background:rgba(255,255,255,0.04);color:var(--text-primary);font-family:inherit;font-size:13px;">
+                <option value="esp32-pzt">&#x1F4E6; ESP32 PZT EMI Monitoring Node (smart aggregate)</option>
+                <option value="future-device" disabled>&#x1F50D; Future devices will appear here</option>
+            </select>
+            <span id="deviceInfo" style="font-size:12px;color:var(--text-muted);">Select a device to load its SmartLab workflow</span>
+        </div>
+
+        <div id="normalTestMode">
+            <div id="manualAlert" class="manual-alert" style="display:none;"></div>
+
+            <!-- BILLBOARD: animated step showcase -->
+            <div class="billboard" id="billboard">
+                <div class="bb-inner">
+                    <div class="bb-icon" id="bbIcon">&#x1F3D7;</div>
+                    <div class="bb-body">
+                        <div class="bb-step-label" id="bbStepLabel">STEP 1/3</div>
+                        <div class="bb-title" id="bbTitle"></div>
+                        <div class="bb-desc" id="bbDesc">Follow the steps below to complete your test</div>
+                        <div class="bb-dots" id="bbDots">
+                            <span class="bb-dot active" data-slide="0"></span>
+                            <span class="bb-dot" data-slide="1"></span>
+                            <span class="bb-dot" data-slide="2"></span>
+                        </div>
+                    </div>
+                    <div class="bb-nav">
+                        <button id="bbPrev">&#x276E;</button>
+                        <button id="bbNext">&#x276F;</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="two-col">
+                <div class="sidebar">
+                    <div class="sidebar-title">&#9881; Specimen Setup</div>
+                    <div class="sidebar-field">
+                        <label class="sidebar-label">Specimen Type</label>
+                        <select class="sidebar-input" id="specType">
+                            <option value="cylinder150x300">Cylinder 150 &#215; 300 mm</option>
+                            <option value="cylinder100x200">Cylinder 100 &#215; 200 mm</option>
+                            <option value="cube150">Cube 150 mm</option>
+                            <option value="cube100">Cube 100 mm</option>
+                        </select>
+                    </div>
+                    <div class="sidebar-field">
+                        <label class="sidebar-label">Maximum Load</label>
+                        <input type="number" class="sidebar-input" id="maxLoad" placeholder="e.g. 450" step="0.1"><span class="unit">kN</span>
+                    </div>
+                    <div class="sidebar-field">
+                        <label class="sidebar-label">Specimen Age (days)</label>
+                        <input type="number" class="sidebar-input" id="specAge" value="28" step="1"><span class="unit">days</span>
+                    </div>
+                    <div class="sidebar-field">
+                        <label class="sidebar-label">Capping / Grinding</label>
+                        <select class="sidebar-input" id="cappingMethod">
+                            <option value="neat_cement">Neat Cement Capping</option>
+                            <option value="gypsum">Gypsum Capping</option>
+                            <option value="plywood">Plywood Pads</option>
+                            <option value="grinding">Ground / Lapped</option>
+                        </select>
+                    </div>
+                    <div class="sidebar-field">
+                        <label class="sidebar-label">Required Strength (spec)</label>
+                        <input type="number" class="sidebar-input" id="targetStrength" placeholder="e.g. 30" step="0.1"><span class="unit">MPa</span>
+                    </div>
+                    <button class="btn btn-primary" onclick="runCompressiveTest()">&#129529; Calculate Strength</button>
+                </div>
+
+                <div>
+                    <div id="compResults" style="display:none;">
+                        <h3 style="color:var(--accent-orange);margin-bottom:16px;">&#128203; Compressive Strength Results</h3>
+                        <div class="result-grid">
+                            <div class="result-card"><div class="result-icon">&#128203;</div><div class="result-label">Compressive Strength</div><div class="result-value" id="rStrength">--</div><div class="result-unit">MPa</div></div>
+                            <div class="result-card"><div class="result-icon">&#9878;</div><div class="result-label">Cross-Section Area</div><div class="result-value" id="rArea">--</div><div class="result-unit">mm&sup2;</div></div>
+                            <div class="result-card"><div class="result-icon">&#128200;</div><div class="result-label">Load Rate Applied</div><div class="result-value" id="rLoadRate">--</div><div class="result-unit">kN/s</div></div>
+                            <div class="result-card"><div class="result-icon">&#127942;</div><div class="result-label">Grade Classification</div><div class="result-value" id="rGrade">--</div><div class="result-unit">nominal</div></div>
+                        </div>
+                    </div>
+                    <div id="compPlaceholder" style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+                        <div style="font-size:48px;margin-bottom:16px;">&#129529;</div>
+                        <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Enter Specimen Parameters</div>
+                        <div style="font-size:13px;">Select specimen type, enter maximum load to calculate compressive strength.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="notes-section">
+                <div class="notes-title">&#128221; Standards</div>
+                <ul class="notes-list">
+                    <li>ASTM C39: Standard Test Method for Compressive Strength of Cylindrical Concrete Specimens</li>
+                    <li>BS 1881-116: Testing concrete - Method for determination of compressive strength</li>
+                    <li>Load rate: 0.25 &plusmn; 0.05 MPa/s for cylinders, 0.3 MPa/s typical for cubes</li>
+                    <li>Reporting: strength to nearest 0.1 MPa for individual, 0.5 MPa for average</li>
+                    <li>Aspect ratio correction factor applies for height/diameter &ne; 2.0</li>
+                </ul>
+            </div>
+
+            <div class="section" id="manualResultsSection" style="display:none;">
+                <div class="section-title"><span class="st-icon">&#x1F4CA;</span> <span>Calculated Results <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(&#x0627;&#x0644;&#x0646;&#x062A;&#x0627;&#x0626;&#x062C; &#x0627;&#x0644;&#x0645;&#x062D;&#x0633;&#x0648;&#x0628;&#x0629;)</span></span></div>
+                <div class="results-two-col">
+                    <table class="results-table" id="manualResultsTable">
+                        <thead><tr><th>Parameter <span style="font-weight:400;">(&#x0627;&#x0644;&#x0642;&#x064A;&#x0627;&#x0633;)</span></th><th style="text-align:right;">Value <span style="font-weight:400;">(&#x0627;&#x0644;&#x0642;&#x064A;&#x0645;&#x0629;)</span></th><th style="text-align:center;">Status <span style="font-weight:400;">(&#x0627;&#x0644;&#x062D;&#x0627;&#x0644;&#x0629;)</span></th></tr></thead>
+                        <tbody id="manualResultsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="section" id="manualReportSection" style="display:none;">
+                <div class="section-title"><span class="st-icon">&#x1F4C4;</span> <span>Test Report <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(&#x062A;&#x0642;&#x0631;&#x064A;&#x0631; &#x0627;&#x0644;&#x0627;&#x062E;&#x062A;&#x0628;&#x0627;&#x0631;)</span></span></div>
+                <div class="report-input-row">
+                    <div class="manual-field"><label>Lab Name <span style="font-weight:400;">(&#x0627;&#x0633;&#x0645; &#x0627;&#x0644;&#x0645;&#x062E;&#x062A;&#x0628;&#x0631;)</span></label><input type="text" id="m-labName" value="smartLAB Testing Lab"></div>
+                    <div class="manual-field"><label>Sample # <span style="font-weight:400;">(&#x0631;&#x0642;&#x0645; &#x0627;&#x0644;&#x0639;&#x064A;&#x0646;&#x0629;)</span></label><input type="text" id="m-sampleNo" placeholder="e.g. S-2026-001"></div>
+                    <div class="manual-field"><label>Specifications <span style="font-weight:400;">(&#x0627;&#x0644;&#x0645;&#x0648;&#x0627;&#x0635;&#x0641;&#x0627;&#x062A;)</span></label><input type="text" id="m-specs" placeholder="e.g. 150mm cube, 28d"></div>
+                    <div class="manual-field"><label>Technician <span style="font-weight:400;">(&#x0627;&#x0644;&#x0641;&#x0646;&#x064A;)</span></label><input type="text" id="m-tech" placeholder="Name"></div>
+                    <div class="manual-field"><label>Engineer <span style="font-weight:400;">(&#x0627;&#x0644;&#x0645;&#x0647;&#x0646;&#x062F;&#x0633;)</span></label><input type="text" id="m-eng" placeholder="Name"></div>
+                </div>
+                <div style="padding:6px 0;font-size:12px;color:var(--text-muted);margin-bottom:8px;">Export the results as an Excel, PDF or printed report.</div>
+                <div class="btn-row" style="justify-content:flex-start;gap:8px;">
+                    <button class="btn btn-blue" id="btnManualExcel">&#x1F4C4; Excel</button>
+                    <button class="btn btn-red" id="btnManualPdf">&#x1F4C4; PDF</button>
+                    <button class="btn btn-gold" id="btnManualPrint">&#x1F5A8; Print <span style="font-weight:400;">(&#x0637;&#x0628;&#x0627;&#x0639;&#x0629;)</span></button>
+                </div>
+            </div>
+        </div><!-- /normalTestMode -->
+
+        <!-- ===== SMARTLAB CONTENT ===== -->
+        <div id="smartlabContent" style="display:none;">
+            <div class="sl-sub-tabs">
+                <button class="sl-sub-tab active" data-sub="stages">&#x1F4CB; Stages <span style="font-weight:400;">(&#x0627;&#x0644;&#x0645;&#x0631;&#x0627;&#x062D;&#x0644;)</span></button>
+                <button class="sl-sub-tab" data-sub="hardware">&#x1F527; Hardware Guide <span style="font-weight:400;">(&#x062F;&#x0644;&#x064A;&#x0644; &#x0627;&#x0644;&#x0647;&#x0627;&#x0631;&#x062F;&#x0648;&#x064A;&#x0631;)</span></button>
+            </div>
+
+            <div id="slStagesContent">
+
+                <!-- Test Level selector (SmartLab only) -->
+                <div class="level-top" id="levelTopBar">
+                    <span class="lt-label">&#x1F3C6; <span data-i18n="Test Level">Test Level</span></span>
+                    <div class="lt-btns" id="testLevelSelectTop">
+                        <button class="lt-btn active" data-level="quick">&#x26A1; <span data-i18n="Quick">Quick</span><span class="lt-sub" data-i18n="On-site check">On-site check</span></button>
+                        <button class="lt-btn" data-level="unofficial">&#x1F3ED; <span data-i18n="Unofficial">Unofficial</span><span class="lt-sub" data-i18n="Factory lab">Factory lab</span></button>
+                        <button class="lt-btn" data-level="certified">&#x1F512; <span data-i18n="Certified">Certified</span><span class="lt-sub" data-i18n="Full accreditation">Full accreditation</span></button>
+                    </div>
+                    <span class="lt-info" id="levelInfo">40% <span data-i18n="credibility">credibility</span></span>
+                </div>
+
+                <!-- STAGE 1: CONNECTION -->
+                <div class="section" id="slConnSection">
+                    <div class="section-title"><span class="st-icon">&#x1F4E1;</span> <span>Connect Device <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(&#x062A;&#x0648;&#x0635;&#x064A;&#x0644; &#x0627;&#x0644;&#x062C;&#x0647;&#x0627;&#x0632;)</span></span></div>
+                    <div class="conn-grid" id="connGrid">
+                        <button class="conn-btn" data-conn="power"><span class="cb-icon">&#x1F50C;</span> AC Power</button>
+                        <button class="conn-btn" data-conn="wifi"><span class="cb-icon">&#x1F4F6;</span> Wi-Fi</button>
+                        <button class="conn-btn" data-conn="pzt"><span class="cb-icon">&#x1F50A;</span> PZT Sensor</button>
+                        <button class="conn-btn" data-conn="cloud"><span class="cb-icon">&#x2601;&#xFE0F;</span> Cloud API</button>
+                    </div>
+                    <div class="conn-status disconnected" id="connStatus"><span class="status-dot"></span><span id="connStatusText">Disconnected — click each link to connect your ESP32 PZT node</span></div>
+                </div>
+
+                <!-- STAGE 2: HARDWARE CHECK -->
+                <div class="section" id="slHwSection" style="display:none;">
+                    <div class="section-title"><span class="st-icon">&#x1F527;</span> <span>Hardware Check <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(&#x0641;&#x062D;&#x0635; &#x0627;&#x0644;&#x0639;&#x062A;&#x0627;&#x062F;)</span></span></div>
+                    <div class="device-tabs">
+                        <button class="dev-tab active"><span class="dt-icon">&#x1F9ED;</span> Our Device</button>
+                        <button class="dev-tab"><span class="dt-icon">&#x1F464;</span> Client Device</button>
+                    </div>
+                    <div class="hw-id-box">
+                        <span class="hwid-label">&#x1F511; Hardware ID</span>
+                        <span class="hwid-value" id="hwidValue">--</span>
+                        <span class="hwid-badge unverified" id="hwidBadge">UNVERIFIED</span>
+                    </div>
+                    <div class="check-list">
+                        <div class="check-item pending" id="checkMcu"><span class="ci-icon">&#x23F3;</span><span>Detect MCU</span></div>
+                        <div class="check-item pending" id="checkAdc"><span class="ci-icon">&#x23F3;</span><span>ADC Channel — GPIO36 (ADC1_CH0)</span></div>
+                        <div class="check-item pending" id="checkPzt"><span class="ci-icon">&#x23F3;</span><span>PZT Continuity &amp; Mounting</span></div>
+                        <div class="check-item pending" id="checkExc"><span class="ci-icon">&#x23F3;</span><span>Vexcitation Divider (GPIO25 &#x2192; 1k&#x03A9;)</span></div>
+                    </div>
+                    <div class="btn-row">
+                        <button class="btn btn-blue" id="btnCheckHw">&#x1F50D; Check Hardware</button>
+                    </div>
+                </div>
+
+                <!-- STAGE 3: FIRMWARE -->
+                <div class="section" id="slFwSection" style="display:none;">
+                    <div class="section-title"><span class="st-icon">&#x1F4E6;</span> <span>Firmware <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(&#x0627;&#x0644;&#x0628;&#x0631;&#x0646;&#x0627;&#x0645;&#x062C;)</span></span></div>
+                    <div class="session-badge">
+                        <span class="sb-label">&#x1F512; Session</span>
+                        <span class="sb-id" id="sessionId">PZT-2026-0001</span>
+                        <span class="sb-status" id="sbStatus">PENDING</span>
+                    </div>
+                    <div class="fw-info">
+                        <span class="fw-version">FW: EMI Monitoring v2.1.0</span>
+                        <span class="fw-status" id="fwStatusEl">OFFLINE</span>
+                    </div>
+                    <div class="fw-lamps">
+                        <div class="fw-lamp" data-status="good"><div class="lamp-bulb"></div><span class="lamp-label">Network</span></div>
+                        <div class="fw-lamp" data-status="good"><div class="lamp-bulb"></div><span class="lamp-label">Sweep</span></div>
+                        <div class="fw-lamp" data-status="good"><div class="lamp-bulb"></div><span class="lamp-label">ADC</span></div>
+                    </div>
+                    <div class="fw-msg" id="fwMsg">Node is offline. Flash the firmware to begin the EMI sweep.</div>
+                    <div class="btn-row">
+                        <button class="btn btn-gold" id="btnFlash">&#x26A1; Flash Firmware</button>
+                    </div>
+                    <div class="fw-progress" id="fwProgress"><div class="fw-bar" id="fwBar"></div></div>
+                </div>
+
+                <!-- STAGE 4: LIVE DATA & RESULTS -->
+                <div class="section" id="slDataSection" style="display:none;">
+                    <div class="section-title"><span class="st-icon">&#x1F4CA;</span> <span>Live Data &amp; Results <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(&#x0627;&#x0644;&#x0628;&#x064A;&#x0627;&#x0646;&#x0627;&#x062A; &#x0627;&#x0644;&#x062D;&#x064A;&#x0629;)</span></span></div>
+
+                    <div class="vg-layout">
+                        <div class="vg-left">
+                            <div class="vg-steps" id="vgSteps">
+                                <div class="vg-step" data-step="0"><span class="vg-lamp"></span><span class="vg-img">&#x1F30A;</span><span class="vg-text">Sweep EMI spectrum 1 &#x2192; 500 kHz (96 log steps)</span></div>
+                                <div class="vg-pipe"><span class="pipe-line"></span><span class="pipe-dot"></span><span class="pipe-arrow">&#x27A4;</span></div>
+                                <div class="vg-step" data-step="1"><span class="vg-lamp"></span><span class="vg-img">&#x1F501;</span><span class="vg-text">Invert impedance — G = 1/|Z| [&#x00B5;S], R = |Z| [k&#x03A9;]</span></div>
+                                <div class="vg-pipe"><span class="pipe-line"></span><span class="pipe-dot"></span><span class="pipe-arrow">&#x27A4;</span></div>
+                                <div class="vg-step" data-step="2"><span class="vg-lamp"></span><span class="vg-img">&#x1F50A;</span><span class="vg-text">Track resonance — F = argmax |Z&#x207B;&#x00B9;|</span></div>
+                                <div class="vg-pipe"><span class="pipe-line"></span><span class="pipe-dot"></span><span class="pipe-arrow">&#x27A4;</span></div>
+                                <div class="vg-step" data-step="3"><span class="vg-lamp"></span><span class="vg-img">&#x1F4A5;</span><span class="vg-text">Evaluate damage — RMSD index &amp; collapse threshold</span></div>
+                            </div>
+                        </div>
+                        <div class="vg-right">
+                            <div class="rd-panel">
+                                <div class="rd-title">&#x26A1; Live Readings</div>
+                                <div class="rd-row"><span class="rd-label"><span class="rd-dot live"></span> Excitation Vexc</span><span class="rd-value" id="rdVexc">--</span></div>
+                                <div class="rd-row"><span class="rd-label">Peak Voltage Vp</span><span class="rd-value" id="rdVp">--</span></div>
+                                <div class="rd-row"><span class="rd-label">Resonant Freq</span><span class="rd-value" id="rdFr">--</span></div>
+                                <div class="rd-row"><span class="rd-label">Impedance |Z|</span><span class="rd-value" id="rdZ">--</span></div>
+                                <div class="rd-row"><span class="rd-label">Conductance G</span><span class="rd-value" id="rdG">--</span></div>
+                                <div class="rd-row"><span class="rd-label">Damage Index</span><span class="rd-value" id="rdD">--</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-section">
+                        <div class="chart-title">&#x1F4C8; EMI Impedance Spectrum</div>
+                        <canvas class="chart-canvas" id="emiCanvas"></canvas>
+                        <div class="trend-prediction" id="emiCaption">Waiting for sweep&#x2026;</div>
+                    </div>
+
+                    <div class="chart-section">
+                        <div class="chart-title">&#x1F4C9; Damage Index vs. Curing Age</div>
+                        <div class="trend-chart-wrap"><canvas id="trendCanvas"></canvas></div>
+                        <div class="trend-prediction" id="trendPred">Damage trend vs. curing age</div>
+                    </div>
+
+                    <div style="position:relative;">
+                        <span class="report-stamp" id="slStamp" style="display:none;"><span>LAB TEST</span><span class="rs-inner" id="slStampInner">--</span></span>
+                        <table class="results-table" id="slResultsTable">
+                            <thead><tr><th>Parameter</th><th style="text-align:right;">Value</th><th style="text-align:center;">Unit</th><th style="text-align:center;">Status</th><th>Notes</th></tr></thead>
+                            <tbody id="slResultsBody"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="ai-alert warning" id="crushAlert" style="display:none;">&#x26A0;&#xFE0F; Acoustic collapse detected — resonance spike exceeds CRUSH_SPIKE (950 mV). Immediate inspection recommended.</div>
+
+                    <div class="btn-row">
+                        <button class="btn btn-emerald" id="btnRunTest">&#x25B6; Start EMI Sweep</button>
+                    </div>
+                </div>
+
+                <!-- STAGE 5: AI ASSISTANT -->
+                <div class="section" id="slAiSection" style="display:none;">
+                    <div class="section-title"><span class="st-icon">&#x1F916;</span> <span>AI Assistant <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(&#x0627;&#x0644;&#x0645;&#x0633;&#x0627;&#x0639;&#x062F; &#x0627;&#x0644;&#x0630;&#x0643;&#x064A;)</span></span></div>
+                    <div class="ai-box">
+                        <div class="ai-avatar">&#x1F916;</div>
+                        <div class="ai-content">
+                            <div class="ai-status"><span class="ai-dot"></span><span id="aiStatusEl">AI assistant ready</span></div>
+                            <div class="ai-message" id="aiMsg">I will analyze the EMI sweep once the test runs.</div>
+                            <div class="ai-alert warning" id="aiAlert" style="display:none;"></div>
+                            <div class="ai-gps-box" id="aiGpsBox" style="display:none;">
+                                <div class="gps-row"><span class="gps-label">&#x1F4E1; GPS</span><span class="gps-value" id="gpsVal">--</span></div>
+                                <div class="gps-status" id="gpsStatus">--</div>
+                            </div>
+                            <div class="ai-strikes" id="aiStrikes">
+                                <span class="ai-strike" data-s="0">1</span><span class="ai-strike" data-s="1">2</span><span class="ai-strike" data-s="2">3</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STAGE 6: REPORT -->
+                <div class="section" id="slReportSection" style="display:none;">
+                    <div class="section-title"><span class="st-icon">&#x1F4C4;</span> <span>Report &amp; Export <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(&#x0627;&#x0644;&#x062A;&#x0642;&#x0631;&#x064A;&#x0631;)</span></span></div>
+                    <div class="report-settings">
+                        <div class="rs-row">
+                            <div class="rs-field"><label>Lab Name</label><input type="text" id="sl-labName" value="smartLAB Testing Lab"></div>
+                            <div class="rs-field"><label>Sample #</label><input type="text" id="sl-sampleNo" placeholder="e.g. S-2026-004"></div>
+                            <div class="rs-field"><label>Specifications</label><input type="text" id="sl-specs" placeholder="e.g. 150mm cylinder, 28d"></div>
+                            <div class="rs-field"><label>Technician</label><input type="text" id="sl-tech" placeholder="Name"></div>
+                            <div class="rs-field"><label>Engineer</label><input type="text" id="sl-eng" placeholder="Name"></div>
+                        </div>
+                        <div class="rs-row">
+                            <button class="rs-btn" id="rsGps">&#x1F4E1; GPS</button>
+                            <button class="rs-btn" id="rsVpn">&#x1F512; VPN</button>
+                            <span class="rs-coords" id="rsCoords">--</span>
+                            <button class="rs-btn" id="btnSlPhoto">&#x1F4F7; Add Photo</button>
+                            <input type="file" accept="image/*" id="slPhotoInput" style="display:none;">
+                        </div>
+                        <div class="photo-grid" id="slPhotoGrid"></div>
+                        <div class="sig-row">
+                            <div class="sig-field"><label>Technician Signature</label><input type="text" id="sl-sigTech"></div>
+                            <div class="sig-field"><label>Engineer Signature</label><input type="text" id="sl-sigEng"></div>
+                        </div>
+                    </div>
+                    <div class="btn-row" style="justify-content:flex-start;gap:8px;">
+                        <button class="btn btn-blue" id="btnSlExcel">&#x1F4C4; Excel</button>
+                        <button class="btn btn-red" id="btnSlPdf">&#x1F4C4; PDF</button>
+                        <button class="btn btn-gold" id="btnSlPrint">&#x1F5A8; Print</button>
+                    </div>
+                </div>
+
+                <div id="zoneContainer" class="zone-container"></div>
+            </div><!-- /slStagesContent -->
+
+            <div id="slHardwareContent" style="display:none;">
+                <div class="section">
+                    <div class="section-title"><span class="st-icon">&#x1F527;</span> <span>ESP32 PZT EMI Node — Hardware Guide <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(&#x062F;&#x0644;&#x064A;&#x0644; &#x0627;&#x0644;&#x0647;&#x0627;&#x0631;&#x062F;&#x0648;&#x064A;&#x0631;)</span></span></div>
+                    <div class="step-guide" id="sgHw">
+                        <div class="sg-step done"><span class="sg-num">1</span> Power the node — ESP32-WROOM-32 (5V / USB-C)</div>
+                        <div class="sg-step active"><span class="sg-num">2</span> Verify divider — GPIO25 &#x2192; 1k&#x03A9; &#x2192; PZT &#x2192; GND</div>
+                        <div class="sg-step"><span class="sg-num">3</span> Attach PZT sensor to the concrete surface (acoustic coupling gel)</div>
+                        <div class="sg-step"><span class="sg-num">4</span> Tap ADC — measure Vp at GPIO36 (ADC1_CH0, 11 dB)</div>
+                        <div class="sg-step"><span class="sg-num">5</span> Confirm cloud uplink — HTTPS &#x2192; fimtosoft.com @ 1 Hz</div>
+                    </div>
+                </div>
+                <div class="section">
+                    <div class="section-title"><span class="st-icon">&#x1F50C;</span> <span>Node Specifications <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(&#x0645;&#x0648;&#x0627;&#x0635;&#x0641;&#x0627;&#x062A; &#x0627;&#x0644;&#x0639;&#x0642;&#x062F;&#x0629;)</span></span></div>
+                    <div class="rd-panel">
+                        <div class="rd-row"><span class="rd-label">Board</span><span class="rd-value">ESP32-WROOM-32</span></div>
+                        <div class="rd-row"><span class="rd-label">EMI Sweep</span><span class="rd-value">1 &#x2192; 500 kHz &#xB7; 96 log steps</span></div>
+                        <div class="rd-row"><span class="rd-label">Divider</span><span class="rd-value">Rs = 1 k&#x03A9; (GPIO25)</span></div>
+                        <div class="rd-row"><span class="rd-label">ADC</span><span class="rd-value">ADC1_CH0 &#xB7; GPIO36 &#xB7; 12-bit</span></div>
+                        <div class="rd-row"><span class="rd-label">Formula</span><span class="rd-value">|Z| = Rs&#xB7;Vp/(Vexc&#x2212;Vp)</span></div>
+                        <div class="rd-row"><span class="rd-label">Telemetry</span><span class="rd-value">fimtosoft.com &#xB7; 1 Hz</span></div>
+                    </div>
+                </div>
+            </div><!-- /slHardwareContent -->
+        </div><!-- /smartlabContent -->
+
+    </div>
+    <div id="footer-placeholder"></div>
+    <script src="../../../components.js"></script>
+    <script src="../../../test-zone.js"></script>
+    <script src="../test-manual.js"></script>
+    <script>
+var manualResults = null;
+var manualTestTitleStr = "Compressive Strength Test";
+
+function bindManualExports() {
+    var be = document.getElementById('btnManualExcel');
+    var bp = document.getElementById('btnManualPdf');
+    var br = document.getElementById('btnManualPrint');
+    if (be) be.addEventListener('click', manualExportExcel);
+    if (bp) bp.addEventListener('click', manualExportPdf);
+    if (br) br.addEventListener('click', manualExportPrint);
+}
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bindManualExports);
+} else {
+    bindManualExports();
+}
+
+if (typeof TestZones !== 'undefined') {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() { TestZones.init('test-compressive'); });
+    } else {
+        TestZones.init('test-compressive');
+    }
+}
+
+function runCompressiveTest() {
+    const specType = document.getElementById('specType').value;
+    const maxLoad = parseFloat(document.getElementById('maxLoad').value);
+    const specAge = parseInt(document.getElementById('specAge').value) || 28;
+    const target = parseFloat(document.getElementById('targetStrength').value);
+    if (isNaN(maxLoad) || maxLoad <= 0) { manualAlert('warning', 'Please enter a valid maximum load.'); return; }
+
+    let area;
+    switch(specType) {
+        case 'cylinder150x300': area = Math.PI * 75 * 75; break;
+        case 'cylinder100x200': area = Math.PI * 50 * 50; break;
+        case 'cube150': area = 150 * 150; break;
+        case 'cube100': area = 100 * 100; break;
+    }
+
+    const strengthMPa = (maxLoad * 1000) / area;
+
+    let ageFactor = 1.0;
+    if (specAge < 7) ageFactor = 0.65;
+    else if (specAge < 14) ageFactor = 0.75;
+    else if (specAge < 28) ageFactor = 0.90;
+
+    const equivStrength = ageFactor > 0 ? strengthMPa / ageFactor : strengthMPa;
+    const stressRate = specType.indexOf('cube') === 0 ? 0.30 : 0.25;
+    const loadRate = (stressRate * area / 1000).toFixed(1);
+    const grade = equivStrength >= 50 ? 'C' + Math.ceil(equivStrength / 10) * 10 :
+                  equivStrength >= 20 ? 'C' + Math.ceil(equivStrength / 5) * 5 : 'C' + Math.ceil(equivStrength / 2.5) * 2.5;
+    const ok = isNaN(target) || strengthMPa >= target;
+
+    document.getElementById('compPlaceholder').style.display = 'none';
+    document.getElementById('compResults').style.display = 'block';
+    document.getElementById('rStrength').textContent = strengthMPa.toFixed(1);
+    document.getElementById('rArea').textContent = area.toFixed(0);
+    document.getElementById('rLoadRate').textContent = loadRate;
+    document.getElementById('rGrade').textContent = grade + ' (@' + specAge + 'd)';
+
+    window.manualResults = [
+        { label: 'Compressive Strength', value: strengthMPa.toFixed(1), unit: 'MPa', status: ok ? 'pass' : 'fail' },
+        { label: 'Equivalent 28-day Strength', value: equivStrength.toFixed(1), unit: 'MPa', status: '' },
+        { label: 'Cross-Section Area', value: area.toFixed(0), unit: 'mm\u00B2', status: '' },
+        { label: 'Load Rate Applied', value: loadRate, unit: 'kN/s', status: '' },
+        { label: 'Age Factor (' + specAge + ' days)', value: ageFactor.toFixed(2), unit: '', status: '' },
+        { label: 'Grade Classification', value: grade + ' @' + specAge + 'd', unit: '', status: '' },
+        { label: 'Required Strength', value: isNaN(target) ? '--' : target.toFixed(1), unit: 'MPa', status: '' }
+    ];
+    manualRenderResults();
+    manualAlert('success', 'Calculation complete');
+}
+
+/* ===================== SMARTLAB DEVICE WORKFLOW (ESP32 PZT EMI) ===================== */
+(function() {
+    'use strict';
+
+    function $(id) { return document.getElementById(id); }
+    function qsa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+    function isAr() { try { return (localStorage.getItem('smartlab_lang') || 'en') === 'ar'; } catch(e) { return false; } }
+    var ar = isAr();
+
+    /* ---- Test level selector ---- */
+    var credMap = { quick: 40, unofficial: 70, certified: 100 };
+    var credName = { quick: ar ? 'QUICK' : 'QUICK', unofficial: ar ? 'UNOFFICIAL' : 'UNOFFICIAL', certified: ar ? 'CERTIFIED' : 'CERTIFIED' };
+    var levelBtns = qsa('#testLevelSelectTop .lt-btn');
+    var levelInfo = $('levelInfo');
+    var currentLevel = 'quick';
+    function setLevel(level, silent) {
+        currentLevel = level;
+        levelBtns.forEach(function(b) { b.classList.toggle('active', b.getAttribute('data-level') === level); });
+        if (levelInfo) levelInfo.innerHTML = credMap[level] + '% ' + (ar ? '\u0645\u0635\u062F\u0627\u0642\u064A\u0629' : 'credibility');
+        try { localStorage.setItem('smartlab_test_level', level); } catch(e) {}
+        var stamp = $('slStamp');
+        if (stamp) {
+            stamp.className = 'report-stamp stamp-' + level;
+            var inner = $('slStampInner');
+            if (inner) inner.textContent = credName[level];
+        }
+    }
+    levelBtns.forEach(function(b) {
+        b.addEventListener('click', function() { setLevel(this.getAttribute('data-level')); });
+    });
+    var savedLevel = 'quick';
+    try { savedLevel = localStorage.getItem('smartlab_test_level') || 'quick'; } catch(e) {}
+    setLevel(savedLevel, true);
+
+    /* ---- Billboard (normal mode) ---- */
+    var bbSlides = [
+        { icon: '\uD83E\uDDEA', title: ar ? '\u062A\u062D\u0636\u064A\u0631 \u0627\u0644\u0639\u064A\u0646\u0629' : 'Prepare Specimen', desc: ar ? '\u0623\u062F\u062E\u0644 \u0623\u0628\u0639\u0627\u062F \u0627\u0644\u0623\u0633\u0637\u0648\u0627\u0646\u0629 \u0623\u0648 \u0627\u0644\u0645\u0643\u0639\u0628 \u0648\u062D\u0645\u0644 \u0627\u0644\u0643\u0633\u0631 \u0627\u0644\u0623\u0642\u0635\u0649\u060C \u062B\u0645 \u0627\u062E\u062A\u0631 \u0645\u0633\u062A\u0648\u0649 \u0627\u0644\u0627\u062E\u062A\u0628\u0627\u0631.' : 'Enter cylinder or cube dimensions and the maximum load, then set the test level.', bb: '' },
+        { icon: '\uD83C\uDFD7\uFE0F', title: ar ? '\u062A\u0634\u063A\u064A\u0644 \u0627\u062E\u062A\u0628\u0627\u0631 \u0627\u0644\u0636\u063A\u0637' : 'Run the Compression Test', desc: ar ? '\u0627\u0636\u063A\u0637 \u0627\u062D\u0633\u0627\u0628 \u0627\u0644\u0645\u062A\u0627\u0646\u0629 \u0644\u062A\u0642\u064A\u064A\u0645 \u0642\u0648\u0629 \u0627\u0644\u0636\u063A\u0637 \u0645\u0639 \u0645\u0639\u0627\u0645\u0644 \u0627\u0644\u062D\u0645\u0644 \u0648\u0627\u0644\u0639\u0645\u0631.' : 'Click Calculate Strength to evaluate compressive strength with load rate and age correction.', bb: '' },
+        { icon: '\uD83D\uDCC4', title: ar ? '\u0645\u0631\u0627\u062C\u0639\u0629 \u0648\u062A\u0635\u062F\u064A\u0631' : 'Review & Export', desc: ar ? '\u062A\u062D\u0642\u0642 \u0645\u0646 \u0634\u0627\u0631\u0627\u062A \u0627\u0644\u062D\u0627\u0644\u0629 \u0648\u0635\u062F\u0631 \u0627\u0644\u062A\u0642\u0631\u064A\u0631 \u0643\u0645\u0644\u0641 Excel \u0623\u0648 PDF \u0623\u0648 \u0637\u0628\u0627\u0639\u0629.' : 'Check the status badges and export the report as Excel, PDF or print.', bb: '' }
+    ];
+    var bbIndex = 0;
+    var bbTitle = $('bbTitle'), bbDesc = $('bbDesc'), bbIcon = $('bbIcon'), bbStep = $('bbStepLabel');
+    var bbDots = qsa('#bbDots .bb-dot');
+    var bbPrev = $('bbPrev'), bbNext = $('bbNext');
+    function renderBB() {
+        if (!bbTitle || !bbDesc || !bbIcon || !bbStep) return;
+        var s = bbSlides[bbIndex];
+        bbIcon.textContent = s.icon;
+        bbStep.textContent = 'STEP ' + (bbIndex + 1) + '/3';
+        bbTitle.textContent = s.title;
+        bbDesc.textContent = s.desc;
+        bbDots.forEach(function(d, i) { d.classList.toggle('active', i === bbIndex); });
+        if (bbIcon.classList) { bbIcon.classList.remove('flash'); void bbIcon.offsetWidth; bbIcon.classList.add('flash'); }
+    }
+    function bbGo(i) {
+        bbIndex = ((i % bbSlides.length) + bbSlides.length) % bbSlides.length;
+        renderBB();
+    }
+    if (bbPrev) bbPrev.addEventListener('click', function() { bbGo(bbIndex - 1); });
+    if (bbNext) bbNext.addEventListener('click', function() { bbGo(bbIndex + 1); });
+    bbDots.forEach(function(d) {
+        d.addEventListener('click', function() { bbGo(parseInt(this.getAttribute('data-slide'), 10)); });
+    });
+    renderBB();
+
+    /* ---- Device selector bar visibility (follows SmartLab tab) ---- */
+    function smartlabActive() {
+        var sc = $('smartlabContent');
+        return !!sc && sc.style.display !== 'none';
+    }
+    function syncDeviceBar() {
+        var bar = $('deviceSelectorBar');
+        if (bar) bar.style.display = smartlabActive() ? 'flex' : 'none';
+    }
+    qsa('#testTabBar .test-tab').forEach(function(t) {
+        t.addEventListener('click', function() { setTimeout(syncDeviceBar, 0); });
+    });
+    syncDeviceBar();
+    setInterval(syncDeviceBar, 500);
+
+    var devSel = $('deviceSelector'), devInfo = $('deviceInfo');
+    if (devSel) {
+        devSel.addEventListener('change', function() {
+            if (devInfo) {
+                devInfo.textContent = (devSel.value === 'esp32-pzt')
+                    ? (ar ? '\u062A\u0645 \u062A\u062D\u0645\u064A\u0644 \u0633\u064A\u0631 \u0639\u0645\u0644 ESP32 PZT — \u0627\u062A\u0628\u0639 \u0627\u0644\u062E\u0637\u0648\u0627\u062A \u0623\u062F\u0646\u0627\u0647.' : 'ESP32 PZT EMI workflow loaded — follow the steps below.')
+                    : (ar ? '\u0627\u062E\u062A\u0631 \u062C\u0647\u0627\u0632\u0627\u064B \u0644\u062A\u062D\u0645\u064A\u0644 \u0633\u064A\u0631 \u0639\u0645\u0644\u0647' : 'Select a device to load its SmartLab workflow');
+            }
+        });
+    }
+
+    /* ---- Stage 1: Connection ---- */
+    var connBtns = qsa('#connGrid .conn-btn');
+    var connStatus = $('connStatus'), connStatusText = $('connStatusText');
+    function connCount() {
+        var n = 0;
+        connBtns.forEach(function(b) { if (b.classList.contains('active')) n++; });
+        return n;
+    }
+    connBtns.forEach(function(b) {
+        b.addEventListener('click', function() {
+            this.classList.toggle('active');
+            var all = connCount() === connBtns.length;
+            if (!connStatus) return;
+            if (all) {
+                connStatus.className = 'conn-status connected';
+                if (connStatusText) connStatusText.textContent = ar ? '\u062A\u0645 \u0627\u0644\u0627\u062A\u0635\u0627\u0644 \u0628\u0627\u0644\u062C\u0647\u0627\u0632 — \u0627\u0646\u062A\u0642\u0644 \u0625\u0644\u0649 \u0641\u062D\u0635 \u0627\u0644\u0639\u062A\u0627\u062F' : 'Device connected — proceed to hardware check';
+                var hw = $('slHwSection');
+                if (hw) hw.style.display = 'block';
+            } else {
+                connStatus.className = 'conn-status disconnected';
+                if (connStatusText) connStatusText.textContent = ar ? '\u063A\u064A\u0631 \u0645\u062A\u0635\u0644 \u2014 \u0627\u0636\u063A\u0637 \u0639\u0644\u0649 \u0643\u0644 \u0631\u0627\u0628\u0637 \u0644\u0644\u0627\u062A\u0635\u0627\u0644' : 'Disconnected — click each link to connect your ESP32 PZT node';
+            }
+        });
+    });
+
+    /* ---- Stage 2: Hardware check ---- */
+    var hwChecks = [
+        { el: 'checkMcu', name: ar ? '\u0643\u0634\u0641 MCU' : 'Detect MCU', fail: false },
+        { el: 'checkAdc', name: ar ? '\u0642\u0646\u0627\u0629 ADC' : 'ADC Channel — GPIO36 (ADC1_CH0)', fail: false },
+        { el: 'checkPzt', name: ar ? '\u0627\u062A\u0635\u0627\u0644 PZT' : 'PZT Continuity & Mounting', fail: false },
+        { el: 'checkExc', name: ar ? '\u0645\u0642\u0633\u0645 \u0627\u0644\u062C\u0647\u062F' : 'Vexcitation Divider (GPIO25 \u2192 1k\u03A9)', fail: false }
+    ];
+    var btnCheckHw = $('btnCheckHw');
+    function setCheck(elId, state) {
+        var el = $(elId);
+        if (!el) return;
+        var icon = el.querySelector('.ci-icon');
+        if (state === 'pass') {
+            el.className = 'check-item pass';
+            if (icon) icon.textContent = '\u2705';
+        } else if (state === 'fail') {
+            el.className = 'check-item fail';
+            if (icon) icon.textContent = '\u274C';
+        } else {
+            el.className = 'check-item pending';
+            if (icon) icon.textContent = '\u23F3';
+        }
+    }
+    function runCheck(i) {
+        if (i >= hwChecks.length) {
+            var badge = $('hwidBadge');
+            if (badge) { badge.className = 'hwid-badge verified'; badge.textContent = ar ? '\u062A\u0645 \u0627\u0644\u062A\u062D\u0642\u0642' : 'VERIFIED'; }
+            var fw = $('slFwSection');
+            if (fw) fw.style.display = 'block';
+            if (btnCheckHw) { btnCheckHw.disabled = false; btnCheckHw.textContent = '\u2705 ' + (ar ? '\u0627\u0643\u062A\u0645\u0644 \u0627\u0644\u0641\u062D\u0635' : 'Hardware Verified'); }
+            return;
+        }
+        var it = hwChecks[i];
+        var el = $(it.el);
+        if (el) { el.className = 'check-item pending'; var ic = el.querySelector('.ci-icon'); if (ic) ic.textContent = '\u23F3'; }
+        setTimeout(function() {
+            if (i === 0) {
+                var hv = $('hwidValue');
+                if (hv) hv.textContent = 'ESP32-WROOM-32 \u00B7 7C9E-02A4';
+            }
+            var pass = !it.fail;
+            setCheck(it.el, pass ? 'pass' : 'fail');
+            setTimeout(function() { runCheck(i + 1); }, pass ? 350 : 700);
+        }, 500 + Math.random() * 400);
+    }
+    if (btnCheckHw) {
+        btnCheckHw.addEventListener('click', function() {
+            if (btnCheckHw.disabled) return;
+            btnCheckHw.disabled = true;
+            btnCheckHw.textContent = '\u23F3 ' + (ar ? '\u062C\u0627\u0631\u064A \u0627\u0644\u0641\u062D\u0635...' : 'Checking hardware...');
+            runCheck(0);
+        });
+    }
+
+    /* ---- Stage 3: Firmware flash ---- */
+    var btnFlash = $('btnFlash');
+    if (btnFlash) {
+        btnFlash.addEventListener('click', function() {
+            if (btnFlash.disabled) return;
+            btnFlash.disabled = true;
+            var prog = $('fwProgress'), bar = $('fwBar');
+            if (prog) prog.classList.add('active');
+            var fwMsg = $('fwMsg');
+            if (fwMsg) { fwMsg.className = 'fw-msg'; fwMsg.textContent = ar ? '\u062C\u0627\u0631\u064A \u0627\u0644\u0648\u0645\u064A\u0636...' : 'Flashing firmware to the ESP32 node...'; }
+            var lamps = qsa('#slFwSection .fw-lamp');
+            var p = 0;
+            var iv = setInterval(function() {
+                p += 3;
+                if (bar) bar.style.width = Math.min(100, p) + '%';
+                if (p >= 30 && lamps[0] && !lamps[0].classList.contains('active')) lamps[0].classList.add('active');
+                if (p >= 55 && lamps[1] && !lamps[1].classList.contains('active')) lamps[1].classList.add('active');
+                if (p >= 80 && lamps[2] && !lamps[2].classList.contains('active')) lamps[2].classList.add('active');
+                if (p >= 100) {
+                    clearInterval(iv);
+                    var sb = $('sbStatus');
+                    if (sb) { sb.className = 'sb-status burned'; sb.textContent = ar ? '\u0645\u062D\u0631\u0648\u0642' : 'BURNED'; }
+                    var fwStat = $('fwStatusEl');
+                    if (fwStat) fwStat.textContent = ar ? '\u0645\u062A\u0635\u0644' : 'ONLINE';
+                    if (fwMsg) { fwMsg.className = 'fw-msg good'; fwMsg.textContent = ar ? '\u062A\u0645 \u062A\u062B\u0628\u064A\u062A \u0627\u0644\u0628\u0631\u0646\u0627\u0645\u062C \u0628\u0646\u062C\u0627\u062D' : 'Firmware installed successfully — node online'; }
+                    var ds = $('slDataSection');
+                    if (ds) ds.style.display = 'block';
+                    var runBtn = $('btnRunTest');
+                    if (runBtn) runBtn.disabled = false;
+                }
+            }, 50);
+        });
+    }
+
+    /* ---- Stage 4: EMI sweep + results ---- */
+    var SWEEP_STEPS = 96, F_START = 1, F_STOP = 500;
+    var ADC_MAX = 4095, VREF = 3300, RS = 1000, CRUSH_SPIKE = 950;
+    var btnRunTest = $('btnRunTest');
+    var sweep = null;
+
+    function simulateSweep() {
+        var freqs = [], imp = [], cond = [];
+        var Rr = 320 + Math.random() * 60, L = 4.2e-3, C = 1.35e-9;
+        var damage = 3 + Math.random() * 20;
+        var i;
+        for (i = 0; i < SWEEP_STEPS; i++) {
+            var fk = Math.pow(10, Math.log10(F_START) + (i / (SWEEP_STEPS - 1)) * (Math.log10(F_STOP) - Math.log10(F_START)));
+            var w = 2 * Math.PI * fk * 1000;
+            var z = Math.sqrt(Rr * Rr + Math.pow(w * L - 1 / (w * C), 2)) + RS;
+            var zt = z * (1 + damage * 0.015 * (i / SWEEP_STEPS));
+            freqs.push(fk);
+            imp.push(zt);
+            cond.push(1e6 / zt);
+        }
+        var gMax = -1, fRes = F_START, idx = 0;
+        for (i = 0; i < SWEEP_STEPS; i++) {
+            if (cond[i] > gMax) { gMax = cond[i]; fRes = freqs[i]; idx = i; }
+        }
+        var Zres = imp[idx];
+        var Vp = VREF * Zres / (RS + Zres);
+        return {
+            freqs: freqs, imp: imp, cond: cond,
+            fRes: fRes, Zres: Zres, Gres: gMax, Vp: Vp,
+            damage: damage, crushed: Vp > CRUSH_SPIKE,
+            age: Math.round(7 + Math.random() * 21)
+        };
+    }
+
+    function drawEmi(s) {
+        var cv = $('emiCanvas');
+        var cap = $('emiCaption');
+        if (!cv) return;
+        var W = cv.clientWidth || cv.parentNode.clientWidth || 600;
+        var H = 300;
+        cv.width = W; cv.height = H;
+        var ctx = cv.getContext('2d');
+        if (!ctx) return;
+        var padL = 46, padR = 14, padT = 12, padB = 26;
+        var gw = W - padL - padR, gh = H - padT - padB;
+        var gMaxV = 0;
+        s.cond.forEach(function(g) { if (g > gMaxV) gMaxV = g; });
+        gMaxV *= 1.1;
+        var logMin = Math.log10(F_START), logMax = Math.log10(F_STOP);
+        function xOf(f) { return padL + (Math.log10(f) - logMin) / (logMax - logMin) * gw; }
+        function yOf(g) { return padT + gh - (g / gMaxV) * gh; }
+        ctx.clearRect(0, 0, W, H);
+        ctx.fillStyle = 'rgba(6,182,212,0.10)';
+        ctx.strokeStyle = '#06b6d4';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(xOf(s.freqs[0]), yOf(s.cond[0]));
+        for (var i = 1; i < s.freqs.length; i++) ctx.lineTo(xOf(s.freqs[i]), yOf(s.cond[i]));
+        ctx.stroke();
+        ctx.lineTo(xOf(s.freqs[s.freqs.length - 1]), padT + gh);
+        ctx.lineTo(xOf(s.freqs[0]), padT + gh);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = '#06b6d4';
+        ctx.stroke();
+        var fx = xOf(s.fRes);
+        ctx.strokeStyle = 'rgba(251,191,36,0.8)';
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.moveTo(fx, padT); ctx.lineTo(fx, padT + gh); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#fbbf24';
+        ctx.beginPath(); ctx.arc(fx, yOf(s.Gres), 5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '11px sans-serif';
+        ctx.textAlign = 'center';
+        for (var tick = 0; tick <= 4; tick++) {
+            var f = Math.pow(10, logMin + (logMax - logMin) * tick / 4);
+            ctx.fillText(f.toFixed(f < 10 ? 1 : 0) + ' kHz', xOf(f), H - 6);
+        }
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#06b6d4';
+        ctx.fillText('\u03BCS', padL + gw, padT + 4);
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillText('Fres ' + s.fRes.toFixed(1) + ' kHz', Math.min(fx + 30, W - 40), padT + 16);
+        if (cap) cap.textContent = 'Conductance G [\u03BCS] vs frequency \u2014 96 log steps, 1\u2192500 kHz';
+    }
+
+    function drawTrend(s) {
+        var cv = $('trendCanvas');
+        var pred = $('trendPred');
+        if (!cv) return;
+        var W = cv.clientWidth || 600, H = 160;
+        cv.width = W; cv.height = H;
+        var ctx = cv.getContext('2d');
+        if (!ctx) return;
+        var padL = 36, padR = 12, padT = 10, padB = 20;
+        var gw = W - padL - padR, gh = H - padT - padB;
+        var d0 = 1.2, d1 = 0.55, d28 = 0.32;
+        var points = [
+            [7, d0], [14, d1], [s.age, s.damage], [28, d28]
+        ];
+        var maxD = Math.max(25, d0 * 1.2);
+        function xOf(day) { return padL + (day - 5) / 25 * gw; }
+        function yOf(d) { return padT + gh - (d / maxD) * gh; }
+        ctx.clearRect(0, 0, W, H);
+        ctx.strokeStyle = 'rgba(251,191,36,0.15)';
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(padL, yOf(s.crushed ? 25 : 15)); ctx.lineTo(padL + gw, yOf(s.crushed ? 25 : 15));
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#06b6d4';
+        ctx.strokeStyle = '#06b6d4';
+        ctx.beginPath();
+        points.forEach(function(p, i) {
+            var x = xOf(p[0]), y = yOf(p[1]);
+            if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+        ctx.fillStyle = '#06b6d4';
+        points.forEach(function(p) {
+            ctx.beginPath(); ctx.arc(xOf(p[0]), yOf(p[1]), 3, 0, Math.PI * 2); ctx.fill();
+        });
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'center';
+        [7, 14, 28].forEach(function(d) { ctx.fillText(d + 'd', xOf(d), H - 6); });
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#fbbf24';
+        if (pred) pred.textContent = (s.crushed ? '\u26A0\uFE0F ' : '') + 'Damage Index (RMSD): ' + s.damage.toFixed(1) + '% at day ' + s.age + ' \u2014 ' + (s.crushed ? 'collapse zone' : 'within safe range');
+    }
+
+    function vgState(doneIdx, activeText) {
+        var steps = qsa('#vgSteps .vg-step');
+        var pipes = qsa('#vgSteps .vg-pipe');
+        var texts = [
+            ar ? '\u0645\u0633\u062D \u0637\u064A\u0641 EMI 1\u2192500 kHz (96 \u062E\u0637\u0648\u0629 \u0644\u0648\u063A\u0627\u0631\u064A\u062B\u0645\u064A\u0629)' : 'Sweep EMI spectrum 1 \u2192 500 kHz (96 log steps)',
+            ar ? '\u062D\u0633\u0627\u0628 G = 1/|Z|' : 'Invert impedance \u2014 G = 1/|Z| [\u00B5S], R = |Z| [k\u03A9]',
+            ar ? '\u062A\u062A\u0628\u0639 \u0627\u0644\u0631\u0646\u064A\u0646' : 'Track resonance \u2014 F = argmax |Z\u207B\u00B9|',
+            ar ? '\u062A\u0642\u064A\u064A\u0645 \u0627\u0644\u0636\u0631\u0631 (RMSD)' : 'Evaluate damage \u2014 RMSD index & collapse threshold'
+        ];
+        steps.forEach(function(st, i) {
+            var t = st.querySelector('.vg-text');
+            if (t && i === doneIdx) t.textContent = activeText || texts[i];
+            if (i < doneIdx) st.classList.add('done');
+            else if (i === doneIdx) { st.classList.remove('done'); st.classList.add('active'); }
+            else st.classList.remove('done', 'active');
+        });
+        pipes.forEach(function(p, i) {
+            if (i < doneIdx) p.classList.add('done'); else p.classList.remove('done');
+        });
+    }
+
+    function fillRd(s) {
+        var set = function(id, val) { var e = $(id); if (e) e.textContent = val; };
+        set('rdVexc', VREF + ' mV');
+        set('rdVp', s.Vp.toFixed(0) + ' mV');
+        set('rdFr', s.fRes.toFixed(1) + ' kHz');
+        set('rdZ', s.Zres.toFixed(0) + ' \u03A9');
+        set('rdG', s.Gres.toFixed(0) + ' \u03BCS');
+        var rdD = $('rdD');
+        set('rdD', s.damage.toFixed(1) + ' %');
+        if (rdD) {
+            rdD.className = 'rd-value ' + (s.crushed ? 'flash' : (s.damage > 15 ? 'highlight' : ''));
+        }
+    }
+
+    function fillResultsTable(s) {
+        var body = $('slResultsBody');
+        if (!body) return;
+        var rows = [
+            { label: ar ? '\u062A\u0631\u062F\u062F \u0627\u0644\u0631\u0646\u064A\u0646' : 'Resonant Frequency', value: s.fRes.toFixed(1), unit: 'kHz', status: 'pass', notes: 'EMI conductance peak' },
+            { label: 'Impedance |Z| @ F_res', value: s.Zres.toFixed(0), unit: '\u03A9', status: '', notes: 'Rs \u00B7 Vp / (Vexc \u2212 Vp)' },
+            { label: 'Conductance G', value: s.Gres.toFixed(0), unit: '\u03BCS', status: '', notes: 'G = 1/|Z|' },
+            { label: 'Excitation Vexc', value: VREF, unit: 'mV', status: '', notes: 'LEDC sweep output' },
+            { label: 'Peak Voltage Vp', value: s.Vp.toFixed(0), unit: 'mV', status: s.crushed ? 'fail' : 'pass', notes: s.crushed ? 'exceeds CRUSH_SPIKE' : 'within threshold' },
+            { label: ar ? '\u0645\u0624\u0634\u0631 \u0627\u0644\u0636\u0631\u0631 (RMSD)' : 'Damage Index (RMSD)', value: s.damage.toFixed(1), unit: '%', status: s.damage > 15 ? 'marginal' : 'pass', notes: 'vs. healthy baseline' },
+            { label: 'Recommendation', value: s.crushed ? 'INSPECT' : 'OK', unit: '', status: s.crushed ? 'fail' : 'pass', notes: s.crushed ? 'acoustic collapse alert' : 'continue monitoring' }
+        ];
+        var html = '';
+        rows.forEach(function(r) {
+            var st = r.status ? '<span class="badge ' + r.status + '">' + r.status.toUpperCase() + '</span>' : '<span style="color:var(--text-muted);">--</span>';
+            html += '<tr>' +
+                '<td class="rtd-label">' + r.label + '</td>' +
+                '<td class="rtd-value">' + r.value + (r.unit ? ' <span class="rtd-unit">' + r.unit + '</span>' : '') + '</td>' +
+                '<td class="rtd-status">' + st + '</td>' +
+                '<td class="rtd-notes">' + r.notes + '</td></tr>';
+        });
+        body.innerHTML = html;
+        var stamp = $('slStamp');
+        if (stamp) { stamp.style.display = 'inline-flex'; stamp.className = 'report-stamp stamp-' + currentLevel; }
+        var alert = $('crushAlert');
+        if (alert) alert.style.display = s.crushed ? 'block' : 'none';
+        window.slResults = rows;
+    }
+
+    if (btnRunTest) {
+        btnRunTest.addEventListener('click', function() {
+            if (btnRunTest.disabled) return;
+            btnRunTest.disabled = true;
+            btnRunTest.textContent = '\u23F3 ' + (ar ? '\u062C\u0627\u0631\u064A \u0627\u0644\u0645\u0633\u062D...' : 'Sweeping...');
+            sweep = simulateSweep();
+            var phase = 0;
+            vgState(0, ar ? '\u0645\u0633\u062D \u0627\u0644\u0637\u064A\u0641...' : 'Sweeping EMI spectrum...');
+            var iv = setInterval(function() {
+                phase++;
+                if (phase === 1) { vgState(1, ar ? '\u0627\u0643\u062A\u0645\u0644 \u0627\u0644\u0645\u0633\u062D' : 'Sweep complete \u2014 inverting impedance'); }
+                else if (phase === 2) { vgState(2, 'Fres = ' + sweep.fRes.toFixed(1) + ' kHz'); }
+                else if (phase === 3) {
+                    vgState(3, ar ? '\u0627\u0643\u062A\u0645\u0644 \u0627\u0644\u062A\u062D\u0644\u064A\u0644' : 'Analysis complete');
+                    clearInterval(iv);
+                    drawEmi(sweep);
+                    drawTrend(sweep);
+                    fillRd(sweep);
+                    fillResultsTable(sweep);
+                    btnRunTest.disabled = true;
+                    btnRunTest.textContent = '\u2705 ' + (ar ? '\u0627\u0643\u062A\u0645\u0644 \u0627\u0644\u0645\u0633\u062D' : 'Sweep Complete');
+                    var ai = $('slAiSection');
+                    if (ai) ai.style.display = 'block';
+                    runAI();
+                }
+            }, 450);
+        });
+    }
+
+    /* ---- Stage 5: AI assistant ---- */
+    function typeText(el, text, done) {
+        if (!el) { if (done) done(); return; }
+        var i = 0;
+        el.textContent = '';
+        var iv = setInterval(function() {
+            i += 2;
+            el.textContent = text.slice(0, i);
+            if (i >= text.length) { clearInterval(iv); if (done) done(); }
+        }, 12);
+    }
+    var aiDone = false;
+    function runAI() {
+        if (aiDone) return;
+        aiDone = true;
+        var aiMsg = $('aiMsg'), aiStatus = $('aiStatusEl');
+        var alertEl = $('aiAlert'), gpsBox = $('aiGpsBox');
+        if (aiStatus) aiStatus.textContent = ar ? '\u064A\u062D\u0644\u0644 \u0627\u0644\u0630\u0643\u0627\u0621 \u0627\u0644\u0627\u0635\u0637\u0646\u0627\u0639\u064A \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A \u0627\u0644\u062D\u064A\u0629' : 'AI analyzing live data';
+        var m1 = ar ? '\u062A\u062D\u0644\u064A\u0644 \u0637\u064A\u0641 \u0627\u0644\u0645\u0639\u0627\u0648\u0642\u0629 \u0627\u0644\u0643\u0647\u0631\u0628\u0627\u0626\u064A\u0629...' : 'Analyzing the EMI impedance spectrum...';
+        var m2 = ar
+            ? '\u062A\u0645 \u062A\u062D\u062F\u064A\u062F \u0627\u0644\u0631\u0646\u064A\u0646 \u0639\u0646\u062F ' + sweep.fRes.toFixed(1) + ' \u0643\u064A\u0644\u0648 \u0647\u0631\u062A\u0632. \u0645\u0624\u0634\u0631 \u0627\u0644\u0636\u0631\u0631 ' + sweep.damage.toFixed(1) + '% \u2014 ' + (sweep.crushed ? '\u0627\u0646\u0647\u064A\u0627\u0631 \u0635\u0648\u062A\u064A \u0645\u0634\u062A\u0628\u0647 \u0628\u0647!' : '\u0627\u0644\u0623\u0633\u0627\u0633 \u062E\u0636\u0631\u064A \u0633\u0644\u064A\u0645.')
+            : 'Resonance tracked at ' + sweep.fRes.toFixed(1) + ' kHz. Damage index ' + sweep.damage.toFixed(1) + '% \u2014 ' + (sweep.crushed ? 'acoustic collapse suspected!' : 'baseline is healthy.');
+        typeText(aiMsg, m1, function() {
+            setTimeout(function() {
+                typeText(aiMsg, m2, function() {
+                    if (alertEl) {
+                        alertEl.style.display = 'block';
+                        alertEl.className = 'ai-alert ' + (sweep.crushed ? 'warning' : 'success');
+                        alertEl.textContent = sweep.crushed
+                            ? (ar ? '\u064A\u0648\u0635\u064A \u0628\u0641\u062D\u0635 \u0641\u0648\u0631\u064A \u0644\u0644\u062A\u0623\u0643\u064A\u062F.' : 'Recommend immediate inspection to confirm.')
+                            : (ar ? '\u0627\u0644\u062E\u0627\u0635\u064A\u0629 \u062A\u0633\u064A\u0631 \u0628\u0634\u0643\u0644 \u0637\u0628\u064A\u0639\u064A.' : 'Structure is behaving normally.');
+                    }
+                    var strikes = qsa('#aiStrikes .ai-strike');
+                    if (strikes[0]) { strikes[0].classList.remove('active'); strikes[0].classList.add('used'); }
+                    if (aiStatus) aiStatus.textContent = ar ? '\u0627\u0643\u062A\u0645\u0644 \u0627\u0644\u062A\u062D\u0644\u064A\u0644' : 'Analysis complete';
+                    if (gpsBox) {
+                        gpsBox.style.display = 'block';
+                        var gv = $('gpsVal'), gs = $('gpsStatus');
+                        if (gv) gv.textContent = '30.0444, 31.2357 (Cairo)';
+                        if (gs) { gs.className = 'gps-status safe'; gs.textContent = ar ? '\u0627\u0644\u0645\u0648\u0642\u0639 \u062B\u0627\u0628\u062A' : 'Site location stable'; }
+                    }
+                    var rp = $('slReportSection');
+                    if (rp) rp.style.display = 'block';
+                });
+            }, 350);
+        });
+    }
+
+    /* ---- Stage 6: Report export ---- */
+    function slFields() {
+        function v(id) { var e = $(id); return e ? (e.value || '').trim() : ''; }
+        return {
+            lab: v('sl-labName') || 'smartLAB Testing Lab',
+            sample: v('sl-sampleNo') || '--',
+            specs: v('sl-specs') || '--',
+            tech: v('sl-tech') || '--',
+            eng: v('sl-eng') || '--'
+        };
+    }
+    function slResultRows() {
+        return (window.slResults || []).map(function(r) { return { label: r.label, value: r.value, unit: r.unit, status: r.status }; });
+    }
+    function slToast(msg) {
+        var al = $('manualAlert');
+        if (al) { al.className = 'manual-alert success'; al.textContent = msg; al.style.display = 'block'; setTimeout(function() { al.style.display = 'none'; }, 4000); }
+    }
+    function slExportExcel() {
+        if (typeof XLSX === 'undefined') { slToast(ar ? '\u0645\u0643\u062A\u0628\u0629 Excel \u063A\u064A\u0631 \u0645\u062D\u0645\u0644\u0629' : 'Excel library not loaded'); return; }
+        var f = slFields();
+        var data = [
+            [f.lab],
+            ['Compressive Strength \u2014 SmartLab (ESP32 PZT EMI)'],
+            [],
+            ['Sample #', f.sample], ['Specs', f.specs],
+            ['Date', new Date().toLocaleString()], ['Technician', f.tech], ['Engineer', f.eng],
+            ['Test Level', currentLevel.toUpperCase()],
+            [],
+            ['Parameter', 'Value', 'Unit', 'Status']
+        ];
+        slResultRows().forEach(function(r) { data.push([r.label, r.value, r.unit || '', r.status || '--']); });
+        data.push([], ['Generated: ' + new Date().toLocaleString(), '', '', '']);
+        var wb = XLSX.utils.book_new();
+        var ws = XLSX.utils.aoa_to_sheet(data);
+        ws['!cols'] = [{ wch: 30 }, { wch: 16 }, { wch: 8 }, { wch: 12 }];
+        XLSX.utils.book_append_sheet(wb, ws, 'SmartLab Results');
+        XLSX.writeFile(wb, 'Compressive_SmartLab_Report.xlsx');
+        slToast(ar ? '\u062A\u0645 \u062D\u0641\u0638 Excel' : 'Excel saved');
+    }
+    function slExportPdf() {
+        if (typeof jspdf === 'undefined') { slToast(ar ? '\u0645\u0643\u062A\u0628\u0629 PDF \u063A\u064A\u0631 \u0645\u062D\u0645\u0644\u0629' : 'PDF library not loaded'); return; }
+        var doc = new jspdf.jsPDF();
+        var pw = doc.internal.pageSize.getWidth();
+        var f = slFields();
+        doc.setFontSize(16); doc.setTextColor(20, 30, 55);
+        doc.text(f.lab, pw / 2, 24, { align: 'center' });
+        doc.setFontSize(10); doc.setTextColor(160, 120, 20);
+        doc.text('Compressive Strength \u2014 SmartLab Report (' + currentLevel.toUpperCase() + ')', pw / 2, 32, { align: 'center' });
+        doc.setFontSize(8); doc.setTextColor(60, 60, 60);
+        doc.text('Sample #: ' + f.sample, 18, 44);
+        doc.text('Specs: ' + f.specs, 18, 50);
+        doc.text('Date: ' + new Date().toLocaleString(), 18, 56);
+        doc.text('Tech: ' + f.tech + '  |  Eng: ' + f.eng, 18, 62);
+        var rows = slResultRows().map(function(r) { return [r.label, r.value + (r.unit ? ' ' + r.unit : ''), r.status || '--']; });
+        if (doc.autoTable) {
+            doc.autoTable({
+                startY: 72,
+                head: [['Parameter', 'Value', 'Status']],
+                body: rows,
+                theme: 'grid',
+                headStyles: { fillColor: [16, 185, 129], textColor: 255, fontSize: 8 },
+                bodyStyles: { fontSize: 7 },
+                columnStyles: { 0: { cellWidth: 74 }, 1: { cellWidth: 44 }, 2: { cellWidth: 24 } }
+            });
+            var fy = doc.lastAutoTable.finalY + 8;
+            doc.setFontSize(7); doc.setTextColor(150, 150, 150);
+            doc.text('Generated: ' + new Date().toLocaleString(), 14, fy + 4);
+        }
+        doc.save('Compressive_SmartLab_Report.pdf');
+        slToast(ar ? '\u062A\u0645 \u062D\u0641\u0638 PDF' : 'PDF saved');
+    }
+    function slExportPrint() {
+        var f = slFields();
+        var html = '<div style="text-align:center;margin-bottom:14px;"><h1 style="font-size:18px;">' + f.lab + '</h1>' +
+            '<p style="font-size:11px;color:#888;">Compressive Strength \u2014 SmartLab Report (' + currentLevel.toUpperCase() + ')</p></div>';
+        html += '<table style="width:100%;font-size:11px;border-collapse:collapse;margin-bottom:12px;">';
+        html += '<tr><td style="padding:2px 8px;width:120px;color:#666;">Sample #:</td><td>' + f.sample + '</td></tr>';
+        html += '<tr><td style="padding:2px 8px;color:#666;">Specs:</td><td>' + f.specs + '</td></tr>';
+        html += '<tr><td style="padding:2px 8px;color:#666;">Date:</td><td>' + new Date().toLocaleString() + '</td></tr>';
+        html += '<tr><td style="padding:2px 8px;color:#666;">Tech / Eng:</td><td>' + f.tech + ' / ' + f.eng + '</td></tr></table>';
+        html += '<table style="width:100%;border-collapse:collapse;font-size:11px;">';
+        html += '<tr style="background:#10b981;color:#fff;"><th style="padding:6px 10px;border:1px solid #10b981;text-align:left;">Parameter</th>' +
+            '<th style="padding:6px 10px;border:1px solid #10b981;text-align:right;">Value</th>' +
+            '<th style="padding:6px 10px;border:1px solid #10b981;text-align:center;">Status</th></tr>';
+        slResultRows().forEach(function(r) {
+            var sc = r.status === 'pass' ? '#10b981' : r.status === 'fail' ? '#ef4444' : r.status === 'marginal' ? '#f59e0b' : '#999';
+            html += '<tr><td style="padding:5px 10px;border:1px solid #ddd;">' + r.label + '</td>' +
+                '<td style="padding:5px 10px;border:1px solid #ddd;text-align:right;">' + r.value + (r.unit ? ' ' + r.unit : '') + '</td>' +
+                '<td style="padding:5px 10px;border:1px solid #ddd;text-align:center;font-weight:700;color:' + sc + ';">' + (r.status || '--') + '</td></tr>';
+        });
+        html += '</table>';
+        var w = window.open('', '_blank', 'width=820,height=900');
+        if (!w) { slToast(ar ? '\u062A\u0645 \u062A\u0639\u0637\u064A\u0644 \u0627\u0644\u0646\u0627\u0641\u0630\u0629 \u0627\u0644\u0645\u0646\u0628\u062B\u0642\u0629' : 'Popup blocked'); return; }
+        w.document.write('<html><head><title>SmartLab Report</title></head><body style="font-family:Arial,sans-serif;padding:24px;">' + html + '</body></html>');
+        w.document.close();
+        setTimeout(function() { w.focus(); w.print(); }, 400);
+    }
+    var btnSlExcel = $('btnSlExcel'), btnSlPdf = $('btnSlPdf'), btnSlPrint = $('btnSlPrint');
+    if (btnSlExcel) btnSlExcel.addEventListener('click', slExportExcel);
+    if (btnSlPdf) btnSlPdf.addEventListener('click', slExportPdf);
+    if (btnSlPrint) btnSlPrint.addEventListener('click', slExportPrint);
+
+    /* ---- Report settings toggles + photo ---- */
+    var rsGps = $('rsGps'), rsVpn = $('rsVpn');
+    if (rsGps) rsGps.addEventListener('click', function() {
+        rsGps.classList.toggle('active');
+        var c = $('rsCoords');
+        if (c) c.textContent = rsGps.classList.contains('active') ? '30.0444, 31.2357' : '--';
+    });
+    if (rsVpn) rsVpn.addEventListener('click', function() { rsVpn.classList.toggle('active'); });
+    var btnPhoto = $('btnSlPhoto'), photoInput = $('slPhotoInput'), photoGrid = $('slPhotoGrid');
+    if (btnPhoto && photoInput) {
+        btnPhoto.addEventListener('click', function() { photoInput.click(); });
+        photoInput.addEventListener('change', function() {
+            var file = photoInput.files && photoInput.files[0];
+            if (!file || !photoGrid) return;
+            var url = URL.createObjectURL(file);
+            var item = document.createElement('div');
+            item.className = 'photo-item';
+            item.innerHTML = '<img src="' + url + '" alt="capture">';
+            photoGrid.appendChild(item);
+        });
+    }
+
+    /* ---- Hardware guide step guide interaction ---- */
+    var sgSteps = qsa('#sgHw .sg-step');
+    sgSteps.forEach(function(st, i) {
+        st.addEventListener('click', function() {
+            sgSteps.forEach(function(s, j) {
+                s.classList.remove('active');
+                if (j < i) s.classList.add('done');
+                else if (j > i) s.classList.remove('done');
+            });
+            this.classList.remove('done');
+            this.classList.add('active');
+        });
+    });
+
+    window.slExportExcel = slExportExcel;
+    window.slExportPdf = slExportPdf;
+    window.slExportPrint = slExportPrint;
+})();
+    </script>
+</body>
+</html>

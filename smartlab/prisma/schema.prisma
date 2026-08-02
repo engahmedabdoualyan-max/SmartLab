@@ -1,0 +1,324 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TestMode {
+  MANUAL
+  HARDWARE
+}
+
+enum TestStatus {
+  DRAFT
+  IN_PROGRESS
+  COMPLETED
+  ARCHIVED
+}
+
+enum CredibilityLevel {
+  UNVERIFIED
+  VERIFIED
+  CERTIFIED
+}
+
+enum HardwareConnectionType {
+  USB_SERIAL
+  WIFI
+  BLUETOOTH
+  ETHERNET
+}
+
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  name              String?
+  role              Role      @default(ENGINEER)
+  organizationId    String?
+  organization      Organization? @relation(fields: [organizationId], references: [id])
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  tests             Test[]    @relation("UserTests")
+  hardwareDevices   HardwareDevice[] @relation("UserDevices")
+  auditLogs         AuditLog[]
+  competencyRecords PersonnelCompetency[]
+
+  @@index([organizationId])
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  type      OrgType  @default(CONTRACTOR)
+  users     User[]
+  projects  Project[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Role {
+  ADMIN
+  ENGINEER
+  TECHNICIAN
+  CLIENT
+  VIEWER
+}
+
+enum OrgType {
+  LAB
+  CONTRACTOR
+  CONSULTANT
+  GOVERNMENT
+  ACADEMIC
+}
+
+model Project {
+  id             String   @id @default(cuid())
+  name           String
+  description    String?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  tests          Test[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([organizationId])
+}
+
+model TestTemplate {
+  id                String   @id @default(cuid())
+  code              String   @unique
+  name              String
+  category          String
+  standard          String
+  version           String   @default("1.0")
+  description       String?
+  schema            Json
+  calculations      Json
+  reportTemplate    String?
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  tests             Test[]
+  hardwareConfigs   HardwareTestConfig[]
+  competencyRecords PersonnelCompetency[]
+  calibrationRecords CalibrationRecord[]
+
+  @@index([code])
+  @@index([category])
+}
+
+model Test {
+  id                  String             @id @default(cuid())
+  testNumber          String             @unique
+  templateId          String
+  template            TestTemplate       @relation(fields: [templateId], references: [id])
+  projectId           String?
+  project             Project?           @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  userId              String
+  user                User               @relation("UserTests", fields: [userId], references: [id])
+  mode                TestMode           @default(MANUAL)
+  status              TestStatus         @default(DRAFT)
+  credibilityLevel    CredibilityLevel   @default(UNVERIFIED)
+  
+  inputData           Json
+  calculatedResults   Json?
+  rawHardwareData     Json?
+  
+  hardwareDeviceId    String?
+  hardwareDevice      HardwareDevice?    @relation(fields: [hardwareDeviceId], references: [id], onDelete: SetNull)
+  hardwareSessionId   String?            @unique
+  hardwareSession     HardwareSession?   @relation(fields: [hardwareSessionId], references: [id], onDelete: SetNull)
+  
+  startedAt           DateTime?
+  completedAt         DateTime?
+  certifiedAt         DateTime?
+  certifiedBy         String?
+  
+  qrCode              String?
+  pdfReportUrl        String?
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([templateId])
+  @@index([projectId])
+  @@index([userId])
+  @@index([status])
+  @@index([credibilityLevel])
+  @@index([hardwareDeviceId])
+}
+
+model HardwareDevice {
+  id                String   @id @default(cuid())
+  deviceId          String   @unique
+  name              String
+  type              String
+  firmwareVersion   String
+  mcuId             String   @unique
+  publicKey         String
+  status            DeviceStatus @default(ACTIVE)
+  lastSeenAt        DateTime?
+  calibrationDate   DateTime?
+  calibrationDue    DateTime?
+  userId            String?
+  user              User?    @relation("UserDevices", fields: [userId], references: [id], onDelete: SetNull)
+  tests             Test[]
+  sessions          HardwareSession[]
+  antiTamperLogs    AntiTamperLog[]
+  calibrationRecords CalibrationRecord[]
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([deviceId])
+  @@index([mcuId])
+  @@index([userId])
+  @@index([status])
+}
+
+enum DeviceStatus {
+  ACTIVE
+  INACTIVE
+  MAINTENANCE
+  REVOKED
+  COMPROMISED
+}
+
+model HardwareSession {
+  id              String   @id @default(cuid())
+  sessionId       String   @unique
+  deviceId        String
+  device          HardwareDevice @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  testId          String?  @unique
+  test            Test?
+  connectionType  HardwareConnectionType
+  ipAddress       String?
+  gpsLatitude     Float?
+  gpsLongitude    Float?
+  gpsAccuracy     Float?
+  vpnDetected     Boolean  @default(false)
+  startedAt       DateTime @default(now())
+  endedAt         DateTime?
+  dataPoints      Json?
+  integrityHash   String?
+  isValid         Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([deviceId])
+  @@index([testId])
+  @@index([sessionId])
+}
+
+model AntiTamperLog {
+  id          String   @id @default(cuid())
+  deviceId    String
+  device      HardwareDevice @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  eventType   TamperEventType
+  severity    TamperSeverity
+  details     Json
+  detectedAt  DateTime @default(now())
+  resolvedAt  DateTime?
+  resolvedBy  String?
+
+  @@index([deviceId])
+  @@index([eventType])
+  @@index([detectedAt])
+}
+
+enum TamperEventType {
+  FIRMWARE_MISMATCH
+  MCU_ID_MISMATCH
+  CLOCK_DRIFT
+  VOLTAGE_ANOMALY
+  MEMORY_CORRUPTION
+  UNAUTHORIZED_ACCESS
+  GPS_SPOOFING
+  VPN_DETECTED
+  REPLAY_ATTACK
+}
+
+enum TamperSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model HardwareTestConfig {
+  id              String   @id @default(cuid())
+  templateId      String
+  template        TestTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  deviceType      String
+  requiredSensors String[]
+  calibrationSpecs Json
+  samplingRate    Int
+  dataFormat      Json
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([templateId, deviceType])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action    String
+  entity    String
+  entityId  String
+  oldData   Json?
+  newData   Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([entity, entityId])
+  @@index([createdAt])
+}
+
+model CalibrationRecord {
+  id          String   @id @default(cuid())
+  deviceId    String
+  device      HardwareDevice @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  templateId  String?
+  template    TestTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  performedBy String
+  standard    String
+  results     Json
+  certificate String?
+  validFrom   DateTime
+  validUntil  DateTime
+  createdAt   DateTime @default(now())
+
+  @@index([deviceId])
+  @@index([validUntil])
+}
+
+model PersonnelCompetency {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  templateId  String
+  template    TestTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  level       CompetencyLevel
+  certifiedAt DateTime
+  expiresAt   DateTime?
+  certifiedBy String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, templateId])
+  @@index([expiresAt])
+}
+
+enum CompetencyLevel {
+  TRAINEE
+  COMPETENT
+  EXPERT
+  AUTHORIZED_SIGNATORY
+}

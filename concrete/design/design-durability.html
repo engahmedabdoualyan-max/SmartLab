@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>smartLAB — Durability Design</title>
-    <link rel="icon" href="../favicon.ico">
+    <link rel="icon" href="../../favicon.ico">
     <link rel="stylesheet" href="design-common.css">
     <style>
         :root { --accent-page: #f87171; }
@@ -315,7 +315,7 @@
         <a href="../concrete.html" class="back-btn">← Back to Concrete Testing</a>
     </div>
     <div id="footer-placeholder"></div>
-    <script src="../components.js"></script>
+    <script src="../../components.js"></script>
     <script>
         function switchTab(tabId, btn) {
             document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
@@ -354,8 +354,9 @@
 
             // Governing (most restrictive) values
             let govWc = 0.50, govFc = 25, govAir = '0%', govCement = 'Type I', govCover = 'per 20.6';
+            const classMap = { F: fClass, S: sClass, C: cClass, W: wClass };
             ['F','S','C','W'].forEach(prefix => {
-                const cls = eval(prefix+'Class');
+                const cls = classMap[prefix];
                 if (requirements[cls]) {
                     const r = requirements[cls];
                     if (r.wc !== '—' && r.wc < govWc) govWc = r.wc;

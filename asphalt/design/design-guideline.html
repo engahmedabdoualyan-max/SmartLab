@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>smartLAB — Guideline Mix Design</title>
-    <link rel="icon" href="../favicon.ico">
+    <link rel="icon" href="../../favicon.ico">
     <link rel="stylesheet" href="design-common.css">
     <style>
         :root { --accent-page: #fbbf24; }
@@ -567,6 +567,7 @@
         }
 
         function updateSieveTable(combined, def) {
+            const totalPct = aggregates.reduce((s, a) => s + a.pct, 0);
             SIEVES.forEach((s, i) => {
                 const el = document.getElementById('combined-' + i);
                 if (el) {

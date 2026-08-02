@@ -1,7 +1,9 @@
 -- smartLAB — 0002: initial audit row when a specimen is first registered.
 -- The 0001 trigger (trg_specimen_status_change) is BEFORE UPDATE only, so a
--- freshly registered specimen had no timeline entry. This insert trigger logs
--- the 'registered' state so the client timeline is populated from day one.
+-- freshly registered specimen had no timeline entry. This AFTER INSERT trigger
+-- logs the 'registered' state so the client timeline is populated from day one.
+-- NOTE: must be AFTER INSERT — the history row references the specimen via FK,
+-- so it can only be written once the row already exists in the table.
 
 create or replace function public.on_specimen_insert()
 returns trigger
@@ -18,5 +20,5 @@ $$;
 
 drop trigger if exists trg_specimen_status_insert on public.specimens;
 create trigger trg_specimen_status_insert
-    before insert on public.specimens
+    after insert on public.specimens
     for each row execute function public.on_specimen_insert();

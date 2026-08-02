@@ -152,14 +152,15 @@ function pgHeaders(c) {
  * are emitted as key=value; filters are emitted as a BARE param named
  * "column=operator.value" (e.g. id=eq.<uuid>). The '=' inside a filter name
  * MUST stay literal: PostgREST does not decode %3D in param names, and an
- * empty "=value" suffix is rejected with PGRST100. */
+ * empty "=value" suffix is rejected with PGRST100. Filter VALUES are encoded
+ * so operators like `like` can carry a literal % (%25). */
 function buildQuery(f) {
     const parts = [];
     Object.keys(f).forEach(function(k) {
         if (k === 'select' || k === 'order' || k === 'limit' || k === 'offset') {
             parts.push(k + '=' + encodeURIComponent(f[k]));
         } else {
-            parts.push(k + '.' + f[k]);
+            parts.push(k + '.' + encodeURIComponent(f[k]));
         }
     });
     return parts.join('&');

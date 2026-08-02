@@ -13,6 +13,28 @@ const Webhook = require('../_webhook');
 const VALID_STATUS = ['registered', 'received', 'in_progress', 'awaiting_break', 'tested', 'approved', 'rejected'];
 const VALID_MATERIAL = ['concrete', 'asphalt', 'soil', 'steel', 'other'];
 
+const pad4 = function (n) { return String(n).padStart(4, '0'); };
+
+/* Generates the next global sample number in the sequence format
+ * SL-<year>-XXXX (e.g. SL-2026-0001) by taking the highest existing
+ * SL-<year>-XXXX and incrementing it. */
+async function nextSampleNo(c) {
+    const year = new Date().getFullYear();
+    const prefix = 'SL-' + year + '-';
+    const rows = await SB.pgSelect(c, 'specimens', {
+        'sample_no=like': prefix + '%',
+        'select': 'sample_no',
+        'order': 'sample_no.desc',
+        'limit': '1'
+    });
+    let next = 1;
+    if (rows && rows.length && rows[0].sample_no) {
+        const m = /^SL-\d{4}-(\d+)$/.exec(String(rows[0].sample_no));
+        if (m) next = parseInt(m[1], 10) + 1;
+    }
+    return prefix + pad4(next);
+}
+
 module.exports = async function handler(req, res) {
     if (!['GET', 'POST', 'PATCH'].includes(req.method)) {
         SB.json(res, 405, { ok: false, error: 'Method not allowed' }); return;
@@ -39,8 +61,7 @@ module.exports = async function handler(req, res) {
 
     /* ---------------- POST: register ---------------- */
     if (req.method === 'POST') {
-        const sampleNo = String(body.sample_no || '').trim();
-        if (!sampleNo) { SB.json(res, 400, { ok: false, error: 'Sample number is required' }); return; }
+        const clientProvidedNo = String(body.sample_no || '').trim();
 
         let clientId = isStaff ? String(body.client_id || '').trim() : userId;
         if (isStaff && !clientId) {
@@ -49,18 +70,24 @@ module.exports = async function handler(req, res) {
 
         const materialType = VALID_MATERIAL.includes(body.material_type) ? body.material_type : 'concrete';
 
-        const created = await SB.pgInsert(c, 'specimens', {
-            sample_no: sampleNo,
-            client_id: clientId,
-            project: String(body.project || '').trim(),
-            location: String(body.location || '').trim(),
-            material_type: materialType,
-            test_type: String(body.test_type || '').trim(),
-            notes: String(body.notes || '').trim(),
-            status: 'registered'
-        });
+        // Sample number is auto-generated unless the caller supplies one.
+        let created = null;
+        for (let attempt = 0; attempt < 5 && !created; attempt++) {
+            const sampleNo = clientProvidedNo || (await nextSampleNo(c));
+            created = await SB.pgInsert(c, 'specimens', {
+                sample_no: sampleNo,
+                client_id: clientId,
+                project: String(body.project || '').trim(),
+                location: String(body.location || '').trim(),
+                material_type: materialType,
+                test_type: String(body.test_type || '').trim(),
+                notes: String(body.notes || '').trim(),
+                status: 'registered'
+            });
+            if (!created && clientProvidedNo) break;
+        }
         if (!created) { SB.json(res, 500, { ok: false, error: 'Failed to register specimen' }); return; }
-        SB.json(res, 201, { ok: true, specimen: created });
+        SB.json(res, 201, { ok: true, specimen: created, autoSampleNo: !clientProvidedNo });
         return;
     }
 

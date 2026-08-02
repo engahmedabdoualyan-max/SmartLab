@@ -231,7 +231,7 @@
             return '<option value="' + c.id + '">' + escapeHtml(c.full_name) + (c.company ? ' — ' + escapeHtml(c.company) : '') + '</option>';
         }).join('');
         openModal('Register Sample',
-            '<div class="form-group"><label>Sample No</label><input id="nsSample" placeholder="e.g. CON-2026-001"></div>' +
+            '<div class="form-group"><label>Sample No</label><input id="nsSample" value="auto-assigned" disabled title="Generated automatically on submission"></div>' +
             (STATE.role === 'staff' ?
                 '<div class="form-group"><label>Client</label><select id="nsClient">' + customerOpts + '</select></div>' : '') +
             '<div class="form-group"><label>Project</label><input id="nsProject" placeholder="Project name"></div>' +
@@ -244,13 +244,17 @@
             'Register',
             async function () {
                 const body = {
-                    sample_no: $('nsSample').value, project: $('nsProject').value,
+                    project: $('nsProject').value,
                     location: $('nsLoc').value, material_type: $('nsMat').value,
                     test_type: $('nsTest').value, notes: $('nsNotes').value
                 };
                 if (STATE.role === 'staff') body.client_id = $('nsClient').value;
                 const out = await api('/specimens', { method: 'POST', body: body });
-                if (out.ok) { closeModal(); await loadSpecimens(); flash('Sample registered', 'ok'); }
+                if (out.ok) {
+                    closeModal(); await loadSpecimens();
+                    const no = out.specimen && out.specimen.sample_no;
+                    flash(no ? 'Sample ' + no + ' registered' : 'Sample registered', 'ok');
+                }
                 else flash(out.error || 'Registration failed');
             });
     });

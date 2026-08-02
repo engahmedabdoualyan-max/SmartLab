@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>smartLAB — Client Sign In</title>
+<link rel="stylesheet" href="client.css">
+</head>
+<body>
+<div class="auth-page">
+  <div class="auth-container">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <div class="logo" style="width:56px;height:56px;margin:0 auto 16px;border-radius:14px;background:linear-gradient(135deg,#3b82f6,#6366f1);display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 0 24px rgba(59,130,246,0.3)">🧪</div>
+        <h1>smart<span>LAB</span></h1>
+        <p>Client Portal — sample status, break schedules &amp; design records</p>
+      </div>
+
+      <div id="msg" class="msg"></div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabSignin">Sign In</button>
+        <button class="auth-tab" id="tabRegister">Create Account</button>
+      </div>
+
+      <!-- SIGN IN -->
+      <form id="signinForm">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="siEmail" placeholder="you@company.com" required>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="siPassword" placeholder="••••••••" required>
+        </div>
+        <button class="btn-auth" id="siBtn" type="submit">
+          <span class="spinner" style="display:none"></span><span class="lbl">Sign In</span>
+        </button>
+      </form>
+
+      <!-- REGISTER -->
+      <form id="registerForm" style="display:none">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="rgName" placeholder="Engineer Name" required>
+        </div>
+        <div class="form-group">
+          <label>Company</label>
+          <input type="text" id="rgCompany" placeholder="Consulting / Contractor">
+        </div>
+        <div class="form-group">
+          <label>Phone (WhatsApp)</label>
+          <input type="tel" id="rgPhone" placeholder="+20 100 000 0000">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="rgEmail" placeholder="you@company.com" required>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="rgPassword" placeholder="8+ characters" required>
+        </div>
+        <button class="btn-auth" id="rgBtn" type="submit">
+          <span class="spinner" style="display:none"></span><span class="lbl">Create Account</span>
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <span>Results, status &amp; reports on every test</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+    const $ = function (id) { return document.getElementById(id); };
+    const msg = function (el, type, text) {
+        el.className = 'msg ' + type;
+        el.textContent = text;
+    };
+
+    const tabSignin = $('tabSignin'), tabRegister = $('tabRegister');
+    const fSignin = $('signinForm'), fRegister = $('registerForm');
+    const showTab = function (which) {
+        const isSignin = which === 'signin';
+        tabSignin.classList.toggle('active', isSignin);
+        tabRegister.classList.toggle('active', !isSignin);
+        fSignin.style.display = isSignin ? 'block' : 'none';
+        fRegister.style.display = isSignin ? 'none' : 'block';
+        $('msg').className = 'msg';
+    };
+    tabSignin.addEventListener('click', function () { showTab('signin'); });
+    tabRegister.addEventListener('click', function () { showTab('register'); });
+
+    const busy = function (btn, on) {
+        btn.disabled = on;
+        btn.querySelector('.spinner').style.display = on ? 'inline-block' : 'none';
+        btn.querySelector('.lbl').textContent = on ? 'Please wait…' : (btn.id === 'rgBtn' ? 'Create Account' : 'Sign In');
+    };
+
+    fSignin.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const btn = $('siBtn'); busy(btn, true); msg($('msg'), '', '');
+        try {
+            const r = await fetch('/api/client/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: $('siEmail').value, password: $('siPassword').value })
+            });
+            const d = await r.json();
+            if (!r.ok || !d.ok) { msg($('msg'), 'error', d.error || 'Sign-in failed'); return; }
+            location.href = 'portal.html';
+        } catch (err) { msg($('msg'), 'error', 'Network error — please try again'); }
+        finally { busy(btn, false); }
+    });
+
+    fRegister.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const btn = $('rgBtn'); busy(btn, true); msg($('msg'), '', '');
+        try {
+            const r = await fetch('/api/client/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    full_name: $('rgName').value, company: $('rgCompany').value,
+                    phone: $('rgPhone').value, email: $('rgEmail').value, password: $('rgPassword').value
+                })
+            });
+            const d = await r.json();
+            if (!r.ok || !d.ok) { msg($('msg'), 'error', d.error || 'Registration failed'); return; }
+            if (d.requiresConfirmation) {
+                msg($('msg'), 'info', 'Account created. Check your inbox to confirm your email, then sign in.');
+                showTab('signin');
+                return;
+            }
+            location.href = 'portal.html';
+        } catch (err) { msg($('msg'), 'error', 'Network error — please try again'); }
+        finally { busy(btn, false); }
+    });
+
+    // Already signed in? Straight to the portal.
+    fetch('/api/client/session').then(function (r) { return r.json(); })
+        .then(function (d) { if (d && d.ok) location.href = 'portal.html'; })
+        .catch(function () {});
+})();
+</script>
+</body>
+</html>

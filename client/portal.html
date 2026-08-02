@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>smartLAB — Client Portal</title>
+<link rel="stylesheet" href="client.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><div class="logo">🧪</div><div>smart<span>LAB</span> Portal</div></div>
+  <div class="top-user">
+    <div class="who">
+      <div class="name" id="userName">…</div>
+      <div class="role"><span class="role-badge" id="userRole">client</span></div>
+    </div>
+    <button class="btn-ghost" id="logoutBtn">Sign out</button>
+  </div>
+</header>
+
+<div class="portal">
+  <div id="msg" class="msg"></div>
+
+  <nav class="tabs">
+    <button class="tab active" data-panel="panelSpecimens">🧪 Specimens</button>
+    <button class="tab" data-panel="panelSchedules">📅 Break Schedules</button>
+    <button class="tab" data-panel="panelDesigns">🛣️ Pavement Designs</button>
+    <button class="tab" data-panel="panelNotify" id="tabNotify" style="display:none">🔔 Notifications</button>
+  </nav>
+
+  <!-- ============ SPECIMENS ============ -->
+  <section class="panel active" id="panelSpecimens">
+    <div class="card">
+      <div class="card-head">
+        <h2>Specimens <span id="specCount"></span></h2>
+        <button class="btn" id="newSpecBtn">+ New Sample</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Sample No</th>
+              <th>Project</th>
+              <th>Material</th>
+              <th>Status</th>
+              <th>Engineer</th>
+              <th>Updated</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="specBody"></tbody>
+        </table>
+        <div class="empty" id="specEmpty" style="display:none">No specimens yet — register your first sample.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ BREAK SCHEDULES ============ -->
+  <section class="panel" id="panelSchedules">
+    <div class="card">
+      <div class="card-head">
+        <h2>Break Schedules</h2>
+        <button class="btn" id="newSchedBtn" style="display:none">+ New Schedule</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Date</th><th>Sample No</th><th>Project</th><th>Status</th><th>Notes</th></tr>
+          </thead>
+          <tbody id="schedBody"></tbody>
+        </table>
+        <div class="empty" id="schedEmpty" style="display:none">No break schedules yet.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PAVEMENT DESIGNS ============ -->
+  <section class="panel" id="panelDesigns">
+    <div class="card">
+      <div class="card-head"><h2>Pavement Design Record</h2></div>
+      <div class="form-row-3">
+        <div class="form-group"><label>Project</label><input id="pdProject" placeholder="Project name"></div>
+        <div class="form-group"><label>Route</label><input id="pdRoute" placeholder="Route / km"></div>
+        <div class="form-group"><label>Location</label><input id="pdLocation" placeholder="Governorate"></div>
+      </div>
+      <div class="form-row-3">
+        <div class="form-group"><label>Designer</label><input id="pdDesigner" placeholder="Engineer"></div>
+        <div class="form-group"><label>Agency</label><input id="pdAgency" placeholder="Client / authority"></div>
+        <div class="form-group"><label>Type</label>
+          <select id="pdType"><option value="flexible">Flexible</option><option value="rigid">Rigid</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Design Life (yrs)</label><input id="pdLife" type="number" step="1"></div>
+        <div class="form-group"><label>Reliability</label><input id="pdRel" type="number" step="0.01"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Σᵨ StdDev</label><input id="pdStd" type="number" step="0.01"></div>
+        <div class="form-group"><label>Initial Serviceability p₀</label><input id="pdPo" type="number" step="0.01"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Terminal Serviceability pₜ</label><input id="pdPt" type="number" step="0.01"></div>
+        <div class="form-group"><label>Resilient Modulus Mᵣ (psi)</label><input id="pdMr" type="number" step="1"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Drainage Coefficient C<sub>d</sub></label><input id="pdCd" type="number" step="0.05"></div>
+        <div class="form-group"><label>Total Thickness (cm)</label><input id="pdTh" type="number" step="0.5"></div>
+      </div>
+      <div class="card-head" style="margin-top:8px">
+        <button class="btn btn-emerald" id="pdSaveBtn">💾 Save Design</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>Saved Designs <span id="pdCount"></span></h2></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Project</th><th>Route</th><th>Type</th><th>SN</th><th>W18</th><th>Thickness</th><th>Saved</th><th></th></tr></thead>
+          <tbody id="pdBody"></tbody>
+        </table>
+        <div class="empty" id="pdEmpty" style="display:none">No saved designs yet.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ NOTIFICATIONS (staff) ============ -->
+  <section class="panel" id="panelNotify">
+    <div class="card">
+      <div class="card-head"><h2>Notification Dispatch Log</h2></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Time</th><th>Event</th><th>Sample</th><th>Provider</th><th>Destination</th><th>Result</th></tr></thead>
+          <tbody id="logBody"></tbody>
+        </table>
+        <div class="empty" id="logEmpty" style="display:none">No dispatches yet — they appear when specimens are approved.</div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ============ MODAL ============ -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3 id="modalTitle">Title</h3>
+    <div id="modalBody"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" id="modalCancel">Close</button>
+      <button class="btn" id="modalOk" style="display:none">Save</button>
+    </div>
+  </div>
+</div>
+
+<script src="client.js"></script>
+</body>
+</html>

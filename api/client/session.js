@@ -14,10 +14,11 @@ module.exports = async function handler(req, res) {
     const session = await SB.loadSession(req, res, c);
 
     if (!session) {
-        SB.json(res, 200, { authed: false, configured: true }); return;
+        SB.json(res, 200, { ok: false, authed: false, configured: true }); return;
     }
 
     SB.json(res, 200, {
+        ok: true,
         authed: true,
         configured: true,
         user: session.user,

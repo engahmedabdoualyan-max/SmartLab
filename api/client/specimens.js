@@ -31,7 +31,7 @@ module.exports = async function handler(req, res) {
     if (req.method === 'GET') {
         const filter = isStaff ? null : { 'client_id=eq': userId };
         const rows = await SB.pgSelect(c, 'specimens',
-            Object.assign({ 'order': 'created_at.desc', 'select': '*,history:specimen_status_history(order:created_at.desc)' },
+            Object.assign({ 'order': 'created_at.desc', 'select': '*,history:specimen_status_history(*)' },
                 filter ? filter : {}));
         SB.json(res, 200, { ok: true, specimens: rows || [], role: session.profile ? session.profile.role : 'client' });
         return;

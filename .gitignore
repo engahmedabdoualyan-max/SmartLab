@@ -85,3 +85,4 @@ firebase.json
 
 # CI
 .github/workflows/deploy.yml
+.env*

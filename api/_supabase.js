@@ -69,14 +69,19 @@ function getCookie(req, name) {
 }
 
 function setCookie(res, name, value, maxAgeSeconds, secure) {
-    res.setHeader('Set-Cookie',
-        name + '=' + value +
+    const h = name + '=' + value +
         '; HttpOnly; Path=/; SameSite=Lax; Max-Age=' + maxAgeSeconds +
-        (secure ? '; Secure' : ''));
+        (secure ? '; Secure' : '');
+    // Two session cookies are set back-to-back; use appendHeader so the second
+    // one does not overwrite the first.
+    if (res.appendHeader) res.appendHeader('Set-Cookie', h);
+    else res.setHeader('Set-Cookie', h);
 }
 
 function clearCookie(res, name) {
-    res.setHeader('Set-Cookie', name + '=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0');
+    const h = name + '=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0';
+    if (res.appendHeader) res.appendHeader('Set-Cookie', h);
+    else res.setHeader('Set-Cookie', h);
 }
 
 function setSessionCookies(res, session, secure) {
@@ -143,12 +148,27 @@ function pgHeaders(c) {
     };
 }
 
+/* Builds a PostgREST query string. Regular params (select/order/limit/offset)
+ * are emitted as key=value; filters are emitted as a BARE param named
+ * "column=operator.value" (e.g. id=eq.<uuid>). The '=' inside a filter name
+ * MUST stay literal: PostgREST does not decode %3D in param names, and an
+ * empty "=value" suffix is rejected with PGRST100. */
+function buildQuery(f) {
+    const parts = [];
+    Object.keys(f).forEach(function(k) {
+        if (k === 'select' || k === 'order' || k === 'limit' || k === 'offset') {
+            parts.push(k + '=' + encodeURIComponent(f[k]));
+        } else {
+            parts.push(k + '.' + f[k]);
+        }
+    });
+    return parts.join('&');
+}
+
 async function pgSelect(c, table, filter, select) {
     const f = filter || {};
-    const q = new URLSearchParams();
-    q.set('select', select || f.select || '*');
-    Object.keys(f).forEach(function(k){ if (k !== 'select') q.append(k, f[k]); });
-    const resp = await fetch(c.url + '/rest/v1/' + table + '?' + q.toString(), {
+    if (select) f.select = select;
+    const resp = await fetch(c.url + '/rest/v1/' + table + '?' + buildQuery(f), {
         headers: pgHeaders(c)
     });
     const data = await resp.json().catch(function(){ return []; });
@@ -166,9 +186,8 @@ async function pgInsert(c, table, row) {
 }
 
 async function pgUpdate(c, table, row, filter) {
-    const q = new URLSearchParams();
-    if (filter) Object.keys(filter).forEach(function(k){ q.append(k, filter[k]); });
-    const resp = await fetch(c.url + '/rest/v1/' + table + '?' + q.toString(), {
+    const qs = buildQuery(filter || {});
+    const resp = await fetch(c.url + '/rest/v1/' + table + (qs ? '?' + qs : ''), {
         method: 'PATCH',
         headers: Object.assign(pgHeaders(c), { 'Prefer': 'return=representation' }),
         body: JSON.stringify(row)

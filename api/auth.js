@@ -1,10 +1,9 @@
-/* smartLAB — Admin Login (Vercel Serverless Function)
- * POST /api/login  { email, password }
- * Verifies credentials on the server and issues a signed, expiring session
- * token as an HttpOnly cookie. Credentials are read from environment
- * variables (set them in the Vercel dashboard):
- *   ADMIN_EMAIL, ADMIN_PASSWORD, AUTH_SECRET (required in production),
- *   ADMIN_SESSION_HOURS (optional, default 12)
+/* smartLAB — Admin Auth (Vercel Serverless Function)
+ * Consolidates /api/login, /api/logout and /api/session into one function so
+ * the project stays within the Vercel Hobby plan limit of 12 functions.
+ *   GET  /api/auth?route=session  → verify HttpOnly cookie, return admin
+ *   POST /api/auth?route=login    → { email, password } → set session cookie
+ *   POST /api/auth?route=logout   → clear session cookie
  */
 const crypto = require('crypto');
 
@@ -103,18 +102,55 @@ function readBody(req) {
     });
 }
 
-module.exports = function handler(req, res) {
-    if (req.method !== 'POST') { json(res, 405, { ok: false, error: 'Method not allowed' }); return; }
+function handleSession(req, res) {
+    const cfg = config();
+    const payload = verifyToken(getToken(req), cfg);
+    const envConfigured = !!(process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD && process.env.AUTH_SECRET);
+    if (!payload) { json(res, 200, { authed: false, envConfigured: envConfigured }); return; }
+    json(res, 200, { authed: true, email: payload.email, envConfigured: envConfigured });
+}
+
+function handleLogin(req, res) {
     readBody(req).then(function(body) {
-        var cfg = config();
-        var email = String(body.email || '').trim().toLowerCase();
-        var password = String(body.password || '');
+        const cfg = config();
+        const email = String(body.email || '').trim().toLowerCase();
+        const password = String(body.password || '');
         if (email === cfg.email.toLowerCase() && password === cfg.password) {
-            var token = createToken(email, cfg);
+            const token = createToken(email, cfg);
             setSessionCookie(res, token, cfg.sessionHours * 3600, isSecure(req));
             json(res, 200, { ok: true, email: email });
         } else {
             json(res, 401, { ok: false, error: 'Invalid email or password' });
         }
     });
+}
+
+function handleLogout(req, res) {
+    clearSessionCookie(res);
+    json(res, 200, { ok: true });
+}
+
+module.exports = function handler(req, res) {
+    const url = req.url || '/api/auth';
+    const qIndex = url.indexOf('?');
+    const path = (qIndex >= 0 ? url.slice(0, qIndex) : url).replace(/\/+$/, '');
+    const query = qIndex >= 0 ? url.slice(qIndex + 1) : '';
+    const route = (query.match(/route=([^&]+)/) || [])[1] || null;
+
+    // Also tolerate direct paths (login/logout/session) for compatibility.
+    const seg = path.split('/').filter(Boolean).pop();
+
+    if (route === 'login' || seg === 'login') {
+        if (req.method !== 'POST') { json(res, 405, { ok: false, error: 'Method not allowed' }); return; }
+        handleLogin(req, res); return;
+    }
+    if (route === 'logout' || seg === 'logout') {
+        if (req.method !== 'POST' && req.method !== 'GET') { json(res, 405, { ok: false, error: 'Method not allowed' }); return; }
+        handleLogout(req, res); return;
+    }
+    if (route === 'session' || seg === 'session' || seg === 'auth') {
+        if (req.method !== 'GET') { json(res, 405, { ok: false, error: 'Method not allowed' }); return; }
+        handleSession(req, res); return;
+    }
+    json(res, 400, { ok: false, error: 'Unknown auth route' });
 };

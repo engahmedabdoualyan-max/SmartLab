@@ -57,7 +57,7 @@
             }
             btn.innerHTML = '<span>Signing in...</span><div class="spinner"></div>';
             btn.disabled = true;
-            fetch('/api/login', {
+            fetch('/api/auth?route=login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'same-origin',

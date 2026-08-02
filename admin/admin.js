@@ -4,7 +4,7 @@
 
 /* ===== AUTH (server-verified session) ===== */
 var session = null;
-fetch('/api/session', { credentials: 'same-origin' })
+fetch('/api/auth?route=session', { credentials: 'same-origin' })
     .then(function(r){ return r.json(); })
     .then(function(d){
         if (!d || !d.authed) { window.location.href = 'login.html'; return; }
@@ -845,7 +845,7 @@ function resetData(){
 function logout(){
     function go(){ window.location.href = 'login.html'; }
     try {
-        fetch('/api/logout', { method: 'POST', credentials: 'same-origin' })
+        fetch('/api/auth?route=logout', { method: 'POST', credentials: 'same-origin' })
             .then(go, go);
     } catch(e) { go(); }
 }

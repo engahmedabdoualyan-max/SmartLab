@@ -115,7 +115,7 @@ var TestZones = (function() {
         return adminKnown && adminAuthed;
     }
     function refreshAdmin() {
-        fetch('/api/session', { credentials: 'same-origin' })
+        fetch('/api/auth?route=session', { credentials: 'same-origin' })
             .then(function(r){ return r.json(); })
             .then(function(d){
                 var was = adminAuthed;

@@ -389,6 +389,12 @@ body.rtl .results-table .rtd-value { text-align: left; }
     box-shadow: 0 2px 12px rgba(239,68,68,0.25);
 }
 .btn-red:hover { box-shadow: 0 4px 20px rgba(239,68,68,0.45); }
+.btn-violet {
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+    color: #fff;
+    box-shadow: 0 2px 12px rgba(124,58,237,0.25);
+}
+.btn-violet:hover { box-shadow: 0 4px 20px rgba(124,58,237,0.45); }
 .manual-print-area { display: none; }
 
 /* ===================== SMARTLAB DEVICE WORKFLOW (PZT / EMI shared) ===================== */

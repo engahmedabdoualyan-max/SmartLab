@@ -32,11 +32,8 @@
         <!-- Device Selector (SmartLab) -->
         <div id="deviceSelectorBar" style="display:none;margin-top:12px;align-items:center;gap:10px;flex-wrap:wrap;">
             <label class="lt-label">&#x1F4E6; <span data-i18n="SmartLab Device">SmartLab Device</span></label>
-            <select id="deviceSelector" class="lt-select" style="flex:1;max-width:360px;padding:8px 10px;border-radius:6px;border:1px solid var(--border-glass);background:rgba(255,255,255,0.04);color:var(--text-primary);font-family:inherit;font-size:13px;">
-                <option value="esp32-pzt">&#x1F4E6; ESP32 PZT EMI Monitoring Node (smart aggregate)</option>
-                <option value="future-device" disabled>&#x1F50D; Future devices will appear here</option>
-            </select>
-            <span id="deviceInfo" style="font-size:12px;color:var(--text-muted);">Select a device to load its SmartLab workflow</span>
+            <select id="deviceSelector" class="lt-select" style="flex:1;max-width:420px;padding:8px 10px;border-radius:6px;border:1px solid var(--border-glass);background:rgba(255,255,255,0.04);color:var(--text-primary);font-family:inherit;font-size:13px;"></select>
+            <span id="deviceInfo" style="font-size:12px;color:var(--text-muted);"></span>
         </div>
 
         <div id="normalTestMode">
@@ -370,6 +367,14 @@
                     </div>
                 </div>
             </div><!-- /slHardwareContent -->
+
+            <!-- SmartLab test app: full-featured app loaded inside an iframe -->
+            <div id="smartlabAppContainer" style="display:none;margin-top:16px;">
+                <div class="section">
+                    <div class="section-title"><span class="st-icon">&#x1F916;</span> <span id="smartlabAppTitle" data-i18n="SmartLab App">SmartLab App</span> <span id="smartlabAppSub" style="font-size:11px;color:var(--text-muted);font-weight:400;"></span></div>
+                    <iframe id="smartlabAppFrame" src="about:blank" loading="lazy" style="width:100%;height:900px;border:1px solid var(--border-glass);border-radius:12px;background:#0d1117;"></iframe>
+                </div>
+            </div>
         </div><!-- /smartlabContent -->
 
     </div>
@@ -532,14 +537,36 @@ function runCompressiveTest() {
     syncDeviceBar();
     setInterval(syncDeviceBar, 500);
 
+    /* ---- Device selector: build from shared SMARTLAB_APPS config and load
+     * the selected full app inside an iframe (new tests = add to config). ---- */
     var devSel = $('deviceSelector'), devInfo = $('deviceInfo');
+    var slStagesContent = $('slStagesContent');
+    var slAppContainer = $('smartlabAppContainer');
+    var slAppFrame = $('smartlabAppFrame');
+    var slAppTitle = $('smartlabAppTitle'), slAppSub = $('smartlabAppSub');
+    var slApps = window.SMARTLAB_APPS || [];
+    function currentApp() {
+        for (var i = 0; i < slApps.length; i++) if (slApps[i].id === devSel.value) return slApps[i];
+        return null;
+    }
     if (devSel) {
+        var ph = document.createElement('option');
+        ph.value = '';
+        ph.textContent = ar ? '\u0627\u062E\u062A\u0631 \u062A\u0637\u0628\u064A\u0642 SmartLab...' : '\u2014 Select a SmartLab test app \u2014';
+        devSel.appendChild(ph);
+        slApps.forEach(function(a) {
+            var o = document.createElement('option');
+            o.value = a.id;
+            o.textContent = a.icon + ' ' + (ar && a.nameAr ? a.nameAr : a.name);
+            devSel.appendChild(o);
+        });
         devSel.addEventListener('change', function() {
-            if (devInfo) {
-                devInfo.textContent = (devSel.value === 'esp32-pzt')
-                    ? (ar ? '\u062A\u0645 \u062A\u062D\u0645\u064A\u0644 \u0633\u064A\u0631 \u0639\u0645\u0644 ESP32 PZT — \u0627\u062A\u0628\u0639 \u0627\u0644\u062E\u0637\u0648\u0627\u062A \u0623\u062F\u0646\u0627\u0647.' : 'ESP32 PZT EMI workflow loaded — follow the steps below.')
-                    : (ar ? '\u0627\u062E\u062A\u0631 \u062C\u0647\u0627\u0632\u0627\u064B \u0644\u062A\u062D\u0645\u064A\u0644 \u0633\u064A\u0631 \u0639\u0645\u0644\u0647' : 'Select a device to load its SmartLab workflow');
-            }
+            var app = currentApp();
+            if (devInfo) devInfo.textContent = app ? (ar ? app.descAr : app.desc) : '';
+            if (slStagesContent) slStagesContent.style.display = app ? 'none' : 'block';
+            if (slAppContainer) slAppContainer.style.display = app ? 'block' : 'none';
+            if (app && slAppFrame && slAppFrame.getAttribute('src') !== app.url) slAppFrame.setAttribute('src', app.url);
+            if (slAppSub) slAppSub.textContent = app ? (ar ? app.nameAr : app.name) : '';
         });
     }
 

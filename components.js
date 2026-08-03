@@ -24,7 +24,7 @@
             'Status': 'Status', 'Strength Trend': 'Strength Trend', 'Technician Name': 'Technician Name',
             'Test Level': 'Test Level', 'Test Location': 'Test Location', 'Test Photos': 'Test Photos',
             'Test Type': 'Test Type', 'Unofficial': 'Unofficial', 'VPN': 'VPN', 'VPN Active': 'VPN Active',
-            'Normal Test': 'Normal Test', 'SmartLab Test': 'SmartLab Test', 'SmartLab Device': 'SmartLab Device',
+            'Normal Test': 'Normal Test', 'SmartLab Test': 'SmartLab Test', 'SmartLab Device': 'SmartLab Device', 'SmartLab App': 'SmartLab App',
             'credibility': 'credibility', 'photos': 'photos',
             'Analytics': 'Analytics', 'Analytics desc': 'Client project analytics and performance metrics',
             'Back to Asphalt': 'Back to Asphalt & Marshall',
@@ -107,7 +107,7 @@
             'Status': 'الحالة', 'Strength Trend': 'منحنى المقاومة', 'Technician Name': 'اسم الفني',
             'Test Level': 'مستوى الاختبار', 'Test Location': 'موقع الاختبار', 'Test Photos': 'صور الاختبار',
             'Test Type': 'نوع الاختبار', 'Unofficial': 'غير رسمي', 'VPN': 'VPN', 'VPN Active': 'VPN مفعل',
-            'Normal Test': 'اختبار عادي', 'SmartLab Test': 'اختبار SmartLab', 'SmartLab Device': 'جهاز SmartLab',
+            'Normal Test': 'اختبار عادي', 'SmartLab Test': 'اختبار SmartLab', 'SmartLab Device': 'جهاز SmartLab', 'SmartLab App': 'تطبيق SmartLab',
             'credibility': 'المصداقية', 'photos': 'صور',
             'Analytics': 'التحليلات', 'Analytics desc': 'تحليلات مشاريع العملاء ومقاييس الأداء',
             'Back to Asphalt': 'العودة إلى الأسفلت ومارشال',
@@ -208,6 +208,22 @@
             window.translations.hi['Sign Out'] = 'बाहर निकलें';
         }
     }
+
+    /* ========== SmartLab test apps (shared dropdown config) ==========
+     * Add a new object here to make the app appear in every test page's
+     * SmartLab selector and load it inside an iframe on the page.
+     */
+    window.SMARTLAB_APPS = window.SMARTLAB_APPS || [
+        {
+            id: 'esp32-pzt',
+            icon: '\u{1F4E6}',
+            name: 'ESP32 PZT EMI Monitor',
+            nameAr: '\u0645\u0631\u0627\u0642\u0628 ESP32 PZT \u2014 EMI',
+            url: '/concrete/tests/compressive/esp32-pzt-monitoring-firmware/index.html',
+            desc: 'Full app: EMI sweep, resonance tracking, damage index, calibration, cloud reports.',
+            descAr: '\u0627\u0644\u062A\u0637\u0628\u064A\u0642 \u0627\u0644\u0643\u0627\u0645\u0644: \u0645\u0633\u062D EMI\u060C \u062A\u062A\u0628\u0639 \u0627\u0644\u0631\u0646\u064A\u0646\u060C \u0645\u0624\u0634\u0631 \u0627\u0644\u062A\u0644\u0641\u060C \u0627\u0644\u0645\u0639\u0627\u064A\u0631\u0629\u060C \u062A\u0642\u0627\u0631\u064A\u0631 \u0627\u0644\u0633\u062D\u0627\u0628\u0629.'
+        }
+    ];
 
     window.translatePage = function () {
         var lang = localStorage.getItem('smartlab_lang') || 'en';

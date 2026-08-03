@@ -219,6 +219,8 @@ static void taskSweep(uint32_t nowMS) {
 
 const S5_EMI = `/* ═══════════════ 9 · EMI MATH — PEAK-HOLD, R, G, F, RMSD ═══════════════ */
 static void evaluateFault(uint32_t nowMS, uint16_t ppCounts); /* fwd — §10 */
+static void influxOnSweepComplete();                            /* fwd — §14 */
+static void muxAdvance();                                       /* fwd — §16 */
 
 static float countsToMV(uint16_t counts) {
   return ((float)counts / (float)ADC_FULL_SCALE) * ADC_VREF_MV;
@@ -275,6 +277,11 @@ static void finishDwell(uint32_t nowMS) {
     sweep.damageIndex  = computeDamageRMSD();
     sweep.step         = 0;
     sweep.peakMV       = 0.0f;
+
+    /* frame closed → upload this rail, then step the router to the next PZT */
+    influxOnSweepComplete();                    // §14 — InfluxDB batch + backup
+    muxAdvance();                               // §16 — walk 74HC4052 rail
+
     Serial.printf("[sweep] F=%.1f kHz  G=%.0f uS  R=%.3f kOhm  RMSD=%.1f%%\\n",
                   latest.resonantKHz, latest.conductUS,
                   latest.resistanceK, sweep.damageIndex);
@@ -545,19 +552,53 @@ static uint64_t epochNanos() {
  * --------------------------------------------------------------------- */
 #include <nvs_flash.h>
 #include <Preferences.h>
+#include <SPIFFS.h>
 
 static Preferences s_prefs;
-static uint32_t    s_castEpoch = 0;     // seconds; 0 = unregistered
+static uint32_t    s_castEpoch = 0;                     // seconds; 0 = unregistered
+
+/* Air Baseline calibration signature (populated from NVS) */
+static float       s_airBaseline[SWEEP_STEPS] = {0.0f};
+static bool        s_airBaselineLoaded = false;
 
 /* Plowman coefficients — must match the dashboard calibration panel. */
 constexpr float PLOWMAN_A = 8.4f;       // MPa per ln(day)
 constexpr float PLOWMAN_B = 12.1f;      // MPa intercept
 constexpr float G_TO_MPA  = 0.0092f;    // µS → MPa feed-forward gain
 
-static void loadCastEpoch() {
+static void loadCastEpochAndBaseline() {
   s_prefs.begin("smartlab", true);      // read-only
   s_castEpoch = s_prefs.getUInt("cast_epoch", 0);
+
+  /* Resume the sweep counter across reboots so offline backup files
+   * (/offline/sw_<id>.lp) never collide with older unsynced frames. */
+  s_sweepId = s_prefs.getUInt("sweep_id", 0);
+
+  // Try loading the 96 air calibration values as a binary block
+  size_t bytes = s_prefs.getBytes("air_base", s_airBaseline, sizeof(s_airBaseline));
+  if (bytes == sizeof(s_airBaseline)) {
+    s_airBaselineLoaded = true;
+    Serial.println("[cal] Air baseline signature restored from NVS");
+  } else {
+    Serial.println("[cal] No on-board air calibration found — running raw");
+  }
   s_prefs.end();
+}
+
+/** Operator command 'b' takes current sweep as on-board air calibration */
+static void stampAirBaseline() {
+  s_prefs.begin("smartlab", false);     // read-write
+  
+  // Capture current sweep values as the baseline (conductance in micro-siemens equivalent)
+  for (uint8_t i = 0; i < SWEEP_STEPS; i++) {
+    const float rawMV = sweep.signatureMV[i];
+    s_airBaseline[i] = rawMV > 0.0f ? 1000.0f / impedanceKOhm(rawMV) : 0.0f;
+  }
+  
+  s_prefs.putBytes("air_base", s_airBaseline, sizeof(s_airBaseline));
+  s_airBaselineLoaded = true;
+  s_prefs.end();
+  Serial.println("[cal] pre-pour AIR_BASELINE_SIGNATURE stamped to NVS successfully");
 }
 
 /** Operator command 'c' stamps cast time = now. */
@@ -588,7 +629,18 @@ static float calculatedStrengthMPa() {
   const float maturity = (age > 0.04f)
       ? (PLOWMAN_A * logf(age) + PLOWMAN_B)
       : 0.0f;
-  const float fromG = latest.conductanceUS * G_TO_MPA;
+  
+  /* Apply calibration offset: subtract the baseline air reading so we track
+   * the true concrete growth, cancelling out parasitic cable admittance. */
+  float gActive = latest.conductanceUS;
+  if (s_airBaselineLoaded) {
+    /* clamp sweep.step to a valid bin index — clamp() is the Arduino
+     * helper, NOT Math.min/max which do not exist in C++ on the ESP32 */
+    const uint8_t idx = clamp<uint8_t>(sweep.step, 0, SWEEP_STEPS - 1);
+    const float airG = s_airBaseline[idx];
+    gActive = fmaxf(gActive - airG, 0.0f);
+  }
+  const float fromG = gActive * G_TO_MPA;
   if (maturity <= 0.0f) return fmaxf(fromG, 0.0f);
   return fmaxf(fromG * 0.62f + maturity * 0.38f, 0.0f);
 }
@@ -621,15 +673,20 @@ static String influxBuildSweepBody(const char *specimenId,
 
   for (uint8_t i = binFrom; i < binTo && i < SWEEP_STEPS; i++) {
     const float f = sweep.freqKHz[i];
-    const float g = sweep.signatureMV[i] > 0.0f
+    const float rawG = sweep.signatureMV[i] > 0.0f
                       ? 1000.0f / impedanceKOhm(sweep.signatureMV[i])
                       : 0.0f;
+    
+    // Subtract air baseline to get the calibrated conductance
+    const float calG = s_airBaselineLoaded ? fmaxf(rawG - s_airBaseline[i], 0.0f) : rawG;
 
     body += "emi_sweep,session_id=";      body += sessionId;
+    body += ",sensor_id=";                body += currentSensorId();   // §16
     body += ",specimen_id=";              body += specimenId;
     body += ",badge=";                    body += badge;
     body += " freq_khz=";                 body += String(f, 3);
-    body += ",conductance_us=";           body += String(g, 3);
+    body += ",conductance_us=";           body += String(calG, 3);
+    body += ",raw_conductance_us=";       body += String(rawG, 3);
     body += ",resistance_kohm=";          body += String(latest.resistanceK, 4);
     body += ",voltage_mv=";               body += String(latest.peakMV, 2);
     body += ",res_freq_khz=";             body += String(latest.resonantKHz, 3);
@@ -686,36 +743,136 @@ static bool influxPostChunk(const String &body) {
   return ok;
 }
 
+/* ── offline data logging ────────────────────────────────────────────── *
+ *  Writes the generated line-protocol payload into local flash files.
+ *  Uses SPIFFS which is standard in all ESP32 cores.
+ * --------------------------------------------------------------------- */
+static void writeSweepToOfflineFS(const String &body, uint32_t sweepId) {
+  /* cap: count existing offline frames; if at the cap, evict the oldest
+   * (lexicographically smallest /offline/sw_*.lp path — sweep ids grow
+   * monotonically so smaller name == older frame). */
+  constexpr uint8_t OFFLINE_MAX_FILES = 96;
+  String oldestPath = "";
+  uint32_t count = 0;
+
+  File root = SPIFFS.open("/");
+  if (root && root.isDirectory()) {
+    File f = root.openNextFile();
+    while (f) {
+      String n = f.name();
+      if (!f.isDirectory() && n.startsWith("/offline/sw_") && n.endsWith(".lp")) {
+        count++;
+        if (oldestPath.isEmpty() || n < oldestPath) oldestPath = f.path();
+      }
+      f.close();
+      f = root.openNextFile();
+    }
+    root.close();
+  }
+
+  if (count >= OFFLINE_MAX_FILES && !oldestPath.isEmpty()) {
+    SPIFFS.remove(oldestPath);
+    Serial.printf("[offline] cap reached — evicted oldest %s\\n", oldestPath.c_str());
+  }
+
+  String path = String("/offline/sw_") + String(sweepId) + ".lp";
+  File file = SPIFFS.open(path, "w");
+  if (!file) {
+    Serial.println("[offline] Failed to open file for writing in SPIFFS!");
+    return;
+  }
+  file.print(body);
+  file.close();
+  Serial.printf("[offline] WiFi down — saved sweep #%lu to SPIFFS backup (%u B)\\n",
+                (unsigned long)sweepId, (unsigned)body.length());
+}
+
+/* ── bulk upload of offline logs on network recovery ──────────────────── *
+ *  SPIFFS on ESP32 is a FLAT namespace — it has no real directories.
+ *  "SPIFFS.open("/offline")" returns an invalid handle (there is no
+ *  file literally named "/offline"), so we must list the ROOT and
+ *  filter paths by prefix. Relying on a directory would silently
+ *  make this sync never run.
+ * --------------------------------------------------------------------- */
+static void syncOfflineData() {
+  if (WiFi.status() != WL_CONNECTED || !influxTimeReady()) return;
+
+  File root = SPIFFS.open("/");
+  if (!root || !root.isDirectory()) return;
+
+  File file = root.openNextFile();
+  uint32_t syncCount = 0;
+  while (file) {
+    /* Capture name + path BEFORE closing the handle — reading them
+     * after file.close() is a use-after-free in the Arduino core. */
+    String fname = file.name();
+    String fpath = file.path();
+
+    if (!file.isDirectory() &&
+        fname.startsWith("/offline/") && fname.endsWith(".lp")) {
+      String body = file.readString();
+      file.close();
+
+      Serial.printf("[offline] Syncing %s (%u B)…\\n",
+                    fname.c_str(), (unsigned)body.length());
+      if (influxPostChunk(body)) {
+        SPIFFS.remove(fpath); // Success — delete file
+        syncCount++;
+      } else {
+        Serial.println("[offline] Sync failed, keeping files for next cycle");
+        break; // Network or token issue — retry later
+      }
+    } else {
+      file.close();
+    }
+    file = root.openNextFile();
+  }
+  root.close(); // always release the directory handle
+  if (syncCount > 0) {
+    Serial.printf("[offline] Sync complete — %lu bulk sweeps uploaded and purged\\n", (unsigned long)syncCount);
+  }
+}
+
 static bool influxWriteSweep(const char *specimenId, const char *badge) {
-  if (WiFi.status() != WL_CONNECTED) return false;
-  if (!influxTimeReady()) {
-    Serial.println("[influx] write deferred — NTP not locked yet");
+  s_sweepId++; // one id per physical sweep frame
+
+  /* Persist the counter immediately — a crash or power-cut between this
+   * line and the SPIFFS write would otherwise reuse the id on reboot and
+   * overwrite the very frame we are trying to protect. NVS writes are
+   * cheap here (once per sweep, ~1 Hz). */
+  s_prefs.begin("smartlab", false);
+  s_prefs.putUInt("sweep_id", s_sweepId);
+  s_prefs.end();
+
+  // Assemble the body first so we can save it to SPIFFS if offline
+  String body = "";
+  body.reserve(LP_RESERVE);
+  for (uint8_t from = 0; from < SWEEP_STEPS; from += LP_CHUNK_BINS) {
+    const uint8_t to = (uint8_t)min<int>(from + LP_CHUNK_BINS, SWEEP_STEPS);
+    body += influxBuildSweepBody(specimenId, badge, from, to);
+    if (from + LP_CHUNK_BINS < SWEEP_STEPS) body += "\\n";
+  }
+
+  if (WiFi.status() != WL_CONNECTED || !influxTimeReady()) {
+    writeSweepToOfflineFS(body, s_sweepId);
     return false;
   }
 
-  s_sweepId++;                       // one id per physical sweep frame
-  bool     allOk = true;
-  uint32_t bytes = 0;
-  uint8_t  posts = 0;
-
-  for (uint8_t from = 0; from < SWEEP_STEPS; from += LP_CHUNK_BINS) {
-    const uint8_t to = (uint8_t)min<int>(from + LP_CHUNK_BINS, SWEEP_STEPS);
-    const String  body = influxBuildSweepBody(specimenId, badge, from, to);
-    bytes += body.length();
-    posts++;
-    if (!influxPostChunk(body)) { allOk = false; break; }
-  }
-
-  if (allOk) {
+  // Live upload path
+  bool ok = influxPostChunk(body);
+  if (ok) {
     s_influxOk++;
-    Serial.printf("[influx] sweep #%lu OK — %u bins in %u POST(s), %lu B "
-                  "| age %.3f d | fc %.2f MPa\\n",
-                  (unsigned long)s_sweepId, SWEEP_STEPS, posts,
-                  (unsigned long)bytes, testAgeDays(), calculatedStrengthMPa());
+    Serial.printf("[influx] sweep #%lu OK — %u bins, %lu B | age %.3f d | fc %.2f MPa\\n",
+                  (unsigned long)s_sweepId, SWEEP_STEPS, (unsigned long)body.length(),
+                  testAgeDays(), calculatedStrengthMPa());
+    // Non-blocking trigger to drain offline backup backlog
+    syncOfflineData();
   } else {
     s_influxFail++;
+    // Backup even on API failure (e.g. transient proxy issue) to protect structural records
+    writeSweepToOfflineFS(body, s_sweepId);
   }
-  return allOk;
+  return ok;
 }
 
 /* Call once per completed sweep, from finishSweep(). Non-blocking in the
@@ -758,6 +915,71 @@ static void influxOnSweepComplete() {
  *   ORDER BY time DESC LIMIT 5
  * --------------------------------------------------------------------- */`;
 
+const S12_MUX = `/* ═══════════ 16 · MULTI-SENSOR MULTIPLEXING — AD5933 ANALOG-SWITCH RAILS ══ *
+ *
+ *  One AD5933 impedance engine, FOUR piezoelectric nodes. A 74HC4052-class
+ *  analog switch routes the patch being read to the shared sense path.
+ *  Two GPIO selects give 2^2 rails. The router walks the array after every
+ *  completed sweep, so each node sees identical excitation and the SAME
+ *  96-bin fingerprint cadence.
+ *
+ *  InfluxDB tag "sensor_id=pzt_node_0N" lets the dashboard multiplex the
+ *  charts: one bucket, many physical nodes, filterable one-by-one.
+ *
+ *  Rails (ESP32-WROOM-32):
+ *    MUX_S0 → GPIO14      MUX_S1 → GPIO12    SETTLE  → 8 ms after switch
+ *  ========================================================================== */
+
+#include <ADValues.h>     // AD5933 helper structs (vendor driver)
+
+/* node geometry on the 3D twin — the SVG maps ring-node id on these rails */
+struct MuxNode {
+  const char *sensorId;  // InfluxDB tag value, e.g. pzt_node_01
+};
+
+constexpr MuxNode MUX_NODES[4] = {
+  { "pzt_node_01" },
+  { "pzt_node_02" },
+  { "pzt_node_03" },
+  { "pzt_node_04" },
+};
+
+static uint8_t curSensor = 0;             // active rail index (0..3)
+static const uint8_t PIN_MUX_S0 = GPIO_NUM_14;
+static const uint8_t PIN_MUX_S1 = GPIO_NUM_12;
+constexpr uint32_t MUX_SETTLE_MS = 8;     // analog switch settling
+
+static void muxSelect(uint8_t rail) {
+  digitalWrite(PIN_MUX_S0, rail & 0x01);
+  digitalWrite(PIN_MUX_S1, (rail >> 1) & 0x01);
+  curSensor = rail;
+  /* settle — the PZT patch behaves as |Z(f)| and a few ms is generous
+   * at sweep amplitude; short enough that 96-burst cadence stays hot. */
+  delayMicroseconds(MUX_SETTLE_MS * 1000u);
+}
+
+static const char *currentSensorId() {
+  return MUX_NODES[curSensor].sensorId;
+}
+
+static void muxBegin() {
+  pinMode((uint8_t)PIN_MUX_S0, OUTPUT);
+  pinMode((uint8_t)PIN_MUX_S1, OUTPUT);
+  muxSelect(0);
+  Serial.println("[mux] 4× PZT rails armed — node_01 online (74HC4052)");
+}
+
+/* Called from finishDwell() once a full sweep frame closes. Advances
+ * to the next rail before the next dwell starts, producing:
+ *   sweep #N   → sensor_01 frame (96 bins)
+ *   sweep #N+1 → sensor_02 frame (96 bins) …                          */
+static void muxAdvance() {
+  const uint8_t next = (uint8_t)((curSensor + 1) % 4u);
+  muxSelect(next);
+  Serial.printf("[mux] rail %s active — sweep scheduler re-armed\\n",
+                currentSensorId());
+}`;
+
 const S9_LOOP = `/* ═══════════════════ 13 · LIFECYCLE — setup() / loop() ═════════════════ */
 static void buildSessionId() {
   uint8_t mac[6];
@@ -767,19 +989,39 @@ static void buildSessionId() {
 }
 
 /* Operator console — drained non-blocking, one char per pass:
- *   r : clear CRUSH latch (new specimen)   b : re-capture baseline
- *   i : print node identity + last reading                                  */
+ *   c : stamp cast date (Epoch)            b : stamp on-board air baseline
+ *   r : clear CRUSH latch (new specimen)   i : print diagnostics & status   */
 static void taskSerial() {
   while (Serial.available()) {
     const char c = (char)Serial.read();
     if (c == 'r') resetFault();
-    else if (c == 'b') { sweep.baselineValid = false;
-                         Serial.println("[node] baseline will re-capture"); }
+    else if (c == 'c') stampCastEpoch();
+    else if (c == 'b') stampAirBaseline();
     else if (c == 'i') {
       Serial.printf("[node] %s boot#%lu state=%s F=%.1fkHz R=%.3fkOhm\\n",
                     sessionId, (unsigned long)bootCount,
                     statusLabel(state), latest.resonantKHz,
                     latest.resistanceK);
+      /* count offline frames explicitly rather than guessing from
+       * usedBytes (which also includes SPIFFS internal overhead) */
+      uint32_t offlineFrames = 0;
+      File root = SPIFFS.open("/");
+      if (root && root.isDirectory()) {
+        File f = root.openNextFile();
+        while (f) {
+          String n = f.name();
+          if (!f.isDirectory() && n.startsWith("/offline/sw_") && n.endsWith(".lp")) {
+            offlineFrames++;
+          }
+          f.close();
+          f = root.openNextFile();
+        }
+        root.close();
+      }
+      Serial.printf("[node] NVS: cast=%lu, air_cal=%s | offline_backlog=%lu frame(s)\\n",
+                    (unsigned long)s_castEpoch,
+                    s_airBaselineLoaded ? "YES" : "NO",
+                    (unsigned long)offlineFrames);
     }
   }
 }
@@ -795,6 +1037,13 @@ static void taskLeds(uint32_t nowMS) {
 void setup() {
   Serial.begin(921600);
   bootCount++;
+
+  // Mount fail-safe SPIFFS storage
+  if (!SPIFFS.begin(true)) {
+    Serial.println("[offline] SPIFFS mount FAILED! Offline logger disabled.");
+  } else {
+    Serial.println("[offline] SPIFFS mounted successfully");
+  }
 
   /* analog front-end: 12-bit, full 0-3.3 V range on the divider tap */
   analogReadResolution(12);
@@ -812,10 +1061,18 @@ void setup() {
 
   buildSessionId();
   wifiBegin();
+  
+  // Load cast time & air-calibration signature from NVS
+  influxBeginTimeSync();
+  loadCastEpochAndBaseline();
+
+  /* §16 — arm the 74HC4052 rails BEFORE the first dwell fires. */
+  muxBegin();
+  
   beginDwell(millis());
 
   Serial.println("===============================================");
-  Serial.printf (" smartLAB SHM node — pzt_emi_monitor v2.4.1\\n");
+  Serial.printf (" smartLAB PZT-EMI Monitor v1.9.0\\n");
   Serial.printf (" session %s · boot #%lu · sweep %u steps\\n",
                  sessionId, (unsigned long)bootCount, SWEEP_STEPS);
   Serial.println("===============================================");
@@ -899,12 +1156,18 @@ export const FIRMWARE_SECTIONS: FirmwareSection[] = [
     brief: "NTP-gated writes, batched line protocol, TLS, write-only token.",
     code: S10_INFLUX,
   },
+  {
+    id: "mux",
+    title: "Multi-Sensor Multiplexing — 74HC4052 Analog Switch",
+    brief: "4× PZT rails, per-sweep rotation, sensor_id tag in line protocol.",
+    code: S12_MUX,
+  },
 ];
 
 export const FULL_CODE = FIRMWARE_SECTIONS.map((s) => s.code).join("\n\n") + "\n";
 
 export const FILE_NAME = "pzt_emi_monitor.ino";
-export const FW_VERSION = "2.4.1";
+export const FW_VERSION = "1.9.0";
 
 /* ── static analysis, computed from the actual source ─────────────── */
 const countMatches = (src: string, re: RegExp): number =>

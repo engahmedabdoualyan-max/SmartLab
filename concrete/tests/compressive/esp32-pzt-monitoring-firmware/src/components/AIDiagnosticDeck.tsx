@@ -467,7 +467,7 @@ function SelfHealthPanel({ sim }: { sim: NodeSim }) {
  *  4. ASCII HARDWARE INTERFACE & PIN ASSIGNMENT
  * ================================================================ */
 const ASCII_SCHEMATIC = `
-  ESP32-WROOM-32 · smartLAB SHM Node · pzt_emi_monitor v2.4.1
+  ESP32-WROOM-32 · smartLAB SHM Node · pzt_emi_monitor v1.9.0
   ┌─────────────────────────────────────────────────────────┐
   │  GPIO36 ──────── ADC1_CH0 ─────────────┬── PZT_SENSE   │
   │  (INPUT)          12-bit               │               │

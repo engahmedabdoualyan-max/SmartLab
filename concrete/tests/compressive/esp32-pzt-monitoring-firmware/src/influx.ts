@@ -62,6 +62,9 @@ export interface SweepRow {
   freq_khz: number;
   conductance_us: number;
   susceptance_us?: number;
+  /** raw (uncalibrated) conductance emitted by the ESP32 alongside the
+   *  air-calibrated value — lets the dashboard re-derive calibration */
+  raw_conductance_us?: number;
   time?: string;
 }
 
@@ -306,6 +309,8 @@ export function buildLineProtocol(
         `hydration_pct=${meta.hydrationPct.toFixed(2)}`,
         `test_age_days=${meta.testAgeDays.toFixed(4)}`,
         `calculated_strength_mpa=${meta.calculatedStrengthMPa.toFixed(3)}`,
+        `device_status="Online"`,
+        `air_baseline_calibrated=true`,
         `sweep_id=${meta.sweepId}i`,
       ].filter(Boolean).join(",");
 

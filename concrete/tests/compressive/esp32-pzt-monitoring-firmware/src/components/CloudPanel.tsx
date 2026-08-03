@@ -404,7 +404,21 @@ export default function CloudPanel() {
               <div className="font-mono text-[9px] text-copper mt-0.5">Off = Live Cloud Connection</div>
             </div>
             <button
-              onClick={() => { setOfflineDemo(!offlineDemo); setConn("idle"); }}
+              onClick={() => {
+                const next = !offlineDemo;
+                setOfflineDemo(next);
+                setConn("idle");
+                setErr(null);
+                /* Leaving demo mode must NOT leave demo curves on screen —
+                 * otherwise an engineer could export demo data labelled
+                 * "live". Clear the arrays until real rows arrive. */
+                if (!next) {
+                  setLive([]);
+                  setBaseline([]);
+                  setTrend([]);
+                  setLastSync(null);
+                }
+              }}
               aria-pressed={offlineDemo}
               className={cn("relative h-6 w-11 border transition-colors shrink-0",
                 offlineDemo ? "border-copper bg-copper/15" : "border-line2 bg-scope")}

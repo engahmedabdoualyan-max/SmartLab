@@ -337,6 +337,16 @@ export function exportCloudXlsx(p: CloudReportPayload): void {
   });
   XLSX.utils.sheet_add_aoa(ws2, dataMatrix, { origin: "A6" });
 
+  /* v1.9.0 — ±5% alert highlighting: cells exceeding bounds get light red overlay */
+  const alertStyle = { fill: { fgColor: { rgb: "FFEBEB" } } }; // light red
+  const ws2LastRow = 5 + dataMatrix.length;
+  for (let r = 6; r <= ws2LastRow; r++) {
+    const dPctCell = ws2[`E${r}`];
+    if (dPctCell && typeof dPctCell.v === "number" && Math.abs(dPctCell.v) > 5) {
+      dPctCell.s = alertStyle;
+    }
+  }
+
   ws2["!cols"] = [
     { wch: 16 }, { wch: 26 }, { wch: 30 }, { wch: 28 }, { wch: 12 },
   ];

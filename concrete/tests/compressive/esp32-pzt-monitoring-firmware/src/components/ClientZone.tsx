@@ -630,46 +630,57 @@ function TabReadings({ sim, connected, activeProject, wallet, onSaveReading, onD
   const strengthMPa = sim.calibratedStrengthMPa();
   const badge: TokenBadge = badgeForSession(isCertified);
 
+  /* Re-entrancy guard: canSave is computed from the LAST render, so a
+   * rapid double-click would pass the check twice and deduct 2 tokens
+   * for one specimen. A ref is synchronous — it blocks the second call
+   * the instant the first one starts. */
+  const savingRef = useRef(false);
+
   const handleSave = async () => {
-    if (!activeProject) return;
-    let romId: string | null = null;
-    if (isCertified) {
-      /* Simulate 1-Wire bus scan → ROM verification animation */
-      setVerifyState("scanning");
-      await new Promise(res => setTimeout(res, 680));
-      await new Promise(res => setTimeout(res, 480));
-      try {
-        const result = await onDeduct(activeProject.id);
-        romId = result.romId;
-        setVerifiedRom(romId);
-        setVerifyState("verified");
-      } catch {
-        setVerifyState("error");
-        return;
+    if (!activeProject || savingRef.current) return;
+    savingRef.current = true;
+    try {
+      let romId: string | null = null;
+      if (isCertified) {
+        /* Simulate 1-Wire bus scan → ROM verification animation */
+        setVerifyState("scanning");
+        await new Promise(res => setTimeout(res, 680));
+        await new Promise(res => setTimeout(res, 480));
+        try {
+          const result = await onDeduct(activeProject.id);
+          romId = result.romId;
+          setVerifiedRom(romId);
+          setVerifyState("verified");
+        } catch {
+          setVerifyState("error");
+          return; // finally still releases the guard
+        }
       }
+      const r: SpecimenRecord = {
+        id: uid(),
+        label: label || `Specimen ${activeProject.specimens.length + 1}`,
+        age: Number(age) || 28,
+        voltage:       parseFloat(sim.vMV.toFixed(1)),
+        resistance:    parseFloat(sim.rK.toFixed(3)),
+        frequency:     parseFloat(sim.fRes.toFixed(2)),
+        conductance:   Math.round(sim.gUS),
+        damage:        parseFloat(sim.damage.toFixed(2)),
+        strengthMPa:   parseFloat(strengthMPa.toFixed(2)),
+        certification: sim.certification,
+        scenario:      sim.scenario,
+        savedAt:       nowIso(),
+        verdict:       "PENDING",
+        badge,
+        romId,
+      };
+      r.verdict = specimenVerdict(r);
+      onSaveReading(r);
+      setSaved(true);
+      setTimeout(() => { setSaved(false); setVerifyState("idle"); setVerifiedRom(null); }, 2800);
+      setLabel(""); setSpecimenId("");
+    } finally {
+      savingRef.current = false;
     }
-    const r: SpecimenRecord = {
-      id: uid(),
-      label: label || `Specimen ${activeProject.specimens.length + 1}`,
-      age: Number(age) || 28,
-      voltage:       parseFloat(sim.vMV.toFixed(1)),
-      resistance:    parseFloat(sim.rK.toFixed(3)),
-      frequency:     parseFloat(sim.fRes.toFixed(2)),
-      conductance:   Math.round(sim.gUS),
-      damage:        parseFloat(sim.damage.toFixed(2)),
-      strengthMPa:   parseFloat(strengthMPa.toFixed(2)),
-      certification: sim.certification,
-      scenario:      sim.scenario,
-      savedAt:       nowIso(),
-      verdict:       "PENDING",
-      badge,
-      romId,
-    };
-    r.verdict = specimenVerdict(r);
-    onSaveReading(r);
-    setSaved(true);
-    setTimeout(() => { setSaved(false); setVerifyState("idle"); setVerifiedRom(null); }, 2800);
-    setLabel(""); setSpecimenId("");
   };
 
   const READINGS = [

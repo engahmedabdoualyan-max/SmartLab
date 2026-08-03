@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { NodeSim, fmtClock } from "./sim";
+import { NodeSim } from "./sim";
 import { FULL_CODE, FILE_NAME, FW_VERSION, FW_STATS } from "./firmware";
+import { loadCalibration, type CalibrationModel } from "./regression";
 import { Chip, CollapsibleSection, Led, Reveal, useReducedMotion, useScramble } from "./ui";
 import { REFERENCES } from "./references";
 import { cn } from "./utils/cn";
@@ -24,6 +25,9 @@ import SearchModal from "./components/SearchModal";
 import BackToTop from "./components/BackToTop";
 import ThemeToggle from "./components/ThemeToggle";
 import CloudPanel from "./components/CloudPanel";
+import EnterpriseDeck from "./components/EnterpriseDeck";
+import FloatingManual from "./components/FloatingManual";
+import InvestorZone from "./components/InvestorZone";
 
 /* ── live time-domain scope (hero) ─────────────────────────────── */
 function HeroScope({ sim }: { sim: NodeSim }) {
@@ -137,7 +141,7 @@ function HeroScope({ sim }: { sim: NodeSim }) {
 
 /* ── boot console ──────────────────────────────────────────────── */
 const BOOT_LINES = [
-  "[ 0.000] smartLAB SHM node — pzt_emi_monitor v2.4.1 · boot #7",
+  "[ 0.000] smartLAB PZT-EMI Monitor v1.9.0 · boot #7",
   "[ 0.012] ADC1_CH0 (GPIO36) · 12-bit · atten 11 dB · burst 200 × 12 µs",
   "[ 0.031] LEDC0 (GPIO25) sweep drive armed — 1 kHz → 500 kHz · 96 log steps",
   "[ 0.214] [wifi] link up — IP 10.20.4.17 · RSSI -54 dBm",
@@ -202,23 +206,71 @@ function TopBar({
 }) {
   const { t } = useLang();
   const crashed = sim.status === "CRUSHED";
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
-  const NAV_ITEMS = [
-    { id: "hero",         no: "",   key: "nav.home",         href: "#top"          },
-    { id: "client-zone",  no: "01", key: "nav.client",       href: "#client-zone"  },
-    { id: "guide",        no: "02", key: "nav.guide",        href: "#guide"        },
-    { id: "telemetry",    no: "03", key: "nav.telemetry",    href: "#telemetry"    },
-    { id: "firmware",     no: "04", key: "nav.firmware",     href: "#firmware"     },
-    { id: "hardware",     no: "05", key: "nav.hardware",     href: "#hardware"     },
-    { id: "architecture", no: "06", key: "nav.architecture", href: "#architecture" },
-    { id: "uplink",       no: "07", key: "nav.uplink",       href: "#uplink"       },
-    { id: "cloud",        no: "08", key: "nav.cloud",        href: "#cloud"        },
-    { id: "references",   no: "09", key: "nav.refs",         href: "#references"   },
-  ] as const;
+  /* Close menu on outside click */
+  useEffect(() => {
+    if (!openMenu) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setOpenMenu(null);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [openMenu]);
+
+  /* Close mobile drawer on resize to desktop */
+  useEffect(() => {
+    const onResize = () => {
+      if (window.innerWidth >= 1024) setMobileOpen(false);
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  /* v1.9.0 — grouped dropdown architecture */
+  const NAV_GROUPS: {
+    id: string;
+    labelKey: string;
+    items: { id: string; no: string; key: string; href: string }[];
+  }[] = [
+    {
+      id: "client",
+      labelKey: "nav.group.client",
+      items: [
+        { id: "investor",     no: "01", key: "nav.investor",   href: "#investor"    },
+        { id: "client-zone",  no: "02", key: "nav.client",     href: "#client-zone" },
+        { id: "enterprise",   no: "10", key: "nav.enterprise", href: "#enterprise"  },
+      ],
+    },
+    {
+      id: "technical",
+      labelKey: "nav.group.tech",
+      items: [
+        { id: "telemetry",    no: "04", key: "nav.telemetry",    href: "#telemetry"    },
+        { id: "firmware",     no: "05", key: "nav.firmware",     href: "#firmware"     },
+        { id: "hardware",     no: "06", key: "nav.hardware",     href: "#hardware"     },
+        { id: "architecture", no: "07", key: "nav.architecture", href: "#architecture" },
+        { id: "uplink",       no: "08", key: "nav.uplink",       href: "#uplink"       },
+        { id: "cloud",        no: "09", key: "nav.cloud",        href: "#cloud"        },
+      ],
+    },
+    {
+      id: "resources",
+      labelKey: "nav.group.resources",
+      items: [
+        { id: "guide",       no: "03", key: "nav.guide",  href: "#guide"      },
+        { id: "references",  no: "11", key: "nav.refs",   href: "#references" },
+      ],
+    },
+  ];
+
+  /* NAV_GROUPS intentionally ordered by user journey: client → technical → docs */
 
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-ink/85 backdrop-blur-md">
-      <div className="max-w-[1240px] mx-auto px-5 md:px-8 h-14 flex items-center gap-4">
+      <div className="max-w-[1240px] mx-auto px-4 md:px-6 h-14 flex items-center gap-3">
         {/* logo */}
         <a href="#top" className="flex items-center gap-2.5 shrink-0">
           <LogoMark />
@@ -226,62 +278,177 @@ function TopBar({
             <div className="font-display font-bold text-[15px] tracking-wide text-paper">
               smart<span className="text-copper">LAB</span>
             </div>
-            <div className="font-mono text-[9px] tracking-[0.26em] text-dim mt-0.5">SHM NODE</div>
+            <div className="font-mono text-[9px] tracking-[0.26em] text-dim mt-0.5 hidden sm:block">SHM NODE</div>
           </div>
         </a>
 
-        {/* nav */}
-        <nav className="hidden lg:flex items-center gap-3 mx-auto" dir="ltr">
-          {NAV_ITEMS.map(({ id, no, key, href }) => {
-            const isActive = activeSection === id;
+        {/* desktop grouped nav */}
+        <div ref={menuRef} className="hidden lg:flex items-center mx-auto gap-1.5" dir="ltr">
+          {/* home */}
+          <a
+            href="#top"
+            onClick={() => onSelectSection("hero")}
+            className={cn(
+              "font-mono text-[10.5px] tracking-[0.16em] uppercase px-2.5 py-1.5 border rounded-sm flex items-center gap-1.5 transition-colors",
+              activeSection === "hero"
+                ? "border-copperdim bg-copper/15 text-copper font-semibold"
+                : "border-transparent text-mute hover:text-copper hover:border-line2"
+            )}
+          >
+            {t("nav.home")}
+          </a>
+
+          {/* dropdown groups */}
+          {NAV_GROUPS.map(group => {
+            const groupActive = group.items.some(i => i.id === activeSection);
             return (
-              <a
-                key={href}
-                href={href}
-                onClick={() => onSelectSection(id)}
-                className={cn(
-                  "group relative font-mono text-[10.5px] tracking-[0.16em] uppercase px-2.5 py-1 transition-all duration-200 border rounded-sm flex items-center gap-1.5",
-                  isActive
-                    ? "border-copperdim bg-copper/15 text-copper font-semibold shadow-[0_0_12px_rgba(222,154,60,0.22)]"
-                    : "border-transparent text-mute hover:text-copper hover:border-line2"
+              <div key={group.id} className="relative">
+                <button
+                  onClick={() => setOpenMenu(openMenu === group.id ? null : group.id)}
+                  onMouseEnter={() => setOpenMenu(group.id)}
+                  className={cn(
+                    "flex items-center gap-1.5 font-mono text-[10.5px] tracking-[0.16em] uppercase px-2.5 py-1.5 border rounded-sm transition-colors",
+                    groupActive
+                      ? "border-copperdim bg-copper/15 text-copper font-semibold"
+                      : "border-transparent text-mute hover:text-copper hover:border-line2"
+                  )}
+                  aria-expanded={openMenu === group.id}
+                >
+                  {t(group.labelKey)}
+                  <svg
+                    viewBox="0 0 10 6"
+                    className={cn("w-2.5 h-2.5 transition-transform", openMenu === group.id && "rotate-180")}
+                    fill="none" stroke="currentColor" strokeWidth="1.6"
+                  >
+                    <path d="M1 1l4 4 4-4" />
+                  </svg>
+                </button>
+
+                {/* dropdown panel */}
+                {openMenu === group.id && (
+                  <div
+                    className="absolute top-full mt-1 left-0 min-w-[210px] border border-copperdim bg-panel shadow-2xl shadow-black/50 z-50 overflow-hidden"
+                    style={{ animation: "fadeInDown 0.14s ease" }}
+                  >
+                    {group.items.map(item => {
+                      const isActive = activeSection === item.id;
+                      return (
+                        <a
+                          key={item.id}
+                          href={item.href}
+                          onClick={() => { onSelectSection(item.id); setOpenMenu(null); }}
+                          className={cn(
+                            "flex items-center gap-2.5 px-3.5 py-2.5 transition-colors",
+                            isActive ? "bg-copper/12 text-copper" : "text-mute hover:bg-raise/60 hover:text-paper"
+                          )}
+                        >
+                          <span className={cn("font-mono text-[9px] w-4", isActive ? "text-copper" : "text-dim")}>
+                            {item.no}
+                          </span>
+                          <span className="font-body text-[12.5px]">{t(item.key)}</span>
+                          {isActive && (
+                            <span className="ms-auto w-1.5 h-1.5 rounded-full bg-copper shadow-[0_0_6px_#de9a3c]" />
+                          )}
+                        </a>
+                      );
+                    })}
+                  </div>
                 )}
-              >
-                {isActive && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-copper shadow-[0_0_6px_#de9a3c] animate-pulse" />
-                )}
-                <span className={isActive ? "text-copper" : "text-dim group-hover:text-copper/70"}>
-                  {no}
-                </span>
-                {t(key)}
-              </a>
+              </div>
             );
           })}
-        </nav>
+        </div>
 
         {/* right cluster */}
-        <div className="ml-auto lg:ml-0 flex items-center gap-2.5 shrink-0">
+        <div className="ml-auto lg:ml-0 flex items-center gap-2 shrink-0">
           <span className="hidden xl:inline font-mono text-[10.5px] text-dim">{sim.sessionId}</span>
-          <span className="hidden xl:inline font-mono text-[10.5px] tabular-nums text-mute">{fmtClock(sim.uptime)}</span>
           <Led tone={crashed ? "alarm" : sim.status === "ACTIVE" ? "signal" : "copper"} />
 
           {/* search trigger */}
           <button
             onClick={onSearch}
             aria-label={t("search.title")}
-            className="flex items-center gap-2 border border-line2 px-2.5 py-1.5 font-mono text-[10.5px] text-dim hover:text-copper hover:border-copperdim transition-colors"
+            className="flex items-center gap-1.5 border border-line2 px-2 py-1.5 font-mono text-[10.5px] text-dim hover:text-copper hover:border-copperdim transition-colors"
             dir="ltr"
           >
             <svg viewBox="0 0 18 18" className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.8">
               <circle cx="8" cy="8" r="5.2" /><path d="m12 12 3.6 3.6" strokeLinecap="round" />
             </svg>
-            <span className="hidden md:inline">{t("search.btn")}</span>
             <kbd className="hidden md:inline border border-line px-1 py-px text-[9px] leading-none">⌘K</kbd>
           </button>
 
           <ThemeToggle />
           <LangPicker />
+
+          {/* mobile hamburger */}
+          <button
+            onClick={() => setMobileOpen(o => !o)}
+            aria-label="Menu"
+            className="lg:hidden flex flex-col justify-center items-center gap-[5px] w-9 h-9 border border-line2 text-dim hover:text-copper transition-colors"
+          >
+            <span className={cn("w-4 h-[2px] bg-current transition-transform duration-200", mobileOpen && "rotate-45 translate-y-[7px]")} />
+            <span className={cn("w-4 h-[2px] bg-current transition-opacity duration-200", mobileOpen && "opacity-0")} />
+            <span className={cn("w-4 h-[2px] bg-current transition-transform duration-200", mobileOpen && "-rotate-45 -translate-y-[7px]")} />
+          </button>
         </div>
       </div>
+
+      {/* mobile drawer */}
+      {mobileOpen && (
+        <div className="lg:hidden border-t border-line bg-panel/98 backdrop-blur-md">
+          <div className="px-4 py-3 space-y-1 max-h-[calc(100vh-56px)] overflow-y-auto">
+            <a
+              href="#top"
+              onClick={() => { onSelectSection("hero"); setMobileOpen(false); }}
+              className={cn(
+                "block px-3 py-2.5 font-mono text-[11.5px] uppercase tracking-[0.14em] border-b border-line/50",
+                activeSection === "hero" ? "text-copper bg-copper/8" : "text-mute"
+              )}
+            >
+              {t("nav.home")}
+            </a>
+
+            {NAV_GROUPS.map(group => (
+              <div key={group.id}>
+                <div className="px-3 pt-2.5 pb-1 font-mono text-[9px] uppercase tracking-[0.22em] text-copper">
+                  {t(group.labelKey)}
+                </div>
+                {group.items.map(item => (
+                  <a
+                    key={item.id}
+                    href={item.href}
+                    onClick={() => { onSelectSection(item.id); setMobileOpen(false); }}
+                    className={cn(
+                      "block px-3 py-2 font-mono text-[11.5px] uppercase tracking-[0.12em] border-b border-line/50 transition-colors",
+                      activeSection === item.id
+                        ? "text-copper bg-copper/8"
+                        : "text-mute hover:text-paper hover:bg-raise/40"
+                    )}
+                  >
+                    <span className="text-dim mr-2">{item.no}</span>
+                    {t(item.key)}
+                  </a>
+                ))}
+              </div>
+            ))}
+
+            {/* mobile quick tools */}
+            <div className="flex items-center gap-2 pt-3 pb-1">
+              <button
+                onClick={() => { setMobileOpen(false); onSearch(); }}
+                className="flex-1 flex items-center justify-center gap-2 border border-line2 px-3 py-2 font-mono text-[10.5px] uppercase text-dim hover:text-copper"
+              >
+                <svg viewBox="0 0 18 18" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <circle cx="8" cy="8" r="5.2" /><path d="m12 12 3.6 3.6" strokeLinecap="round" />
+                </svg>
+                {t("search.btn")}
+              </button>
+              <ThemeToggle />
+              <LangPicker />
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
@@ -584,6 +751,7 @@ export default function App() {
   const simRef = useRef<NodeSim | null>(null);
   if (!simRef.current) simRef.current = new NodeSim();
   const sim = simRef.current;
+  const [calib] = useState<CalibrationModel>(() => loadCalibration());
   const [, setTick] = useState(0);
   const [searchOpen, setSearchOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("hero");
@@ -593,6 +761,7 @@ export default function App() {
   useEffect(() => {
     const sectionIds = [
       "hero",
+      "investor",
       "client-zone",
       "guide",
       "telemetry",
@@ -601,6 +770,7 @@ export default function App() {
       "architecture",
       "uplink",
       "cloud",
+      "enterprise",
       "references",
     ];
 
@@ -690,6 +860,7 @@ export default function App() {
       <TopBar sim={sim} activeSection={activeSection} onSelectSection={setActiveSection} onSearch={() => setSearchOpen(true)} />
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
       <BackToTop />
+      <FloatingManual />
 
       <main className="max-w-[1240px] mx-auto px-5 md:px-8">
         {/* hero */}
@@ -756,14 +927,31 @@ export default function App() {
           </Reveal>
         </section>
 
-        {/* client zone */}
-        <section id="client-zone" className="py-16 md:py-20 scroll-mt-20 border-t border-line/70">
+        {/* investor zone — primary screen for decision-makers */}
+        <section id="investor" className="py-16 md:py-20 scroll-mt-20 border-t border-line/70">
           <Reveal>
-            <Lifecycle />
+            <InvestorZone sim={sim} calib={calib} />
           </Reveal>
-          <Reveal className="mt-5">
-            <ClientZone sim={sim} />
-          </Reveal>
+        </section>
+
+        {/* engineering core — collapsed by default for non-technical viewers */}
+        <section id="engineering" className="pb-8 md:pb-12 scroll-mt-20 border-t border-line/70">
+          <CollapsibleSection
+            no="EC"
+            kicker={t("eng.kicker")}
+            title={t("eng.title")}
+            blurb={t("eng.blurb")}
+            sectionId="engineering"
+            defaultOpen={false}
+            labelExpand={t("fold.expand")}
+            labelCollapse={t("fold.collapse")}
+            summary={t("eng.summary")}
+          >
+            <div className="space-y-6">
+              <Lifecycle />
+              <ClientZone sim={sim} />
+            </div>
+          </CollapsibleSection>
         </section>
 
         {/* 02 — user guide */}
@@ -882,10 +1070,17 @@ export default function App() {
           </CollapsibleSection>
         </section>
 
-        {/* 09 — references */}
+        {/* 09 — enterprise suite v1.9.0 */}
+        <section id="enterprise" className="py-16 md:py-20 scroll-mt-20 border-t border-line/70">
+          <Reveal>
+            <EnterpriseDeck sim={sim} />
+          </Reveal>
+        </section>
+
+        {/* 10 — references */}
         <section id="references" className="py-16 md:py-20 scroll-mt-20 border-t border-line/70">
           <CollapsibleSection
-            no="09"
+            no="10"
             kicker={t("ref.kicker")}
             title={t("ref.title")}
             blurb={t("ref.subtitle")}

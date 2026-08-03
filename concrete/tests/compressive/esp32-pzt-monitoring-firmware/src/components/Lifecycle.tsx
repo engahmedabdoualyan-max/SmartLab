@@ -16,7 +16,7 @@
  *  exporter and the TokenBank grid stay synchronized.
  * ================================================================ */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Led } from "../ui";
 import { cn } from "../utils/cn";
 import {
@@ -86,27 +86,37 @@ export default function Lifecycle() {
   }, []);
 
   /* ── Option 1: certified poll routine ────────────────────────── */
+  /* `polling` is React state — async. A rapid double-click on "Poll ROM"
+   * could both pass `if (polling)` before the re-render and deduct TWO
+   * factory tokens. The ref guard is synchronous and blocks the 2nd call. */
+  const pollRef = useRef(false);
+
   const pollRom = async (): Promise<void> => {
-    if (polling || mode === "certified") return;
-    setPolling(true);
-    setRomStage("scan");
-    await sleep(720);
-    setRomStage("found");
-    await sleep(640);
-    setRomStage("crc");
-    await sleep(560);
-    const rom = generateRomId();
+    if (pollRef.current || mode === "certified") return;
+    pollRef.current = true;
     try {
-      const nextWallet = await deductToken("PROPRIETARY_CERTIFIED", rom, null, null);
-      setWallet(nextWallet);
-      setTxns(await tokenDb.getRecentTxns(12));
-      setPolledRom(rom);
-      setRomStage("locked");
-      lockCertifiedSession(rom);
-    } catch {
-      setRomStage("error");
+      setPolling(true);
+      setRomStage("scan");
+      await sleep(720);
+      setRomStage("found");
+      await sleep(640);
+      setRomStage("crc");
+      await sleep(560);
+      const rom = generateRomId();
+      try {
+        const nextWallet = await deductToken("PROPRIETARY_CERTIFIED", rom, null, null);
+        setWallet(nextWallet);
+        setTxns(await tokenDb.getRecentTxns(12));
+        setPolledRom(rom);
+        setRomStage("locked");
+        lockCertifiedSession(rom);
+      } catch {
+        setRomStage("error");
+      }
+    } finally {
+      pollRef.current = false;
+      setPolling(false);
     }
-    setPolling(false);
   };
 
   /* ── Option 2: PUF baseline latch ─────────────────────────────── */

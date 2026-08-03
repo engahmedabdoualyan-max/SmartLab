@@ -185,7 +185,7 @@ export default function Api({ sim }: { sim: NodeSim }) {
       <Reveal className="lg:col-span-2" delay={60}>
         <div className="panel overflow-hidden">
           <div className="px-4 py-2.5 border-b border-line font-mono text-[11px] tracking-[0.2em] uppercase text-copper">
-            Telemetry field schema — v2.4
+            Telemetry field schema — v1.9.0
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left min-w-[640px]">

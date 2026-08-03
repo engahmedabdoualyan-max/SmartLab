@@ -222,6 +222,15 @@
             url: '/concrete/tests/compressive/esp32-pzt-monitoring-firmware/index.html',
             desc: 'Full app: EMI sweep, resonance tracking, damage index, calibration, cloud reports.',
             descAr: '\u0627\u0644\u062A\u0637\u0628\u064A\u0642 \u0627\u0644\u0643\u0627\u0645\u0644: \u0645\u0633\u062D EMI\u060C \u062A\u062A\u0628\u0639 \u0627\u0644\u0631\u0646\u064A\u0646\u060C \u0645\u0624\u0634\u0631 \u0627\u0644\u062A\u0644\u0641\u060C \u0627\u0644\u0645\u0639\u0627\u064A\u0631\u0629\u060C \u062A\u0642\u0627\u0631\u064A\u0631 \u0627\u0644\u0633\u062D\u0627\u0628\u0629.'
+        },
+        {
+            id: 'concrete-cube-tester',
+            icon: '\u{1F9FD}',
+            name: 'Concrete Cube Tester (Arduino + HX711)',
+            nameAr: '\u062C\u0647\u0627\u0632 \u062A\u0643\u0633\u064A\u0631 \u0645\u0643\u0639\u0628\u0627\u062A \u0627\u0644\u062E\u0631\u0633\u0627\u0646\u0629 \u2014 Arduino + HX711',
+            url: '/concrete/tests/compressive/concrete-cube-tester-website/index.html',
+            desc: 'Load cell crushing machine app: live kN readout, Arduino + HX711 telemetry, result logging.',
+            descAr: '\u062A\u0637\u0628\u064A\u0642 \u0645\u0627\u0643\u064A\u0646\u0629 \u0627\u0644\u062A\u0643\u0633\u064A\u0631: \u0642\u064A\u0627\u0633 \u062D\u064A \u0628\u0627\u0644\u0643\u064A\u0644\u0648 \u0646\u064A\u0648\u062A\u0646\u060C \u062A\u0644\u0642\u064A \u0628\u064A\u0627\u0646\u0627\u062A Arduino + HX711\u060C \u062A\u0633\u062C\u064A\u0644 \u0627\u0644\u0646\u062A\u0627\u0626\u062C.'
         }
     ];
 

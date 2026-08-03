@@ -1,0 +1,389 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Changa", "Noto Sans", "IBM Plex Sans Arabic", sans-serif;
+  --font-body: "Noto Sans", "IBM Plex Sans Arabic", "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", "Courier New", monospace;
+
+  --color-ink: #16222e;
+  --color-ink-2: #1e2d3d;
+  --color-navy: #17395a;
+  --color-paper: #e9ebe6;
+  --color-card: #f7f7f3;
+  --color-steel: #5f6e7b;
+  --color-line: #c8cec6;
+  --color-safety: #e8590c;
+  --color-safety-hi: #ff7a1f;
+  --color-danger: #c42b2b;
+  --color-danger-deep: #8f1d1d;
+  --color-ok: #2f8f46;
+  --color-blueprint: #2c6bae;
+  --color-amber: #b97a10;
+  --color-lcd-bg: #15230c;
+  --color-lcd-fg: #b4f03c;
+  --color-codebg: #0e151d;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* ---------- خطوط حسب اللغة ---------- */
+html[lang="ar"] body,
+html[lang="ar"] .font-display {
+  font-family: "IBM Plex Sans Arabic", "Noto Sans", sans-serif;
+}
+html[lang="ar"] h1,
+html[lang="ar"] h2,
+html[lang="ar"] h3,
+html[lang="ar"] .font-display {
+  font-family: "Changa", "IBM Plex Sans Arabic", sans-serif;
+}
+
+html[lang="ur"] body,
+html[lang="ur"] h1,
+html[lang="ur"] h2,
+html[lang="ur"] h3,
+html[lang="ur"] .font-display {
+  font-family: "Noto Nastaliq Urdu", "IBM Plex Sans Arabic", serif;
+  line-height: 2.1;
+}
+html[lang="ur"] .font-mono,
+html[lang="ur"] code,
+html[lang="ur"] .codeblock,
+html[lang="ur"] .lcd {
+  font-family: "IBM Plex Mono", monospace;
+  line-height: 1.7;
+}
+
+html[lang="hi"] body,
+html[lang="hi"] h1,
+html[lang="hi"] h2,
+html[lang="hi"] h3,
+html[lang="hi"] .font-display {
+  font-family: "Noto Sans Devanagari", "Noto Sans", sans-serif;
+}
+
+html[lang="zh"] body,
+html[lang="zh"] h1,
+html[lang="zh"] h2,
+html[lang="zh"] h3,
+html[lang="zh"] .font-display {
+  font-family: "Noto Sans SC", "Noto Sans", sans-serif;
+}
+
+html[lang="ja"] body,
+html[lang="ja"] h1,
+html[lang="ja"] h2,
+html[lang="ja"] h3,
+html[lang="ja"] .font-display {
+  font-family: "Noto Sans JP", "Noto Sans", sans-serif;
+}
+
+html[lang="ru"] body,
+html[lang="ru"] h1,
+html[lang="ru"] h2,
+html[lang="ru"] h3,
+html[lang="ru"] .font-display {
+  font-family: "Noto Sans", sans-serif;
+}
+
+/* نصوص لاتينية داخل أي اتجاه (أسماء أطراف، صيغ، أكواد) */
+.bidi {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+html[dir="rtl"] .bidi {
+  text-align: right;
+}
+html[dir="ltr"] .bidi {
+  text-align: left;
+}
+html[dir="rtl"] .bidi-c,
+html[dir="ltr"] .bidi-c {
+  text-align: center;
+}
+.bidi-c {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+body {
+  @apply bg-paper text-ink font-body antialiased;
+  position: relative;
+}
+
+/* حبيبات خفيفة فوق الصفحة كلها */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+}
+
+::selection {
+  background: #e8590c;
+  color: #fff;
+}
+
+/* ---------- خلفيات شبكية ---------- */
+.blueprint-dark {
+  background-image: linear-gradient(rgba(122, 168, 255, 0.075) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(122, 168, 255, 0.075) 1px, transparent 1px),
+    linear-gradient(rgba(122, 168, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(122, 168, 255, 0.035) 1px, transparent 1px);
+  background-size: 56px 56px, 56px 56px, 14px 14px, 14px 14px;
+}
+
+.blueprint-light {
+  background-image: linear-gradient(rgba(23, 57, 90, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(23, 57, 90, 0.07) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+/* ---------- شريط الخطر ---------- */
+.hazard {
+  background: repeating-linear-gradient(
+    -45deg,
+    #e8590c 0 16px,
+    #16222e 16px 32px
+  );
+  background-size: 45.25px 45.25px;
+  animation: hazard-slide 26s linear infinite;
+}
+
+@keyframes hazard-slide {
+  to {
+    background-position: 452px 0;
+  }
+}
+
+/* ---------- الظهور عند التمرير ---------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  transition:
+    opacity 0.7s ease,
+    transform 0.7s cubic-bezier(0.22, 0.9, 0.3, 1);
+}
+.reveal.in {
+  opacity: 1;
+  transform: none;
+}
+
+/* ---------- ظلال صلبة هندسية ---------- */
+.hs {
+  box-shadow: 7px 7px 0 0 rgba(22, 34, 46, 0.1);
+}
+.hs-sm {
+  box-shadow: 4px 4px 0 0 rgba(22, 34, 46, 0.12);
+}
+
+/* ---------- شاشة LCD ---------- */
+.lcd {
+  background: #15230c;
+  color: #b4f03c;
+  font-family: var(--font-mono);
+  text-shadow: 0 0 7px rgba(180, 240, 60, 0.5);
+  letter-spacing: 0.5px;
+  position: relative;
+}
+.lcd::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.22) 0 1px,
+    transparent 1px 3px
+  );
+}
+
+/* ---------- صندوق الكود ---------- */
+.codeblock {
+  direction: ltr;
+  text-align: left;
+  background: #0e151d;
+  color: #d7e2ec;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.75;
+  overflow: auto;
+}
+.codeblock::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+.codeblock::-webkit-scrollbar-track {
+  background: #101a24;
+}
+.codeblock::-webkit-scrollbar-thumb {
+  background: #33465a;
+  border-radius: 4px;
+}
+.codeblock .cm {
+  color: #5f7d63;
+  font-style: italic;
+}
+.codeblock .kw {
+  color: #ff9e57;
+}
+.codeblock .st {
+  color: #8fd3a8;
+}
+.codeblock .fn {
+  color: #7fb8ff;
+}
+
+/* ---------- LED ---------- */
+.led {
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  display: inline-block;
+  box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.5);
+}
+.led-on-green {
+  background: #57d977;
+  box-shadow: 0 0 8px rgba(87, 217, 119, 0.8);
+}
+.led-on-amber {
+  background: #ffc24b;
+  box-shadow: 0 0 8px rgba(255, 194, 75, 0.9);
+  animation: led-blink 0.9s steps(2, start) infinite;
+}
+.led-on-red {
+  background: #ff5555;
+  box-shadow: 0 0 10px rgba(255, 85, 85, 0.95);
+  animation: led-blink 0.5s steps(2, start) infinite;
+}
+.led-off {
+  background: #3a4653;
+}
+
+@keyframes led-blink {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+/* ---------- تدفق المخطط الكتلي ---------- */
+.flow-dot {
+  animation: flow-down 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes flow-down {
+  0% {
+    transform: translateY(-6px);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+}
+
+.pulse-ring {
+  animation: pulse-ring 2.4s ease-out infinite;
+}
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+}
+
+/* ---------- وميض الرقم ---------- */
+.tick-flash {
+  animation: tick-flash 0.35s ease;
+}
+@keyframes tick-flash {
+  0% {
+    color: #ff7a1f;
+  }
+  100% {
+    color: inherit;
+  }
+}
+
+/* ---------- توست ---------- */
+.toast-in {
+  animation: toast-in 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+@keyframes toast-in {
+  from {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+/* ---------- شريط القوة ---------- */
+.force-bar {
+  transition: width 0.12s linear, background-color 0.4s ease;
+}
+
+/* ---------- الطباعة ---------- */
+@media print {
+  body::after {
+    display: none;
+  }
+  .no-print,
+  nav,
+  .toast-wrap {
+    display: none !important;
+  }
+  body {
+    background: #fff !important;
+  }
+  section {
+    page-break-inside: avoid;
+  }
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+  * {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
+
+/* ---------- تقليل الحركة ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .hazard,
+  .flow-dot,
+  .pulse-ring,
+  .led-on-amber,
+  .led-on-red {
+    animation: none;
+  }
+}

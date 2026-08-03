@@ -286,9 +286,11 @@
         });
         loadHTML('footer.html', 'footer-placeholder', function() {
             setTimeout(initEgyptFlag, 100);
+            setTimeout(initSaudiFlag, 100);
             initFooterLangToggle();
         });
         setTimeout(initEgyptFlag, 300);
+        setTimeout(initSaudiFlag, 300);
     }
 
     var egyptClickCount = 0;
@@ -315,6 +317,32 @@
                 flag.style.transform = 'scale(1.5)';
                 setTimeout(function() {
                     window.location.href = '/admin/login.html';
+                }, 300);
+            }
+        });
+    }
+    var saudiClickCount = 0;
+    var saudiClickTimer = null;
+    var saudiFlagInitialized = false;
+    function initSaudiFlag() {
+        if (saudiFlagInitialized) return;
+        var flag = document.getElementById('saudi-flag');
+        if (!flag) return;
+        saudiFlagInitialized = true;
+        flag.style.transition = 'transform 0.15s';
+        flag.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            saudiClickCount++;
+            flag.style.transform = 'scale(0.9)';
+            setTimeout(function() { flag.style.transform = 'scale(1.3)'; }, 100);
+            if (saudiClickTimer) clearTimeout(saudiClickTimer);
+            saudiClickTimer = setTimeout(function() { saudiClickCount = 0; }, 3000);
+            if (saudiClickCount >= 3) {
+                saudiClickCount = 0;
+                flag.style.transform = 'scale(1.5)';
+                setTimeout(function() {
+                    window.location.href = '/client/login.html';
                 }, 300);
             }
         });

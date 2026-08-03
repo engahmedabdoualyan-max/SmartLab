@@ -15,6 +15,20 @@ body {
     --radius-sm: 6px; --radius-md: 10px;
 }
 
+/* Native select dropdowns must stay dark so light text stays readable.
+   The OS/Chromium popup list otherwise renders on a white background. */
+select.lt-select,
+select.sidebar-input {
+    background-color: #0f172a !important;
+    color: #f1f5f9 !important;
+    color-scheme: dark;
+}
+select.lt-select option,
+select.sidebar-input option {
+    background-color: #0f172a !important;
+    color: #f1f5f9 !important;
+}
+
 /* ===== HEADER ===== */
 .app-header {
     position: fixed; top: 0; left: 0; right: 0; z-index: 9999;

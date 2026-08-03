@@ -511,7 +511,7 @@ Cd = drainage coefficient
             // AASHTO 1993 Flexible Eq: log10(W18) = Zr*So + 9.36*log10(SN+1) - 0.20 + log10(ΔPSI/(po-1.5)) + 2.32*log10(Mr) - 8.07
             const deltaPSI = po - pt;
             if (!(mr > 0) || !(deltaPSI > 0) || !(po > 1.5)) {
-                manualAlert('error', 'Check inputs: Mr must be positive, pt < po, po > 1.5');
+                pageToast('error', 'Check inputs: Mr must be positive, pt < po, po > 1.5');
                 return;
             }
             const logTerm = Math.log10(deltaPSI / (po - 1.5));
@@ -614,7 +614,7 @@ Cd = drainage coefficient
 
             const deltaPSI = po - pt;
             if (!(Sc > 0) || !(Ec > 0) || !(k > 0) || !(J > 0) || !(deltaPSI > 0)) {
-                manualAlert('error', 'Check inputs: Sc, Ec, k, J and (po - pt) must be positive');
+                pageToast('error', 'Check inputs: Sc, Ec, k, J and (po - pt) must be positive');
                 return;
             }
 

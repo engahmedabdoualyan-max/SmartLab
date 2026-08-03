@@ -1297,6 +1297,7 @@
             </div>
         </div>
     </div>
+    </div>
 
     <!-- 3. DASHBOARD SCREEN -->
     <div id="screen-dashboard" class="screen">
@@ -1766,7 +1767,7 @@
         // ============================================
         // AUTH STATE PERSISTENCE
         // ============================================
-        auth.onAuthStateChanged(function(user) {
+        if (auth) auth.onAuthStateChanged(function(user) {
             if (user && !sessionStorage.getItem('isGuest')) {
                 currentUser = user;
                 if (document.body.classList.contains('authenticated')) {
@@ -1811,7 +1812,7 @@
         // TRANSLATION SYSTEM (EN / AR)
         // ============================================
         var translations = {
-            EN: {
+            en: {
                 home: 'Home', about: 'About', services: 'Services', contact: 'Contact',
                 dashboard: 'Dashboard',
                 'Sign In': 'Sign In', Register: 'Register',
@@ -1847,6 +1848,7 @@
                 'Test ID': 'Test ID', Domain: 'Domain', Specimen: 'Specimen', Result: 'Result', Status: 'Status',
                 'Sign Out': 'Sign Out', Guest: 'Guest', Back: 'Back',
                 'Fimto Soft': 'Fimto Soft', 'Integrated Tech Solutions': 'Integrated Tech Solutions',
+                Contact: 'Contact',
                 'Quick Links': 'Quick Links', 'Our Locations': 'Our Locations',
                 'All rights reserved': 'All rights reserved',
                 'Verify Code': 'Verify Code',
@@ -1865,7 +1867,7 @@
                 'Cairo, Egypt': 'Cairo, Egypt',
                 'Riyadh, Saudi Arabia': 'Riyadh, Saudi Arabia',
                 'SmartLab intro': '\x3Cspan class="text-accent"\x3ESmartLab\x3C/span\x3E is a cutting-edge civil engineering laboratory automation platform developed by \x3Cspan class="text-gold"\x3EFimto Soft\x3C/span\x3E, designed to fully digitize material testing, streamline operational workflows, and enforce strict quality control standards. The platform seamlessly replaces traditional paperwork with a comprehensive digital ecosystem built around four core pillars:',
-                '1. Real-Time Hardware &amp; IoT Integration': '1. Real-Time Hardware &amp; IoT Integration',
+                '1. Real-Time Hardware & IoT Integration': '1. Real-Time Hardware &amp; IoT Integration',
                 "The platform's standout feature is its ability to establish a direct, real-time data connection with low-cost, accessible hardware components (such as Arduino or ESP32 microcontrollers).": "The platform's standout feature is its ability to establish a direct, real-time data connection with low-cost, accessible hardware components (such as Arduino or ESP32 microcontrollers).",
                 'Flexible Connections: It streams sensor data directly via Web Serial (USB) on Chrome and Edge browsers, LAN / Network (Wi-Fi / Ethernet) using WebSockets, or Bluetooth (BLE).': 'Flexible Connections: It streams sensor data directly via Web Serial (USB) on Chrome and Edge browsers, LAN / Network (Wi-Fi / Ethernet) using WebSockets, or Bluetooth (BLE).',
                 'Cost-Effective Sensors: It natively supports high-utility, budget-friendly engineering sensors including HX711 Load Cells (for force/weight), HC-SR04 Ultrasonic sensors (for digital slump and distance), DS18B20 digital probes (for concrete maturity temperature logging), and LVDT displacement sensors.': 'Cost-Effective Sensors: It natively supports high-utility, budget-friendly engineering sensors including HX711 Load Cells (for force/weight), HC-SR04 Ultrasonic sensors (for digital slump and distance), DS18B20 digital probes (for concrete maturity temperature logging), and LVDT displacement sensors.',
@@ -1874,12 +1876,12 @@
                 'American Standards: Fully compliant with ASTM and AASHTO guidelines for soils, concrete, and asphalt.': 'American Standards: Fully compliant with ASTM and AASHTO guidelines for soils, concrete, and asphalt.',
                 'British/European Standards: Supports BS EN testing criteria.': 'British/European Standards: Supports BS EN testing criteria.',
                 'Compliance Checks: The system instantly validates incoming data streams against specified standard criteria, highlighting any compliance failures or out-of-tolerance results.': 'Compliance Checks: The system instantly validates incoming data streams against specified standard criteria, highlighting any compliance failures or out-of-tolerance results.',
-                '3. Statistical Quality Control &amp; Design Tools': '3. Statistical Quality Control &amp; Design Tools',
+                '3. Statistical Quality Control & Design Tools': '3. Statistical Quality Control &amp; Design Tools',
                 'Laboratories can track material performance trends over time using automated quality control methods and interactive engineering modules.': 'Laboratories can track material performance trends over time using automated quality control methods and interactive engineering modules.',
                 'ACI 214 Control Charts: Laboratories can track material performance trends over time using automated Moving Average and Cumulative Sum (CUSUM) quality control charts to verify production stability.': 'ACI 214 Control Charts: Laboratories can track material performance trends over time using automated Moving Average and Cumulative Sum (CUSUM) quality control charts to verify production stability.',
                 'Mix Design Calculators: Features interactive engineering modules, such as a concrete mix proportioning tool based on ACI 211.1 absolute volume methods, which computes precise batch weights instantly.': 'Mix Design Calculators: Features interactive engineering modules, such as a concrete mix proportioning tool based on ACI 211.1 absolute volume methods, which computes precise batch weights instantly.',
                 'Dynamic Test Engine: An administrator utility allowing labs to configure custom test protocols, map brand-new sensor inputs, and define unique mathematical formulas to process hardware data.': 'Dynamic Test Engine: An administrator utility allowing labs to configure custom test protocols, map brand-new sensor inputs, and define unique mathematical formulas to process hardware data.',
-                '4. Automated Operations &amp; Reporting': '4. Automated Operations &amp; Reporting',
+                '4. Automated Operations & Reporting': '4. Automated Operations &amp; Reporting',
                 'Eliminates manual logging errors by generating professional, comprehensive laboratory reports with automated calculations and data management features.': 'Eliminates manual logging errors by generating professional, comprehensive laboratory reports with automated calculations and data management features.',
                 'Instant PDF Reports: Eliminates manual logging errors by generating professional, comprehensive laboratory reports complete with automatically calculated charts and data tables via jsPDF with a single click.': 'Instant PDF Reports: Eliminates manual logging errors by generating professional, comprehensive laboratory reports complete with automatically calculated charts and data tables via jsPDF with a single click.',
                 'QR Specimen Tracking: Features a QR Specimen Tracking System for chain-of-custody logging from casting to testing.': 'QR Specimen Tracking: Features a QR Specimen Tracking System for chain-of-custody logging from casting to testing.',
@@ -1888,18 +1890,20 @@
                 'Read More': 'Read More',
                 'Show Less': 'Show Less',
                 'Enter Lab': 'Enter Lab',
+                Concrete: 'Concrete', Soil: 'Soil', Asphalt: 'Asphalt',
+                'Coming soon': 'Coming soon…',
                 Tests: 'Tests', Design: 'Design',
                 'Marshall Stability': 'Marshall Stability',
                 'Flow Value': 'Flow Value',
                 'Bitumen Extraction': 'Bitumen Extraction',
-                'Density &amp; Voids': 'Density &amp; Voids',
+                'Density & Voids': 'Density &amp; Voids',
                 'Aggregate Gradation': 'Aggregate Gradation',
                 'Ignition Method': 'Ignition Method',
                 Hardware: 'Hardware',
                 Procedure: 'Procedure',
                 References: 'References',
             },
-            AR: {
+            ar: {
                 home: 'الرئيسية', about: 'عن الشركة', services: 'الخدمات', contact: 'اتصل بنا',
                 dashboard: 'لوحة التحكم',
                 'Sign In': 'تسجيل دخول', Register: 'إنشاء حساب',
@@ -1935,6 +1939,7 @@
                 'Test ID': 'رقم الاختبار', Domain: 'المجال', Specimen: 'العينة', Result: 'النتيجة', Status: 'الحالة',
                 'Sign Out': 'تسجيل خروج', Guest: 'زائر', Back: 'رجوع',
                 'Fimto Soft': 'فيمتو سوفت', 'Integrated Tech Solutions': 'حلول تقنية متكاملة',
+                Contact: 'اتصل بنا',
                 'We provide comprehensive software solutions including advanced interactive ERP systems, maintenance and development of ready-mix concrete plants, web design and development, distinguished digital marketing, creation and development of security and surveillance systems, establishment and development of infrastructure networks, creation and development of AI applications, and establishment and development of smart home systems.': 'نقدم حلولاً برمجية شاملة تشمل أنظمة ERP تفاعلية متقدمة، صيانة وتطوير مصانع الخرسانة الجاهزة، تصميم وتطوير المواقع، التسويق الرقمي المتميز، إنشاء وتطوير أنظمة الأمن والمراقبة، إنشاء وتطوير شبكات البنية التحتية، إنشاء وتطوير تطبيقات الذكاء الاصطناعي، وإنشاء وتطوير أنظمة المنازل الذكية.',
                 'Quick Links': 'روابط سريعة', 'Our Locations': 'فروعنا',
                 'All rights reserved': 'جميع الحقوق محفوظة',
@@ -1956,7 +1961,7 @@
                 'Cairo, Egypt': 'القاهرة، مصر',
                 'Riyadh, Saudi Arabia': 'الرياض، المملكة العربية السعودية',
                 'SmartLab intro': '\x3Cspan class="text-accent"\x3E\u0633\u0645\u0627\u0631\u062A \u0644\u0627\u0628\x3C/span\x3E \u0647\u064A \u0645\u0646\u0635\u0629 \u0623\u062A\u0645\u062A\u0647 \u0644\u0623\u062A\u0645\u062A\u0629 \u0644\u0645\u062E\u062A\u0628\u0631\u0627\u062A \u0627\u0644\u0647\u0646\u062F\u0633\u0629 \u0627\u0644\u0645\u062F\u0646\u064A\u0629 \u0637\u0648\u0631\u062A\u0647\u0627 \x3Cspan class="text-gold"\x3E\u0641\u064A\u0645\u062A\u0648 \u0633\u0648\u0641\u062A\x3C/span\x3E\u060C \u0635\u0645\u0645\u062A \u0644\u0631\u0642\u0645\u0646\u0629 \u0627\u062E\u062A\u0628\u0627\u0631\u0627\u062A \u0627\u0644\u0645\u0648\u0627\u062F \u0643\u0627\u0645\u0644\u0627\u064B\u060C \u0648\u062A\u0628\u0633\u064A\u0637 \u0633\u064A\u0631 \u0627\u0644\u0639\u0645\u0644 \u0627\u0644\u062A\u0634\u063A\u064A\u0644\u064A\u060C \u0648\u0641\u0631\u0636 \u0645\u0639\u0627\u064A\u064A\u0631 \u0635\u0627\u0631\u0645\u0629 \u0644\u0645\u0631\u0627\u0642\u0628\u0629 \u0627\u0644\u062C\u0648\u062F\u0629\u060C \u062A\u0633\u062A\u0628\u062F\u0644 \u0627\u0644\u0623\u0639\u0645\u0627\u0644 \u0627\u0644\u0648\u0631\u0642\u064A\u0629 \u0628\u0646\u0638\u0627\u0645 \u0631\u0642\u0645\u064A \u0634\u0627\u0645\u0644 \u064A\u0642\u0648\u0645 \u0639\u0644\u0649 \u0623\u0631\u0628\u0639 \u0631\u0643\u0627\u0626\u0633 \u0623\u0633\u0627\u0633\u064A\u0629\u060C',
-                '1. Real-Time Hardware &amp; IoT Integration': '١. التكامل المباشر مع الأجهزة وإنترنت الأشياء',
+                '1. Real-Time Hardware & IoT Integration': '١. التكامل المباشر مع الأجهزة وإنترنت الأشياء',
                 "The platform's standout feature is its ability to establish a direct, real-time data connection with low-cost, accessible hardware components (such as Arduino or ESP32 microcontrollers).": 'الميزة الأبرز للمنصة هي قدرتها على إنشاء اتصال بيانات مباشر وفي الوقت الفعلي مع مكونات أجهزة منخفضة التكلفة وسهلة الوصول (مثل Arduino أو ESP32).',
                 'Flexible Connections: It streams sensor data directly via Web Serial (USB) on Chrome and Edge browsers, LAN / Network (Wi-Fi / Ethernet) using WebSockets, or Bluetooth (BLE).': 'اتصالات مرنة: تنقل بيانات الحساسات مباشرة عبر Web Serial (USB) في متصفحي Chrome وEdge، أو الشبكة المحلية (Wi-Fi / Ethernet) باستخدام WebSockets، أو Bluetooth (BLE).',
                 'Cost-Effective Sensors: It natively supports high-utility, budget-friendly engineering sensors including HX711 Load Cells (for force/weight), HC-SR04 Ultrasonic sensors (for digital slump and distance), DS18B20 digital probes (for concrete maturity temperature logging), and LVDT displacement sensors.': 'حساسات اقتصادية: تدعم بشكل أصلي حساسات هندسية عالية الفائدة ومنخفضة التكلفة تشمل خلايا تحميل HX711 (للوزن)، وحساسات HC-SR04 فوق الصوتية (للهبوط الرقمي والمسافة)، ومسبار DS18B20 الرقمي (لتسجيل حرارة نضوج الخرسانة)، وحساسات الإزاحة LVDT.',
@@ -1965,12 +1970,12 @@
                 'American Standards: Fully compliant with ASTM and AASHTO guidelines for soils, concrete, and asphalt.': 'المعايير الأمريكية: متوافقة تماماً مع إرشادات ASTM و AASHTO للتربة والخرسانة والأسفلت.',
                 'British/European Standards: Supports BS EN testing criteria.': 'المعايير البريطانية/الأوروبية: تدعم معايير اختبار BS EN.',
                 'Compliance Checks: The system instantly validates incoming data streams against specified standard criteria, highlighting any compliance failures or out-of-tolerance results.': 'فحوص الامتثال: يتحقق النظام فوراً من تدفقات البيانات الواردة مقابل معايير قياسية محددة، مع إبراز أي حالات عدم امتثال أو نتائج خارج نطاق التفاوت المسموح.',
-                '3. Statistical Quality Control &amp; Design Tools': '٣. أدوات التحكم الإحصائي في الجودة والتصميم',
+                '3. Statistical Quality Control & Design Tools': '٣. أدوات التحكم الإحصائي في الجودة والتصميم',
                 'Laboratories can track material performance trends over time using automated quality control methods and interactive engineering modules.': 'يمكن للمختبرات تتبع اتجاهات أداء المواد بمرور الوقت باستخدام طرق مراقبة جودة آلية ووحدات هندسية تفاعلية.',
                 'ACI 214 Control Charts: Laboratories can track material performance trends over time using automated Moving Average and Cumulative Sum (CUSUM) quality control charts to verify production stability.': 'مخططات ACI 214: تتبع المختبرات اتجاهات أداء المواد باستخدام مخططات المتوسط المتحرك والمجموع التراكمي (CUSUM) الآلية للتحقق من استقرار الإنتاج.',
                 'Mix Design Calculators: Features interactive engineering modules, such as a concrete mix proportioning tool based on ACI 211.1 absolute volume methods, which computes precise batch weights instantly.': 'حاسبات تصميم الخلطات: وحدات هندسية تفاعلية مثل أداة تصميم خلطة الخرسانة بطريقة الحجم المطلق ACI 211.1 لحساب أوزان الدفعات بدقة فورية.',
                 'Dynamic Test Engine: An administrator utility allowing labs to configure custom test protocols, map brand-new sensor inputs, and define unique mathematical formulas to process hardware data.': 'محرك اختبار ديناميكي: أداة للمشرفين تتيح للمختبرات تكوين بروتوكولات اختبار مخصصة، وربط مدخلات حساسات جديدة، وتعريف معادلات رياضية فريدة لمعالجة بيانات الأجهزة.',
-                '4. Automated Operations &amp; Reporting': '٤. العمليات الآلية وإعداد التقارير',
+                '4. Automated Operations & Reporting': '٤. العمليات الآلية وإعداد التقارير',
                 'Eliminates manual logging errors by generating professional, comprehensive laboratory reports with automated calculations and data management features.': 'يلغي أخطاء التسجيل اليدوي بتوليد تقارير مختبرية احترافية وشاملة مع حسابات آلية وميزات إدارة بيانات.',
                 'Instant PDF Reports: Eliminates manual logging errors by generating professional, comprehensive laboratory reports complete with automatically calculated charts and data tables via jsPDF with a single click.': 'تقارير PDF فورية: تلغي أخطاء التسجيل اليدوي بتوليد تقارير مختبرية احترافية بمخططات وجداول بيانات محسوبة آلياً عبر jsPDF بنقرة واحدة.',
                 'QR Specimen Tracking: Features a QR Specimen Tracking System for chain-of-custody logging from casting to testing.': 'تتبع العينات QR: نظام تتبع العينات بالرمز الشريطي لتسجيل مسار العينة من الصب إلى الاختبار.',
@@ -1979,11 +1984,13 @@
                 'Read More': 'اقرأ المزيد',
                 'Show Less': 'عرض أقل',
                 'Enter Lab': 'ادخل المختبر',
+                Concrete: 'خرسانة', Soil: 'تربة', Asphalt: 'أسفلت',
+                'Coming soon': 'قريباً…',
                 Tests: 'الاختبارات', Design: 'التصميم',
                 'Marshall Stability': 'ثبات مارشال',
                 'Flow Value': 'قيمة التدفق',
                 'Bitumen Extraction': 'استخلاص البيتومين',
-                'Density &amp; Voids': 'الكثافة والفراغات',
+                'Density & Voids': 'الكثافة والفراغات',
                 'Aggregate Gradation': 'تدريج الركام',
                 'Ignition Method': 'طريقة الاحتراق',
                 Hardware: 'هاردوير',
@@ -2242,7 +2249,6 @@ translatePage(currentLang);
             renderAsphInline();
         };
     </script>
-    </div>
 
     <!-- FOOTER -->
     <footer class="app-footer">

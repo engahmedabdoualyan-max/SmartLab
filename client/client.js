@@ -75,7 +75,8 @@
         STATE.user = s.user;
         STATE.role = s.profile && s.profile.role === 'staff' ? 'staff' : 'client';
 
-        $('userName').textContent = (STATE.user.full_name || s.user.email || 'User');
+        $('userName').textContent = (s.profile && s.profile.full_name) ||
+            (s.user.user_metadata && s.user.user_metadata.full_name) || s.user.email || 'User';
         const roleEl = $('userRole');
         roleEl.textContent = STATE.role;
         roleEl.className = 'role-badge ' + STATE.role;
@@ -103,13 +104,14 @@
     async function loadSpecimens() {
         const d = await api('/specimens');
         const list = d.specimens || [];
+        STATE.specimens = list;
         $('specCount').textContent = '(' + list.length + ')';
         const body = $('specBody');
         body.innerHTML = list.map(specRow).join('');
         $('specEmpty').style.display = list.length ? 'none' : 'block';
     }
 
-    function statusBadge(st) { return '<span class="status st-' + st + '">' + STATUS_LABEL[st] || st + '</span>'; }
+    function statusBadge(st) { return '<span class="status st-' + st + '">' + (STATUS_LABEL[st] || st) + '</span>'; }
 
     function specRow(s) {
         const staff = STATE.role === 'staff';
@@ -150,7 +152,8 @@
             renderEdit(id);
         } else if (act === 'notify') {
             const out = await api('/notify', { method: 'POST', body: { id: id } });
-            flash(out.dispatch ? 'Notification → ' + out.dispatch : (out.error || 'Sent'), 'info');
+            const disp = out.dispatch || {};
+            flash(out.ok ? 'Notification sent — ' + disp.provider : (out.error || 'Notification failed'), 'info');
         }
     });
 
@@ -208,7 +211,7 @@
     }
 
     function renderEdit(id) {
-        const d = STATE.editingSpec;
+        const d = (STATE.specimens || []).find(function (x) { return x.id === id; }) || {};
         openModal('Edit Details',
             '<div class="form-group"><label>Project</label><input id="edProject" value="' + escapeHtml(d && d.project || '') + '"></div>' +
             '<div class="form-group"><label>Location</label><input id="edLocation" value="' + escapeHtml(d && d.location || '') + '"></div>' +

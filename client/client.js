@@ -226,26 +226,86 @@
     }
 
     /* ---------------- new specimen ---------------- */
-    $('newSpecBtn').addEventListener('click', function () {
+
+    /* Standardized site areas + lab test menu keyed by material, so data entry
+     * is chosen from pre-configured options instead of free typing. */
+    const SITE_AREAS = [
+        'Foundation', 'Ground Floor Slab', 'Columns', 'Beams', 'Walls',
+        'Site Road', 'Base Course', 'Subgrade', 'Backfill', 'Bridge',
+        'Asphalt Wearing Course', 'Asphalt Binder Course', 'Sidewalk', 'Drainage'
+    ];
+    const TEST_TYPES = {
+        concrete: ['Compressive Strength 7d', 'Compressive Strength 28d', 'Flexural Strength', 'Slump Test', 'Density / Unit Weight', 'Water Absorption'],
+        asphalt: ['Marshall Stability', 'Marshall Flow', 'Asphalt Content (Ignition)', 'Gradation / Sieve Analysis', 'Maximum Specific Gravity'],
+        soil: ['CBR', 'Proctor Compaction', 'Atterberg Limits', 'Sieve Analysis', 'Moisture Content', 'Specific Gravity'],
+        steel: ['Tensile Test', 'Yield Strength', 'Elongation', 'Bend Test'],
+        other: []
+    };
+    const TEST_OTHER = 'Other / Specify in Notes';
+    const NEW_PROJECT = '__new_project__';
+    const OTHER_LOC = '__other_location__';
+
+    async function loadProjects(clientId) {
+        const path = STATE.role === 'staff' && clientId ? '/projects?client_id=' + encodeURIComponent(clientId) : '/projects';
+        const d = await api(path).catch(function () { return {}; });
+        return (d.projects) || [];
+    }
+
+    function projectSelectOptions(projects) {
+        const opts = (projects || []).filter(function (p) { return p.is_active !== false; }).map(function (p) {
+            return '<option value="' + escapeHtml(p.id) + '">' + escapeHtml(p.name) + '</option>';
+        });
+        opts.push('<option value="' + NEW_PROJECT + '">＋ New Project…</option>');
+        return opts.join('');
+    }
+
+    function testSelectOptions(material) {
+        const opts = (TEST_TYPES[material] || []).map(function (t) {
+            return '<option value="' + escapeHtml(t) + '">' + escapeHtml(t) + '</option>';
+        });
+        if (material !== 'other') opts.push('<option value="' + escapeHtml(TEST_OTHER) + '">' + escapeHtml(TEST_OTHER) + '</option>');
+        return opts.join('');
+    }
+
+    $('newSpecBtn').addEventListener('click', async function () {
         const customerOpts = STATE.customers.map(function (c) {
             return '<option value="' + c.id + '">' + escapeHtml(c.full_name) + (c.company ? ' — ' + escapeHtml(c.company) : '') + '</option>';
         }).join('');
+        const material = 'concrete';
         openModal('Register Sample',
             '<div class="form-group"><label>Sample No</label><input id="nsSample" value="auto-assigned" disabled title="Generated automatically on submission"></div>' +
             (STATE.role === 'staff' ?
                 '<div class="form-group"><label>Client</label><select id="nsClient">' + customerOpts + '</select></div>' : '') +
-            '<div class="form-group"><label>Project</label><input id="nsProject" placeholder="Project name"></div>' +
-            '<div class="form-row"><div class="form-group"><label>Location</label><input id="nsLoc" placeholder="Site"></div>' +
+            '<div class="form-group"><label>Project</label><select id="nsProject"><option value="">Loading projects…</option></select>' +
+            '<div class="form-group" id="nsProjectNewWrap" style="display:none"><label>New Project Name</label><input id="nsProjectNew" placeholder="e.g. Ring Road Upgrade"></div></div>' +
+            '<div class="form-row"><div class="form-group"><label>Location</label><select id="nsLoc">' +
+            '<option value="">Select site area…</option>' +
+            SITE_AREAS.map(function (a) { return '<option value="' + escapeHtml(a) + '">' + escapeHtml(a) + '</option>'; }).join('') +
+            '<option value="' + OTHER_LOC + '">Other / Custom Location…</option>' +
+            '</select>' +
+            '<div class="form-group" id="nsLocCustomWrap" style="display:none"><label>Custom Location</label><input id="nsLocCustom" placeholder="Type site / area"></div></div>' +
             '<div class="form-group"><label>Material</label><select id="nsMat">' +
             ['concrete', 'asphalt', 'soil', 'steel', 'other'].map(function (m) { return '<option value="' + m + '">' + m + '</option>'; }).join('') +
             '</select></div></div>' +
-            '<div class="form-group"><label>Test Type</label><input id="nsTest" placeholder="e.g. Compressive Strength 7d"></div>' +
+            '<div class="form-group"><label>Test Type</label><select id="nsTest">' + testSelectOptions(material) + '</select></div>' +
             '<div class="form-group"><label>Notes</label><textarea id="nsNotes" rows="2"></textarea></div>',
             'Register',
             async function () {
+                let projectVal = $('nsProject').value;
+                if (projectVal === NEW_PROJECT) {
+                    const newName = $('nsProjectNew').value.trim();
+                    if (!newName) { flash('Enter the new project name first'); return; }
+                    const createBody = { name: newName };
+                    if (STATE.role === 'staff') createBody.client_id = $('nsClient').value;
+                    const created = await api('/projects', { method: 'POST', body: createBody });
+                    if (!created.ok) { flash(created.error || 'Failed to create project'); return; }
+                    projectVal = created.project.name;
+                }
+                const location = $('nsLoc').value === OTHER_LOC ? $('nsLocCustom').value.trim() : $('nsLoc').value;
+                if (!location) { flash('Select or enter a location'); return; }
                 const body = {
-                    project: $('nsProject').value,
-                    location: $('nsLoc').value, material_type: $('nsMat').value,
+                    project: projectVal,
+                    location: location, material_type: $('nsMat').value,
                     test_type: $('nsTest').value, notes: $('nsNotes').value
                 };
                 if (STATE.role === 'staff') body.client_id = $('nsClient').value;
@@ -257,6 +317,27 @@
                 }
                 else flash(out.error || 'Registration failed');
             });
+
+        // Wire the dynamic dropdowns + conditional text inputs.
+        $('nsProject').addEventListener('change', function () {
+            $('nsProjectNewWrap').style.display = $('nsProject').value === NEW_PROJECT ? '' : 'none';
+        });
+        $('nsLoc').addEventListener('change', function () {
+            $('nsLocCustomWrap').style.display = $('nsLoc').value === OTHER_LOC ? '' : 'none';
+        });
+        $('nsMat').addEventListener('change', function () {
+            $('nsTest').innerHTML = testSelectOptions($('nsMat').value);
+        });
+
+        const targetClient = STATE.role === 'staff' && STATE.customers.length ? STATE.customers[0].id : null;
+        const projects = await loadProjects(targetClient);
+        $('nsProject').innerHTML = projectSelectOptions(projects);
+        if (STATE.role === 'staff') {
+            $('nsClient').addEventListener('change', async function () {
+                $('nsProject').innerHTML = '<option value="">Loading projects…</option>';
+                $('nsProject').innerHTML = projectSelectOptions(await loadProjects($('nsClient').value));
+            });
+        }
     });
 
     /* ---------------- break schedules ---------------- */
@@ -314,7 +395,7 @@
                 '<td>' + fmt(results.W18) + '</td>' +
                 '<td>' + fmt(th.total) + '</td>' +
                 '<td>' + iso(pd.created_at) + '</td>' +
-                '<td><button class="btn btn-outline btn-sm" data-pd="' + pd.id + '">Load</button></td>' +
+                '<td><button class="btn btn-outline btn-sm" data-pd="' + pd.id + '">Open in Designer</button></td>' +
                 '</tr>';
         }).join('');
         $('pdEmpty').style.display = list.length ? 'none' : 'block';
@@ -325,22 +406,7 @@
         if (!btn) return;
         const pd = (STATE.designs || []).find(function (x) { return x.id === btn.dataset.pd; });
         if (!pd) return;
-        const p = pd.params || {}, r = pd.results || {}, t = pd.thicknesses || {};
-        $('pdProject').value = pd.project_name || '';
-        $('pdRoute').value = pd.route_name || '';
-        $('pdLocation').value = pd.location || '';
-        $('pdDesigner').value = pd.designer || '';
-        $('pdAgency').value = pd.agency || '';
-        $('pdType').value = pd.design_type || 'flexible';
-        $('pdLife').value = p.designLife || '';
-        $('pdRel').value = p.reliability || '';
-        $('pdStd').value = p.stdDev || '';
-        $('pdPo').value = p.po || '';
-        $('pdPt').value = p.pt || '';
-        $('pdMr').value = p.mr || '';
-        $('pdCd').value = p.drainCoeff || '';
-        $('pdTh').value = t.total || '';
-        flash('Design loaded into the form', 'ok');
+        location.href = '/soil/design/design-pavement.html?design=' + encodeURIComponent(pd.id);
     });
 
     $('pdSaveBtn').addEventListener('click', async function () {

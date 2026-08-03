@@ -21,6 +21,17 @@ module.exports = async function handler(req, res) {
     const body = await SB.readBody(req);
 
     if (req.method === 'GET') {
+        // Single design by id — used to reload saved params back into the
+        // interactive calculator (?design=<id> from the portal Saved Designs).
+        const id = String((req.query && req.query.id) || '').trim();
+        if (id) {
+            const filter = { 'id=eq': id };
+            if (!isStaff) filter['client_id=eq'] = userId;
+            const rows = await SB.pgSelect(c, 'pavement_designs', filter);
+            SB.json(res, 200, { ok: true, design: rows && rows.length ? rows[0] : null });
+            return;
+        }
+
         const filter = isStaff ? null : { 'client_id=eq': userId };
         const rows = await SB.pgSelect(c, 'pavement_designs',
             Object.assign({ 'order': 'created_at.desc' }, filter ? filter : {}));

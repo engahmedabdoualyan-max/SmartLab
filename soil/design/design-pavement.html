@@ -60,19 +60,41 @@
                         </div>
                         <div class="sidebar-field">
                             <label class="sidebar-label">Reliability</label>
-                            <input type="number" class="sidebar-input" id="reliability" value="90" step="1"><span class="unit">%</span>
+                            <select class="sidebar-input" id="reliability">
+                                <option value="50">50% — Very low volume / minor</option>
+                                <option value="60">60% — Low volume</option>
+                                <option value="75">75% — Locals (rural/urban)</option>
+                                <option value="80">80% — Collectors (rural/urban)</option>
+                                <option value="85">85% — Principal arterials</option>
+                                <option value="90" selected>90% — Interstates / freeways</option>
+                                <option value="95">95% — High-volume interstates</option>
+                                <option value="99">99% — Critical / emergency</option>
+                            </select><span class="unit">%</span>
                         </div>
                         <div class="sidebar-field">
                             <label class="sidebar-label">Overall Std Dev (So)</label>
-                            <input type="number" class="sidebar-input" id="stdDev" value="0.45" step="0.01"><span class="unit">—</span>
+                            <select class="sidebar-input" id="stdDev">
+                                <option value="0.35">0.35 — Low variability</option>
+                                <option value="0.40">0.40</option>
+                                <option value="0.45" selected>0.45 — Typical (AASHTO default)</option>
+                                <option value="0.49">0.49 — High variability</option>
+                            </select><span class="unit">—</span>
                         </div>
                         <div class="sidebar-field">
                             <label class="sidebar-label">Initial Serviceability (po)</label>
-                            <input type="number" class="sidebar-input" id="po" value="4.2" step="0.1"><span class="unit">—</span>
+                            <select class="sidebar-input" id="po">
+                                <option value="4.0">4.0</option>
+                                <option value="4.2" selected>4.2 — Typical flexible</option>
+                                <option value="4.5">4.5 — Typical rigid</option>
+                            </select><span class="unit">—</span>
                         </div>
                         <div class="sidebar-field">
                             <label class="sidebar-label">Terminal Serviceability (pt)</label>
-                            <input type="number" class="sidebar-input" id="pt" value="2.5" step="0.1"><span class="unit">—</span>
+                            <select class="sidebar-input" id="pt">
+                                <option value="2.0">2.0 — Low-volume roads</option>
+                                <option value="2.5" selected>2.5 — Major roads</option>
+                                <option value="3.0">3.0 — High serviceability</option>
+                            </select><span class="unit">—</span>
                         </div>
                         <div class="sidebar-field">
                             <label class="sidebar-label">Subgrade Resilient Modulus</label>
@@ -80,7 +102,13 @@
                         </div>
                         <div class="sidebar-field">
                             <label class="sidebar-label">Drainage Coefficient (m)</label>
-                            <input type="number" class="sidebar-input" id="drainCoeff" value="1.0" step="0.1"><span class="unit">—</span>
+                            <select class="sidebar-input" id="drainCoeff">
+                                <option value="1.10">Excellent — &lt;5% time saturated</option>
+                                <option value="1.00" selected>Good — 5–25% time saturated</option>
+                                <option value="0.90">Fair — 25–40% time saturated</option>
+                                <option value="0.80">Poor — 40–60% time saturated</option>
+                                <option value="0.70">Very poor — &gt;60% time saturated</option>
+                            </select><span class="unit">—</span>
                         </div>
                         <button class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="calcFlexible()">🛣️ Design Flexible</button>
                     </div>
@@ -128,19 +156,40 @@
                         </div>
                         <div class="sidebar-field">
                             <label class="sidebar-label">Reliability</label>
-                            <input type="number" class="sidebar-input" id="rigidRel" value="95" step="1"><span class="unit">%</span>
+                            <select class="sidebar-input" id="rigidRel">
+                                <option value="50">50% — Very low volume / minor</option>
+                                <option value="60">60% — Low volume</option>
+                                <option value="75">75% — Locals (rural/urban)</option>
+                                <option value="80">80% — Collectors (rural/urban)</option>
+                                <option value="85">85% — Principal arterials</option>
+                                <option value="90">90% — Interstates / freeways</option>
+                                <option value="95" selected>95% — High-volume interstates</option>
+                                <option value="99">99% — Critical / emergency</option>
+                            </select><span class="unit">%</span>
                         </div>
                         <div class="sidebar-field">
                             <label class="sidebar-label">Std Dev (So)</label>
-                            <input type="number" class="sidebar-input" id="rigidSo" value="0.35" step="0.01"><span class="unit">—</span>
+                            <select class="sidebar-input" id="rigidSo">
+                                <option value="0.30">0.30 — Low variability</option>
+                                <option value="0.35" selected>0.35 — Typical (AASHTO default)</option>
+                                <option value="0.40">0.40 — High variability</option>
+                            </select><span class="unit">—</span>
                         </div>
                         <div class="sidebar-field">
                             <label class="sidebar-label">po</label>
-                            <input type="number" class="sidebar-input" id="rigidPo" value="4.5" step="0.1"><span class="unit">—</span>
+                            <select class="sidebar-input" id="rigidPo">
+                                <option value="4.0">4.0</option>
+                                <option value="4.2">4.2 — Typical flexible</option>
+                                <option value="4.5" selected>4.5 — Typical rigid</option>
+                            </select><span class="unit">—</span>
                         </div>
                         <div class="sidebar-field">
                             <label class="sidebar-label">pt</label>
-                            <input type="number" class="sidebar-input" id="rigidPt" value="2.5" step="0.1"><span class="unit">—</span>
+                            <select class="sidebar-input" id="rigidPt">
+                                <option value="2.0">2.0 — Low-volume roads</option>
+                                <option value="2.5" selected>2.5 — Major roads</option>
+                                <option value="3.0">3.0 — High serviceability</option>
+                            </select><span class="unit">—</span>
                         </div>
                         <div class="sidebar-field">
                             <label class="sidebar-label">Modulus of Rupture (Sc)</label>
@@ -160,7 +209,13 @@
                         </div>
                         <div class="sidebar-field">
                             <label class="sidebar-label">Drainage (Cd)</label>
-                            <input type="number" class="sidebar-input" id="rigidCd" value="1.0" step="0.1"><span class="unit">—</span>
+                            <select class="sidebar-input" id="rigidCd">
+                                <option value="1.10">Excellent — &lt;5% time saturated</option>
+                                <option value="1.00" selected>Good — 5–25% time saturated</option>
+                                <option value="0.90">Fair — 25–40% time saturated</option>
+                                <option value="0.80">Poor — 40–60% time saturated</option>
+                                <option value="0.70">Very poor — &gt;60% time saturated</option>
+                            </select><span class="unit">—</span>
                         </div>
                         <button class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="calcRigid()">🏗️ Design Rigid</button>
                     </div>
@@ -354,6 +409,7 @@ Cd = drainage coefficient
                         <div id="reportOutput" style="display:none;">
                             <div class="code-block" id="reportText" style="font-family:monospace;font-size:11px;white-space:pre;background:rgba(15,23,42,0.6);border:1px solid var(--border-glass);"></div>
                             <button class="btn btn-gold" onclick="printReport()" style="margin-top:16px;">🖨️ Print Report</button>
+                            <button class="btn btn-gold" onclick="saveToDashboard()" style="margin-top:16px;">💾 Save to My Dashboard</button>
                             <button class="btn btn-civil" onclick="exportLandXML()" style="margin-top:16px;">📡 Export to Civil 3D (LandXML)</button>
                         </div>
                         <div id="reportPlaceholder" style="text-align:center;padding:60px 20px;color:var(--text-muted);">
@@ -372,12 +428,37 @@ Cd = drainage coefficient
     <script src="../../components.js"></script>
     <script>
         var lastTotalW18 = null;
+        var currentDesignType = 'flexible';
 
         function switchTab(tabId, btn) {
             document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('panel-' + tabId).classList.add('active');
             btn.classList.add('active');
+
+            // Apply smart AASHTO 1993 defaults whenever the design type changes.
+            if ((tabId === 'flexible' || tabId === 'rigid') && tabId !== currentDesignType) {
+                currentDesignType = tabId;
+                applyPresets(tabId);
+            }
+        }
+
+        /* AASHTO 1993 intelligent presets: smart default values keyed to the
+         * chosen design type (Flexible vs Rigid). */
+        function applyPresets(type) {
+            if (type === 'rigid') {
+                document.getElementById('rigidRel').value = '95';
+                document.getElementById('rigidSo').value = '0.35';
+                document.getElementById('rigidPo').value = '4.5';
+                document.getElementById('rigidPt').value = '2.5';
+                document.getElementById('rigidCd').value = '1.00';
+            } else {
+                document.getElementById('reliability').value = '90';
+                document.getElementById('stdDev').value = '0.45';
+                document.getElementById('po').value = '4.2';
+                document.getElementById('pt').value = '2.5';
+                document.getElementById('drainCoeff').value = '1.00';
+            }
         }
 
         // Material data
@@ -863,6 +944,172 @@ xsXml +
 
         // Initialize
         populateMaterials();
+
+        /* ============ Ecosystem interconnection (smartLAB portal sync) ============ */
+
+        function pageToast(type, msg) {
+            var el = document.getElementById('pdToast');
+            if (!el) {
+                el = document.createElement('div');
+                el.id = 'pdToast';
+                el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:9999;padding:12px 20px;border-radius:10px;font:600 13px/1.5 system-ui;max-width:90%;box-shadow:0 8px 30px rgba(0,0,0,.5);';
+                document.body.appendChild(el);
+            }
+            el.style.display = 'block';
+            if (type === 'ok') { el.style.background = 'rgba(16,185,129,.15)'; el.style.border = '1px solid rgba(16,185,129,.4)'; el.style.color = '#6ee7b7'; }
+            else { el.style.background = 'rgba(248,113,113,.15)'; el.style.border = '1px solid rgba(248,113,113,.4)'; el.style.color = '#fca5a5'; }
+            el.innerHTML = msg;
+            setTimeout(function () { el.style.display = 'none'; }, 6000);
+        }
+
+        function designParams() {
+            return {
+                flexible: {
+                    designLife: document.getElementById('designLife').value,
+                    reliability: document.getElementById('reliability').value,
+                    stdDev: document.getElementById('stdDev').value,
+                    po: document.getElementById('po').value,
+                    pt: document.getElementById('pt').value,
+                    mr: document.getElementById('mr').value,
+                    drainCoeff: document.getElementById('drainCoeff').value
+                },
+                rigid: {
+                    rigidLife: document.getElementById('rigidLife').value,
+                    rigidRel: document.getElementById('rigidRel').value,
+                    rigidSo: document.getElementById('rigidSo').value,
+                    rigidPo: document.getElementById('rigidPo').value,
+                    rigidPt: document.getElementById('rigidPt').value,
+                    modRupture: document.getElementById('modRupture').value,
+                    ecc: document.getElementById('ecc').value,
+                    kValue: document.getElementById('kValue').value,
+                    loadTransfer: document.getElementById('loadTransfer').value,
+                    rigidCd: document.getElementById('rigidCd').value
+                },
+                traffic: {
+                    aadt: document.getElementById('aadt').value,
+                    growthRate: document.getElementById('growthRate').value,
+                    trafficLife: document.getElementById('trafficLife').value,
+                    dirDist: document.getElementById('dirDist').value,
+                    laneDist: document.getElementById('laneDist').value,
+                    truckPct: document.getElementById('truckPct').value,
+                    classes: {
+                        c4: document.getElementById('cls4').value, c5: document.getElementById('cls5').value,
+                        c6: document.getElementById('cls6').value, c7: document.getElementById('cls7').value,
+                        c8: document.getElementById('cls8').value, c9: document.getElementById('cls9').value,
+                        c10: document.getElementById('cls10').value, c11: document.getElementById('cls11').value,
+                        c12: document.getElementById('cls12').value
+                    }
+                }
+            };
+        }
+
+        function designResults() {
+            var flexRows = document.querySelectorAll('#flexTable tr');
+            var layers = [];
+            flexRows.forEach(function (r) {
+                var cells = r.querySelectorAll('td');
+                if (cells.length === 5) layers.push({ layer: cells[0].textContent.trim(), D: cells[3].textContent.trim() });
+            });
+            return {
+                flexible: {
+                    SN: document.getElementById('rReqSN').textContent,
+                    W18: document.getElementById('rW18').textContent,
+                    totalThick: document.getElementById('rTotalThick').textContent,
+                    layers: layers
+                },
+                rigid: {
+                    slabD: document.getElementById('rSlabD').textContent,
+                    W18: document.getElementById('rRigidW18').textContent,
+                    joint: document.getElementById('rJoint').textContent
+                },
+                traffic: {
+                    totalW18: document.getElementById('rTotalW18').textContent,
+                    dailyESAL: document.getElementById('rDailyESAL').textContent,
+                    truckFactor: document.getElementById('rTruckFactor').textContent
+                }
+            };
+        }
+
+        async function saveToDashboard() {
+            var body = {
+                project_name: document.getElementById('projName').value,
+                route_name: document.getElementById('routeName').value,
+                location: document.getElementById('location').value,
+                designer: document.getElementById('designer').value,
+                agency: document.getElementById('agency').value,
+                design_type: currentDesignType,
+                params: designParams(),
+                results: designResults(),
+                thicknesses: { total: document.getElementById('rTotalThick').textContent }
+            };
+            try {
+                var sRes = await fetch('/api/client/session');
+                var s = await sRes.json();
+                if (!s.ok || !s.authed) {
+                    pageToast('error', 'Please sign in to the Client Portal to sync this design. <a href="/client/login.html" style="color:#93c5fd;text-decoration:underline;">Sign in →</a>');
+                    return;
+                }
+                var res = await fetch('/api/client/pavement-designs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                var out = await res.json();
+                if (out.ok) pageToast('ok', '✓ Design synced to your dashboard — Saved Designs');
+                else pageToast('error', out.error || 'Save failed');
+            } catch (e) {
+                pageToast('error', 'Save failed — check your connection');
+            }
+        }
+
+        /* Restores a saved design (from the portal Saved Designs list) back into
+         * this calculator: ?design=<pavement_designs.id> */
+        async function loadDesignFromId(designId) {
+            var res = await fetch('/api/client/pavement-designs?id=' + encodeURIComponent(designId));
+            var out = await res.json();
+            var d = out.design || (out.designs && out.designs[0]);
+            if (!d) { pageToast('error', 'Design not found or you do not have access to it.'); return; }
+            var p = d.params || {}, r = d.results || {}, t = d.thicknesses || {};
+            var fl = p.flexible || {}, rg = p.rigid || {}, tr = p.traffic || {};
+            var cls = tr.classes || {};
+
+            document.getElementById('projName').value = d.project_name || '';
+            document.getElementById('routeName').value = d.route_name || '';
+            document.getElementById('location').value = d.location || '';
+            document.getElementById('designer').value = d.designer || '';
+            document.getElementById('agency').value = d.agency || '';
+
+            var setv = function (id, v) { var el = document.getElementById(id); if (el && v !== undefined && v !== null && v !== '') el.value = String(v); };
+            setv('designLife', fl.designLife); setv('reliability', fl.reliability); setv('stdDev', fl.stdDev);
+            setv('po', fl.po); setv('pt', fl.pt); setv('mr', fl.mr); setv('drainCoeff', fl.drainCoeff);
+            setv('rigidLife', rg.rigidLife); setv('rigidRel', rg.rigidRel); setv('rigidSo', rg.rigidSo);
+            setv('rigidPo', rg.rigidPo); setv('rigidPt', rg.rigidPt); setv('modRupture', rg.modRupture);
+            setv('ecc', rg.ecc); setv('kValue', rg.kValue); setv('loadTransfer', rg.loadTransfer); setv('rigidCd', rg.rigidCd);
+            setv('aadt', tr.aadt); setv('growthRate', tr.growthRate); setv('trafficLife', tr.trafficLife);
+            setv('dirDist', tr.dirDist); setv('laneDist', tr.laneDist); setv('truckPct', tr.truckPct);
+            setv('cls4', cls.c4); setv('cls5', cls.c5); setv('cls6', cls.c6); setv('cls7', cls.c7); setv('cls8', cls.c8);
+            setv('cls9', cls.c9); setv('cls10', cls.c10); setv('cls11', cls.c11); setv('cls12', cls.c12);
+
+            currentDesignType = d.design_type === 'rigid' ? 'rigid' : 'flexible';
+
+            // Re-run every stage so the report, charts and tables are populated.
+            if (tr.aadt) { try { calcESALs(); } catch (e) {} }
+            if (lastTotalW18 === null && r.traffic && r.traffic.totalW18) {
+                lastTotalW18 = parseFloat(String(r.traffic.totalW18).replace(/[^\d.]/g, '')) || null;
+            }
+            try { if (currentDesignType === 'rigid') calcRigid(); else calcFlexible(); } catch (e) {}
+            try { genReport(); } catch (e) {}
+
+            // Activate the Report tab so the restored design is visible at once.
+            var reportBtn = document.querySelector('.tab-btn[onclick="switchTab(\'report\', this)"]');
+            if (reportBtn) switchTab('report', reportBtn);
+            pageToast('ok', '✓ Design loaded from your dashboard — modify and re-save');
+        }
+
+        (function restoreFromUrl() {
+            var m = /[?&]design=([^&]+)/.exec(window.location.search);
+            if (m) loadDesignFromId(decodeURIComponent(m[1]));
+        })();
     </script>
 </body>
 </html>

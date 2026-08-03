@@ -197,6 +197,15 @@ async function pgUpdate(c, table, row, filter) {
     return resp.ok ? (Array.isArray(data) ? data[0] : data) : null;
 }
 
+async function pgDelete(c, table, filter) {
+    const qs = buildQuery(filter || {});
+    const resp = await fetch(c.url + '/rest/v1/' + table + (qs ? '?' + qs : ''), {
+        method: 'DELETE',
+        headers: pgHeaders(c)
+    });
+    return resp.ok;
+}
+
 /* ---------------- Session + identity helpers ---------------- */
 
 async function getProfile(c, userId) {
@@ -263,6 +272,7 @@ module.exports = {
     pgSelect: pgSelect,
     pgInsert: pgInsert,
     pgUpdate: pgUpdate,
+    pgDelete: pgDelete,
     getProfile: getProfile,
     getStaffProfiles: getStaffProfiles,
     isStaffUser: isStaffUser,
